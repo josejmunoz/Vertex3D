@@ -1,0 +1,18 @@
+Purely vertex model version 1:
+
+   % Geometery: seeding nodes 
+   % Volume Energy:
+   % surface energy: Area-Cellbased/Facebased/TrianguleBased
+   % Energy barrier to protect samll triangules: exponential/Log 
+  
+
+version 1:
+   
+   % Remodeling included
+
+Version 5: 
+  % surfaces-centers with 3 vertices are removed
+  % 4-4 flip
+  % substrate 
+  % three examples( stretch-compression-extrusion)
+

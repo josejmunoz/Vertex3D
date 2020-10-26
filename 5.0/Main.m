@@ -67,6 +67,9 @@ Set.MaxIter0=Set.MaxIter;
 
 while t<=tend
 
+    % Where this could be run?
+    Cell.AblateCells([4 5 6]);
+    
     % ----------- Remodel-------------------
     if Set.ReModel && abs(t-tr)>=Set.RemodelingFrequency
         Faces=Faces.ComputeAreaTri(Y.DataRow,Cell.SurfsCenters.DataRow);

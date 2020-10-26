@@ -65,5 +65,14 @@ classdef CellClass
 
          end
       end
+      
+      %% Ablate cells
+      % We assume there will only be one ablation. Thus, we could remove
+      % the IDs from the middle.
+      % TODO: Check if Cell.Int need to be in order in consecutive numbers
+      function Cell = AblateCells(cellsToRemove)
+          Cell.Int(cellsToRemove) = [];
+          Cell.Ext = [Cell.Ext cellsToRemove];
+      end
    end
 end

@@ -70,9 +70,10 @@ classdef CellClass
       % We assume there will only be one ablation. Thus, we could remove
       % the IDs from the middle.
       % TODO: Check if Cell.Int need to be in order in consecutive numbers
-      function Cell = AblateCells(cellsToRemove)
-          Cell.Int(cellsToRemove) = [];
-          Cell.Ext = [Cell.Ext cellsToRemove];
+      function cell = AblateCells(obj, cellsToRemove)
+          obj.Int(cellsToRemove) = [];
+          obj.Ext = [obj.Ext cellsToRemove];
+          cell = obj;
       end
    end
 end

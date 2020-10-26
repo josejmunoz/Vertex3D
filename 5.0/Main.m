@@ -64,11 +64,16 @@ end
 tr=0;
 Set.nu0=Set.nu;
 Set.MaxIter0=Set.MaxIter;
+Set.Ablation = true;
+Set.TAblation = 2;
 
 while t<=tend
 
     % Where this could be run?
-    Cell.AblateCells([4 5 6]);
+    if Set.Ablation == true && Set.TAblation <= t
+        Cell = Cell.AblateCells([4 5 6]);
+        Set.Ablation = false;
+    end
     
     % ----------- Remodel-------------------
     if Set.ReModel && abs(t-tr)>=Set.RemodelingFrequency

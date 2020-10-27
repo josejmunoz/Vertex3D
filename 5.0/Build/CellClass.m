@@ -73,6 +73,36 @@ classdef CellClass
       function cell = AblateCells(obj, cellsToRemove)
           obj.Int(cellsToRemove) = [];
           obj.Ext = [obj.Ext cellsToRemove];
+          
+          %Consequences:
+          obj.Type(cellsToRemove) = [];
+          %cell structures
+          obj.Tris(cellsToRemove) = [];
+          obj.cTet(cellsToRemove) = [];
+          obj.cTri(cellsToRemove) = [];
+          obj.cTetID(cellsToRemove) = [];
+          obj.cTriID(cellsToRemove) = [];
+          obj.cNodes(cellsToRemove) = [];
+          obj.Cv(cellsToRemove) = [];
+          obj.CvID(cellsToRemove) = [];
+          
+          %Update info of the cells
+          obj.Vol(cellsToRemove) = [];
+          obj.Vol0(cellsToRemove) = [];
+          obj.SArea(cellsToRemove) = [];
+          obj.SArea0(cellsToRemove) = [];
+          
+          % Update info of the cells, with cell structure
+          obj.SAreaTri(cellsToRemove) = [];
+          obj.SAreaTri0(cellsToRemove) = [];
+          obj.SAreaFace(cellsToRemove) = [];
+          obj.SAreaFace0(cellsToRemove) = [];
+          obj.Surfaces(cellsToRemove) = [];
+          
+          obj.n = obj.n - length(cellsToRemove);
+          obj.nTotalTris = sum(cellfun(@(X) size(X,1), obj.Tris));
+          
+          %Return
           cell = obj;
       end
    end

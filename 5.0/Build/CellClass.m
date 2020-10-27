@@ -98,6 +98,7 @@ classdef CellClass
           obj.SAreaFace(cellsToRemove) = [];
           obj.SAreaFace0(cellsToRemove) = [];
           obj.Surfaces(cellsToRemove) = [];
+          obj.Edges(cellsToRemove) = [];
           
           obj.n = obj.n - length(cellsToRemove);
           obj.nTotalTris = sum(cellfun(@(X) size(X,1), obj.Tris));

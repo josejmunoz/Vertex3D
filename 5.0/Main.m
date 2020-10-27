@@ -65,13 +65,14 @@ tr=0;
 Set.nu0=Set.nu;
 Set.MaxIter0=Set.MaxIter;
 Set.Ablation = true;
-Set.TAblation = 2;
+Set.TAblation = 1;
 
 while t<=tend
 
     % Where this could be run?
     if Set.Ablation == true && Set.TAblation <= t
-        Cell = Cell.AblateCells([4 5 6]);
+        Cell = Cell.AblateCells([5]);
+        [Cell,Faces,nC,SCn,flag32] = ReBuildCells(Cell,T,Y,X,Faces,SCn);
         Set.Ablation = false;
     end
     

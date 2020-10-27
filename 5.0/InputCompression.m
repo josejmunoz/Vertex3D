@@ -1,5 +1,5 @@
 %% geometry
-Set.e=1;  % Example Number look in Geo\Example.m 
+Set.e=4;  % Example Number look in Geo\Example.m 
 Set.Method=1;
 % Tuning parameters
 Set.s=1.5;
@@ -35,8 +35,8 @@ Set.RemodelTol=.5e-6;
 Set.RemodelingFrequency=2;
 
 %% time
-tend=300;
-Set.Nincr=300;
+tend=20;
+Set.Nincr=10;
 
 %%  Boundary Displacement 
 Set.BC=2;  %  Compression

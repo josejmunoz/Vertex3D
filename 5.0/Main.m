@@ -66,12 +66,15 @@ Set.nu0=Set.nu;
 Set.MaxIter0=Set.MaxIter;
 Set.Ablation = true;
 Set.TAblation = 1;
+cellsToAblate = [5];
 
 while t<=tend
 
     % Where this could be run?
     if Set.Ablation == true && Set.TAblation <= t
-        Cell = Cell.AblateCells([5]);
+        Cell = Cell.AblateCells(cellsToAblate);
+        XgID = [XgID, cellsToAblate];
+        Faces=Faces.CheckInteriorFaces(XgID);
         [Cell,Faces,nC,SCn,flag32] = ReBuildCells(Cell,T,Y,X,Faces,SCn);
         Set.Ablation = false;
     end

@@ -205,11 +205,14 @@ for interiorCell=1:Cell.n
     Cell.SAreaTri0{interiorCell}=ones(size(Cell.SAreaTri{interiorCell}))*1e-3;
 %     Cell.SAreaTri0{i}=Cell.SAreaTri{i};
 
-end 
+end  
 Cell.SAreaFace0=Cell.SAreaFace;
 
 SharedFaces=SharedFaces.ComputeAreaTri(Y.DataRow,Cell.SurfsCenters.DataRow);
 
+%% Contractility L_i0
+[Cell] = Cell.computeEdgeLengths(Y);
+Cell.EdgeLengths0 = Cell.EdgeLengths;
 
 end 
 

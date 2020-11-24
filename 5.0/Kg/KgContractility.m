@@ -1,7 +1,8 @@
-function [outputArg1,outputArg2] = KgContractility(inputArg1,inputArg2)
+function [g,K,Cell,Energy] = KgContractility(Cell,Y,Set)
 %KGCONTRACTILITY Summary of this function goes here
 %   Detailed explanation goes here
-outputArg1 = inputArg1;
-outputArg2 = inputArg2;
+%   g: is a vector
+%   K: is a matrix
+
 end
 

@@ -3,24 +3,27 @@ function [] = gContractility(Cell,Y,Set)
 %   Detailed explanation goes here
 
 %% Set parameters
-currentCell=Cell.n;
+currentCell = Cell.n;
 
 %% Initialize
 dimensionsG = %Set.NumTotalV*3;
 
 g = zeros(dimensionsG,1); % Local cell residual
 
-EnergyContractility=0;
+EnergyContractility = 0;
 
-C=Set.cContractility;
+C = Set.cContractility;
 
 end
 
 
-function [gContractility] = computeGContractility(C)
+function [gContractility] = computeGContractility(Cell, C)
 %COMPUTEGCONTRACTILITY Summary of this function goes here
 %   Detailed explanation goes here
 
+[Cell] = Cell.computeEdgeLengths();
+Cell.EdgeLengths = Cell.EdgeLengths;
 
+gContractility = 0.5 * (edgeLength - (edgeLength0 * C))^2;
 
 end

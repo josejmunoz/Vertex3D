@@ -36,6 +36,7 @@ EnergyV=zeros(Set.Nincr,1);  Energy.Ev=0;
 EnergyF=zeros(Set.Nincr,1);  Energy.Ef=0;
 Energyb=zeros(Set.Nincr,1);  Energy.Eb=0;
 EnergyB=zeros(Set.Nincr,1);  Energy.EB=0;
+EnergyC=zeros(Set.Nincr,1);  Energy.Ec=0;
 
 
 % Time 
@@ -149,6 +150,9 @@ while t<=tend
     elseif Set.EnergyBarrier
         [gB,KB,Cell,Energy.EB]=KgTriEnergyBarrier(Cell,Y,Set);
     end
+    if Set.Contractility
+        [gC,KC,Cell,Energy.Ec]=KgContractility(Cell,Y,Set);
+    end
     
     Ytn=[Yn.DataOrdered ;SCn.DataOrdered];
     Yt=[Y.DataOrdered ;Cell.SurfsCenters.DataOrdered];
@@ -163,7 +167,8 @@ while t<=tend
     K=Kv+Kf+Ks;
     g=gv+gf+gs;
     if Set.Bending,        K=K+Kb; g=g+gb; end 
-    if Set.EnergyBarrier,  K=K+KB; g=g+gB; end 
+    if Set.EnergyBarrier,  K=K+KB; g=g+gB; end
+    if Set.Contractility,  K=K+KC; g=g+gC; end
 
     
     dy=zeros(size(y));
@@ -203,6 +208,9 @@ while t<=tend
          elseif Set.EnergyBarrier
              [gB,KB,Cell,Energy.EB]=KgTriEnergyBarrier(Cell,Y,Set);
          end
+         if Set.Contractility
+             [gC,KC,Cell,Energy.Ec]=KgContractility(Cell,Y,Set);
+         end
          
          if Set.nu > Set.nu0 &&  gr<1e-8
              Set.nu = max(Set.nu/2,Set.nu0);
@@ -217,6 +225,7 @@ while t<=tend
          g=gv+gf+gs;
          if Set.Bending,        K=K+Kb; g=g+gb; end
          if Set.EnergyBarrier,  K=K+KB; g=g+gB; end
+         if Set.Contractility,  K=K+KC; g=g+gC; end
          
          dyr=norm(dy(Dofs.FreeDofs));
          gr=norm(g(Dofs.FreeDofs));
@@ -264,6 +273,7 @@ while t<=tend
          EnergyV(i)=Energy.Ev;
          EnergyB(i)=Energy.EB;
          EnergyF(i)=Energy.Ef;
+         EnergyC(i)=Energy.Ec;
          fprintf('STEP %i has converged in %i iterations.\n',Set.iIncr,Set.iter)
          PostProcessingV2(X,Y.DataOrdered,Cn,[],Cell,'ResultVTK',Set.iIncr,XgID)
          Yn=Y;

@@ -106,5 +106,10 @@ classdef CellClass
           %Return
           cell = obj;
       end
+      
+      function cell = computeEdgeLengths(obj, Y)
+          
+          obj.EdgeLengths = [];
+      end
    end
 end

@@ -1,7 +1,7 @@
 function [Cell]=BuildEdges(Cell,Y)
-
-
-%edge=[y1 y2 y33 y3]
+%BUILDEDGES
+% 
+% edge=[y1 y2 y33 y3]
 
 for i=1:Cell.n
     Tris=Cell.Tris{i};

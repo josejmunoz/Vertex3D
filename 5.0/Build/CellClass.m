@@ -34,7 +34,8 @@ classdef CellClass
                             % it has no effect if (AssembleAll = true)
      Edges
      
-     EdgeLengths         %% (cell-structure) of array [nTri 1] with the length of all the edges of each cell surface triangulation.
+     EdgeLengths         %% (cell-structure) of array [nEdgesPerSurface 1] with the length of all the edges of each cell surface triangulation.
+     EdgeLengths0         %% (cell-structure) of array [nEdgesPerSurface 1] with the length of all the edges of each cell surface triangulation.
     end
    methods
       function Cell = CellClass(X,nC,xInternal,xExternal)
@@ -114,20 +115,28 @@ classdef CellClass
           obj.EdgeLengths = cell(obj.n);
           % Run through all the cells
           for numCell = 1:obj.n
-              if ~Obj.AssembleAll
-                  if ~ismember(Obj.Int(numCell),Obj.AssembleNodes)
+              if ~obj.AssembleAll
+                  if ~ismember(obj.Int(numCell),obj.AssembleNodes)
                       continue
                   end
               end
               
-              % [surface-center vertex1 vertex2]
-              trianglesOfSurfaces = Obj.Tris{numCell};
+              % [vertex1 vertex2 cellCentre]
+              trianglesOfSurfaces = obj.Tris{numCell};
+              
+              
+              edgesOfCell = zeros(size(trianglesOfSurfaces,1), 3);
               
               % Loop over Cell-face-triangles
               for currentTriangle = 1:size(trianglesOfSurfaces,1)
-                  
+                  %The pairwise distances are arranged in the order (2,1), (3,1), (3,2)
+                  [edgeLenghts] = pdist(Y.DataRow(trianglesOfSurfaces(currentTriangle, [1 2]), :), 'euclidean');
+                  edgesOfCell(currentTriangle, 1:3) = [edgeLenghts(1), sort(trianglesOfSurfaces(currentTriangle, [1 2]))];
               end
               
+              %Get only unique values of edges (some edges are shared by
+              %different surfaces
+              obj.EdgeLengths{numCell} = unique(edgesOfCell, 'rows', 'stable');
           end
           
           %Return

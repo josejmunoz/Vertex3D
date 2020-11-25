@@ -110,6 +110,7 @@ classdef CellClass
           Cell = obj;
       end
       
+      %% Compute the length of the segments between vertices Xs
       function Cell = computeEdgeLengths(obj, Y)
           
           obj.EdgeLengths = cell(obj.n);
@@ -135,7 +136,7 @@ classdef CellClass
               end
               
               %Get only unique values of edges (some edges are shared by
-              %different surfaces
+              %different surfaces)
               obj.EdgeLengths{numCell} = unique(edgesOfCell, 'rows', 'stable');
           end
           

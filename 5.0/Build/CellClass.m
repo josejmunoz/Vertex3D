@@ -32,7 +32,9 @@ classdef CellClass
      AssembleAll            %%  logical 
      AssembleNodes          %%  (array-structure) list f node which correspond to the cell-center of the cells to be assmbled 
                             % it has no effect if (AssembleAll = true)
-    Edges                        
+     Edges
+     
+     EdgeLengths         %% (cell-structure) of array [nTri 1] with the length of all the edges of each cell surface triangulation.
     end
    methods
       function Cell = CellClass(X,nC,xInternal,xExternal)
@@ -70,7 +72,7 @@ classdef CellClass
       % We assume there will only be one ablation. Thus, we could remove
       % the IDs from the middle.
       % TODO: Check if Cell.Int need to be in order in consecutive numbers
-      function cell = AblateCells(obj, cellsToRemove)
+      function Cell = AblateCells(obj, cellsToRemove)
           obj.Int(cellsToRemove) = [];
           obj.Ext = [obj.Ext cellsToRemove];
           
@@ -104,12 +106,32 @@ classdef CellClass
           obj.nTotalTris = sum(cellfun(@(X) size(X,1), obj.Tris));
           
           %Return
-          cell = obj;
+          Cell = obj;
       end
       
-      function cell = computeEdgeLengths(obj, Y)
+      function Cell = computeEdgeLengths(obj, Y)
           
-          obj.EdgeLengths = [];
+          obj.EdgeLengths = cell(obj.n);
+          % Run through all the cells
+          for numCell = 1:obj.n
+              if ~Obj.AssembleAll
+                  if ~ismember(Obj.Int(numCell),Obj.AssembleNodes)
+                      continue
+                  end
+              end
+              
+              % [surface-center vertex1 vertex2]
+              trianglesOfSurfaces = Obj.Tris{numCell};
+              
+              % Loop over Cell-face-triangles
+              for currentTriangle = 1:size(trianglesOfSurfaces,1)
+                  
+              end
+              
+          end
+          
+          %Return
+          Cell = obj;
       end
    end
 end

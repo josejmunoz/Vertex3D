@@ -1,18 +1,20 @@
-function [] = gContractility(Cell,Y,Set)
+function [EnergyContractility] = gContractility(Cell,Y,Set)
 %GCONTRACTILITY Summary of this function goes here
 %   Detailed explanation goes here
 
 %% Set parameters
-currentCell = Cell.n;
+totalCells = Cell.n;
 
 %% Initialize
-dimensionsG = %Set.NumTotalV*3;
+dimensionsG = 1;%Set.NumTotalV*3;
 
 g = zeros(dimensionsG,1); % Local cell residual
 
 EnergyContractility = 0;
 
 C = Set.cContractility;
+
+[gContractility] = computeGContractility(Cell, C);
 
 end
 

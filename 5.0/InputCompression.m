@@ -44,3 +44,7 @@ Set.BC=2;  %  Compression
     Set.dx=1;
     Set.TStartBC=20;  %30  
     Set.TStopBC=200;
+    
+%% Contractility
+Set.Contractility = true;
+Set.cContractility = 0.3;

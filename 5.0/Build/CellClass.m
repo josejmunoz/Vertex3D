@@ -34,8 +34,8 @@ classdef CellClass
                             % it has no effect if (AssembleAll = true)
      Edges
      
-     EdgeLengths         %% (cell-structure) of array [nEdgesPerSurface 1] with the length of all the edges of each cell surface triangulation.
-     EdgeLengths0         %% (cell-structure) of array [nEdgesPerSurface 1] with the length of all the edges of each cell surface triangulation.
+     EdgeLengths         %% (cell-structure) of array [nEdgesPerSurface 1] with the length of all the edges of each cell surface triangulation (Cv).
+     EdgeLengths0         %% (cell-structure) of array [nEdgesPerSurface 1] with the length of all the edges of each cell surface triangulation (Cv).
     end
    methods
       function Cell = CellClass(X,nC,xInternal,xExternal)
@@ -122,15 +122,15 @@ classdef CellClass
                   end
               end
               
-              % [vertex1 vertex2 cellCentre]
-              trianglesOfSurfaces = obj.Tris{numCell};
+              % Cv are the verteces of a cell including vertices-cell
+              % centres
+              trianglesOfSurfaces = obj.Cv{numCell};
               
               
               edgesOfCell = zeros(size(trianglesOfSurfaces,1), 3);
               
               % Loop over Cell-face-triangles
               for currentTriangle = 1:size(trianglesOfSurfaces,1)
-                  %The pairwise distances are arranged in the order (2,1), (3,1), (3,2)
                   [edgeLenghts] = pdist(Y.DataRow(trianglesOfSurfaces(currentTriangle, [1 2]), :), 'euclidean');
                   edgesOfCell(currentTriangle, 1:3) = [edgeLenghts(1), sort(trianglesOfSurfaces(currentTriangle, [1 2]))];
               end

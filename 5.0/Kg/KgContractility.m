@@ -43,7 +43,7 @@ for numCell = 1:Cell.n
         
         %% Calculate residual g
         g_current = computeGContractility(l_i0, l_i, y_1, y_2);
-        g = assembleG(g, g_current', edgeLengths(numEdge, 2:3));
+        g = assembleG(g, g_current, edgeLengths(numEdge, 2:3));
         %% Calculate Jacobian
         K_current = computeKContractility(l_i0, l_i, y_1, y_2);
         
@@ -66,7 +66,10 @@ function [kContractility] = computeKContractility(l_i0, l_i, y_1, y_2)
 
 dim = 3;
 
-kContractility = (1 - (l_i0)/l_i) * eye(dim) + (l_i0/l_i^2) * (1/l_i) * cross(y_1 - y_2, y_1 - y_2);
+kContractility(1:3, 1:3) = (1 - (l_i0/l_i)) * eye(dim) + (l_i0/l_i^2) * (1/l_i) * (y_1 - y_2)*(y_1 - y_2)';
+kContractility(1:3, 4:6) = -kContractility(1:3, 1:3);
+kContractility(4:6, 1:3) = -kContractility(1:3, 1:3);
+kContractility(4:6, 4:6) = kContractility(1:3, 1:3);
 
 end
 
@@ -74,7 +77,8 @@ function [gContractility] = computeGContractility(l_i0, l_i, y_1, y_2)
 %COMPUTEGCONTRACTILITY Summary of this function goes here
 %   Detailed explanation goes here
 
-gContractility = (l_i - l_i0) * (y_1 - y_2) / l_i;
+gContractility(1:3, 1) = (l_i - l_i0) * (y_1 - y_2) / l_i;
+gContractility(4:6, 1) = -gContractility(1:3);
 
 end
 
@@ -84,9 +88,9 @@ end
 
 %%
 function   gAccumulated=assembleG(gAccumulated,gCurrent,nY)
-% Assembles volume residual of a triangle of vertices (9 components)
+% Assembles residual of a pair of vertices (6 components)
 dim=3;
-for I=1:length(nY) % loop on 3 vertices of triangle
+for I=1:length(nY) % loop on 2 vertices of an edge
     if nY(I)>0
          idofg=(nY(I)-1)*dim+1:nY(I)*dim; % global dof
          idofl=(I-1)*dim+1:I*dim;
@@ -96,11 +100,11 @@ end
 end
 %%
 function Kaccumulated= assembleK(Kaccumulated,Kcurrent,nY)
-% Assembles volume Jacobian of a triangle of vertices (9x9 components)
+% Assembles volume Jacobian of a triangle of vertices (12x12 components)
 dim=3;
 
 
-for I=1:length(nY) % loop on 3 vertices of triangle
+for I=1:length(nY)
     for J=1:length(nY)
         if nY(I)>0
             idofg=(nY(I)-1)*dim+1:nY(I)*dim; % global dof
@@ -116,10 +120,10 @@ end
 
 %%
 function [si,sj,sv,sk]= assembleKSparse(Kcurrent,nY,si,sj,sv,sk)
-% Assembles volume Jacobian of a triangle of vertices (9x9 components)
+% Assembles Jacobian of a pair of vertices (6x6 components)
 dim=3;
 
-for I=1:length(nY) % loop on 3 vertices of triangle
+for I=1:length(nY)
     for J=1:length(nY)
         if nY(I)>0
             idofg=(nY(I)-1)*dim+1:nY(I)*dim; % global dof

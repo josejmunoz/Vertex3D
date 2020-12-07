@@ -1,4 +1,4 @@
-function [g,K,Cell,Energy] = KgContractility(Cell,Y,Set)
+function [g,K,Cell,energy] = KgContractility(Cell,Y,Set)
 %KGCONTRACTILITY Summary of this function goes here
 %   Detailed explanation goes here
 %   g: is a vector
@@ -6,38 +6,47 @@ function [g,K,Cell,Energy] = KgContractility(Cell,Y,Set)
 
 %% Set parameters
 totalCells = Cell.n;
+C = Set.cContractility;
 
 %% Initialize
 dimensionsG = Set.NumTotalV*3;
 
-K = zeros(dimensionsG,1); % Local cell residual
+g=zeros(dimg,1); % Local cell residual
+if Set.Sparse
+    sk=0;
+    si=zeros((dimg*3)^2,1); % Each vertex is shared by at least 3 cells 
+    sj=si;
+    sv=si;
+%     K=sparse(zeros(dimg)); % Also used in sparse
+else
+    K=zeros(dimg); % Also used in sparse
+end
 
-EnergyContractility = 0;
+energy = 0;
 
-C = Set.cContractility;
-
-Energy = 0;
-
-[g] = computeGContractility(Cell, C);
-
+%% Calculate basic information
 [Cell] = Cell.computeEdgeLengths();
 Cell.EdgeLengths = Cell.EdgeLengths;
+edgeLengths0 = Cell.EdgeLengths0 * C;
 
-[kgContractility] = computeKGContractility(Cell, C);
+%% Calculate residual g
+g = computeGContractility(Cell, C);
 
+%% Calculate Jacobian
+K = computeKContractility(Cell, C);
+
+%% Calculate energy
+energy = energy + computeEnergyContractility(edgeLength, edgeLength0, C);
 
 end
 
-function [kgContractility] = computeKGContractility(Cell, C)
+function [kContractility] = computeKContractility(Cell, C)
 %COMPUTEGCONTRACTILITY Summary of this function goes here
 %   Detailed explanation goes here
 
 dim = 3;
 
-[Cell] = Cell.computeEdgeLengths();
-Cell.EdgeLengths = Cell.EdgeLengths;
-
-kgContractility = (1 - (edgeLength0 * C)/edgeLength) * eye(dim) + (edgeLength0 * C)/edgeLength^2;
+kContractility = (1 - (edgeLength0)/edgeLength) * eye(dim) + (edgeLength0/edgeLength^2) * (1/edgeLength) * cross(y_1 - y_2, y_1 - y_2);
 
 end
 
@@ -45,14 +54,11 @@ function [gContractility] = computeGContractility(Cell, C)
 %COMPUTEGCONTRACTILITY Summary of this function goes here
 %   Detailed explanation goes here
 
-[Cell] = Cell.computeEdgeLengths();
-Cell.EdgeLengths = Cell.EdgeLengths;
-
-gContractility = ;
+gContractility = (edgeLength - edgeLength0) * (y_1 - y_2) / edgeLength;
 
 end
 
-function [energyConctratility] = computeEnergyContractility(Cell, C)
+function [energyConctratility] = computeEnergyContractility(edgeLength, edgeLength0, C)
     energyConctratility = 0.5 * (edgeLength - (edgeLength0 * C))^2;
 end
 

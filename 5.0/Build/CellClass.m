@@ -113,7 +113,7 @@ classdef CellClass
       %% Compute the length of the segments between vertices Xs
       function Cell = computeEdgeLengths(obj, Y)
           
-          obj.EdgeLengths = cell(obj.n);
+          obj.EdgeLengths = cell(obj.n, 1);
           % Run through all the cells
           for numCell = 1:obj.n
               if ~obj.AssembleAll

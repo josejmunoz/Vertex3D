@@ -7,75 +7,95 @@ function [g,K,Cell,energy] = KgContractility(Cell,Y,Set)
 %% Set parameters
 totalCells = Cell.n;
 C = Set.cContractility;
+Set.Sparse = true;
 
 %% Initialize
 dimensionsG = Set.NumTotalV*3;
-
-g=zeros(dimg,1); % Local cell residual
+g=zeros(dimensionsG,1); % Local cell residual
 if Set.Sparse
     sk=0;
-    si=zeros((dimg*3)^2,1); % Each vertex is shared by at least 3 cells 
+    si=zeros((dimensionsG*3)^2,1); % Each vertex is shared by at least 3 cells 
     sj=si;
     sv=si;
 %     K=sparse(zeros(dimg)); % Also used in sparse
 else
-    K=zeros(dimg); % Also used in sparse
+    K=zeros(dimensionsG); % Also used in sparse
 end
 
 energy = 0;
 
 %% Calculate basic information
-[Cell] = Cell.computeEdgeLengths();
-Cell.EdgeLengths = Cell.EdgeLengths;
-edgeLengths0 = Cell.EdgeLengths0 * C;
+[Cell] = Cell.computeEdgeLengths(Y);
 
-%% Calculate residual g
-g = computeGContractility(Cell, C);
+for numCell = 1:Cell.n
 
-%% Calculate Jacobian
-K = computeKContractility(Cell, C);
+    edgeLengths = Cell.EdgeLengths{numCell};
+    edgeLengths0 = Cell.EdgeLengths0{numCell};
+    edgeLengths0(:, 1) = edgeLengths0(:, 1) * C;
 
-%% Calculate energy
-energy = energy + computeEnergyContractility(edgeLength, edgeLength0, C);
+    for numEdge = 1:size(edgeLengths, 3)
+        
+        y_1 = Y.DataRow(edgeLengths(numEdge, 2), :);
+        y_2 = Y.DataRow(edgeLengths(numEdge, 3), :);
+        
+        l_i = edgeLengths(numEdge, 1);
+        l_i0 = edgeLengths0(numEdge, 1);
+        
+        %% Calculate residual g
+        g_current = computeGContractility(l_i0, l_i, y_1, y_2);
+        g = assembleG(g, g_current', edgeLengths(numEdge, 2:3));
+        %% Calculate Jacobian
+        K_current = computeKContractility(l_i0, l_i, y_1, y_2);
+        
+        if Set.Sparse
+            [si,sj,sv,sk] = assembleKSparse(K_current, edgeLengths(numEdge, 2:3), si, sj, sv, sk);
+        else
+            K = assembleK(K, K_current, edgeLengths(numEdge, 2:3));
+        end
+        
+        %% Calculate energy
+        energy = energy + computeEnergyContractility(l_i, l_i0);
+    end
+end
 
 end
 
-function [kContractility] = computeKContractility(Cell, C)
+function [kContractility] = computeKContractility(l_i0, l_i, y_1, y_2)
 %COMPUTEGCONTRACTILITY Summary of this function goes here
 %   Detailed explanation goes here
 
 dim = 3;
 
-kContractility = (1 - (edgeLength0)/edgeLength) * eye(dim) + (edgeLength0/edgeLength^2) * (1/edgeLength) * cross(y_1 - y_2, y_1 - y_2);
+kContractility = (1 - (l_i0)/l_i) * eye(dim) + (l_i0/l_i^2) * (1/l_i) * cross(y_1 - y_2, y_1 - y_2);
 
 end
 
-function [gContractility] = computeGContractility(Cell, C)
+function [gContractility] = computeGContractility(l_i0, l_i, y_1, y_2)
 %COMPUTEGCONTRACTILITY Summary of this function goes here
 %   Detailed explanation goes here
 
-gContractility = (edgeLength - edgeLength0) * (y_1 - y_2) / edgeLength;
+gContractility = (l_i - l_i0) * (y_1 - y_2) / l_i;
 
 end
 
-function [energyConctratility] = computeEnergyContractility(edgeLength, edgeLength0, C)
-    energyConctratility = 0.5 * (edgeLength - (edgeLength0 * C))^2;
+function [energyConctratility] = computeEnergyContractility(l_i, l_i0)
+    energyConctratility = 0.5 * (l_i - (l_i0))^2;
 end
 
 %%
-function   ge=AssemblegTriangleSArea(ge,gt,nY)
+function   gAccumulated=assembleG(gAccumulated,gCurrent,nY)
 % Assembles volume residual of a triangle of vertices (9 components)
 dim=3;
 for I=1:length(nY) % loop on 3 vertices of triangle
     if nY(I)>0
          idofg=(nY(I)-1)*dim+1:nY(I)*dim; % global dof
          idofl=(I-1)*dim+1:I*dim;
-         ge(idofg)=ge(idofg)+gt(idofl);
+         gAccumulated(idofg)=gAccumulated(idofg)+gCurrent(idofl);
     end
 end
 end
 %%
-function Ke= AssembleKTriangleSArea(Ke,Kt,nY)
+function Kaccumulated= assembleK(Kaccumulated,Kcurrent,nY)
 % Assembles volume Jacobian of a triangle of vertices (9x9 components)
 dim=3;
 
@@ -87,7 +107,7 @@ for I=1:length(nY) % loop on 3 vertices of triangle
             idofl=(I-1)*dim+1:I*dim;
             jdofg=(nY(J)-1)*dim+1:nY(J)*dim; % global dof
             jdofl=(J-1)*dim+1:J*dim;
-            Ke(idofg,jdofg)=Ke(idofg,jdofg)+Kt(idofl,jdofl);
+            Kaccumulated(idofg,jdofg)=Kaccumulated(idofg,jdofg)+Kcurrent(idofl,jdofl);
         end
     end 
 end
@@ -95,7 +115,7 @@ end
 
 
 %%
-function [si,sj,sv,sk]= AssembleKTriangleSAreaSparse(Kt,nY,si,sj,sv,sk)
+function [si,sj,sv,sk]= assembleKSparse(Kcurrent,nY,si,sj,sv,sk)
 % Assembles volume Jacobian of a triangle of vertices (9x9 components)
 dim=3;
 
@@ -109,7 +129,7 @@ for I=1:length(nY) % loop on 3 vertices of triangle
             for d=1:dim
                 si(sk+1:sk+dim)=idofg;
                 sj(sk+1:sk+dim)=jdofg(d);
-                sv(sk+1:sk+dim)=Kt(idofl,jdofl(d));
+                sv(sk+1:sk+dim)=Kcurrent(idofl,jdofl(d));
                 sk=sk+dim;
             end
         end

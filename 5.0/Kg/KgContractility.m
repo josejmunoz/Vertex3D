@@ -66,7 +66,7 @@ function [kContractility] = computeKContractility(l_i0, l_i, y_1, y_2)
 
 dim = 3;
 
-kContractility(1:3, 1:3) = (1 - (l_i0/l_i)) * eye(dim) + (l_i0/l_i^2) * (1/l_i) * (y_1 - y_2)*(y_1 - y_2)';
+kContractility(1:3, 1:3) = (1 - (l_i0/l_i)) * eye(dim) + (l_i0/l_i^2) * (1/l_i) * (y_1 - y_2).*(y_1 - y_2)';
 kContractility(1:3, 4:6) = -kContractility(1:3, 1:3);
 kContractility(4:6, 1:3) = -kContractility(1:3, 1:3);
 kContractility(4:6, 4:6) = kContractility(1:3, 1:3);
@@ -142,3 +142,10 @@ end
 
 end
 %%
+
+
+function Ymat=Cross(y)
+Ymat=[0 -y(3) y(2)
+    y(3) 0 -y(1)
+    -y(2) y(1) 0];
+end

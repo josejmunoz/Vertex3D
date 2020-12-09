@@ -54,6 +54,14 @@ while(1)
         EB=0;
     end
     
+    if Set.EnergyBarrier
+        [gc,Kc,Cell,Ec]=KgContractility(Cell,Y,Set);
+    else
+        gc = zeros(size(gv));
+        Kc = zeros(size(Kv));
+        Ec = 0;
+    end
+    
     Ytn=[Yn.DataOrdered ;SCn.DataOrdered];
     Yt=[Y.DataOrdered ;Cell.SurfsCenters.DataOrdered];
 
@@ -66,8 +74,8 @@ while(1)
 
 
 
-    K=Kv+Kf+Ks+KB+Kb;
-    g=gv+gf+gs+gB+gb;
+    K=Kv+Kf+Ks+KB+Kb+Kc;
+    g=gv+gf+gs+gB+gb+gc;
     dy=zeros(size(y));
 
     dyr=norm(dy(Dofs.Remodel));
@@ -106,7 +114,13 @@ while(1)
             KB=zeros(size(Kv));
             EB=0;
         end
-
+        if Set.EnergyBarrier
+            [gc,Kc,Cell,Ec]=KgContractility(Cell,Y,Set);
+        else
+            gc = zeros(size(gv));
+            Kc = zeros(size(Kv));
+            Ec = 0;
+        end
 
         
         if Set.nu > Set.nu0 &&  gr<1e-8
@@ -174,6 +188,10 @@ while(1)
         Energy.Es=Es;
         Energy.Ef=(1/2)*(gf')*gf/Set.nu;
         Energy.EB=EB;
+        
+        Energy.Eb=Eb; % This was not here, why???
+        
+        Energy.Ec=Ec;
 
         Set.lambdaV=Set.lambdaV0;
         Set.nu=Set.nu0;

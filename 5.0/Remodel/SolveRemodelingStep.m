@@ -53,8 +53,7 @@ while(1)
         KB=zeros(size(Kv));
         EB=0;
     end
-    
-    if Set.EnergyBarrier
+    if Set.Contractility
         [gc,Kc,Cell,Ec]=KgContractility(Cell,Y,Set);
     else
         gc = zeros(size(gv));
@@ -114,7 +113,7 @@ while(1)
             KB=zeros(size(Kv));
             EB=0;
         end
-        if Set.EnergyBarrier
+        if Set.Contractility
             [gc,Kc,Cell,Ec]=KgContractility(Cell,Y,Set);
         else
             gc = zeros(size(gv));
@@ -136,8 +135,8 @@ while(1)
         %damping
         Kf=(Set.nu/Set.dt).*sparse(eye(size(Kv)));
         gf=(Set.nu/Set.dt).*(y-yn);
-        K=Kv+Kf+Ks+KB+Kb;
-        g=gv+gf+gs+gB+gb;
+        K=Kv+Kf+Ks+KB+Kb+Kc;
+        g=gv+gf+gs+gB+gb+gc;
         dyr=norm(dy(Dofs.Remodel));
         gr=norm(g(Dofs.Remodel));
 

@@ -5,19 +5,18 @@ function [g,K,Cell,energy] = KgContractility(Cell,Y,Set)
 %   K: is a matrix
 
 %% Set parameters
-totalCells = Cell.n;
 C = Set.cContractility;
 Set.Sparse = true;
 
 %% Initialize
 dimensionsG = Set.NumTotalV*3;
 g=zeros(dimensionsG,1); % Local cell residual
+
 if Set.Sparse
     sk=0;
     si=zeros((dimensionsG*3)^2,1); % Each vertex is shared by at least 3 cells 
     sj=si;
     sv=si;
-%     K=sparse(zeros(dimg)); % Also used in sparse
 else
     K=zeros(dimensionsG); % Also used in sparse
 end
@@ -56,6 +55,10 @@ for numCell = 1:Cell.n
         %% Calculate energy
         energy = energy + computeEnergyContractility(l_i, l_i0);
     end
+end
+
+if Set.Sparse
+    K=sparse(si(1:sk),sj(1:sk),sv(1:sk),dimensionsG,dimensionsG);
 end
 
 end
@@ -142,10 +145,3 @@ end
 
 end
 %%
-
-
-function Ymat=Cross(y)
-Ymat=[0 -y(3) y(2)
-    y(3) 0 -y(1)
-    -y(2) y(1) 0];
-end

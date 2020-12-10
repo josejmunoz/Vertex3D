@@ -1,6 +1,7 @@
 function [Set]=SetDefault(Set)
-%% geometry
-% Examples of cell centers  
+% Default settings 
+%% ============================= geometry =================================
+% Examples of cell centres  position
 if ~isfield(Set,'e')
     Set.e=1;
 end 
@@ -9,48 +10,69 @@ end
 if ~isfield(Set,'SeedingMethod')
     Set.SeedingMethod=1;
 end 
+
 % Tuning parameters
-if ~isfield(Set,'s')
+if ~isfield(Set,'s')  % The average Cell size 
     Set.s=1.5;
 end 
-if ~isfield(Set,'f')
+if ~isfield(Set,'f') % The distance of the free-boundary vertices from cell centre
     Set.f=Set.s/2;
+end
+
+
+% The Method to obtain X from Y 
+if ~isfield(Set,'ObtainX') 
+    Set.ObtainX=3;
 end 
-%% Add Substrate
+% Set.ObtainX==1 -->  Minimisation problem with functional: (Xi =1/4)
+%                       J:= (y-NN*x)'*(y-NN*x) + LM'*( X(cellcentre) - Xc)
+%                       X^*=min_X (J) (Xi =1/4)
+% Set.ObtainX==2 --> Minimisation problem with functional:
+%                       J := (y-N*x)'*(y-N*x) + L*(X-Xc) + (Xi-1/4)*wg + wv sum(Vol_Tet)
+%                       X^*,Xi^* =min_X (J)
+% Set.ObtainX==3 --> GeometricalConstruction
+%                        Interior nodes are placed in the centre of cells,
+%                        while exterior nodes are placed with a distance d (hard coded d=1 in Geo\GetXFromY.m)
+%                        form the cell centre in the direction of centre of the face.
+%% =============================  Add Substrate ===========================
 if ~isfield(Set,'Substrate')
-    Set.Substrate=false;
-    Set.SubstrateZ=0;
+    Set.Substrate=false; % true  --> There is a substrate, 
+                         % false --> no substrate   
+    Set.SubstrateZ=0;    % the z-coordinate of the substrate   
+end 
+%% ============================= Time =====================================
+if ~isfield(Set,'tend') % total simulation  Time 
+    Set.tend=200;       
+end 
+if ~isfield(Set,'Nincr')
+    Set.Nincr=200;       % number of time increments 
 end 
 
-
-%% Time 
-Set.tend=180;
-Set.Nincr=200;
-
-
-%%  Mechanics
-%---------- Volume
-if ~isfield(Set,'lambdaV')
+%% ============================= Mechanics ================================
+%---------- Volume --------------------------------------------------------
+%  Energy -----> W_s= sum_cell lambdaV ((V-V0)/V0)^2
+if ~isfield(Set,'lambdaV')    %  Volume-Energy Constant (bulk modulus).
     Set.lambdaV=1;
 end 
-%---------- Surface
-% Set.SurfaceType=1 : Surface-Energy based on the whole Cell-area 
-% -         Set.A0eq0=true\false; 
-% -         Set.lambdaS=1>0;
+%---------- Surface -------------------------------------------------------
+% Set.SurfaceType=1 : Surface-Energy based on the whole Cell-area
+%        - Set.A0eq0=false --> W_s= sum_cell ((Ac-Ac0)/Ac0)^2  (Ac: Cell area)
+%        - Set.A0eq0=true  --> W_s= sum_cell (Ac/Ac0)^2
+%        - Set.lambdaS=1>0;
 
 % Set.SurfaceType=2 : Surface-Energy based on the Face-area  
-% -         Set.lambdaS=1>0;
-
-% Set.SurfaceType=3 : Surface-Energy based on the Triangle-area 
-% -         Set.lambdaS=1>0;
+% Energy --> W_s= lambdaS* sum_cell ((Af-Af0)/A0)^2  (Af: face area)
+%        - Set.lambdaS=1>0;
 
 % Set.SurfaceType=4 : Surface-Energy based on the whole cell area differential adhsion
-%         % - external         Set.lambdaS1=1>0; 
-%                                 - Set.LambdaS1CellFactor(:,2)=ones(Celln,1);
-%         % - Cell-Cell        Set.lambdaS2=.5>0;
-%                                 - Set.LambdaS2CellFactor(:,2)=ones(Celln,1);
-%         % - Cell-substrate   Set.lambdaS3=.5>0;
-%                                  - Set.LambdaS3CellFactor(:,2)=ones(Celln,1);
+%  Energy -->  W_s= sum_cell( sum_face (lambdaS*factor_f(Af)^2) / Ac0^2 )
+%          - Set.lambdaS1=1>0;    Tension coefficient for external faces
+%               - Set.LambdaS1CellFactor=[Cell_Number Factor];    
+%          - Set.lambdaS2=1>0;    Tension coefficient for Cell-Cell faces
+%               - Set.LambdaS2CellFactor=[Cell_Number Factor];
+%          - Set.lambdaS3=1>0;    Tension coefficient for Cell-substrate faces
+%               - Set.LambdaS3CellFactor=[Cell_Number Factor];
+
 if ~isfield(Set,'SurfaceType')
     Set.SurfaceType=1;
     Set.A0eq0=true; 
@@ -65,76 +87,185 @@ if ~isfield(Set,'LambdaS3CellFactor')
     Set.LambdaS3CellFactor=[];
 end 
 
-%---------- EnergyBarrier
-% Set.EnergyBarrier=true;
-% Set.lambdaB=5;
-% Set.Beta=1;  
-% WBexp =exp( lambdaB*  ( 1 - Set.Beta*At/At0 )  );   
-%  At0 is hard coded as (At0=1e-3) so,  WBexp =exp( lambdaB*  ( 1 - 1000*Set.Beta*At)  );
-if ~isfield(Set,'EnergyBarrier')
+%---------- EnergyBarrier -------------------------------------------------
+% Energy Barrier for small Triangles 
+% Potential --->  WBexp = exp( Set.lambdaB*( 1 - Set.Beta*At/Set.BarrierTri0 ) )  (At: triangle area)
+
+if ~isfield(Set,'EnergyBarrier') % Off/On
    Set.EnergyBarrier=true;
 end 
+
 if ~isfield(Set,'lambdaB')
      Set.lambdaB=5;
 end 
 if ~isfield(Set,'Beta')
-   Set.Beta=true;
+   Set.Beta=1;
 end 
 
-%--------- Bending
-if ~isfield(Set,'Bending')    
+if ~isfield(Set,'BarrierTri0')
+    Set.BarrierTri0=1e-3*Set.s;
+end 
+
+% Remark:  the value  of Set.BarrierTri0 is updated in Geo\InitializeGeometry3DVertex.m
+%          to Set.BarrierTri0=min(TriangleArea)/10;
+
+%--------- Bending --------------------------------------------------------
+%  Potential: -> Set.BendingAreaDependent=1 : Wb=(1/2) lambdaBend* sum_edges( 1-cos(theta/2)^2*(At1+At2)
+%             -> Set.BendingAreaDependent=0 : Wb=(1/2) lambdaBend* sum_edges( 1-cos(theta/2)^2
+%                       where  theta: the angle between the pair of triangles
+%                              At1 and At2 : the area of the triangles
+
+if ~isfield(Set,'Bending')    % Off/On
    Set.Bending=false;
 end
-if ~isfield(Set,'lambdaBend')
+if ~isfield(Set,'lambdaBend') 
      Set.lambdaBend=0.01;
 end
 if ~isfield(Set,'BendingAreaDependent')
     Set.BendingAreaDependent=true;
 end 
 
-%------- Viscosity
-if ~isfield(Set,'nu')
-    Set.nu=0.05;   % this is eta 
+
+%------- Viscosity --------------------------------------------------------
+if ~isfield(Set,'nu') % Viscosity coefficient
+    Set.nu=0.05;  
 end 
 
-%% Remodling 
-if ~isfield(Set,'RemodelTol')  
+%--------Propulsion -------------------------------------------------------
+% Add random propulsion forces acting on bottom vertices  
+if ~isfield(Set,'Propulsion') % Off/On
+    Set.Propulsion=false;    
+end 
+
+%-------- Confinement -----------------------------------------------------
+% Confinement is implemented as a change of  Set.lambdaS3 --> Set.lambdaS1
+% when ever the confined space is overpassed  
+if ~isfield(Set,'Confinement') % Off/On
+    Set.Confinement=false;   
+end  
+%     if Set.Confinement=true;
+%        The borders of confinement  
+%           -Set.ConfinementX1=-1;    
+%           -Set.ConfinementY1=-1;
+%           -Set.ConfinementX2=3;
+%           -Set.ConfinementY2=3;
+
+
+%-------- Set.LocalViscosity On Edges -------------------------------------
+% Local viscous effect based on the length of the edges between vertices
+% Potential: -> Set.BendingAreaDependent=1 : W=(1/2) nu_Local/dt sum( ((L-Ln)/Ln)^2 )
+%            -> Set.LocalViscosityOption=2 : W=(1/2) nu_Local/dt sum( (L-Ln)^2 )
+%                       where L: is the length at t_(n+1)
+%                             Ln:is the length at t_(n)
+%                             dt: time step
+if ~isfield(Set,'Set.LocalViscosityEdgeBased')
+    Set.LocalViscosityEdgeBased=false; 
+end 
+if ~isfield(Set,'nu_Local_EdgeBased')
+     Set.nu_Local_EdgeBased=0;
+end 
+if ~isfield(Set,'LocalViscosityOption')
+     Set.LocalViscosityOption=2;
+end 
+
+
+%-------- Set.LocalViscosity On Triangle ----------------------------------
+% Local viscous effect based on the Area of Triangles
+% Potential:  -> Set.LocalViscosityOption=1 -> W=(1/2) nu_Local/dt sum( ((At-Atn)/Atn)^2 )
+%             -> Set.LocalViscosityOption=2 -> W=(1/2) nu_Local/dt sum( ((At-Atn))^2 )
+%                     where At: is the Area of triangle at t_(n+1)
+%                           Atn: is the Area of triangle t_(n)
+if ~isfield(Set,'LocalViscosityTriangleBased')
+    Set.LocalViscosityTriangleBased=false; 
+end 
+if ~isfield(Set,'nu_Local_TriangleBased')
+     Set.nu_Local_TriangleBased=0;
+end 
+if ~isfield(Set,'LocalViscosityOption')
+     Set.LocalViscosityOption=2;
+end 
+
+
+%% ============================= Remodelling ================================
+if ~isfield(Set,'Remodelling')  % Off/On
+    Set.Remodelling=true;
+end 
+
+if ~isfield(Set,'RemodelTol')  % Remodelling Tolerance (Triangles with energy barrier > Set.RemodelTol, is to be remodelled)  
     Set.RemodelTol=.5e-6;
 end 
-if ~isfield(Set,'RemodelingFrequency')  
+
+if ~isfield(Set,'RemodelingFrequency')  % (The time between remodelling events)
     Set.RemodelingFrequency=2;
 end 
 
-%% Solution 
+% ---- Some settings to tune the mechanics of the Local-Problem (after topological transformation) 
+
+if ~isfield(Set,'lambdaV_LP')  % volume energy coefficient (Local-Problem )
+    Set.lambdaV_LP=Set.lambdaV;
+end
+if ~isfield(Set,'EnergyBarrier_LP') % Energy Barrier Off\On (Local-Problem )
+    Set.EnergyBarrier_LP=Set.EnergyBarrier;
+end
+if ~isfield(Set,'lambdaB_LP') % Energy Barrier coefficient (Local-Problem )
+    Set.lambdaB_LP=Set.lambdaB;
+end
+if ~isfield(Set,'Beta_LP')   % Energy Barrier coefficient (Local-Problem )
+    Set.Beta_LP=Set.Beta;
+end
+if ~isfield(Set,'Bending_LP')  % Bending Energy Off\On (Local-Problem )
+    Set.Bending_LP=Set.Bending;
+end
+if ~isfield(Set,'BendingAreaDependent_LP')  % Bending Energy Setting  (Local-Problem )
+    Set.BendingAreaDependent_LP=Set.BendingAreaDependent;
+end
+if ~isfield(Set,'lambdaBend_LP')   % Bending Energy coefficient  (Local-Problem )
+    Set.lambdaBend_LP=Set.lambdaBend;
+end
+if ~isfield(Set,'nu_LP_Inital')  % Initial Viscosity coefficient (Local-Problem )
+    Set.nu_LP_Inital=50*Set.nu;
+end 
+% Remark: While solving the local Problem, the convergence strategy (regularization with viscosity) is 
+% initiated from the first iteration by setting (Set.nu_LP_Inital>Set.nu) 
+% and then it is reduced progressively. The solution is considered to be 
+% converged only when the prescribed value of global viscosity is reached (Set.nu_LP_Inital=Set.nu) 
+
+%% ============================= Solution =================================
 % ------- Tolerance
-Set.tol=1e-10;
-% ------- Maximum iteration
-Set.MaxIter=30;
-Set.Parallel=false;
+if ~isfield(Set,'tol')       % Convergence Tolerance
+    Set.tol=1e-10;
+end 
+if ~isfield(Set,'MaxIter')   % Maximum Number of iteration
+    Set.MaxIter=200;
+end 
+if ~isfield(Set,'Parallel')  % 
+    Set.Parallel=false;
+end 
 
-%% Boundary Condition and loading setting 
+%% ============================= Boundary Condition and loading setting ===
 
+% ------------- Stretch test  (Input Sample)  -----------------------------
 % Set.BC=1;  %  Stretch
-%     -Set.VFixd=-.5;
-%     -Set.VPrescribed=2.5;
-%     -Set.dx=1;
-%     -Set.TStratBC=20;  %30  
-%     -Set.TStopBC=100;
-%     
+%     -Set.VFixd=-1.5;         % Vertices with y-coordinates > Set.VPrescribed are those to be prescribed (pulled)
+%     -Set.VPrescribed=1.5;    % Vertices with y-coordinates < Set.VFixed are those to be fixed
+%     -Set.dx=1;               % Total displacement of prescribed vertices 
+%     -Set.TStratBC=20;        % The time at which boundary conditions start to be applied    
+%     -Set.TStopBC=100;        % The time at which boundary conditions are removed    
+
+% ------------- Compression test  (Input Sample)  -------------------------
 % Set.BC=2;  %  Compression
-%        -Set.VFixd=0;
-%        -Set.dx=1;
-%        -Set.TStratBC=20;  %30  
-%        -Set.TStopBC=100;
+%        -Set.VFixd=-1;         % Vertices with y-coordinates > Set.VPrescribed are those to be prescribed (pulled)
+%        -Set.dx=1;             % Total displacement  
+%        -Set.TStratBC=20;      % The time at which boundary conditions start to be applied    
+%       -Set.TStopBC=100;       % The time at which boundary conditions are removed 
 
 % Set.BC =~ 1,2;  % Substrate
 
-
-
+% ------ Default setting ---------------------------------------------------
 if ~isfield(Set,'BC') && ~Set.Substrate
     Set.BC=1;
-    Set.VFixd=-.5;
-    Set.VPrescribed=2.5;
+    Set.VFixd=-1.5;
+    Set.VPrescribed=1.5;
     Set.dx=2;
     Set.TStartBC=20;  %30  
     Set.TStopBC=100;
@@ -142,6 +273,28 @@ elseif  Set.Substrate
     Set.BC=nan;
 end 
 
+
+%% ============================= PostProcessing ===========================
+
+if ~isfield(Set,'diary') % save log File   
+    Set.diary=true;
+end
+
+if ~isfield(Set,'VTK') % Vtk files for each time step
+    Set.VTK=true;
+end 
+if ~isfield(Set,'gVTK') % Vtk files of forces  (arrows) 
+    Set.gVTK=false;
+end 
+if ~isfield(Set,'VTK_iter') % vtk file for each iteration
+    Set.VTK_iter=false;
+end 
+if ~isfield(Set,'OutputFolder') % Name of output file
+   Set.OutputFolder='Result'; 
+end
+if ~isfield(Set,'SaveWorkspace') % Save Workspace at each time step
+    Set.SaveWorkspace=false;   
 end
        
 
+end 

@@ -273,7 +273,7 @@ while t<=tend
          EnergyV(i)=Energy.Ev;
          EnergyB(i)=Energy.EB;
          EnergyF(i)=Energy.Ef;
-         EnergyC(i)=Energy.Ec;
+         EnergyC(i)=Energy.Ec;5
          fprintf('STEP %i has converged in %i iterations.\n',Set.iIncr,Set.iter)
          PostProcessingV2(X,Y.DataOrdered,Cn,[],Cell,'ResultVTK',Set.iIncr,XgID)
          Yn=Y;

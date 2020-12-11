@@ -69,7 +69,7 @@ for i=1:ncell
             Ke=[ Kij -Kij;
                 -Kij  Kij];
             if Set.Sparse
-                [si,sj,sv,sk]= KeAssembleSparse(Ke,nY,si,sj,sv,sk);
+                [si,sj,sv,sk]= AssembleKSparse(Ke,nY,si,sj,sv,sk);
             else
                 K= AssembleK(K,Ke,nY);
             end
@@ -82,49 +82,3 @@ if Set.Sparse && nargout>1
     K=sparse(si(1:sk),sj(1:sk),sv(1:sk),dimg,dimg)+K;
 end
 end
-
-
-%%
-function K= KeAssemble(K,Ke,nY)
-
-% Assembles Jacobian of a bar of 2 vertices (3x3 components)
-dim=3;
-
-for I=1:length(nY) % loop on 3 vertices of triangle
-    idofg=(nY(I)-1)*dim+1:nY(I)*dim; % global dof
-    idofl=(I-1)*dim+1:I*dim;
-    for J=1:length(nY)
-        jdofg=(nY(J)-1)*dim+1:nY(J)*dim; % global dof
-        jdofl=(J-1)*dim+1:J*dim;
-        K(idofg,jdofg)=K(idofg,jdofg)+Ke(idofl,jdofl);
-    end
-end
-end
-
-
-%%
-function [si,sj,sv,sk]= KeAssembleSparse(Ke,nY,si,sj,sv,sk)
-
-% Assembles Jacobian of a bar of 2 vertices (6x6 components)
-dim=3;
-
-for I=1:length(nY) % loop on 2 vertices of triangle
-    idofg=(nY(I)-1)*dim+1:nY(I)*dim; % global dof
-    idofl=(I-1)*dim+1:I*dim;
-    for J=1:length(nY)
-        jdofg=(nY(J)-1)*dim+1:nY(J)*dim; % global dof
-        jdofl=(J-1)*dim+1:J*dim;
-        for d=1:dim
-            si(sk+1:sk+dim)=idofg;
-            sj(sk+1:sk+dim)=jdofg(d);
-            sv(sk+1:sk+dim)=Ke(idofl,jdofl(d));
-            sk=sk+dim;
-        end
-    end
-end
-
-end
-%%
-
-
-

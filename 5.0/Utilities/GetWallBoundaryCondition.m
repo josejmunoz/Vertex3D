@@ -1,11 +1,8 @@
 function [Dofs,Set]=GetWallBoundaryCondition(Set,Y,Cell,Faces)
 
 
-
-
-
 IDY=1:Y.n;
-IDS=1:Cell.SurfsCenters.n;
+IDS=1:Cell.FaceCentres.n;
 
 Set.WallPosition=Set.WallPosition-Set.dx/((Set.TStopBC-Set.TStartBC)/Set.dt);
 
@@ -22,14 +19,14 @@ Ydof([YdofC YdofP])=[];
 
 %% prescribed and constraint surface centers
 
-pIDS=IDS(Cell.SurfsCenters.DataRow(:,2)>=Set.WallPosition & Cell.SurfsCenters.NotEmpty);
-cIDS=IDS(Cell.SurfsCenters.DataRow(:,2)<Set.VFixd & Cell.SurfsCenters.NotEmpty);
-freeIDS=1:Cell.SurfsCenters.n;
+pIDS=IDS(Cell.FaceCentres.DataRow(:,2)>=Set.WallPosition & Cell.FaceCentres.NotEmpty);
+cIDS=IDS(Cell.FaceCentres.DataRow(:,2)<Set.VFixd & Cell.FaceCentres.NotEmpty);
+freeIDS=1:Cell.FaceCentres.n;
 SdofD=3.*(kron(freeIDS(Faces.V3(1:Faces.n)),[1 1 1])-1)+kron(ones(1,length(freeIDS(Faces.V3(1:Faces.n)))),[1 2 3]);
 freeIDS(ismember(freeIDS,[pIDS cIDS]))=[];
 SdofC=3.*(kron(cIDS,[1 1 1])-1)+kron(ones(1,length(cIDS)),[1 2 3]);
 SdofP=3.*(kron(pIDS,1)-1)+kron(ones(1,length(pIDS)),2);
-Sdof=1:Cell.SurfsCenters.n*3;
+Sdof=1:Cell.FaceCentres.n*3;
 Sdof(unique([SdofC SdofP SdofD]))=[];
 freeIDS(ismember(freeIDS,[pIDS cIDS]))=[];
 

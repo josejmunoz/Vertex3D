@@ -75,7 +75,7 @@ while t<=tend
     % Where this could be run?
     if Set.Ablation == true && Set.TAblation <= t
         Cell = Cell.AblateCells(cellsToAblate);
-        XgID = [XgID, cellsToAblate];
+        XgID = [XgID; cellsToAblate];
         Faces=Faces.CheckInteriorFaces(XgID);
         [Cell,Faces,nC,SCn,flag32] = ReBuildCells(Cell,T,Y,X,Faces,SCn);
         Set.Ablation = false;
@@ -208,11 +208,11 @@ while t<=tend
         EnergyV(i)=Energy.Ev;
         EnergyB(i)=Energy.EB;
         EnergyF(i)=Energy.Ef;
-        EnergyC(i)=Energy.Ec;
+        if Set.Contractility,    EnergyC(i)=Energy.Ec; end 
         if Set.VTK, PostProcessingVTK(X,Y,T.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end
         Yn=Y;
         SCn=Cell.FaceCentres;
-        [Cell]=ComputeLengths(Cell,Y);
+        Cell = Cell.computeEdgeLengths(Y);
         for ii=1:Cell.n
             Cell.SAreaTrin{ii}=Cell.SAreaTri{ii};
             Cell.EdgeLengthsn{ii}=Cell.EdgeLengths{ii};

@@ -1,147 +1,226 @@
 classdef CellClass
-   %% cell clas
+    %% Cell class
     properties
-     X  
-     Type                  %% 1 --> ag 2 ---> mono
-     Ext                   %% (array-structure)IDs of extenal Cells  
-     Int                   %% (array-structure)IDs of internal Cells 
-     Tris                  %% (cell-structure) of matrices [ntris 3] with Triangles defining cell surfaces [surface-center v1 v1].
-     cTet                  %% (cell-structure) of matrices [ntet 4]  with tetrahedrons connected to node i.         
-     cTetID                %% (cell-structure) of arrays [ntet 1]    with IDs of the connected tetrahedrons. 
-     cTri                  %% (cell-structure) of matrices [nTri 3]  with Tringels connected to node i.         
-     cTriID                %% (cell-structure) of arrays [nTri 1]   with IDs of the connected tringles.
-     cNodes                %% (cell-structure) of arrays [ntet 1]   with IDs of the connected nodes. 
-     Cv                    %% (cell-structure) of matrices [nBars 2].
-     CvID                  %% (cell-structure) of arrays [nBars 1] with IDs of cellular-bars.
-     SurfsCenters          %% (matrix-structure) [nSurfaces 3] coordinate of surface centers.
-%      CellSurfsCentersID  %% (cell-structure) of arrays  [nCellularSurfaces 1] IDs of surface-centers.
-     nTotalTris            %% (scalar) total number of surfaces-triangles 
-     n                     %% (scalar) number of cells 
-     Vol                   %% (array-structure) [nCells 1] the volume of cells 
-     Vol0                  %% (array-structure) [nCells 1] the volume of cells 
-     SArea                 %% (array-structure) [nCells 1] the Surface Area of cells 
-     SArea0                %% (array-structure) [nCells 1] the initial the Surface Area of cells 
-     Surfaces              %% (cell-structure) {nCells 1} of cell-structure of arrays 
-%                             .nSurfaces scaler  number of Surfaces; 
-%                             .SurfaceCentersID  array [nCellularSurfaces 1] IDs of surface-centers. 
-%                             .SurfaceVertices (cell-structure) of arrays  [nSurf-vertices 1] IDs of surface-vertices. 
-     SAreaTri                 %% (array-structure) [nCells 1] 
-     SAreaTri0                %% (array-structure) [nCells 1] 
-     SAreaFace            %%  (array-structure) [nCells 1] 
-     SAreaFace0           %%  (array-structure) [nCells 1] 
-     AssembleAll            %%  logical 
-     AssembleNodes          %%  (array-structure) list f node which correspond to the cell-center of the cells to be assmbled 
-                            % it has no effect if (AssembleAll = true)
-     Edges
-     
-     EdgeLengths         %% (cell-structure) of array [nEdgesPerSurface 1] with the length of all the edges of each cell surface triangulation (Cv).
-     EdgeLengths0         %% (cell-structure) of array [nEdgesPerSurface 1] with the length of all the edges of each cell surface triangulation (Cv).
+        Int           % - Cell nodes (array-structure ,  Size={1 NumCells}):
+        %       IDs of internal nodes (Cell centres)
+        %---------------------------------------------------------------------
+        Tris                  % -Cell-surface Triangulation (Type=cell-structure ,  Size={NumCells 1})
+        %     Each cell is an array of size [ntris 3] with triangles defining cell surfaces.
+        %     e.g. Cell.Tris{1}(2,:)=[v1 v2 v3] -> such that v1, v2 and v3 are the vertices which
+        %     defines Triangle (2) of  Cell (1).
+        %     Remark:- v1 and v2 always correspond to vertices (their position can be found as Y.DataRow([v1 v2],:))
+        %            - v3 >0 correspond to a face-centre  (its position can be found as Cell.FaceCentres.DataRow(v3,:))
+        %            - v3 <0 correspond to a vertex (its position can be found as Y.DataRow(abs(v3),:))
+        %--------------------------------------------------------------------
+        cTet                  % -Connected tetrahedrons (Type=cell-structure ,  Size={NumCells 1}):
+        %     Each cell (Cell.cTet{i}) is an array of size [ntet 4] with nodal tetrahedrons connected to the node of Cell i.
+        %--------------------------------------------------------------------
+        cTetID                %% -Connected tetrahedrons IDs (Type=cell-structure ,  Size={NumCells 1}):
+        %     Each cell (Cell.cTetID{i}) is an array of size [1 ntet] with IDs of nodal tetrahedrons connected to the node of Cell i.
+        %    (IDs-> their index in T).
+        %--------------------------------------------------------------------
+        cNodes                % -Connected Nodes (Type=cell-structure ,  Size={NumCells 1}):
+        %  Each cell (Cell.cNodes{i})is an array of size [1 nNodes] with IDs of nodes connected to the node of Cell i.
+        %--------------------------------------------------------------------
+        Cv                    % -Edges (connectivity of vertices) (Type=cell-structure ,  Size={NumCells 1}):
+        %    Each cell (Cell.Cv{i})is an array of size [nEdges 2] with all the edges between each two vertices of Cell i .
+        %     e.g. Cell.Cv{1}(2,:)=[v1 v2] -> such that v1 and v2 are the vertices that correspond to edge (2) of  Cell (1).
+        %     Remark:- v1 always correspond to a vertex   (its position can be found as Y.DataRow(v1,:))
+        %            - v2 >0  also correspond to a vertex (its position can be found as Y.DataRow(v2,:))
+        %            - v2 <0  correspond to a face-centre  (its position can be found as Cell.FaceCentres.DataRow(abs(v2),:))
+        %--------------------------------------------------------------------
+        CvID                 % -The IDs of edges (connectivity of vertices) (Type=cell-structure ,  Size={NumCells 1}):
+        %                        Each cell (Cell.CvID{i})is an array of size [nEdges 1] with the IDs of edges between each two vertices of Cell i
+        %--------------------------------------------------------------------
+        EdgeLengths              % -The length of Edges at the previous time-step (Type=cell-structure ,  Size={NumCells 1}):
+        %                                 Each cell (Cell.EdgeLengths{i})is an array of size [nEdges 1] with the length of the edges between each two vertices.
+        %--------------------------------------------------------------------
+        EdgeLengthsn              % -The length of Edges at the previous time-step  (Type=cell-structure ,  Size={NumCells 1}):
+        %                            Each cell (Cell.EdgeLengthn{i})is an array of size [nEdges 1] with the length of the edges between each two vertices.
+        %--------------------------------------------------------------------
+        EdgeLengths0         % -The Initial\reference length of Edges at the  (Type=cell-structure ,  Size={NumCells 1}):
+        %                            Each cell (Cell.EdgeLengths0{i})is an array of size [nEdges 1] with the length of the edges between each two vertices.
+        
+        %--------------------------------------------------------------------
+        FaceCentres          %% -Face centres  (Type=array-structure ,  Size={1 NumFaces}):
+        % the x-y-z coordinates of face centres
+        %--------------------------------------------------------------------
+        nTotalTris           %% - Total number of triangles (Type=scalar)
+        %--------------------------------------------------------------------
+        n                    %% - Total number of Cells (Type=scalar)
+        %--------------------------------------------------------------------
+        Vol                  %% - Volume of Cells                   (Type=array-structure ,  Size=[NumCells1 ]):
+        %--------------------------------------------------------------------
+        Vol0                 %% - Initial\reference volume of Cells (Type=array-structure ,  Size=[NumCells1 ]):
+        %--------------------------------------------------------------------
+        SArea                %% - Surface area of Cells             (Type=array-structure ,  Size=[NumCells1 ]):
+        %--------------------------------------------------------------------
+        SArea0               %% - Initial\reference area of Cells   (Type=array-structure ,  Size=[NumCells1 ]):
+        %--------------------------------------------------------------------
+        Faces                %% - Cell Faces (Type=cell-structure ,  Size={NumCells 1}):
+        %     - Cell.Faces{i}.nFaces          -> number of faces of Cell i            (Type=scalar)
+        %     - Cell.Faces{i}.FaceCentresID   -> The IDs of faces of Cell i           (Type=array-structure, Size=[Cell{i}.nFaces 1])
+        %     - Cell.Faces{i}.Vertices        -> The vertices of each face of Cell i  (Type=cell-structure, Size={Cell{i}.nFaces 1})
+        %           (e.g. Cell.Faces{i}.Vertices{j} --> is an array the list the vertices of Face j of Cell i )
+        %     - Cell.Faces{i}.Tris            -> The vertex-triangles of each face of Cell i  (Type=cell-structure, Size={Cell{i}.nFaces 1})
+        %           (e.g. Cell.Faces{i}.Tris{j}(k,:)=[v1 v2 v3] --> v1, v2 and v3 are the vertices of triangle k of Face j of Fell k)
+        %            Remark:- v1 and v2 always correspond to vertices (their position can be found as Y.DataRow([v1 v2],:))
+        %                   - v3 >0 correspond to a face-centre  (its position can be found as Cell.Face Centres .DataRow(v3,:))
+        %                   - v3 <0 correspond to a vertex (its position can be found as Y.DataRow(abs(v3),:))
+        %--------------------------------------------------------------------
+        SAreaTri              % - The area of Surfaces triangles  (Type=cell-structure ,  Size={NumCells 1}):
+        %        Each cell (Cell.SAreaTri{i})is an array with the area of the triangles of Cell i.
+        %--------------------------------------------------------------------
+        SAreaTrin             % - The area of Surfaces triangles at the previous time-step (Type=cell-structure ,  Size={NumCells 1}):
+        %        Each cell (Cell.SAreaTrin{i})is an array with the area of the triangles of Cell i at the previous time-step.
+        %--------------------------------------------------------------------
+        SAreaFace             % - The area of Faces  (Type=cell-structure ,  Size={NumCells 1}):
+        %        Each cell (Cell.SAreaFace{i})is an array with the area of the all faces of Cell i.
+        %--------------------------------------------------------------------
+        SAreaFace0            % - The Initial\reference area of Faces  (Type=cell-structure ,  Size={NumCells 1}):
+        %        Each cell (Cell.SAreaFaceo{i})is an array with the initial\reference area of the all faces of Cell i.
+        %--------------------------------------------------------------------
+        AssembleAll           % - Assembly condition  (logical)
+        %       - Cell.AssembleAll = true  --> The contribution of all Cells is assembled in K and g
+        %       - Cell.AssembleAll = false --> Only the contribution of Cell.Assemble is to be assembled in K and g
+        %--------------------------------------------------------------------
+        AssembleNodes         % - The nodes\cell centres of cells to be assembles in K and g. (Type=cell-structure)
+        %--------------------------------------------------------------------
+        RemodelledVertices    % - The new vertices which have just been remodelled (those to be assembled in the local problem)
+        %--------------------------------------------------------------------
+        Edges                 % Edges (Type=cell-structure ,  Size={NumCells 1}):
+        %    Each cell (Cell.Edges{i})is an array of size [nEdges 4] with each row corresponds to an edge  all the edges between each two vertices.
+        %    (e.g. Cell.Edges{i}(j,:)=[v1 v2 v3 v4] --> v1, v2, v3 and v4 are the two vertices of edge
+        %      (j) besides the two vertices of the triangles that share edge (j))
+        %     Remark:- v1,v2,v3 and v4 <=Y.n  correspond to a vertex         (its position can be found as Y.DataRow(v1,:))
+        %            - v1,v2,v3 and v4 >Y.n   correspond to a face-centre    (its position can be found as Cell.FaceCentres.DataRow(v1-T.n,:))
+        
     end
-   methods
-      function Cell = CellClass(X,nC,xInternal,xExternal)
-         if nargin > 0 
-            Cell.X = X;
-            Cell.Ext=xExternal;
-            Cell.Int=xInternal;
-            Cell.Tris=cell(nC,1);
-            Cell.Type=zeros(nC,1);
-            Cell.cTet=cell(nC,1);
-            Cell.cTetID=cell(nC,1);
-            Cell.cTri=cell(nC,1);
-            Cell.cTriID=cell(nC,1);
-            Cell.cNodes=cell(nC,1);
-            Cell.Cv=cell(nC,1);
-            Cell.CvID=cell(nC,1);
-            Cell.n=length(xInternal);
-            Cell.Vol=zeros(Cell.n,1);
-            Cell.Vol0=zeros(Cell.n,1);
-            Cell.SArea=zeros(Cell.n,1);
-            Cell.SArea0=zeros(Cell.n,1);
-            Cell.SAreaTri=cell(Cell.n,1);
-            Cell.SAreaTri0=cell(Cell.n,1);
-            Cell.SAreaFace=cell(Cell.n,1);
-            Cell.SAreaFace0=cell(Cell.n,1);
-            Cell.Surfaces=cell(nC,1);
-            Cell.AssembleAll=true;
-            Cell.AssembleNodes=[];
-            Cell.Edges=cell(nC,1);
+    methods
+        function Cell = CellClass(nC,xInternal)
+            if nargin > 0
+                Cell.Int=xInternal;
+                Cell.Tris=cell(nC,1);
+                Cell.cTet=cell(nC,1);
+                Cell.cTetID=cell(nC,1);
+                Cell.cNodes=cell(nC,1);
+                Cell.Cv=cell(nC,1);
+                Cell.CvID=cell(nC,1);
+                Cell.n=length(xInternal);
+                Cell.Vol=zeros(Cell.n,1);
+                Cell.Vol0=zeros(Cell.n,1);
+                Cell.SArea=zeros(Cell.n,1);
+                Cell.SArea0=zeros(Cell.n,1);
+                Cell.SAreaTri=cell(Cell.n,1);
+                Cell.SAreaTrin=cell(Cell.n,1);
+                Cell.SAreaFace=cell(Cell.n,1);
+                Cell.SAreaFace0=cell(Cell.n,1);
+                Cell.Faces=cell(nC,1);
+                Cell.AssembleAll=true;
+                Cell.AssembleNodes=[];
+                Cell.RemodelledVertices=[];
+                Cell.Edges=cell(nC,1);
+                Cell.EdgeLengths=cell(nC,1);
+                Cell.EdgeLengths0=cell(nC,1);
+                Cell.EdgeLengthsn=cell(nC,1);
+            end
+        end
+        
+        %% Ablate cells
+        % We assume there will only be one ablation. Thus, we could remove
+        % the IDs from the middle.
+        % TODO: Check if Cell.Int need to be in order in consecutive numbers
+        function Cell = AblateCells(obj, cellsToRemove)
+            obj.Int(cellsToRemove) = [];
+            
+            %Consequences:
+            %cell structures
+            obj.Tris(cellsToRemove) = [];
+            obj.cTet(cellsToRemove) = [];
+            obj.cTetID(cellsToRemove) = [];
+            obj.cNodes(cellsToRemove) = [];
+            obj.Cv(cellsToRemove) = [];
+            obj.CvID(cellsToRemove) = [];
+            
+            %Update info of the cells
+            obj.Vol(cellsToRemove) = [];
+            obj.Vol0(cellsToRemove) = [];
+            obj.SArea(cellsToRemove) = [];
+            obj.SArea0(cellsToRemove) = [];
+            
+            % Update info of the cells, with cell structure
+            obj.SAreaTri(cellsToRemove) = [];
+            obj.SAreaTrin(cellsToRemove) = [];
+            obj.SAreaFace(cellsToRemove) = [];
+            obj.SAreaFace0(cellsToRemove) = [];
+            obj.Faces(cellsToRemove) = [];
+            obj.Edges(cellsToRemove) = [];
+            obj.Edges(cellsToRemove) = [];
+            obj.EdgeLengths(cellsToRemove) = [];
+            obj.EdgeLengthsn(cellsToRemove) = [];
+            obj.EdgeLengths0(cellsToRemove) = [];
 
-         end
-      end
-      
-      %% Ablate cells
-      % We assume there will only be one ablation. Thus, we could remove
-      % the IDs from the middle.
-      % TODO: Check if Cell.Int need to be in order in consecutive numbers
-      function Cell = AblateCells(obj, cellsToRemove)
-          obj.Int(cellsToRemove) = [];
-          obj.Ext = [obj.Ext cellsToRemove];
-          
-          %Consequences:
-          obj.Type(cellsToRemove) = [];
-          %cell structures
-          obj.Tris(cellsToRemove) = [];
-          obj.cTet(cellsToRemove) = [];
-          obj.cTri(cellsToRemove) = [];
-          obj.cTetID(cellsToRemove) = [];
-          obj.cTriID(cellsToRemove) = [];
-          obj.cNodes(cellsToRemove) = [];
-          obj.Cv(cellsToRemove) = [];
-          obj.CvID(cellsToRemove) = [];
-          
-          %Update info of the cells
-          obj.Vol(cellsToRemove) = [];
-          obj.Vol0(cellsToRemove) = [];
-          obj.SArea(cellsToRemove) = [];
-          obj.SArea0(cellsToRemove) = [];
-          
-          % Update info of the cells, with cell structure
-          obj.SAreaTri(cellsToRemove) = [];
-          obj.SAreaTri0(cellsToRemove) = [];
-          obj.SAreaFace(cellsToRemove) = [];
-          obj.SAreaFace0(cellsToRemove) = [];
-          obj.Surfaces(cellsToRemove) = [];
-          obj.Edges(cellsToRemove) = [];
-          
-          obj.n = obj.n - length(cellsToRemove);
-          obj.nTotalTris = sum(cellfun(@(X) size(X,1), obj.Tris));
-          
-          %Return
-          Cell = obj;
-      end
-      
-      %% Compute the length of the segments between vertices Xs
-      function Cell = computeEdgeLengths(obj, Y)
-          
-          obj.EdgeLengths = cell(obj.n, 1);
-          % Run through all the cells
-          for numCell = 1:obj.n
-              if ~obj.AssembleAll
-                  if ~ismember(obj.Int(numCell),obj.AssembleNodes)
-                      continue
-                  end
-              end
-              
-              % Cv are the verteces of a cell including vertices-cell
-              % centres
-              trianglesOfSurfaces = obj.Cv{numCell};
-              
-              
-              edgesOfCell = zeros(size(trianglesOfSurfaces,1), 3);
-              
-              % Loop over Cell-face-triangles
-              for currentTriangle = 1:size(trianglesOfSurfaces,1)
-                  [edgeLenghts] = pdist(Y.DataRow(trianglesOfSurfaces(currentTriangle, [1 2]), :), 'euclidean');
-                  edgesOfCell(currentTriangle, 1:3) = [edgeLenghts(1), sort(trianglesOfSurfaces(currentTriangle, [1 2]))];
-              end
-              
-              %Get only unique values of edges (some edges are shared by
-              %different surfaces)
-              obj.EdgeLengths{numCell} = unique(edgesOfCell, 'rows', 'stable');
-          end
-          
-          %Return
-          Cell = obj;
-      end
-   end
+            
+            
+            obj.n = obj.n - length(cellsToRemove);
+            obj.nTotalTris = sum(cellfun(@(X) size(X,1), obj.Tris));
+            
+            %Return
+            Cell = obj;
+        end
+        
+        %% Compute the length of the segments between vertices Xs
+        function obj = computeEdgeLengths(obj, Y)
+            % ============ Note: Pablo's version (Not sure if it works, I will add mine, since I have already test it)
+            %           obj.EdgeLengths = cell(obj.n, 1);
+            %           % Run through all the cells
+            %           for numCell = 1:obj.n
+            %               if ~obj.AssembleAll
+            %                   if ~ismember(obj.Int(numCell),obj.AssembleNodes)
+            %                       continue
+            %                   end
+            %               end
+            %
+            %               % Cv are the verteces of a cell including vertices-cell
+            %               % centres
+            %               trianglesOfSurfaces = obj.Cv{numCell};
+            %
+            %
+            %               edgesOfCell = zeros(size(trianglesOfSurfaces,1), 3);
+            %
+            %               % Loop over Cell-face-triangles
+            %               for currentTriangle = 1:size(trianglesOfSurfaces,1)
+            %                   [edgeLenghts] = pdist(Y.DataRow(trianglesOfSurfaces(currentTriangle, [1 2]), :), 'euclidean');
+            %                   edgesOfCell(currentTriangle, 1:3) = [edgeLenghts(1), sort(trianglesOfSurfaces(currentTriangle, [1 2]))];
+            %               end
+            %
+            %               %Get only unique values of edges (some edges are shared by
+            %               %different surfaces)
+            %               obj.EdgeLengths{numCell} = unique(edgesOfCell, 'rows', 'stable');
+            %           end
+            %           %Return
+            %           Cell = obj;
+            %===================================================================
+            %======================Malik's version =============================
+            % loop on cells
+            for numCele=1:obj.n
+                obj.EdgeLengths{numCele}=zeros(size(obj.Cv{numCele},1),1);
+                % loop on edges
+                for e=1:size(obj.Cv{numCele},1)
+                    %                Cv(1,:) ---- >always vertex
+                    Y1=Y.DataRow(obj.Cv{numCele}(e,1),:);
+                    if  obj.Cv{numCele}(e,2) > 0
+                        %                    Cv(2,:)>0 ---- > is vertex
+                        Y2=Y.DataRow(obj.Cv{numCele}(e,2),:);
+                    else
+                        %                    Cv(2,:)<0 ---- > is face center
+                        Y2=obj.FaceCentres.DataRow(abs(obj.Cv{numCele}(e,2)),:);
+                    end
+                    % Compute Length
+                    obj.EdgeLengths{numCele}(e)=norm(Y1-Y2);
+                end
+            end
+            %===================================================================
+        end
+    end
 end

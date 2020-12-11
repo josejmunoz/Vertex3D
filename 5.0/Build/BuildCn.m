@@ -1,23 +1,16 @@
-function [Cn]=BuildCn(Twg,XgID)
+function [Cn]=BuildCn(T)
+%% Building the matrix Cn (Nodal connectivity), bars from tetrahedrons
 
-
-Cn=zeros(size(Twg,1)*8,2);
-    k=0;
-    
-%% bars  from tetrahedrons
-for i=1:size(Twg,1)
-    if abs(sum(ismember(Twg(i,:),XgID))-4)>eps
-     Cn(k+1:k+6,:)=[Twg(i,1) Twg(i,2);
-                    Twg(i,1) Twg(i,3);
-                    Twg(i,1) Twg(i,4);
-                    Twg(i,2) Twg(i,3);
-                    Twg(i,2) Twg(i,4);
-                    Twg(i,3) Twg(i,4)];
+Cn=zeros(size(T,1)*8,2);
+k=0;
+for i=1:size(T,1)
+     Cn(k+1:k+6,:)=[T(i,1) T(i,2);
+                    T(i,1) T(i,3);
+                    T(i,1) T(i,4);
+                    T(i,2) T(i,3);
+                    T(i,2) T(i,4);
+                    T(i,3) T(i,4)];
     k=k+6;
-    
-    end 
 end
-
- Cn(k+1:end,:)=[];
-
+Cn(k+1:end,:)=[];
 end 

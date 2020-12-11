@@ -192,7 +192,6 @@ Cell.FaceCentres=Cell.FaceCentres.Add(aux);
 [Cell]=BuildEdges(Cell,Y);
 %% Compute Cells volume 
 [Cell]=ComputeCellVolume(Cell,Y);
-[Cell]=ComputeLengths(Cell,Y);
 Cell.Vol0=Cell.Vol;
 Cell.SArea0=Cell.SArea;
 for i=1:Cell.n

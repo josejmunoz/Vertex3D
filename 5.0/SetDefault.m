@@ -277,11 +277,11 @@ end
 %% ============================= PostProcessing ===========================
 
 if ~isfield(Set,'diary') % save log File   
-    Set.diary=true;
+    Set.diary=false;
 end
 
 if ~isfield(Set,'VTK') % Vtk files for each time step
-    Set.VTK=true;
+    Set.VTK=false;
 end 
 if ~isfield(Set,'gVTK') % Vtk files of forces  (arrows) 
     Set.gVTK=false;

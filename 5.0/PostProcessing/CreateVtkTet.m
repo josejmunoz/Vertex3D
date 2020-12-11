@@ -9,14 +9,15 @@ function CreateVtkTet(X,T,NameFile,Index)
 % str0='VTKResults';
 str0=NameFile;                          % First Name of the file 
 str2='.vtk';                            % extension
-str3=Index;
+str3=num2str(Index);
+R=pwd;
 newSubFolder = strcat(pwd,Esc,str0);    % make folder 
 if ~exist(newSubFolder, 'dir')
     mkdir(newSubFolder);
 end
 cd(newSubFolder);        % go to the new folder 
 % Write non-ablated rod elements
-nameout=strcat(str0,'Tet',str3,str2);   % full name of the file 
+nameout=strcat('Nodal tetrahedron',str3,str2);   % full name of the file 
 file=fopen(nameout,'w');
 fprintf(file,'%s\n','# vtk DataFile Version 3.98');
 fprintf(file,'%s\n','Delaunay_vtk');
@@ -35,6 +36,7 @@ for i=1:nodes
     end
 end
 
+
 %% ------- Write connectivity ---------------------------------------------
 nT1=size(T,1);
 nT2=size(T,2);
@@ -44,6 +46,7 @@ TT=T-1;
 for j=1:nT1
     fprintf(file,'%d %d %d %d %d\n',nT2,TT(j,1),TT(j,2),TT(j,3),TT(j,4));
 end
+
 fprintf(file,'%s %d\n','CELL_TYPES',nT1);
 for j=1:nT1
     fprintf(file,'%d\n',10);
@@ -51,16 +54,18 @@ end
 
 
 
-% ADD RELATIVE VOLUME CHANGE
+% ADD VOLUME
 fprintf(file,'%s %d \n','CELL_DATA',nT1);
-fprintf(file,'%s \n','SCALARS TriColors double');
+fprintf(file,'%s \n','SCALARS TetVol double');
 fprintf(file,'%s \n','LOOKUP_TABLE default');
-%
 
 for j=1:nT1
-    fprintf(file,'%f\n',rand(1));
+    D=[X(T(j,2),:)-X(T(j,1),:);
+       X(T(j,3),:)-X(T(j,1),:);
+       X(T(j,4),:)-X(T(j,1),:)];
+    fprintf(file,'%f\n',det(D));
 end
 
 
 fclose(file);
-cd '..'
+cd(R)

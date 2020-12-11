@@ -3,6 +3,7 @@ function InitVtk(file)
 % INPUT:
 % REMARK:
 % str0='VTKResults'; % Nodal
+R=pwd;
 newSubFolder = strcat(pwd,Esc,file);
 if ~exist(newSubFolder, 'dir')
     mkdir(newSubFolder);
@@ -10,4 +11,4 @@ end
 cd(newSubFolder);
 fclose('all');
 delete *.vtk
-cd '..'
+cd(R)

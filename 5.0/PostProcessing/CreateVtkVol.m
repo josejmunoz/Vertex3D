@@ -4,13 +4,14 @@ function CreateVtkVol(Y,Cell,X,NameFile,TimeStep)
 str0=NameFile;                          % First Name of the file 
 str2='.vtk';                            % extension
 str1=num2str(TimeStep);
+R=pwd;
 newSubFolder = strcat(pwd,Esc,str0);    % make folder 
 if ~exist(newSubFolder, 'dir')
     mkdir(newSubFolder);
 end
 cd(newSubFolder);        % go to the new folder 
 % Write non-ablated rod elements
-nameout=strcat(str0,'Vol',str1,str2);   % full name of the file 
+nameout=strcat('Cells',str1,str2);   % full name of the file 
 file=fopen(nameout,'w');
 fprintf(file,'%s\n','# vtk DataFile Version 3.98');
 fprintf(file,'%s\n','Delaunay_vtk');
@@ -19,14 +20,14 @@ fprintf(file,'%s\n','DATASET UNSTRUCTURED_GRID');
 
 
 nVert=size(Y,1);
-nSurfCenters=Cell.SurfsCenters.n;
-nodes=nVert+nSurfCenters;
+nFaceCentres=Cell.FaceCentres.n;
+nodes=nVert+nFaceCentres;
 fprintf(file,'%s %d %s\n','POINTS',nodes,'float');
 for i=1:nVert
     fprintf(file,' %f %f %f\n',Y(i,1),Y(i,2),Y(i,3));
 end
-for i=1:nSurfCenters
-    fprintf(file,' %f %f %f\n',Cell.SurfsCenters.DataRow(i,:));
+for i=1:nFaceCentres
+    fprintf(file,' %f %f %f\n',Cell.FaceCentres.DataRow(i,:));
 end
 nTries=Cell.nTotalTris;
 ncell=Cell.n;
@@ -96,9 +97,9 @@ for i=1:ncell
 %     ntri=ones(size(Cell.Tris{i},1),1);     %%% Malik Added
 %     Cell.Vol(i)=Cell.Vol(i)+color(i);
 
-         fprintf(file,'%f\n', (Cell.SAreaTri{i}(t)-Cell.SAreaTri0{i}(t))/Cell.SAreaTri0{i}(t));
+         fprintf(file,'%f\n', (Cell.SAreaTri{i}(t)-Cell.SAreaTrin{i}(t))/Cell.SAreaTrin{i}(t));
     end 
 end
 
 fclose(file);
-cd '..'
+cd(R)

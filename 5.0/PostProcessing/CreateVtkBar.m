@@ -11,13 +11,14 @@ str0=NameFile;                          % First Name of the file
 str4='.vtk';                            % extension
 str3=num2str(TimeStep);                
 str2=Type;
+R=pwd;
 newSubFolder = strcat(pwd,Esc,str0);    % make folder 
 if ~exist(newSubFolder, 'dir')
     mkdir(newSubFolder);
 end
 cd(newSubFolder);        % go to the new folder 
 % Write non-ablated rod elements
-nameout=strcat(str0,'C',str2,str3,str4);   % full name of the file 
+nameout=strcat('Nodal_Connectivity',str2,str3,str4);   % full name of the file 
 file=fopen(nameout,'w');
 fprintf(file,'%s\n','# vtk DataFile Version 3.98');
 fprintf(file,'%s\n','Delaunay_vtk');
@@ -61,4 +62,4 @@ end
 
 
 fclose(file);
-cd '..'
+cd(R)

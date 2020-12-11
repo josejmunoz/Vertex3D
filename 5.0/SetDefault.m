@@ -281,7 +281,7 @@ if ~isfield(Set,'diary') % save log File
 end
 
 if ~isfield(Set,'VTK') % Vtk files for each time step
-    Set.VTK=false;
+    Set.VTK=true;
 end 
 if ~isfield(Set,'gVTK') % Vtk files of forces  (arrows) 
     Set.gVTK=false;
@@ -295,6 +295,9 @@ end
 if ~isfield(Set,'SaveWorkspace') % Save Workspace at each time step
     Set.SaveWorkspace=false;   
 end
+if ~isfield(Set,'SaveSetting')
+    Set.SaveSetting=false;
+end 
        
 
 end 

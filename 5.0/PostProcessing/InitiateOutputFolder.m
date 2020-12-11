@@ -50,7 +50,9 @@ end
 if Set.diary
     diary LogFile.out
 end 
-save('Set','Set')
+if Set.SaveSetting
+    save('Set','Set')
+end 
 cd '..'
 
 end 

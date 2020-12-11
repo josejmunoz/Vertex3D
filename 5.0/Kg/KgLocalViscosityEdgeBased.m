@@ -30,7 +30,7 @@ EnergyBar=0;
 
 
 %% Loop over Cells
-%     % Analytical residual g and Jacobian K
+%   % Analytical residual g and Jacobian K
 for i=1:ncell
     if ~Cell.AssembleAll
         if ~ismember(Cell.Int(i),Cell.AssembleNodes)
@@ -38,7 +38,8 @@ for i=1:ncell
         end
     end
     nu=Set.nu_Local_EdgeBased/Set.dt;
-    for e=1:length(Cell.Ln{i})
+%     Loop on cell edges
+    for e=1:length(Cell.Cv{i},1)
         nY=Cell.Cv{i}(e,:);
         Y1=Y.DataRow(nY(1),:);
         if  nY(2) > 0
@@ -48,17 +49,24 @@ for i=1:ncell
             nY(2)=abs(nY(2))+Set.NumMainV;
         end
         
-        Ln=Cell.Ln{i}(e);
+        Ln=Cell.EdgeLengthsn{i}(e);
         L=norm(Y1-Y2);
         eij=(Y1'-Y2')./L;
         
+%       The residual of single element
+%             ge=[dW_e/dY1;
+%                 dW_e/dY2]        
         if Set.LocalViscosityOption ==1
-            ge=(nu/Ln)* ((L-Ln)/Ln) * [eij ; -eij];
+            ge=(nu/Ln)* ((L-Ln)/Ln) * [eij ; -eij];    
         elseif Set.LocalViscosityOption ==2
             ge=nu* (L-Ln) * [eij ; -eij];
         end
         g=Assembleg(g,ge,nY);
+        
         if nargout>1
+%             The Jacobian of single element
+%             Ke=[dW_e^2/dY1dY1 dW_e^2/dY1dY2;
+%                 dW_e^2/dY2dY1 dW_e^2/dY2dY2];
             if Set.LocalViscosityOption ==1
                 Kij= (nu/Ln)* ((L-Ln)/Ln) * (1/L) * ( eye(3) - eij*eij')...
                     + (nu/Ln^2) * (eij*eij');

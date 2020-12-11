@@ -48,3 +48,13 @@ Set.BC=2;  %  Compression
 %% Contractility
 Set.Contractility = true;
 Set.cContractility = 0.3;
+
+
+
+%%
+    Set.LocalViscosityEdgeBased=true; 
+    Set.nu_Local_EdgeBased=0.0001;
+    Set.LocalViscosityOption=2;
+
+
+

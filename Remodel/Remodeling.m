@@ -443,7 +443,7 @@ while ListIsNotEmpty
             Set.NumAuxV=Cell.FaceCentres.n;
             Set.NumTotalV=Set.NumMainV+Set.NumAuxV;
             [Cell]=ComputeCellVolume(Cell,Y);
-            [Cell]=ComputeLengths(Cell,Y);
+            [Cell]=Cell.computeEdgeLengths(Y);
             for jj=1:Cell.n
                 Cell.SAreaTrin{jj}=Cell.SAreaTri{jj};
                 Cell.EdgeLengthsn{jj}=Cell.EdgeLengths{jj};

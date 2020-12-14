@@ -171,37 +171,6 @@ classdef CellClass
         
         %% Compute the length of the segments between vertices Xs
         function obj = computeEdgeLengths(obj, Y)
-            % ============ Note: Pablo's version (Not sure if it works, I will add mine, since I have already test it)
-            %           obj.EdgeLengths = cell(obj.n, 1);
-            %           % Run through all the cells
-            %           for numCell = 1:obj.n
-            %               if ~obj.AssembleAll
-            %                   if ~ismember(obj.Int(numCell),obj.AssembleNodes)
-            %                       continue
-            %                   end
-            %               end
-            %
-            %               % Cv are the verteces of a cell including vertices-cell
-            %               % centres
-            %               trianglesOfSurfaces = obj.Cv{numCell};
-            %
-            %
-            %               edgesOfCell = zeros(size(trianglesOfSurfaces,1), 3);
-            %
-            %               % Loop over Cell-face-triangles
-            %               for currentTriangle = 1:size(trianglesOfSurfaces,1)
-            %                   [edgeLenghts] = pdist(Y.DataRow(trianglesOfSurfaces(currentTriangle, [1 2]), :), 'euclidean');
-            %                   edgesOfCell(currentTriangle, 1:3) = [edgeLenghts(1), sort(trianglesOfSurfaces(currentTriangle, [1 2]))];
-            %               end
-            %
-            %               %Get only unique values of edges (some edges are shared by
-            %               %different surfaces)
-            %               obj.EdgeLengths{numCell} = unique(edgesOfCell, 'rows', 'stable');
-            %           end
-            %           %Return
-            %           Cell = obj;
-            %===================================================================
-            %======================Malik's version =============================
             % loop on cells
             for numCele=1:obj.n
                 obj.EdgeLengths{numCele}=zeros(size(obj.Cv{numCele},1),1);
@@ -220,7 +189,6 @@ classdef CellClass
                     obj.EdgeLengths{numCele}(e)=norm(Y1-Y2);
                 end
             end
-            %===================================================================
         end
     end
 end

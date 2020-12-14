@@ -103,7 +103,7 @@ for i=1:Faces.n
     Cell = Cell.computeEdgeLengths(Y);
     for jj=1:Cell.n
         Cell.SAreaTrin{jj}=Cell.SAreaTri{jj};
-        Cell.Ln{jj}=Cell.L{jj};
+        Cell.EdgeLengthsn{jj}=Cell.EdgeLengths{jj};
     end
     V3=1:Faces.n;
     V3=V3(Faces.V3(V3));
@@ -204,10 +204,10 @@ for i=1:Faces.n
     Set.NumAuxV=Cell.FaceCentres.n;
     Set.NumTotalV=Set.NumMainV+Set.NumAuxV;
     [Cell]=ComputeCellVolume(Cell,Y);
-    [Cell]=ComputeLengths(Cell,Y);
+    Cell = Cell.computeEdgeLengths(Y);
     for jj=1:Cell.n
         Cell.SAreaTrin{jj}=Cell.SAreaTri{jj};
-        Cell.Ln{jj}=Cell.L{jj};
+        Cell.EdgeLengthsn{jj}=Cell.EdgeLengths{jj};
     end
     V3=1:Faces.n;
     V3=V3(Faces.V3(V3));
@@ -446,7 +446,7 @@ while ListIsNotEmpty
             [Cell]=ComputeLengths(Cell,Y);
             for jj=1:Cell.n
                 Cell.SAreaTrin{jj}=Cell.SAreaTri{jj};
-                Cell.Ln{jj}=Cell.L{jj};
+                Cell.EdgeLengthsn{jj}=Cell.EdgeLengths{jj};
             end
             V3=1:Faces.n;
             V3=V3(Faces.V3(V3));

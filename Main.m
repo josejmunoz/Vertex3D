@@ -232,7 +232,6 @@ while t<=tend
 end
 %%
 fprintf('Done!!\n')
-toc
 diary off
 
 

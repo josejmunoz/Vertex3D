@@ -185,15 +185,6 @@ if ~isfield(Set,'LocalViscosityOption')
      Set.LocalViscosityOption=2;
 end 
 
-%-------- Contractility ----------------------------------
-if ~isfield(Set,'Contractility')
-    Set.Contractility=false;
-end
-
-if ~isfield(Set, 'cContractility')
-    Set.cContractility=0.3;
-end
-
 
 %% ============================= Remodelling ================================
 if ~isfield(Set,'Remodelling')  % Off/On
@@ -281,18 +272,7 @@ if ~isfield(Set,'BC') && ~Set.Substrate
 elseif  Set.Substrate
     Set.BC=nan;
 end 
-%% ============================= Cell ablation ============================
 
-if ~isfield(Set,'Ablation')
-    Set.Ablation = false;
-end
-if ~isfield(Set, 'TAblation')
-    Set.TAblation = 1;
-end
-
-if ~isfield(Set, 'cellsToAblate')
-    Set.cellsToAblate = [5];
-end
 
 %% ============================= PostProcessing ===========================
 

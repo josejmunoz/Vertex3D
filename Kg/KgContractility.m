@@ -36,7 +36,7 @@ for numCell = 1:Cell.n
     edgeLengths0 = Cell.EdgeLengths0{numCell} * C;
     edgeVertices = Cell.Cv{numCell};
     
-    for numEdge = 1:size(edgeLengths, 3)
+    for numEdge = 1:length(edgeLengths)
         if any(edgeVertices(numEdge, :) < 0)
             continue
         end
@@ -48,7 +48,7 @@ for numCell = 1:Cell.n
         
         %% Calculate residual g
         g_current = computeGContractility(l_i0, l_i, y_1, y_2);
-        g = assembleg(g, g_current, edgeVertices(numEdge, :));
+        g = Assembleg(g, g_current, edgeVertices(numEdge, :));
         
         %% AssembleK
         if  nargout>1
@@ -56,9 +56,9 @@ for numCell = 1:Cell.n
             K_current = computeKContractility(l_i0, l_i, y_1, y_2);
 
             if Set.Sparse
-                [si,sj,sv,sk] = assembleKSparse(K_current, edgeVertices(numEdge, :), si, sj, sv, sk);
+                [si,sj,sv,sk] = AssembleKSparse(K_current, edgeVertices(numEdge, :), si, sj, sv, sk);
             else
-                K = assembleK(K, K_current, edgeVertices(numEdge, :));
+                K = AssembleK(K, K_current, edgeVertices(numEdge, :));
             end
 
             %% Calculate energy

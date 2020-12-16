@@ -177,21 +177,21 @@ classdef CellClass
         %% Compute the length of the segments between vertices Xs
         function obj = computeEdgeLengths(obj, Y)
             % loop on cells
-            for numCele=1:obj.n
-                obj.EdgeLengths{numCele}=zeros(size(obj.Cv{numCele},1),1);
+            for numCell=1:obj.n
+                obj.EdgeLengths{numCell}=zeros(size(obj.Cv{numCell},1),1);
                 % loop on edges
-                for e=1:size(obj.Cv{numCele},1)
+                for e=1:size(obj.Cv{numCell},1)
                     %                Cv(1,:) ---- >always vertex
-                    Y1=Y.DataRow(obj.Cv{numCele}(e,1),:);
-                    if  obj.Cv{numCele}(e,2) > 0
+                    Y1=Y.DataRow(obj.Cv{numCell}(e,1),:);
+                    if  obj.Cv{numCell}(e,2) > 0
                         %                    Cv(2,:)>0 ---- > is vertex
-                        Y2=Y.DataRow(obj.Cv{numCele}(e,2),:);
+                        Y2=Y.DataRow(obj.Cv{numCell}(e,2),:);
                     else
                         %                    Cv(2,:)<0 ---- > is face center
-                        Y2=obj.FaceCentres.DataRow(abs(obj.Cv{numCele}(e,2)),:);
+                        Y2=obj.FaceCentres.DataRow(abs(obj.Cv{numCell}(e,2)),:);
                     end
                     % Compute Length
-                    obj.EdgeLengths{numCele}(e)=norm(Y1-Y2);
+                    obj.EdgeLengths{numCell}(e)=norm(Y1-Y2);
                 end
             end
         end

@@ -35,7 +35,7 @@ Set.RemodelTol=.5e-6;
 Set.RemodelingFrequency=2;
 
 %% time
-tend=300;
+Set.tend=300;
 Set.Nincr=300;
 
 %%  Boundary Displacement 

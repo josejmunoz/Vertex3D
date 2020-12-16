@@ -17,6 +17,7 @@ if Set.Sparse
     si=zeros((dimensionsG*3)^2,1); % Each vertex is shared by at least 3 cells 
     sj=si;
     sv=si;
+    K=sparse(zeros(dimensionsG)); % Also used in sparse
 else
     K=zeros(dimensionsG); % Also used in sparse
 end

@@ -37,9 +37,9 @@ for numCell = 1:Cell.n
     edgeVertices = Cell.Cv{numCell};
     
     for numEdge = 1:length(edgeLengths)
-%         if any(edgeVertices(numEdge, :) < 0)
-%             continue
-%         end
+        if any(edgeVertices(numEdge, :) < 0)
+            continue
+        end
         y_1 = Y.DataRow(edgeVertices(numEdge, 1), :);
         
         if  edgeVertices(numEdge, 2) > 0 %Vertex

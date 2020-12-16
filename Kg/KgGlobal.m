@@ -79,7 +79,7 @@ if nargout>1
     % ----------------- Contractility -------------------------------------
     if Set.Contractility
         [gC,KC,Cell,Energy.Ec]=KgContractility(Cell,Y,Set);
-         K=KC+KB; g=g+gC;
+         K=K+KC; g=g+gC;
     end
     
     

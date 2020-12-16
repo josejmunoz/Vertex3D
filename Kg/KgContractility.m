@@ -37,11 +37,16 @@ for numCell = 1:Cell.n
     edgeVertices = Cell.Cv{numCell};
     
     for numEdge = 1:length(edgeLengths)
-        if any(edgeVertices(numEdge, :) < 0)
-            continue
-        end
+%         if any(edgeVertices(numEdge, :) < 0)
+%             continue
+%         end
         y_1 = Y.DataRow(edgeVertices(numEdge, 1), :);
-        y_2 = Y.DataRow(edgeVertices(numEdge, 2), :);
+        
+        if  edgeVertices(numEdge, 2) > 0 %Vertex
+            y_2 = Y.DataRow(edgeVertices(numEdge, 2), :);
+        else %Face center
+            y_2 = Cell.FaceCentres.DataRow(abs(edgeVertices(numEdge, 2)), :);
+        end
         
         l_i = edgeLengths(numEdge, 1);
         l_i0 = edgeLengths0(numEdge, 1);

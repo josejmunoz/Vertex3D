@@ -133,7 +133,7 @@ else
     % ----------------- Contractility -------------------------------------
     if Set.Contractility
         [gc]=KgContractility(Cell,Y,Set);
-        g=g-gc;
+        g=g+gc;
     end
     
 end

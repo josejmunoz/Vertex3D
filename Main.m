@@ -68,12 +68,12 @@ while t<=tend
     
     if Set.SaveWorkspace,    save(strcat(Set.OutputFolder,Esc,'Workspace',Esc,['Workspace' num2str(i) '.mat'])); end
     
-    % Where this could be run?
+    % ----------- Ablation ------------------------------------------------
     if Set.Ablation == true && Set.TAblation <= t
         Cell = Cell.AblateCells(Set.cellsToAblate);
-        XgID = [XgID; cellsToAblate];
-        Faces=Faces.CheckInteriorFaces(XgID);
-        [Cell,Faces,nC,SCn,flag32] = ReBuildCells(Cell,T,Y,X,Faces,SCn);
+%         XgID = [XgID; cellsToAblate];
+%         Faces=Faces.CheckInteriorFaces(XgID);
+%         [Cell,Faces,nC,SCn,flag32] = ReBuildCells(Cell,T,Y,X,Faces,SCn);
         Set.Ablation = false;
     end
     
@@ -82,7 +82,7 @@ while t<=tend
         [Cell,Y,Yn,SCn,T,X,Faces,Dofs,Cn,Set]=Remodeling(Cell,Faces,Y,Yn,SCn,T,X,Set,Dofs,Energy,XgID,XgSub,CellInput);
         Set.ReModel=false;
         tr=t;
-    end  % ----------------------------------------------------------------
+    end
     
     %   Copy configuration in case the current step dose not converge  and need
     %   to be repeated

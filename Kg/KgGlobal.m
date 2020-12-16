@@ -6,11 +6,11 @@ function [g,K,Cell,Energy,gs,gv,gf,gB,gb]=KgGlobal(Cell,Faces,Y,y,yn,Set,CellInp
 if nargout>1
     %% Compute both The residual g and Jacobian K
     % Surface Energy ----------------------------------------------------------
-    if      Set.SurfaceType==1
+    if Set.SurfaceType==1
         [gs,Ks,Cell,Energy.Es]=KgSurfaceCellBased(Cell,Y,Set);
-    elseif  Set.SurfaceType==2
+    elseif Set.SurfaceType==2
         [gs,Ks,Cell,Energy.Es]=KgSurfaceFaceBased(Cell,Y,Set);
-    elseif  Set.SurfaceType==4
+    elseif Set.SurfaceType==4
         if Set.Parallel
             [gs,Ks,Cell,Energy.Es]=KgSurfaceCellBasedAdhesionParallel(Cell,Y,Faces,Set,CellInput);
         else

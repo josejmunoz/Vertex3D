@@ -27,39 +27,42 @@ energy = 0;
 [Cell] = Cell.computeEdgeLengths(Y);
 
 for numCell = 1:Cell.n
-    if Cell.GhostCells(numCell)
-        edgeLengths = Cell.EdgeLengths{numCell};
-        edgeLengths0 = Cell.EdgeLengths0{numCell};
-        edgeLengths0(:, 1) = edgeLengths0(:, 1) * C;
-
-        for numEdge = 1:size(edgeLengths, 3)
-
-            y_1 = Y.DataRow(edgeLengths(numEdge, 2), :);
-            y_2 = Y.DataRow(edgeLengths(numEdge, 3), :);
-
-            l_i = edgeLengths(numEdge, 1);
-            l_i0 = edgeLengths0(numEdge, 1);
-
-            %% Calculate residual g
-            g_current = computeGContractility(l_i0, l_i, y_1, y_2);
-            g = assembleG(g, g_current, edgeLengths(numEdge, 2:3));
-            %% Calculate Jacobian
-            K_current = computeKContractility(l_i0, l_i, y_1, y_2);
-
-            if Set.Sparse
-                [si,sj,sv,sk] = assembleKSparse(K_current, edgeLengths(numEdge, 2:3), si, sj, sv, sk);
-            else
-                K = assembleK(K, K_current, edgeLengths(numEdge, 2:3));
-            end
-
-            %% Calculate energy
-            energy = energy + computeEnergyContractility(l_i, l_i0);
-        end
-
-        if Set.Sparse
-            K=sparse(si(1:sk),sj(1:sk),sv(1:sk),dimensionsG,dimensionsG);
-        end
+    if ~Cell.GhostCells(numCell)
+        continue;
     end
+    
+    edgeLengths = Cell.EdgeLengths{numCell};
+    edgeLengths0 = Cell.EdgeLengths0{numCell};
+    edgeLengths0(:, 1) = edgeLengths0(:, 1) * C;
+    
+    for numEdge = 1:size(edgeLengths, 3)
+        
+        y_1 = Y.DataRow(edgeLengths(numEdge, 2), :);
+        y_2 = Y.DataRow(edgeLengths(numEdge, 3), :);
+        
+        l_i = edgeLengths(numEdge, 1);
+        l_i0 = edgeLengths0(numEdge, 1);
+        
+        %% Calculate residual g
+        g_current = computeGContractility(l_i0, l_i, y_1, y_2);
+        g = assembleG(g, g_current, edgeLengths(numEdge, 2:3));
+        %% Calculate Jacobian
+        K_current = computeKContractility(l_i0, l_i, y_1, y_2);
+        
+        if Set.Sparse
+            [si,sj,sv,sk] = assembleKSparse(K_current, edgeLengths(numEdge, 2:3), si, sj, sv, sk);
+        else
+            K = assembleK(K, K_current, edgeLengths(numEdge, 2:3));
+        end
+        
+        %% Calculate energy
+        energy = energy + computeEnergyContractility(l_i, l_i0);
+    end
+    
+    if Set.Sparse
+        K=sparse(si(1:sk),sj(1:sk),sv(1:sk),dimensionsG,dimensionsG);
+    end
+end
 end
 
 function [kContractility] = computeKContractility(l_i0, l_i, y_1, y_2)

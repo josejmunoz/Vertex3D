@@ -36,7 +36,11 @@ CellAssembleNodes=Cell.AssembleNodes;
 CellEdges=Cell.Edges;
 CellFaceCentres=Cell.FaceCentres;
 CellRemodelledVertices=Cell.RemodelledVertices;
+CellGhostCells = Cell.GhostCells;
 parfor i=1:ncell
+    if CellGhostCells(i)
+        continue;
+    end 
     if ~CellAssembleAll
         if ~ismember(CellInt(i),CellAssembleNodes)
             continue

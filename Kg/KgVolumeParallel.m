@@ -40,9 +40,13 @@ CellAssembleAll=Cell.AssembleAll;
 CellInt=Cell.Int;
 CellAssembleNodes=Cell.AssembleNodes;
 CellRemodelledVertices=Cell.RemodelledVertices;
+CellGhostCells = Cell.GhostCells;
 %% Loop over Cells
 %     % Analytical residual g and Jacobian K
 parfor i=1:ncell
+    if CellGhostCells(i)
+        continue;
+    end 
     if ~CellAssembleAll
         if ~ismember(CellInt(i),CellAssembleNodes)
             continue

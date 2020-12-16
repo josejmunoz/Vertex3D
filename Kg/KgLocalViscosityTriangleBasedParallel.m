@@ -33,32 +33,36 @@ EnergyS=0;
 %% Compute Volume
 [Cell]=ComputeCellVolume(Cell,Y);
 
-Cel.AssembleAll=Cell.AssembleAll;
-Cel.Int=Cell.Int;
-Cel.AssembleNodes=Cell.AssembleNodes;
-Cel.FaceCentres=Cell.FaceCentres;
-Cel.Tris=Cell.Tris;
-Cel.SAreaTri=Cell.SAreaTri;
-Cel.SAreaTrin=Cell.SAreaTrin;
-Cel.RemodelledVertices=Cell.RemodelledVertices;
+CellAux.AssembleAll=Cell.AssembleAll;
+CellAux.Int=Cell.Int;
+CellAux.AssembleNodes=Cell.AssembleNodes;
+CellAux.FaceCentres=Cell.FaceCentres;
+CellAux.Tris=Cell.Tris;
+CellAux.SAreaTri=Cell.SAreaTri;
+CellAux.SAreaTrin=Cell.SAreaTrin;
+CellAux.RemodelledVertices=Cell.RemodelledVertices;
+CellAux.GhostCells = Cell.GhostCells;
 
 %% Loop over Cells
 %     % Analytical residual g and Jacobian K
 parfor i=1:ncell
-    if ~Cel.AssembleAll
-        if ~ismember(Cel.Int(i),Cel.AssembleNodes)
+    if CellAux.GhostCells(i)
+        continue;
+    end 
+    if ~CellAux.AssembleAll
+        if ~ismember(CellAux.Int(i),CellAux.AssembleNodes)
             continue
         end
     end
     lambdaS=Set.nu_Local_TriangleBased/Set.dt;
     % Loop over Cell-face-triangles
-    Tris=Cel.Tris{i};
+    Tris=CellAux.Tris{i};
     for t=1:size(Tris,1)
         ge=zeros(dimg,1); % Local cell residual
         if  Set.LocalViscosityOption==1
-            fact=lambdaS *  (Cel.SAreaTri{i}(t)-Cel.SAreaTrin{i}(t)) / Cel.SAreaTrin{i}(t)^2   ;
+            fact=lambdaS *  (CellAux.SAreaTri{i}(t)-CellAux.SAreaTrin{i}(t)) / CellAux.SAreaTrin{i}(t)^2   ;
         elseif Set.LocalViscosityOption==2
-            fact=lambdaS *  (Cel.SAreaTri{i}(t)-Cel.SAreaTrin{i}(t))    ;
+            fact=lambdaS *  (CellAux.SAreaTri{i}(t)-CellAux.SAreaTrin{i}(t))    ;
         end
         nY=Tris(t,:);
         Y1=Y.DataRow(nY(1),:);
@@ -67,10 +71,10 @@ parfor i=1:ncell
             nY(3)=abs(nY(3));
             Y3=Y.DataRow(nY(3),:);
         else
-            Y3=Cel.FaceCentres.DataRow(nY(3),:);
+            Y3=CellAux.FaceCentres.DataRow(nY(3),:);
             nY(3)=nY(3)+Set.NumMainV;
         end
-        if ~Cel.AssembleAll && ~any(ismember(nY,Cel.RemodelledVertices))
+        if ~CellAux.AssembleAll && ~any(ismember(nY,CellAux.RemodelledVertices))
             continue
         end
         [gs,Ks,Kss]=gKSArea(Y1,Y2,Y3);
@@ -79,7 +83,7 @@ parfor i=1:ncell
         [si{i},sj{i},sv{i},sk{i}]= AssembleKSparse(Ke,nY,si{i},sj{i},sv{i},sk{i});
         g=g+ge*fact; 
         if  Set.LocalViscosityOption==1
-            K=K+sparse((ge)*(ge')*lambdaS/(Cel.SAreaTrin{i}(t)^2));
+            K=K+sparse((ge)*(ge')*lambdaS/(CellAux.SAreaTrin{i}(t)^2));
         elseif Set.LocalViscosityOption==2
             K=K+sparse((ge)*(ge')*lambdaS);
         end

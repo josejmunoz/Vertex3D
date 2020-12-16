@@ -28,21 +28,25 @@ EnergyS=0;
 
 %% Compute Volume
 [Cell]=ComputeCellVolume(Cell,Y);
-Cel.AssembleAll=Cell.AssembleAll;
-Cel.Int=Cell.Int;
-Cel.AssembleNodes=Cell.AssembleNodes;
-Cel.Faces=Cell.Faces;
+CelAux.AssembleAll=Cell.AssembleAll;
+CelAux.Int=Cell.Int;
+CelAux.AssembleNodes=Cell.AssembleNodes;
+CelAux.Faces=Cell.Faces;
 FacesInterfaceType=Faces.InterfaceType;
-Cel.SAreaFace=Cell.SAreaFace;
-Cel.FaceCentres=Cell.FaceCentres;
-Cel.SArea0=Cell.SArea0;
-Cel.RemodelledVertices=Cell.RemodelledVertices;
-Cel.Tris=Cell.Tris;
+CelAux.SAreaFace=Cell.SAreaFace;
+CelAux.FaceCentres=Cell.FaceCentres;
+CelAux.SArea0=Cell.SArea0;
+CelAux.RemodelledVertices=Cell.RemodelledVertices;
+CelAux.Tris=Cell.Tris;
+CelAux.GhostCells = Cell.GhostCells;
 %% Loop over Cells
 %     % Analytical residual g and Jacobian K
 parfor i=1:ncell
-    if ~Cel.AssembleAll %#ok<PFBNS>
-        if ~ismember(Cel.Int(i),Cel.AssembleNodes)
+    if CelAux.GhostCells(i)
+        continue;
+    end 
+    if ~CelAux.AssembleAll %#ok<PFBNS>
+        if ~ismember(CelAux.Int(i),CelAux.AssembleNodes)
             continue
         end
     end
@@ -61,23 +65,23 @@ parfor i=1:ncell
     
     % first loop to commpute fact
     fact0=0;
-    for f=1:Cel.Faces{i}.nFaces
-        if FacesInterfaceType(Cel.Faces{i}.FaceCentresID (f))==0 %#ok<PFBNS>
+    for f=1:CelAux.Faces{i}.nFaces
+        if FacesInterfaceType(CelAux.Faces{i}.FaceCentresID (f))==0 %#ok<PFBNS>
             % External
             Lambda=Set.lambdaS1*CellInput.LambdaS1Factor(i); %#ok<PFBNS>
-            fact0=fact0+Lambda*Cel.SAreaFace{i}(f);
+            fact0=fact0+Lambda*CelAux.SAreaFace{i}(f);
             
-        elseif  FacesInterfaceType(Cel.Faces{i}.FaceCentresID (f))==1
+        elseif  FacesInterfaceType(CelAux.Faces{i}.FaceCentresID (f))==1
             % Cell-Cell
             Lambda=Set.lambdaS2*CellInput.LambdaS2Factor(i);
-            fact0=fact0+Lambda*Cel.SAreaFace{i}(f);
+            fact0=fact0+Lambda*CelAux.SAreaFace{i}(f);
             
-        elseif FacesInterfaceType(Cel.Faces{i}.FaceCentresID (f))==2
+        elseif FacesInterfaceType(CelAux.Faces{i}.FaceCentresID (f))==2
             % Cell-substrate
             Lambda=Set.lambdaS3*CellInput.LambdaS3Factor(i);
             if Set.Confinement
                 % ------------------------ Confinement --------------------
-                Tris=Cel.Faces{i}.Tris{f};
+                Tris=CelAux.Faces{i}.Tris{f};
                 for t=1:size(Tris,1)
                     nY=Tris(t,:);
                     Y1=Y.DataRow(nY(1),:); %#ok<PFBNS>
@@ -86,7 +90,7 @@ parfor i=1:ncell
                         nY(3)=abs(nY(3));
                         Y3=Y.DataRow(nY(3),:);
                     else
-                        Y3=Cel.FaceCentres.DataRow(nY(3),:);
+                        Y3=CelAux.FaceCentres.DataRow(nY(3),:);
                     end
                     
                     T=(1/2)*norm(cross(Y2-Y1,Y1-Y3));
@@ -99,26 +103,26 @@ parfor i=1:ncell
                 end
                 % ---------------------------------------------------------
             else
-                fact0=fact0+Lambda*Cel.SAreaFace{i}(f);
+                fact0=fact0+Lambda*CelAux.SAreaFace{i}(f);
             end
         end
     end
-    fact=fact0/Cel.SArea0(i)^2;
+    fact=fact0/CelAux.SArea0(i)^2;
     
     
-    for f=1:Cel.Faces{i}.nFaces
-        if FacesInterfaceType(Cel.Faces{i}.FaceCentresID (f))==0
+    for f=1:CelAux.Faces{i}.nFaces
+        if FacesInterfaceType(CelAux.Faces{i}.FaceCentresID (f))==0
             % External
             Lambda=Set.lambdaS1*CellInput.LambdaS1Factor(i);
-        elseif  FacesInterfaceType(Cel.Faces{i}.FaceCentresID (f))==1
+        elseif  FacesInterfaceType(CelAux.Faces{i}.FaceCentresID (f))==1
             % Cell-Cell
             Lambda=Set.lambdaS2*CellInput.LambdaS2Factor(i);
-        elseif FacesInterfaceType(Cel.Faces{i}.FaceCentresID (f))==2
+        elseif FacesInterfaceType(CelAux.Faces{i}.FaceCentresID (f))==2
             % Cell-substrate
             Lambda=Set.lambdaS3*CellInput.LambdaS3Factor(i);
         end
         % Loop over Cell-face-triangles
-        Tris=Cel.Faces{i}.Tris{f};
+        Tris=CelAux.Faces{i}.Tris{f};
         for t=1:size(Tris,1)
             nY=Tris(t,:);
             Y1=Y.DataRow(nY(1),:);
@@ -127,10 +131,10 @@ parfor i=1:ncell
                 nY(3)=abs(nY(3));
                 Y3=Y.DataRow(nY(3),:);
             else
-                Y3=Cel.FaceCentres.DataRow(nY(3),:);
+                Y3=CelAux.FaceCentres.DataRow(nY(3),:);
                 nY(3)=nY(3)+Set.NumMainV;
             end
-            if ~Cel.AssembleAll && ~any(ismember(nY,Cel.RemodelledVertices))
+            if ~CelAux.AssembleAll && ~any(ismember(nY,CelAux.RemodelledVertices))
                 continue
             end
             [gs,Ks,Kss]=gKSArea(Y1,Y2,Y3);
@@ -143,7 +147,7 @@ parfor i=1:ncell
     end
     
     g=g+ge*fact; 
-    K=K+sparse((ge)*(ge')/(Cel.SArea0(i)^2));
+    K=K+sparse((ge)*(ge')/(CelAux.SArea0(i)^2));
     
     EnergyS=EnergyS+ (1/2)*fact0*fact;
     

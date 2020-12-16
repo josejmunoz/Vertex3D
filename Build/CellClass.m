@@ -95,7 +95,7 @@ classdef CellClass
         %     Remark:- v1,v2,v3 and v4 <=Y.n  correspond to a vertex         (its position can be found as Y.DataRow(v1,:))
         %            - v1,v2,v3 and v4 >Y.n   correspond to a face-centre    (its position can be found as Cell.FaceCentres.DataRow(v1-T.n,:))
         %--------------------------------------------------------------------
-        GhostCell
+        GhostCells            % Ghost cells
         %--------------------------------------------------------------------
     end
     methods

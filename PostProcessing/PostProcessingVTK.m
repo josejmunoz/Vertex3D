@@ -1,20 +1,25 @@
-function PostProcessingVTK(X,Y,T,Cn,Cell,file,TimeStep,Set)
+function PostProcessingVTK(X,Y,T,Cn,Cell,folder,TimeStep,Set)
 % Create VTK files 
 
 
 
-CreateVtkVol(Y.DataOrdered,Cell,X,file,TimeStep)
+CreateVtkVol(Y.DataOrdered,Cell,X,folder,TimeStep)
 
 
+CreateVtkBar(X,Cn,ones(size(Cn, 1)),folder, 'Nodal_Connectivity','n',TimeStep)
 
-Ln.L=ones(size(Cn,1),1);
-Ln.L0=ones(size(Cn,1),1);
-CreateVtkBar(X,Cn,Ln,file,'n',TimeStep)
+edgeVertices = vertcat(Y.DataRow, Cell.FaceCentres.DataRow);
+edgeConnections = vertcat(Cell.Cv{:});
+edgeConnections(edgeConnections < 0) = abs(edgeConnections(edgeConnections < 0)) + size(Y.DataRow, 1);
+edgeLengths = vertcat(Cell.EdgeLengths{:});
+
+computeEnergyContractility(l_i0, l_i);
+CreateVtkBar(edgeVertices, edgeConnections, edgeLengths, folder, 'Edges_','contractility',TimeStep)
 if ~isempty(T)
-    CreateVtkTet(X,T,file,TimeStep)
+    CreateVtkTet(X,T,folder,TimeStep)
 end 
 
-if Set.Confinement, CreateVtkConfinement(Set,file,TimeStep); end 
+if Set.Confinement, CreateVtkConfinement(Set,folder,TimeStep); end 
 
 
 

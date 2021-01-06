@@ -201,11 +201,11 @@ Cell.SAreaFace0=Cell.SAreaFace;
 SharedFaces=SharedFaces.ComputeAreaTri(Y.DataRow,Cell.FaceCentres.DataRow);
 
 
-%% Contractility L_i0
-[Cell] = Cell.computeEdgeLengths(Y);
-Cell.EdgeLengths0 = Cell.EdgeLengths;
+%% Contractility L_0
+[Cell, uniqueEdges] = Cell.computeEdgeLengths(Y);
+allEdges = vertcat(Cell.EdgeLengths{:});
+Cell.EdgeLengths0_average = mean(allEdges(uniqueEdges));
 Cell.EdgeLengthsn = Cell.EdgeLengths;
-
 
 end 
 

@@ -38,7 +38,7 @@ classdef CellClass
         EdgeLengthsn              % -The length of Edges at the previous time-step  (Type=cell-structure ,  Size={NumCells 1}):
         %                            Each cell (Cell.EdgeLengthn{i})is an array of size [nEdges 1] with the length of the edges between each two vertices.
         %--------------------------------------------------------------------
-        EdgeLengths0         % -The Initial\reference length of Edges at the  (Type=cell-structure ,  Size={NumCells 1}):
+        EdgeLengths0_average         % -The Initial\reference length of Edges at the  (Type=cell-structure ,  Size={NumCells 1}):
         %                            Each cell (Cell.EdgeLengths0{i})is an array of size [nEdges 1] with the length of the edges between each two vertices.
         
         %--------------------------------------------------------------------
@@ -123,7 +123,7 @@ classdef CellClass
                 Cell.RemodelledVertices=[];
                 Cell.Edges=cell(nC,1);
                 Cell.EdgeLengths=cell(nC,1);
-                Cell.EdgeLengths0=cell(nC,1);
+                Cell.EdgeLengths0_average=-1;
                 Cell.EdgeLengthsn=cell(nC,1);
                 Cell.GhostCells=zeros(nC, 1);
             end
@@ -175,8 +175,9 @@ classdef CellClass
         end
         
         %% Compute the length of the segments between vertices Xs
-        function obj = computeEdgeLengths(obj, Y)
+        function [obj, uniqueEdges] = computeEdgeLengths(obj, Y)
             % loop on cells
+            allEdges = [];
             for numCell=1:obj.n
                 obj.EdgeLengths{numCell}=zeros(size(obj.Cv{numCell},1),1);
                 % loop on edges
@@ -191,9 +192,11 @@ classdef CellClass
                         Y2=obj.FaceCentres.DataRow(abs(obj.Cv{numCell}(e,2)),:);
                     end
                     % Compute Length
+                    allEdges = vertcat(allEdges, sort([obj.Cv{numCell}(e,1) obj.Cv{numCell}(e,2)]));
                     obj.EdgeLengths{numCell}(e)=norm(Y1-Y2);
                 end
             end
+            [~, uniqueEdges] = unique(allEdges, 'rows');
         end
     end
 end

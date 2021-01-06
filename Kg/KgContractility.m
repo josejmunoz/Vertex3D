@@ -33,13 +33,10 @@ for numCell = 1:Cell.n
     end
     
     edgeLengths = Cell.EdgeLengths{numCell};
-    edgeLengths0 = Cell.EdgeLengths0{numCell} * C;
+    edgeLengths0_average = Cell.EdgeLengths0_average;
     edgeVertices = Cell.Cv{numCell};
     
     for numEdge = 1:length(edgeLengths)
-        if any(edgeVertices(numEdge, :) < 0)
-            continue
-        end
         y_1 = Y.DataRow(edgeVertices(numEdge, 1), :);
         
         if  edgeVertices(numEdge, 2) > 0 %Vertex
@@ -50,16 +47,16 @@ for numCell = 1:Cell.n
         end
         
         l_i = edgeLengths(numEdge, 1);
-        l_i0 = edgeLengths0(numEdge, 1);
+        l_i0 = edgeLengths0_average;
         
         %% Calculate residual g
-        g_current = computeGContractility(l_i0, l_i, y_1, y_2);
+        g_current = computeGContractility(l_i0, l_i, y_1, y_2, C);
         g = Assembleg(g, g_current, edgeVertices(numEdge, :));
         
         %% AssembleK
         if  nargout>1
             %% Calculate Jacobian
-            K_current = computeKContractility(l_i0, l_i, y_1, y_2);
+            K_current = computeKContractility(l_i0, l_i, y_1, y_2, C);
 
             if Set.Sparse
                 [si,sj,sv,sk] = AssembleKSparse(K_current, edgeVertices(numEdge, :), si, sj, sv, sk);
@@ -68,7 +65,7 @@ for numCell = 1:Cell.n
             end
 
             %% Calculate energy
-            energy = energy + computeEnergyContractility(l_i, l_i0);
+            energy = energy + computeEnergyContractility(l_i0, l_i, C);
         end
     end
 end
@@ -79,28 +76,29 @@ end
 
 end
 
-function [kContractility] = computeKContractility(l_i0, l_i, y_1, y_2)
+function [kContractility] = computeKContractility(l_i0, l_i, y_1, y_2, C)
 %COMPUTEGCONTRACTILITY Summary of this function goes here
 %   Detailed explanation goes here
 
 dim = 3;
 
-kContractility(1:3, 1:3) = (1 - (l_i0/l_i)) * eye(dim) + (l_i0/l_i^2) * (1/l_i) * (y_1 - y_2).*(y_1 - y_2)';
+%% Check: Is this a matrix?
+kContractility(1:3, 1:3) = (C / l_i0) *  ((1 / l_i) * eye(dim) - (1/l_i^3) * (y_1 - y_2) .* (y_1 - y_2)');
 kContractility(1:3, 4:6) = -kContractility(1:3, 1:3);
 kContractility(4:6, 1:3) = -kContractility(1:3, 1:3);
 kContractility(4:6, 4:6) = kContractility(1:3, 1:3);
 
 end
 
-function [gContractility] = computeGContractility(l_i0, l_i, y_1, y_2)
+function [gContractility] = computeGContractility(l_i0, l_i, y_1, y_2, C)
 %COMPUTEGCONTRACTILITY Summary of this function goes here
 %   Detailed explanation goes here
 
-gContractility(1:3, 1) = (l_i - l_i0) * (y_1 - y_2) / l_i;
+gContractility(1:3, 1) = (C / l_i0) * (y_1 - y_2) / l_i;
 gContractility(4:6, 1) = -gContractility(1:3);
 
 end
 
-function [energyConctratility] = computeEnergyContractility(l_i, l_i0)
-    energyConctratility = 0.5 * (l_i - (l_i0))^2;
+function [energyConctratility] = computeEnergyContractility(l_i0, l_i, C)
+    energyConctratility = (C / l_i0) * l_i;
 end

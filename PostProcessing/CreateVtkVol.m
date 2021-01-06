@@ -48,7 +48,6 @@ for iCell=1:ncell
                                       nn=nn+1;
 
     end 
-    %---------------------------------Malik Added (end) ---------------
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -65,7 +64,7 @@ fprintf(file,'%s \n','LOOKUP_TABLE default');
 %
 color=rand(ncell,1)*10;
 for i=1:ncell
-    ntri=ones(size(Cell.Tris{i},1),1);     %%% Malik Added
+    ntri=ones(size(Cell.Tris{i},1),1);
 %     Cell.Vol(i)=Cell.Vol(i)+color(i);
 
     fprintf(file,'%f\n', (Cell.Vol(i)-Cell.Vol0(i))/Cell.Vol0(i)*ntri);
@@ -80,7 +79,7 @@ fprintf(file,'%s \n','SCALARS RelAreaChange double');
 fprintf(file,'%s \n','LOOKUP_TABLE default');
 %
 for i=1:ncell
-    ntri=ones(size(Cell.Tris{i},1),1);     %%% Malik Added
+    ntri=ones(size(Cell.Tris{i},1),1);
 %     Cell.Vol(i)=Cell.Vol(i)+color(i);
 
     fprintf(file,'%f\n', (Cell.SArea(i)-Cell.SArea0(i))/Cell.SArea0(i)*ntri);
@@ -94,7 +93,7 @@ fprintf(file,'%s \n','LOOKUP_TABLE default');
 
 for i=1:ncell
     for t=1:length(Cell.SAreaTri{i})
-%     ntri=ones(size(Cell.Tris{i},1),1);     %%% Malik Added
+%     ntri=ones(size(Cell.Tris{i},1),1);
 %     Cell.Vol(i)=Cell.Vol(i)+color(i);
 
          fprintf(file,'%f\n', (Cell.SAreaTri{i}(t)-Cell.SAreaTrin{i}(t))/Cell.SAreaTrin{i}(t));

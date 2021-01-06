@@ -1,4 +1,4 @@
-function CreateVtkBar(Y,C,L,NameFile,Type,TimeStep)
+function CreateVtkBar(nodeList,connectivity,edgeValue,folderName, NameFile,Type,TimeStep)
 % Prints output for owunded and unwounded cells
 % INPUT:
 % step = step number
@@ -6,43 +6,42 @@ function CreateVtkBar(Y,C,L,NameFile,Type,TimeStep)
 % lnod = nodal network connectivity
 
 %% ------- Initiate ---------------------------------------------------
-% str0='VTKResults';
-str0=NameFile;                          % First Name of the file 
-str4='.vtk';                            % extension
-str3=num2str(TimeStep);                
-str2=Type;
+% str0='VTKResults';                         % First Name of the file 
+filExt='.vtk';                            % extension
+strTimeStep=num2str(TimeStep);                
+strType=Type;
 R=pwd;
-newSubFolder = strcat(pwd,Esc,str0);    % make folder 
+newSubFolder = strcat(pwd,Esc,folderName);    % make folder 
 if ~exist(newSubFolder, 'dir')
     mkdir(newSubFolder);
 end
 cd(newSubFolder);        % go to the new folder 
 % Write non-ablated rod elements
-nameout=strcat('Nodal_Connectivity',str2,str3,str4);   % full name of the file 
+nameout=strcat(NameFile,strType,strTimeStep,filExt);   % full name of the file 
 file=fopen(nameout,'w');
 fprintf(file,'%s\n','# vtk DataFile Version 3.98');
 fprintf(file,'%s\n','Delaunay_vtk');
 fprintf(file,'%s\n','ASCII');
 fprintf(file,'%s\n','DATASET UNSTRUCTURED_GRID');
-nodes=size(Y,1);
+totalNodes=size(nodeList,1);
 
 %% ------- Write Points ---------------------------------------------------
-fprintf(file,'%s %d %s\n','POINTS',nodes,'float');
-dim=size(Y,2);
-for i=1:nodes
+fprintf(file,'%s %d %s\n','POINTS',totalNodes,'float');
+dim=size(nodeList,2);
+for i=1:totalNodes
     if dim==2
-        fprintf(file,' %f %f %f\n',Y(i,1),Y(i,2),0);
+        fprintf(file,' %f %f %f\n',nodeList(i,1),nodeList(i,2),0);
     else
-        fprintf(file,' %f %f %f\n',Y(i,1),Y(i,2),Y(i,3));
+        fprintf(file,' %f %f %f\n',nodeList(i,1),nodeList(i,2),nodeList(i,3));
     end
 end
 
 %% ------- Write connectivity ---------------------------------------------
-nT1=size(C,1);
-nT2=size(C,2);
+nT1=size(connectivity,1);
+nT2=size(connectivity,2);
 
 fprintf(file,'%s %d %d\n','CELLS',nT1,nT1*(nT2+1));
-TT=C-1;
+TT=connectivity-1;
 for j=1:nT1
     fprintf(file,'%d %d %d\n',nT2,TT(j,1),TT(j,2));
 end
@@ -52,10 +51,10 @@ for j=1:nT1
 end
 
 fprintf(file,'%s %d \n','CELL_DATA',nT1);
-fprintf(file,'%s \n','SCALARS RestLength double ');
+fprintf(file,'%s \n',strcat('SCALARS ', Type,' double '));
 fprintf(file,'%s \n','LOOKUP_TABLE default');
-for i=1:size(C,1)
-    fprintf(file,'%f\n',(L.L(i)-L.L0(i))/L.L0(i));
+for i=1:size(connectivity,1)
+    fprintf(file,'%f\n',edgeValue(i));
 end
 
 

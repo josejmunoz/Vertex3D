@@ -13,7 +13,6 @@ edgeConnections = vertcat(Cell.Cv{:});
 edgeConnections(edgeConnections < 0) = abs(edgeConnections(edgeConnections < 0)) + size(Y.DataRow, 1);
 edgeLengths = vertcat(Cell.EdgeLengths{:});
 
-computeEnergyContractility(l_i0, l_i);
 CreateVtkBar(edgeVertices, edgeConnections, edgeLengths, folder, 'Edges_','contractility',TimeStep)
 if ~isempty(T)
     CreateVtkTet(X,T,folder,TimeStep)

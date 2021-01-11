@@ -14,12 +14,14 @@ InputCompression
 % InputStretch
 % InputSubstrateExtrusion
 
+outputResultsName = 'CompressionNoAblation_3x1_';
+
 [Set]=SetDefault(Set);
 InitiateOutputFolder(Set)
 %% Mesh generation
 [X]=Example(Set.e);
 [X,Y,Yt,T,XgID,Cell,Faces,Cn,~,Yn,SCn,Set,XgSub]=InitializeGeometry3DVertex(X,Set);
-if Set.VTK, PostProcessingVTK(X,Y,T.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),0,Set); end
+if Set.VTK, PostProcessingVTK(X,Y,T.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,outputResultsName),0,Set); end
 fprintf('Model Initialized... \n');
 
 %% Initialize Data
@@ -126,7 +128,7 @@ while t<=Set.tend
     fprintf('Step: %i,Iter: %i ||gr||= %e ||dyr||= %e dt/dt0=%.3g\n',i,0,gr,dyr,Set.dt/Set.dt0);
     
     if Set.VTK_iter, InitVtk(strcat(Set.OutputFolder,Esc,'ResultVTK_iter')); end
-    if Set.VTK, PostProcessingVTK(X,Y,T.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end
+    if Set.VTK, PostProcessingVTK(X,Y,T.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,outputResultsName),Set.iIncr,Set); end
     
     Set.iter=1;
     auxgr=zeros(3,1);
@@ -205,7 +207,7 @@ while t<=Set.tend
         EnergyB(i)=Energy.EB;
         EnergyF(i)=Energy.Ef;
         if Set.Contractility,    EnergyC(i)=Energy.Ec; end 
-        if Set.VTK, PostProcessingVTK(X,Y,T.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end
+        if Set.VTK, PostProcessingVTK(X,Y,T.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,outputResultsName),Set.iIncr,Set); end
         Yn=Y;
         SCn=Cell.FaceCentres;
         Cell = Cell.computeEdgeLengths(Y);

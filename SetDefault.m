@@ -258,14 +258,14 @@ end
 %     -Set.VFixd=-1.5;         % Vertices with y-coordinates > Set.VPrescribed are those to be prescribed (pulled)
 %     -Set.VPrescribed=1.5;    % Vertices with y-coordinates < Set.VFixed are those to be fixed
 %     -Set.dx=1;               % Total displacement of prescribed vertices 
-%     -Set.TStratBC=20;        % The time at which boundary conditions start to be applied    
+%     -Set.TStartBC=20;        % The time at which boundary conditions start to be applied    
 %     -Set.TStopBC=100;        % The time at which boundary conditions are removed    
 
 % ------------- Compression test  (Input Sample)  -------------------------
 % Set.BC=2;  %  Compression
 %        -Set.VFixd=-1;         % Vertices with y-coordinates > Set.VPrescribed are those to be prescribed (pulled)
 %        -Set.dx=1;             % Total displacement  
-%        -Set.TStratBC=20;      % The time at which boundary conditions start to be applied    
+%        -Set.TStartBC=20;      % The time at which boundary conditions start to be applied    
 %       -Set.TStopBC=100;       % The time at which boundary conditions are removed 
 
 % Set.BC =~ 1,2;  % Substrate
@@ -291,7 +291,11 @@ if ~isfield(Set, 'TAblation')
 end
 
 if ~isfield(Set, 'cellsToAblate')
-    Set.cellsToAblate = [5];
+    if Set.e == 1
+        Set.cellsToAblate = [2];
+    else
+        Set.cellsToAblate = [5];
+    end
 end
 
 %% ============================= PostProcessing ===========================
@@ -303,7 +307,7 @@ end
 if ~isfield(Set,'VTK') % Vtk files for each time step
     Set.VTK=true;
 end 
-if ~isfield(Set,'gVTK') % Vtk files of forces  (arrows) 
+if ~isfield(Set,'gVTK') % NOT YET! Vtk files of forces  (arrows) 
     Set.gVTK=false;
 end 
 if ~isfield(Set,'VTK_iter') % vtk file for each iteration

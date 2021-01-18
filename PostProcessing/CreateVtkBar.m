@@ -51,7 +51,7 @@ for j=1:nT1
 end
 
 fprintf(file,'%s %d \n','CELL_DATA',nT1);
-fprintf(file,'%s \n',strcat('SCALARS ', Type,' double '));
+fprintf(file,'%s \n',strcat('SCALARS RestLength double '));
 fprintf(file,'%s \n','LOOKUP_TABLE default');
 for i=1:size(connectivity,1)
     fprintf(file,'%f\n',edgeValue(i));

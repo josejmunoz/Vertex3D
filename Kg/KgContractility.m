@@ -46,8 +46,8 @@ for numCell = 1:Cell.n
         if  edgeVertices(numEdge, 2) > 0 %Vertex
             y_2 = Y.DataRow(edgeVertices(numEdge, 2), :);
         else %Face center
-            edgeVertices(numEdge, 2) = abs(edgeVertices(numEdge, 2));
-            y_2 = Cell.FaceCentres.DataRow(edgeVertices(numEdge, 2), :);
+            y_2 = Cell.FaceCentres.DataRow(abs(edgeVertices(numEdge, 2)), :);
+            edgeVertices(numEdge, 2) = abs(edgeVertices(numEdge, 2)) + Y.n;
         end
         
         l_i = edgeLengths(numEdge, 1);

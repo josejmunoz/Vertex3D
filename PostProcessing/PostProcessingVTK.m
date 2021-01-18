@@ -11,9 +11,9 @@ CreateVtkBar(X,Cn,ones(size(Cn, 1)),folder, 'Nodal_Connectivity','n',TimeStep)
 edgeVertices = vertcat(Y.DataRow, Cell.FaceCentres.DataRow);
 edgeConnections = vertcat(Cell.Cv{:});
 edgeConnections(edgeConnections < 0) = abs(edgeConnections(edgeConnections < 0)) + size(Y.DataRow, 1);
-edgeLengths = vertcat(Cell.EdgeLengths{:});
+forceToDisplay = vertcat(Cell.ContractileForces{:});
 
-CreateVtkBar(edgeVertices, edgeConnections, edgeLengths, folder, 'Edges_','contractility',TimeStep)
+CreateVtkBar(edgeVertices, edgeConnections, forceToDisplay, folder, 'Edges_','contractility',TimeStep)
 if ~isempty(T)
     CreateVtkTet(X,T,folder,TimeStep)
 end 

@@ -97,6 +97,7 @@ classdef CellClass
         %--------------------------------------------------------------------
         GhostCells            % Ghost cells
         %--------------------------------------------------------------------
+        ContractileForces
     end
     methods
         function Cell = CellClass(nC,xInternal)
@@ -126,6 +127,7 @@ classdef CellClass
                 Cell.EdgeLengths0_average=-1;
                 Cell.EdgeLengthsn=cell(nC,1);
                 Cell.GhostCells=zeros(nC, 1);
+                Cell.ContractileForces=cell(nC, 1);
             end
         end
         
@@ -195,6 +197,8 @@ classdef CellClass
                     allEdges = vertcat(allEdges, sort([obj.Cv{numCell}(e,1) obj.Cv{numCell}(e,2)]));
                     obj.EdgeLengths{numCell}(e)=norm(Y1-Y2);
                 end
+                
+                obj.ContractileForces{numCell} = zeros(size(obj.Cv{numCell}, 1), 1);
             end
             [~, uniqueEdges] = unique(allEdges, 'rows');
         end

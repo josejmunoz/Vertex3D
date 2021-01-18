@@ -28,13 +28,15 @@ energy = 0;
 [Cell] = Cell.computeEdgeLengths(Y);
 
 for numCell = 1:Cell.n
+    edgeVertices = Cell.Cv{numCell};
+    
     if ~Cell.GhostCells(numCell)
+        Cell.ContractileForces{numCell} = zeros(size(edgeVertices, 1), 1);
         continue;
     end
     
     edgeLengths = Cell.EdgeLengths{numCell};
     edgeLengths0_average = Cell.EdgeLengths0_average;
-    edgeVertices = Cell.Cv{numCell};
     
     contractileForcesOfCell = zeros(size(edgeVertices, 1), 1);
     

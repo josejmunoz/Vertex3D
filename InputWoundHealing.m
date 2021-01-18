@@ -1,5 +1,5 @@
 %% geometry
-Set.e=1;  % Example Number look in Geo\Example.m 
+Set.e=4;  % Example Number look in Geo\Example.m 
 Set.Method=1;
 % Tuning parameters
 Set.s=1.5;
@@ -47,14 +47,14 @@ Set.BC=2;  %  Compression
        Set.TStopBC=100;       % The time at which boundary conditions are removed 
     
 %% Contractility
-% Set.Contractility = true;
-% Set.cContractility = 0.03;
-% 
-% 
-% 
-% %% Ablating cells
-% 
-% Set.Ablation = true;
+Set.Contractility = 0;
+Set.cContractility = 0.03;
+
+
+
+%% Ablating cells
+
+Set.Ablation = true;
 
 
 

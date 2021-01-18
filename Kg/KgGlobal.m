@@ -77,7 +77,7 @@ if nargout>1
     
     
     % ----------------- Contractility -------------------------------------
-    if Set.Contractility
+    if Set.cContractility > 0
         [gC,KC,Cell,Energy.Ec]=KgContractility(Cell,Y,Set);
          K=K+KC; g=g+gC;
     end
@@ -131,7 +131,7 @@ else
     end
     
     % ----------------- Contractility -------------------------------------
-    if Set.Contractility
+    if Set.cContractility > 0
         [gc]=KgContractility(Cell,Y,Set);
         g=g+gc;
     end

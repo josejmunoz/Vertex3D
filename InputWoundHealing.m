@@ -38,19 +38,10 @@ Set.RemodelingFrequency=2;
 %% time
 Set.tend=300;
 Set.Nincr=300;
-
-%%  Boundary Displacement 
-Set.BC=2;  %  Compression
-       Set.VFixd=-1;         % Vertices with y-coordinates > Set.VPrescribed are those to be prescribed (pulled)
-       Set.dx=1;             % Total displacement  
-       Set.TStartBC=20;      % The time at which boundary conditions start to be applied    
-       Set.TStopBC=100;       % The time at which boundary conditions are removed 
     
 %% Contractility
 Set.Contractility = 0;
-Set.cContractility = 0.03;
-
-
+Set.cContractility = 0.01;
 
 %% Ablating cells
 

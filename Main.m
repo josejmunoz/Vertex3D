@@ -10,11 +10,12 @@ addpath(strcat(pwd,Esc,'PostProcessing'));
 addpath(strcat(pwd,Esc,'Kg'));
 
 
-InputCompression
+%InputCompression
 % InputStretch
 % InputSubstrateExtrusion
+InputWoundHealing
 
-outputResultsName = 'CompressionNoAblation_3x1_';
+outputResultsName = 'CompressionAblationNoRemodel_3x1_';
 
 [Set]=SetDefault(Set);
 InitiateOutputFolder(Set)

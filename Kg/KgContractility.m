@@ -36,6 +36,8 @@ for numCell = 1:Cell.n
     edgeLengths0_average = Cell.EdgeLengths0_average;
     edgeVertices = Cell.Cv{numCell};
     
+    contractileForcesOfCell = zeros(size(edgeVertices, 1), 1);
+    
     for numEdge = 1:length(edgeLengths)
         y_1 = Y.DataRow(edgeVertices(numEdge, 1), :);
         
@@ -52,6 +54,7 @@ for numCell = 1:Cell.n
         %% Calculate residual g
         g_current = computeGContractility(l_i0, l_i, y_1, y_2, C, Set);
         g = Assembleg(g, g_current, edgeVertices(numEdge, :));
+        contractileForcesOfCell(numEdge, 1) = norm(g_current(1:3));
         
         %% Save contractile forces (g) to output
         
@@ -71,6 +74,8 @@ for numCell = 1:Cell.n
             energy = energy + computeEnergyContractility(l_i0, l_i, C, Set);
         end
     end
+    
+    Cell.ContractileForces{numCell} = contractileForcesOfCell;
 end
 
 if Set.Sparse && nargout>1

@@ -35,6 +35,9 @@ celsize=4*nTries;
 nn=0;
 fprintf(file,'%s %d %d\n','CELLS',nTries,celsize);
 for iCell=1:ncell
+    if Cell.GhostCells(iCell)
+        continue;
+    end
     for i=1:size(Cell.Tris{iCell},1)
         nY=Cell.Tris{iCell}(i,:);
         if nY(3)<0
@@ -64,6 +67,9 @@ fprintf(file,'%s \n','LOOKUP_TABLE default');
 %
 color=rand(ncell,1)*10;
 for i=1:ncell
+    if Cell.GhostCells(i)
+        continue;
+    end
     ntri=ones(size(Cell.Tris{i},1),1);
 %     Cell.Vol(i)=Cell.Vol(i)+color(i);
 
@@ -79,6 +85,9 @@ fprintf(file,'%s \n','SCALARS RelAreaChange double');
 fprintf(file,'%s \n','LOOKUP_TABLE default');
 %
 for i=1:ncell
+    if Cell.GhostCells(i)
+        continue;
+    end
     ntri=ones(size(Cell.Tris{i},1),1);
 %     Cell.Vol(i)=Cell.Vol(i)+color(i);
 
@@ -92,6 +101,9 @@ fprintf(file,'%s \n','SCALARS TriAreaChange double');
 fprintf(file,'%s \n','LOOKUP_TABLE default');
 
 for i=1:ncell
+    if Cell.GhostCells(i)
+        continue;
+    end
     for t=1:length(Cell.SAreaTri{i})
 %     ntri=ones(size(Cell.Tris{i},1),1);
 %     Cell.Vol(i)=Cell.Vol(i)+color(i);

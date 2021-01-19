@@ -35,9 +35,6 @@ celsize=4*nTries;
 nn=0;
 fprintf(file,'%s %d %d\n','CELLS',nTries,celsize);
 for iCell=1:ncell
-    if Cell.GhostCells(iCell)
-        continue;
-    end
     for i=1:size(Cell.Tris{iCell},1)
         nY=Cell.Tris{iCell}(i,:);
         if nY(3)<0
@@ -67,9 +64,6 @@ fprintf(file,'%s \n','LOOKUP_TABLE default');
 %
 color=rand(ncell,1)*10;
 for i=1:ncell
-    if Cell.GhostCells(i)
-        continue;
-    end
     ntri=ones(size(Cell.Tris{i},1),1);
 %     Cell.Vol(i)=Cell.Vol(i)+color(i);
 
@@ -79,15 +73,12 @@ end
 
 
 
-% ADD RELATIVE VOLUME CHANGE
+% ADD RELATIVE Area CHANGE
 %fprintf(file,'%s %d \n','CELL_DATA',nTries);
 fprintf(file,'%s \n','SCALARS RelAreaChange double');
 fprintf(file,'%s \n','LOOKUP_TABLE default');
 %
 for i=1:ncell
-    if Cell.GhostCells(i)
-        continue;
-    end
     ntri=ones(size(Cell.Tris{i},1),1);
 %     Cell.Vol(i)=Cell.Vol(i)+color(i);
 
@@ -95,15 +86,12 @@ for i=1:ncell
 end
 
     
-% ADD RELATIVE VOLUME CHANGE
+% ADD RELATIVE Tri Area CHANGE
 %fprintf(file,'%s %d \n','CELL_DATA',nTries);
 fprintf(file,'%s \n','SCALARS TriAreaChange double');
 fprintf(file,'%s \n','LOOKUP_TABLE default');
 
 for i=1:ncell
-    if Cell.GhostCells(i)
-        continue;
-    end
     for t=1:length(Cell.SAreaTri{i})
 %     ntri=ones(size(Cell.Tris{i},1),1);
 %     Cell.Vol(i)=Cell.Vol(i)+color(i);
@@ -111,6 +99,20 @@ for i=1:ncell
          fprintf(file,'%f\n', (Cell.SAreaTri{i}(t)-Cell.SAreaTrin{i}(t))/Cell.SAreaTrin{i}(t));
     end 
 end
+
+% % Add ablated cells
+% fprintf(file,'%s %d\n','LOOKUP_TABLE ghostCells', nTries);
+% %
+% for i=1:ncell
+%     for t=1:length(Cell.SAreaTri{i})
+%         if Cell.GhostCells(i)
+%             fprintf(file,'%f %f %f %f\n', 1, 1, 1, 0.3);
+%         else
+%             fprintf(file,'%f %f %f %f\n', 1, 1, 1, 1.0);
+%         end
+%     end
+% end
+
 
 fclose(file);
 cd(R)

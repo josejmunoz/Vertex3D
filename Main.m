@@ -10,8 +10,8 @@ addpath(strcat(pwd,Esc,'PostProcessing'));
 addpath(strcat(pwd,Esc,'Kg'));
 
 
-InputCompression
-% InputStretch
+%InputCompression
+InputStretch % Example of 2 stretched cells
 % InputSubstrateExtrusion
 
 [Set]=SetDefault(Set);
@@ -24,7 +24,7 @@ fprintf('Model Initialized... \n');
 
 %% Initialize Data
 
-[CellInput]=InitializeInput(Cell,Set);
+CellInput=InitializeInput(Cell,Set);
 
 % Energy
 EnergyS=zeros(Set.Nincr,1);  Energy.Es=0;
@@ -48,14 +48,14 @@ Set.ApplyBC=true;
 
 % Dofs & Boundary
 if Set.BC==1 && ~Set.Substrate
-    [Dofs]=GetDOFs(Y,Cell,Faces,Set);
+    Dofs=GetDOFs(Y,Cell,Faces,Set);
 elseif Set.BC==2 && ~Set.Substrate
     Set.WallPosition=max(Y.DataRow(:,2))+0.2;
-    [Dofs]=GetWallBoundaryCondition(Set,Y,Cell,Faces);
+    Dofs=GetWallBoundaryCondition(Set,Y,Cell,Faces);
 elseif Set.Substrate
-    [Dofs]=GetDOFsSubsrtate(Y,Cell,Set,Faces);
+    Dofs=GetDOFsSubsrtate(Y,Cell,Set,Faces);
 else
-    error('Invalid Input ... \n')
+    error('Invalid Input in Set.BC and Set.Substrate. \n')
 end
 
 %% Loop over time
@@ -63,15 +63,8 @@ end
 tr=0;
 Set.nu0=Set.nu;
 Set.MaxIter0=Set.MaxIter;
-Set.Ablation = true;
-Set.TAblation = 1;
-cellsToAblate = [5];
-Set.Contractility=false;
-
 while t<=tend
-    
     if Set.SaveWorkspace,    save(strcat(Set.OutputFolder,Esc,'Workspace',Esc,['Workspace' num2str(i) '.mat'])); end
-    
     % Where this could be run?
     if Set.Ablation == true && Set.TAblation <= t
         Cell = Cell.AblateCells(cellsToAblate);
@@ -80,21 +73,16 @@ while t<=tend
         [Cell,Faces,nC,SCn,flag32] = ReBuildCells(Cell,T,Y,X,Faces,SCn);
         Set.Ablation = false;
     end
-    
     % ----------- Remodel--------------------------------------------------
     if Set.Remodelling && Set.ReModel && abs(t-tr)>=Set.RemodelingFrequency
         [Cell,Y,Yn,SCn,T,X,Faces,Dofs,Cn,Set]=Remodeling(Cell,Faces,Y,Yn,SCn,T,X,Set,Dofs,Energy,XgID,XgSub,CellInput);
         Set.ReModel=false;
         tr=t;
     end  % ----------------------------------------------------------------
-    
     %   Copy configuration in case the current step dose not converge  and need
     %   to be repeated
     tp=t; Yp=Y; Cellp=Cell;
-    
-    
     Set.iIncr=i;
-    
     % ----------- Apply Boundary Condition --------------------------------
     if Set.BC==1 && t<=Set.TStopBC && t>=Set.TStartBC && Set.ApplyBC
         Y.DataRow(Dofs.PrescribedY,2)=Y.DataRow(Dofs.PrescribedY,2)+Set.dx/((Set.TStopBC-Set.TStartBC)/Set.dt);
@@ -117,12 +105,8 @@ while t<=tend
     Yt=[Y.DataOrdered ;Cell.FaceCentres.DataOrdered];
     y=reshape(Yt',Set.NumTotalV*3,1);
     yn=reshape(Ytn',Set.NumTotalV*3,1);
-    
-    
     % ----------- Compute K, g ---------------------------------------
     [g,K,Cell,Energy]=KgGlobal(Cell,Faces,Y,y,yn,Set,CellInput,XgSub);
-    
-    
     dy=zeros(size(y));
     dyr=norm(dy(Dofs.FreeDofs));
     gr=norm(g(Dofs.FreeDofs));
@@ -145,23 +129,17 @@ while t<=tend
         Yt=reshape(y,3,Set.NumTotalV)';
         Y=Y.Modify(Yt(1:Set.NumMainV,:));
         Cell.FaceCentres=Cell.FaceCentres.Modify(Yt(Set.NumMainV+1:Set.NumTotalV,:));
-        
-        
         if Set.nu > Set.nu0 &&  gr<1e-8
             Set.nu = max(Set.nu/2,Set.nu0);
         end
-        
         % ----------- Compute K, g ---------------------------------------
         [g,K,Cell,Energy]=KgGlobal(Cell,Faces,Y,y,yn,Set,CellInput,XgSub);
-        
-        
         dyr=norm(dy(Dofs.FreeDofs));
         gr=norm(g(Dofs.FreeDofs));
         fprintf('Step: % i,Iter: %i, Time: %g ||gr||= %.3e ||dyr||= %.3e alpha= %.3e  nu/nu0=%.3g \n',i,Set.iter,t,gr,dyr,alpha,Set.nu/Set.nu0);
         if Set.VTK_iter, PostProcessingVTK(X,Y,T.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK_iter'),Set.iter,Set); end
         Set.iter=Set.iter+1;
         Set.N_Global_Iterations=Set.N_Global_Iterations+1;
-        
         auxgr(ig+1)=gr;
         if ig ==2
             ig=0;
@@ -175,8 +153,6 @@ while t<=tend
             Set.iter=Set.MaxIter;
         end
     end%=================================================================
-    
-    
     if Set.iter == Set.MaxIter0 &&  (gr>Set.tol || dyr>Set.tol)
         fprintf('Convergence was not achieved ... \n');
         fprintf('First strategy ---> Repeating the step with higher viscosity... \n');
@@ -185,8 +161,6 @@ while t<=tend
         Cell=Cellp;
         Set.MaxIter=Set.MaxIter0*3;
         Set.nu=10*Set.nu0;
-
-         
      elseif Set.iter == Set.MaxIter && Set.iter > Set.MaxIter0  && Set.dt>Set.dt0/(2^6) && (gr>Set.tol || dyr>Set.tol)
          fprintf('Convergence was not achieved ... \n');
          fprintf('Second strategy ---> Repeating the step with half step-size...\n');
@@ -195,8 +169,7 @@ while t<=tend
          Cell=Cellp;
          Set.MaxIter=Set.MaxIter0;
          Set.nu=Set.nu0;
-         Set.dt=Set.dt/2;
-         
+         Set.dt=Set.dt/2;         
      elseif gr>Set.tol || dyr>Set.tol || any(isnan(g(Dofs.FreeDofs))) || any(isnan(dy(Dofs.FreeDofs)))
          fprintf('Step %i did not converge !! \n',Set.iIncr);
          break;
@@ -224,10 +197,6 @@ while t<=tend
         Set.dt=min(Set.dt+Set.dt*0.5,Set.dt0);
         Set.ReModel=true;
         Set.ApplyBC=true;
-        
-        
-
-        
     end
 end
 %%

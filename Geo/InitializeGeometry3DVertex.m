@@ -123,7 +123,7 @@ end
 Set.NumMainV=Y.n;
 Set.NumAuxV=Cell.FaceCentres.n;
 Set.NumTotalV=Set.NumMainV+Set.NumAuxV;
-[Cn]=BuildCn(Twg);
+Cn=BuildCn(Twg);
 
 Faces=Faces.ComputeAreaTri(Y.DataRow,Cell.FaceCentres.DataRow);
 if Set.Substrate

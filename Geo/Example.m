@@ -1,5 +1,10 @@
 function [X]=Example(e)
-
+% Returns cell centres according to value of e. Cell centres form:
+% e=1 : three aligned cells
+%  =2 : a sphere
+%  =3 : a cylinder
+%  =4 : 3x3 grid and one layer
+%  =5 : 3x3 grid and two layers
 
 if e==1
     X=0;
@@ -42,8 +47,8 @@ elseif e==3
     X=unique(X,'rows');    
     k=0;
     for i=1:10
-    X(k+1:k+n,1)=X(k+1:k+n,1)+(cos(t)+1)'*6;
-    k=k+n;
+        X(k+1:k+n,1)=X(k+1:k+n,1)+(cos(t)+1)'*6;
+        k=k+n;
     end 
     
 elseif e==4

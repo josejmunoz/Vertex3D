@@ -1,0 +1,21 @@
+Versions of Netwrok Code (3D vertex)
+
+   % Geometery: seeding nodes 
+   % Volume Energy:
+   % surface energy: Area-Cellbased/Facebased/TrianguleBased
+   % Energy barrier to protect samll triangules: exponential/Log 
+  
+
+1.0: % Remodeling included
+
+5.0: 
+  % surfaces-centers with 3 vertices are removed
+  % 4-4 flip
+  % substrate 
+  % three examples( stretch-compression-extrusion)
+
+6.0: 
+% Remodelling of vertices using center line through nodes and mean positions of vertices.
+% Nodes are centered on coordinate (0,0,0)
+
+6.1. Corrected Set.Defaults

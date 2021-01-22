@@ -44,7 +44,6 @@ Set.Contractility = 0;
 Set.cContractility = 0.01;
 
 %% Ablating cells
-
 Set.Ablation = true;
 
 

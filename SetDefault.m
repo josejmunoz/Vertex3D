@@ -281,22 +281,6 @@ if ~isfield(Set,'BC') && ~Set.Substrate
 elseif  Set.Substrate
     Set.BC=nan;
 end 
-%% ============================= Cell ablation ============================
-
-if ~isfield(Set,'Ablation')
-    Set.Ablation = false;
-end
-if ~isfield(Set, 'TAblation')
-    Set.TAblation = 1;
-end
-
-if ~isfield(Set, 'cellsToAblate')
-    if Set.e == 1
-        Set.cellsToAblate = [2];
-    else
-        Set.cellsToAblate = [5];
-    end
-end
 
 %% ============================= PostProcessing ===========================
 
@@ -323,5 +307,26 @@ if ~isfield(Set,'SaveSetting')
     Set.SaveSetting=false;
 end 
        
+%% ============================= Ablation ===========================
+if ~isfield(Set,'Ablation') % Apply ablation (mechanical removal) of some cells
+    Set.Ablation = false;
+end
+%Type of abaltion. =1 Only mechanical (no volume/surface/bending/dissipation potentials). =2 Fully removal, including cell-center, which becomes boundary node.
 
+if ~isfield(Set,'TAblation') % Time when ablation is applied
+    Set.TAblation = 1;
+end
+if ~isfield(Set, 'cellsToAblate')
+    if Set.e == 1
+        Set.cellsToAblate = [2];
+    else
+        Set.cellsToAblate = [5];
+    end
+end
+if ~isfield(Set,'Contractility') % =0. No contractility applied. =1 Isotropic Contracitility. =2 Vertically Aligned Contractility 
+    Set.Contractility=0;
+end
+if ~isfield(Set,'cContractility') % Contractility coefficient
+    Set.cContractility=0.0;
+end
 end 

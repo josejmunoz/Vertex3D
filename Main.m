@@ -89,11 +89,8 @@ while t<=Set.tend
     
     %   Copy configuration in case the current step dose not converge  and need
     %   to be repeated
-    tp=t; Yp=Y; Cellp=Cell;
-    
-    
-    Set.iIncr=i;
-    
+    Yp=Y; Cellp=Cell;
+    Set.iIncr=i;   
     % ----------- Apply Boundary Condition --------------------------------
     if Set.BC==1 && t<=Set.TStopBC && t>=Set.TStartBC && Set.ApplyBC
         Y.DataRow(Dofs.PrescribedY,2)=Y.DataRow(Dofs.PrescribedY,2)+Set.dx/((Set.TStopBC-Set.TStartBC)/Set.dt);
@@ -175,17 +172,13 @@ while t<=Set.tend
         end
     end%=================================================================
     
-    
     if Set.iter == Set.MaxIter0 &&  (gr>Set.tol || dyr>Set.tol)
         fprintf('Convergence was not achieved ... \n');
         fprintf('First strategy ---> Repeating the step with higher viscosity... \n');
-        t=tp;
         Y=Yp;
         Cell=Cellp;
         Set.MaxIter=Set.MaxIter0*3;
         Set.nu=10*Set.nu0;
-
-         
      elseif Set.iter == Set.MaxIter && Set.iter > Set.MaxIter0  && Set.dt>Set.dt0/(2^6) && (gr>Set.tol || dyr>Set.tol)
          fprintf('Convergence was not achieved ... \n');
          fprintf('Second strategy ---> Repeating the step with half step-size...\n');
@@ -195,11 +188,11 @@ while t<=Set.tend
          Set.MaxIter=Set.MaxIter0;
          Set.nu=Set.nu0;
          Set.dt=Set.dt/2;
-         
+         StepSize(i)=Set.dt;
+         t=t+Set.dt;
      elseif gr>Set.tol || dyr>Set.tol || any(isnan(g(Dofs.FreeDofs))) || any(isnan(dy(Dofs.FreeDofs)))
          fprintf('Step %i did not converge !! \n',Set.iIncr);
          break;
-         
     else
         fprintf('STEP %i has converged ...\n',Set.iIncr)
         [X]=GetXFromY(Cell,Faces,X,T,Y,XgID,XgSub,Set);
@@ -216,6 +209,7 @@ while t<=Set.tend
             Cell.SAreaTrin{ii}=Cell.SAreaTri{ii};
             Cell.EdgeLengthsn{ii}=Cell.EdgeLengths{ii};
         end
+        tp=t;
         t=t+Set.dt;
         i=i+1;
         StepSize(i)=Set.dt;
@@ -223,10 +217,6 @@ while t<=Set.tend
         Set.dt=min(Set.dt+Set.dt*0.5,Set.dt0);
         Set.ReModel=true;
         Set.ApplyBC=true;
-        
-        
-
-        
     end
 end
 %%

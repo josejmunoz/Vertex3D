@@ -323,10 +323,17 @@ if ~isfield(Set, 'cellsToAblate')
         Set.cellsToAblate = [5];
     end
 end
-if ~isfield(Set,'Contractility') % =0. No contractility applied. =1 Isotropic Contracitility. =2 Vertically Aligned Contractility 
-    Set.Contractility=0;
+
+%% ============================= Contractility ============================
+
+if ~isfield(Set, 'cContractility')  % Contractility coefficient
+    Set.cContractility = 0.0;
 end
-if ~isfield(Set,'cContractility') % Contractility coefficient
-    Set.cContractility=0.0;
+
+if ~isfield(Set, 'Contractility')
+    Set.Contractility = 0; % Isotropic Contracitility
+    % Other possibilities:
+    % Set.Contractility = 1; % Vertically Aligned Contractility 
+    % Set.Contractility = 2; % Adding area of adjacent triangles
 end
 end 

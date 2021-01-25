@@ -1,15 +1,24 @@
 function PostProcessingVTK(X,Y,T,Cn,Cell,folder,TimeStep,Set)
 % Create VTK files 
 
+CellNoAblated = Cell.removeCells(Set.cellsToAblate);
+CellOnlyAblated = Cell.removeCells(Cell.Int(Cell.Int ~= Set.cellsToAblate));
 
+%Create Cell Volume
+CreateVtkVol(Y.DataOrdered,Cell,X,folder, '_All',TimeStep)
 
-CreateVtkVol(Y.DataOrdered,Cell,X,folder,TimeStep)
+CreateVtkVol(Y.DataOrdered,CellNoAblated,X,folder, '_NoAblated', TimeStep)
 
+CreateVtkVol(Y.DataOrdered,CellOnlyAblated,X,folder,'_OnlyAblated', TimeStep)
 
+%Create node connections
 CreateVtkBar(X,Cn,ones(size(Cn, 1)),folder, 'Nodal_Connectivity','n',TimeStep)
 
+allCells = Cell.Int;
+allCells(ismember(allCells, Set.cellsToAblate)) = [];
+
 edgeVertices = vertcat(Y.DataRow, Cell.FaceCentres.DataRow);
-edgeConnections = vertcat(Cell.Cv{:});
+edgeConnections = vertcat(Cell.Cv{allCells});
 edgeConnections(edgeConnections < 0) = abs(edgeConnections(edgeConnections < 0)) + size(Y.DataRow, 1);
 forceToDisplay = vertcat(Cell.ContractileForces{:});
 

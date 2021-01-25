@@ -1,7 +1,7 @@
-function CreateVtkVol(Y,Cell,X,NameFile,TimeStep)
+function CreateVtkVol(Y,Cell,X,outputDir, suffix,TimeStep)
 %% ------- Initiate ---------------------------------------------------
 % str0='VTKResults';
-str0=NameFile;                          % First Name of the file 
+str0=outputDir;                          % First Name of the file 
 str2='.vtk';                            % extension
 str1=num2str(TimeStep);
 R=pwd;
@@ -11,7 +11,7 @@ if ~exist(newSubFolder, 'dir')
 end
 cd(newSubFolder);        % go to the new folder 
 % Write non-ablated rod elements
-nameout=strcat('Cells',str1,str2);   % full name of the file 
+nameout=strcat('Cells', suffix, '_',str1,str2);   % full name of the file 
 file=fopen(nameout,'w');
 fprintf(file,'%s\n','# vtk DataFile Version 3.98');
 fprintf(file,'%s\n','Delaunay_vtk');

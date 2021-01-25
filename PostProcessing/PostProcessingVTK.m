@@ -7,22 +7,35 @@ CellOnlyAblated = Cell.removeCells(Cell.Int(Cell.Int ~= Set.cellsToAblate));
 %Create Cell Volume
 CreateVtkVol(Y.DataOrdered,Cell,X,folder, '_All',TimeStep)
 
-CreateVtkVol(Y.DataOrdered,CellNoAblated,X,folder, '_NoAblated', TimeStep)
-
-CreateVtkVol(Y.DataOrdered,CellOnlyAblated,X,folder,'_OnlyAblated', TimeStep)
-
 %Create node connections
 CreateVtkBar(X,Cn,ones(size(Cn, 1)),folder, 'Nodal_Connectivity','n',TimeStep)
 
-allCells = Cell.Int;
-allCells(ismember(allCells, Set.cellsToAblate)) = [];
-
+%Display contractile forces
 edgeVertices = vertcat(Y.DataRow, Cell.FaceCentres.DataRow);
-edgeConnections = vertcat(Cell.Cv{allCells});
-edgeConnections(edgeConnections < 0) = abs(edgeConnections(edgeConnections < 0)) + size(Y.DataRow, 1);
-forceToDisplay = vertcat(Cell.ContractileForces{:});
 
-CreateVtkBar(edgeVertices, edgeConnections, forceToDisplay, folder, 'Edges_','contractility',TimeStep)
+edgeConnections_All = vertcat(Cell.Cv{:});
+edgeConnections_All(edgeConnections_All < 0) = abs(edgeConnections_All(edgeConnections_All < 0)) + size(Y.DataRow, 1);
+forceToDisplay_All = vertcat(Cell.ContractileForces{:});
+
+CreateVtkBar(edgeVertices, edgeConnections_All, forceToDisplay_All, folder, 'AllEdges_','contractility',TimeStep)
+
+if Set.Ablation
+    %Create Cell Volume
+    CreateVtkVol(Y.DataOrdered,CellNoAblated,X,folder, '_NoAblated', TimeStep)
+    CreateVtkVol(Y.DataOrdered,CellOnlyAblated,X,folder,'_OnlyAblated', TimeStep)
+    
+    %Display contractile forces
+    edgeConnections_NoAblated = vertcat(CellNoAblated.Cv{:});
+    edgeConnections_NoAblated(edgeConnections_NoAblated < 0) = abs(edgeConnections_NoAblated(edgeConnections_NoAblated < 0)) + size(Y.DataRow, 1);
+    forceToDisplay_NoAblated = vertcat(CellNoAblated.ContractileForces{:});
+    CreateVtkBar(edgeVertices, edgeConnections_NoAblated, forceToDisplay_NoAblated, folder, 'NoAblatedEdges_','contractility',TimeStep)
+    
+    edgeConnections_OnlyAblated= vertcat(CellOnlyAblated.Cv{:});
+    edgeConnections_OnlyAblated(edgeConnections_OnlyAblated < 0) = abs(edgeConnections_OnlyAblated(edgeConnections_OnlyAblated < 0)) + size(Y.DataRow, 1);
+    forceToDisplay_OnlyAblated = vertcat(CellOnlyAblated.ContractileForces{:});
+    CreateVtkBar(edgeVertices, edgeConnections_OnlyAblated, forceToDisplay_OnlyAblated, folder, 'OnlyAblatedEdges_','contractility',TimeStep)
+end
+
 if ~isempty(T)
     CreateVtkTet(X,T,folder,TimeStep)
 end 
@@ -38,14 +51,3 @@ if Set.Confinement, CreateVtkConfinement(Set,folder,TimeStep); end
 % end 
 
 end 
-
-
-
-% CnNN=Cn(~any(ismember(Cn,XgID),2),:);
-% CnNB=Cn(~(sum(ismember(Cn,XgID),2)==2),:);
-% CreateVtkBar(X,CnNN,Ln,file,'nNN',TimeStep)
-% CreateVtkBar(X,CnNB,Ln,file,'nNB',TimeStep)
-
-% Lv.L=ones(size(Cv,1),1);
-% Lv.L0=ones(size(Cv,1),1);
-% CreateVtkBar(Y,Cv,Lv,file,'v',TimeStep)

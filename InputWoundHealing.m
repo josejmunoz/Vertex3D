@@ -1,3 +1,5 @@
+Set.OutputFolder = 'Result/CompressionAblationNoRemodel_3x1';
+
 %% geometry
 Set.e=4;  % Example Number look in Geo\Example.m 
 Set.Method=1;
@@ -45,6 +47,7 @@ Set.cContractility = 0.01;
 
 %% Ablating cells
 Set.Ablation = true;
+Set.cellsToAblate = findCentralCells(Example(Set.e), 1);
 
 
 

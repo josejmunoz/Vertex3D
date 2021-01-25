@@ -1,8 +1,8 @@
 function PostProcessingVTK(X,Y,T,Cn,Cell,folder,TimeStep,Set)
 % Create VTK files 
 
-CellNoAblated = Cell.removeCells(Set.cellsToAblate);
-CellOnlyAblated = Cell.removeCells(Cell.Int(Cell.Int ~= Set.cellsToAblate));
+CellNoAblated = Cell.removeCells(Cell.Int(Cell.GhostCells));
+CellOnlyAblated = Cell.removeCells(Cell.Int(Cell.GhostCells));
 
 %Create Cell Volume
 CreateVtkVol(Y.DataOrdered,Cell,X,folder, '_All',TimeStep)

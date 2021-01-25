@@ -125,7 +125,8 @@ while t<=Set.tend
     gr0=gr;
     fprintf('Step: %i,Iter: %i ||gr||= %e ||dyr||= %e dt/dt0=%.3g\n',i,0,gr,dyr,Set.dt/Set.dt0);
     
-    if Set.VTK_iter, InitVtk(strcat(Set.OutputFolder,Esc,'ResultVTK_iter')); end
+    if Set.VTK_iter, InitVtk(strcat(Set.OutputFolder,Esc,outputResultsName,Esc,'ResultVTK_iter')); end
+    if Set.VTK, InitVtk(strcat(Set.OutputFolder,Esc,outputResultsName)); end
     if Set.VTK, PostProcessingVTK(X,Y,T.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,outputResultsName),Set.iIncr,Set); end
     
     Set.iter=1;

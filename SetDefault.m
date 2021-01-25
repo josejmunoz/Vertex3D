@@ -5,13 +5,14 @@ function [Set]=SetDefault(Set)
 if ~isfield(Set,'e')
     Set.e=1;
 end 
+% Placement of boundary nodes
 % Seeding method==1 % Bounding box   
 %         method==2 % DistanceFunction  
 if ~isfield(Set,'SeedingMethod')
     Set.SeedingMethod=1;
 end 
 
-% Tuning parameters
+% Size parameters
 if ~isfield(Set,'s')  % The average Cell size 
     Set.s=1.5;
 end 
@@ -56,7 +57,7 @@ if ~isfield(Set,'lambdaV')    %  Volume-Energy Constant (bulk modulus).
 end 
 %---------- Surface -------------------------------------------------------
 % Set.SurfaceType=1 : Surface-Energy based on the whole Cell-area
-%        - Set.A0eq0=false --> W_s= sum_cell ((Ac-Ac0)/Ac0)^2  (Ac: Cell area)
+%        - Set.A0eq0=false --> W_s= sum_cell ((Ac-Ac0)/Ac0)^2  (Ac: Cell area). Reference area larger than 0
 %        - Set.A0eq0=true  --> W_s= sum_cell (Ac/Ac0)^2
 %        - Set.lambdaS=1>0;
 
@@ -64,7 +65,7 @@ end
 % Energy --> W_s= lambdaS* sum_cell ((Af-Af0)/A0)^2  (Af: face area)
 %        - Set.lambdaS=1>0;
 
-% Set.SurfaceType=4 : Surface-Energy based on the whole cell area differential adhsion
+% Set.SurfaceType=4 : Surface-Energy based on the whole cell area with differentited contacts
 %  Energy -->  W_s= sum_cell( sum_face (lambdaS*factor_f(Af)^2) / Ac0^2 )
 %          - Set.lambdaS1=1>0;    Tension coefficient for external faces
 %               - Set.LambdaS1CellFactor=[Cell_Number Factor];    
@@ -95,10 +96,10 @@ if ~isfield(Set,'EnergyBarrier') % Off/On
    Set.EnergyBarrier=true;
 end 
 
-if ~isfield(Set,'lambdaB')
+if ~isfield(Set,'lambdaB') % Factor for small triangle energy barreir
      Set.lambdaB=5;
 end 
-if ~isfield(Set,'Beta')
+if ~isfield(Set,'Beta') % for small triangle energy barreir
    Set.Beta=1;
 end 
 
@@ -115,21 +116,16 @@ end
 %                       where  theta: the angle between the pair of triangles
 %                              At1 and At2 : the area of the triangles
 
-if ~isfield(Set,'Bending')    % Off/On
+if ~isfield(Set,'Bending')    % Off/On on bending energy on surface
    Set.Bending=false;
 end
-if ~isfield(Set,'lambdaBend') 
+if ~isfield(Set,'lambdaBend')  % Penalisation factor when Se.Bending=true
      Set.lambdaBend=0.01;
 end
 if ~isfield(Set,'BendingAreaDependent')
-    Set.BendingAreaDependent=true;
+    Set.BendingAreaDependent=true; % If tru include area weighting in bending (larger areas -> larger bending resistance.
 end 
 
-
-%------- Viscosity --------------------------------------------------------
-if ~isfield(Set,'nu') % Viscosity coefficient
-    Set.nu=0.05;  
-end 
 
 %--------Propulsion -------------------------------------------------------
 % Add random propulsion forces acting on bottom vertices  
@@ -150,10 +146,15 @@ end
 %           -Set.ConfinementX2=3;
 %           -Set.ConfinementY2=3;
 
+%% ============================= Viscosity ================================
+%------- Global Viscosity -------------------------------------------------
+if ~isfield(Set,'nu') % Global viscosity coefficient
+    Set.nu=0.05;      % W=(1/2) nu/dt sum( (y-yn)^2 )
+end 
 
 %-------- Set.LocalViscosity On Edges -------------------------------------
 % Local viscous effect based on the length of the edges between vertices
-% Potential: -> Set.BendingAreaDependent=1 : W=(1/2) nu_Local/dt sum( ((L-Ln)/Ln)^2 )
+% Potential: -> Set.LocalViscosityOption=1 : W=(1/2) nu_Local/dt sum( ((L-Ln)/Ln)^2 )
 %            -> Set.LocalViscosityOption=2 : W=(1/2) nu_Local/dt sum( (L-Ln)^2 )
 %                       where L: is the length at t_(n+1)
 %                             Ln:is the length at t_(n)
@@ -200,15 +201,15 @@ if ~isfield(Set,'Remodelling')  % Off/On
     Set.Remodelling=true;
 end 
 
-if ~isfield(Set,'RemodelTol')  % Remodelling Tolerance (Triangles with energy barrier > Set.RemodelTol, is to be remodelled)  
+if ~isfield(Set,'RemodelTol')  % Remodelling Tolerance (Triangles with energy barrier > Set.RemodelTol, are to be remodelled)  
     Set.RemodelTol=.5e-6;
 end 
 
-if ~isfield(Set,'RemodelingFrequency')  % (The time between remodelling events)
+if ~isfield(Set,'RemodelingFrequency')  % (The time between remodelling events. Are latency is imposed to avoid too many consecutive remodelling events)
     Set.RemodelingFrequency=2;
 end 
 
-% ---- Some settings to tune the mechanics of the Local-Problem (after topological transformation) 
+% ---- Some settings to tune the mechanics of the Local-Problem (after topological transformation, a local mechanical problem is solved) 
 
 if ~isfield(Set,'lambdaV_LP')  % volume energy coefficient (Local-Problem )
     Set.lambdaV_LP=Set.lambdaV;
@@ -241,10 +242,10 @@ end
 
 %% ============================= Solution =================================
 % ------- Tolerance
-if ~isfield(Set,'tol')       % Convergence Tolerance
+if ~isfield(Set,'tol')       % Convergence Tolerance for Newton-Raphson
     Set.tol=1e-10;
 end 
-if ~isfield(Set,'MaxIter')   % Maximum Number of iteration
+if ~isfield(Set,'MaxIter')   % Maximum Number of iteration for Newton Raphson
     Set.MaxIter=200;
 end 
 if ~isfield(Set,'Parallel')  % 
@@ -272,7 +273,7 @@ end
 
 % ------ Default setting ---------------------------------------------------
 if ~isfield(Set,'BC') && ~Set.Substrate
-    Set.BC=1;
+    Set.BC=1; % BC=1: Stretching, BC=2: Compression, BC=nan, substrate extrussion
     Set.VFixd=-1.5;
     Set.VPrescribed=1.5;
     Set.dx=2;
@@ -305,7 +306,7 @@ if ~isfield(Set,'SaveWorkspace') % Save Workspace at each time step
 end
 if ~isfield(Set,'SaveSetting')
     Set.SaveSetting=false;
-end 
+end
        
 %% ============================= Ablation ===========================
 if ~isfield(Set,'Ablation') % Apply ablation (mechanical removal) of some cells

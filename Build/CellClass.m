@@ -135,45 +135,43 @@ classdef CellClass
         % We assume there will only be one ablation. Thus, we could remove
         % the IDs from the middle.
         % TODO: Check if Cell.Int need to be in order in consecutive numbers
-        function Cell = AblateCells(obj, cellsToRemove)
-%             obj.Int(cellsToRemove) = [];
-%             
-%             %Consequences:
-%             %cell structures
-%             obj.Tris(cellsToRemove) = [];
-%             obj.cTet(cellsToRemove) = [];
-%             obj.cTetID(cellsToRemove) = [];
-%             obj.cNodes(cellsToRemove) = [];
-%             obj.Cv(cellsToRemove) = [];
-%             obj.CvID(cellsToRemove) = [];
-%             
-%             %Update info of the cells
-%             obj.Vol(cellsToRemove) = [];
-%             obj.Vol0(cellsToRemove) = [];
-%             obj.SArea(cellsToRemove) = [];
-%             obj.SArea0(cellsToRemove) = [];
-%             
-%             % Update info of the cells, with cell structure
-%             obj.SAreaTri(cellsToRemove) = [];
-%             obj.SAreaTrin(cellsToRemove) = [];
-%             obj.SAreaFace(cellsToRemove) = [];
-%             obj.SAreaFace0(cellsToRemove) = [];
-%             obj.Faces(cellsToRemove) = [];
-%             obj.Edges(cellsToRemove) = [];
-%             obj.Edges(cellsToRemove) = [];
-%             obj.EdgeLengths(cellsToRemove) = [];
-%             obj.EdgeLengthsn(cellsToRemove) = [];
-%             obj.EdgeLengths0(cellsToRemove) = [];
-% 
-%             
-%             
-%             obj.n = obj.n - length(cellsToRemove);
-%             obj.nTotalTris = sum(cellfun(@(X) size(X,1), obj.Tris));
-            
+        function obj = AblateCells(obj, cellsToRemove)
             obj.GhostCells(obj.Int == cellsToRemove) = 1;
-
-            %Return
-            Cell = obj;
+        end
+        
+        function [obj] = removeCells(obj, cellsToRemove)
+            obj.Int(cellsToRemove) = [];
+            
+            %Consequences:
+            %cell structures
+            obj.Tris(cellsToRemove) = [];
+            obj.cTet(cellsToRemove) = [];
+            obj.cTetID(cellsToRemove) = [];
+            obj.cNodes(cellsToRemove) = [];
+            obj.Cv(cellsToRemove) = [];
+            obj.CvID(cellsToRemove) = [];
+            
+            %Update info of the cells
+            obj.Vol(cellsToRemove) = [];
+            obj.Vol0(cellsToRemove) = [];
+            obj.SArea(cellsToRemove) = [];
+            obj.SArea0(cellsToRemove) = [];
+            
+            % Update info of the cells, with cell structure
+            obj.SAreaTri(cellsToRemove) = [];
+            obj.SAreaTrin(cellsToRemove) = [];
+            obj.SAreaFace(cellsToRemove) = [];
+            obj.SAreaFace0(cellsToRemove) = [];
+            obj.Faces(cellsToRemove) = [];
+            obj.Edges(cellsToRemove) = [];
+            obj.EdgeLengths(cellsToRemove) = [];
+            obj.EdgeLengthsn(cellsToRemove) = [];
+            obj.ContractileForces(cellsToRemove) = [];
+            obj.GhostCells(cellsToRemove) = [];
+            
+            obj.n = obj.n - length(cellsToRemove);
+            obj.nTotalTris = sum(cellfun(@(X) size(X,1), obj.Tris));
+            
         end
         
         %% Compute the length of the segments between vertices Xs

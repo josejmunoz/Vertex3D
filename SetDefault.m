@@ -317,11 +317,7 @@ if ~isfield(Set,'TAblation') % Time when ablation is applied
     Set.TAblation = 1;
 end
 if ~isfield(Set, 'cellsToAblate')
-    if Set.e == 1
-        Set.cellsToAblate = [2];
-    else
-        Set.cellsToAblate = [5];
-    end
+    Set.cellsToAblate = findCentralCells(Example(Set.e), 1);
 end
 
 %% ============================= Contractility ============================

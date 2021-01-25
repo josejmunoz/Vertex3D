@@ -126,7 +126,7 @@ classdef CellClass
                 Cell.EdgeLengths=cell(nC,1);
                 Cell.EdgeLengths0_average=-1;
                 Cell.EdgeLengthsn=cell(nC,1);
-                Cell.GhostCells=zeros(nC, 1);
+                Cell.GhostCells=false(nC, 1);
                 Cell.ContractileForces=cell(nC, 1);
             end
         end

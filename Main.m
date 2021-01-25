@@ -15,14 +15,12 @@ addpath(strcat(pwd,Esc,'Kg'));
 % InputSubstrateExtrusion
 InputWoundHealing
 
-outputResultsName = 'CompressionAblationNoRemodel_3x1_';
-
 [Set]=SetDefault(Set);
 InitiateOutputFolder(Set)
 %% Mesh generation
 [X]=Example(Set.e);
 [X,Y,Yt,T,XgID,Cell,Faces,Cn,~,Yn,SCn,Set,XgSub]=InitializeGeometry3DVertex(X,Set);
-if Set.VTK, PostProcessingVTK(X,Y,T.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,outputResultsName),0,Set); end
+if Set.VTK, PostProcessingVTK(X,Y,T.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),0,Set); end
 fprintf('Model Initialized... \n');
 
 %% Initialize Data
@@ -73,12 +71,21 @@ while t<=Set.tend
     
     % ----------- Ablation ------------------------------------------------
     if Set.Ablation == true && Set.TAblation <= t
-        Cell = Cell.AblateCells(Set.cellsToAblate);
-%         XgID = [XgID; cellsToAblate];
-%         Faces=Faces.CheckInteriorFaces(XgID);
-%         [Cell,Faces,nC,SCn,flag32] = ReBuildCells(Cell,T,Y,X,Faces,SCn);
-        Set.Ablation = false;
+        if isempty(Set.cellsToAblate)==0
+            Cell = Cell.AblateCells(Set.cellsToAblate);
+            Set.cellsToAblate = [];
+        end
+        
+        tooSmallCells = Cell.Vol < (Cell.Vol0/10);
+        if any(tooSmallCells) % Remove cell in the case is too small
+            Cell = Cell.removeCells(tooSmallCells);
+            XgID = [XgID; tooSmallCells];
+            Faces=Faces.CheckInteriorFaces(XgID);
+            [Cell,Faces,nC,SCn,flag32] = ReBuildCells(Cell,T,Y,X,Faces,SCn);
+        end
     end
+    
+
     
     % ----------- Remodel--------------------------------------------------
     if Set.Remodelling && Set.ReModel && abs(t-tr)>=Set.RemodelingFrequency
@@ -125,9 +132,8 @@ while t<=Set.tend
     gr0=gr;
     fprintf('Step: %i,Iter: %i ||gr||= %e ||dyr||= %e dt/dt0=%.3g\n',i,0,gr,dyr,Set.dt/Set.dt0);
     
-    if Set.VTK_iter, InitVtk(strcat(Set.OutputFolder,Esc,outputResultsName,Esc,'ResultVTK_iter')); end
-    if Set.VTK, InitVtk(strcat(Set.OutputFolder,Esc,outputResultsName)); end
-    if Set.VTK, PostProcessingVTK(X,Y,T.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,outputResultsName),Set.iIncr,Set); end
+    if Set.VTK_iter, InitVtk(strcat(Set.OutputFolder,Esc,'ResultVTK_iter')); end
+    if Set.VTK, PostProcessingVTK(X,Y,T.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end
     
     Set.iter=1;
     auxgr=zeros(3,1);
@@ -202,7 +208,7 @@ while t<=Set.tend
         EnergyB(i)=Energy.EB;
         EnergyF(i)=Energy.Ef;
         if Set.Contractility,    EnergyC(i)=Energy.Ec; end 
-        if Set.VTK, PostProcessingVTK(X,Y,T.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,outputResultsName),Set.iIncr,Set); end
+        if Set.VTK, PostProcessingVTK(X,Y,T.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end
         Yn=Y;
         SCn=Cell.FaceCentres;
         Cell = Cell.computeEdgeLengths(Y);

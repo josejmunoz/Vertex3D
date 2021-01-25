@@ -10,8 +10,5 @@ if ~exist(newSubFolder, 'dir')
 end
 cd(newSubFolder);
 fclose('all');
-
-input("Remove all vtk files?")
-
 delete *.vtk
 cd(R)

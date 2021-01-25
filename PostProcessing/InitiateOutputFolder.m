@@ -5,6 +5,7 @@ fclose('all');
 diary off 
 R=pwd;
 DirOutput=strcat(R,Esc,Set.OutputFolder);
+input("Remove everything from output directory?")
 if exist(DirOutput, 'dir')    
     % clean
     aux=strcat(DirOutput,Esc,'LogFile.out');

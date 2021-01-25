@@ -336,4 +336,5 @@ if ~isfield(Set, 'Contractility')
     % Set.Contractility = 1; % Vertically Aligned Contractility 
     % Set.Contractility = 2; % Adding area of adjacent triangles
 end
+
 end 

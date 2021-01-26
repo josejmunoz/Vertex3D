@@ -186,16 +186,6 @@ if ~isfield(Set,'LocalViscosityOption')
      Set.LocalViscosityOption=2;
 end 
 
-%-------- Contractility ----------------------------------
-if ~isfield(Set,'Contractility')
-    Set.Contractility=false;
-end
-
-if ~isfield(Set, 'cContractility')
-    Set.cContractility=0.3;
-end
-
-
 %% ============================= Remodelling ================================
 if ~isfield(Set,'Remodelling')  % Off/On
     Set.Remodelling=true;

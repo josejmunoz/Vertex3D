@@ -169,7 +169,7 @@ classdef CellClass
             obj.ContractileForces(cellsToRemove) = [];
             obj.GhostCells(cellsToRemove) = [];
             
-            obj.n = obj.n - length(cellsToRemove);
+            obj.n = obj.n - sum(cellsToRemove);
             obj.nTotalTris = sum(cellfun(@(X) size(X,1), obj.Tris));
             
         end

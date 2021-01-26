@@ -1,5 +1,6 @@
-Set.OutputFolder = 'Result/CompressionNoAblationNoRemodel_3x3';
+
 Set.diary = true;
+Set.OutputFolder = 'Result/CompressionAblationNoRemodel_cContr_0_01_3x3';
 
 %% geometry
 Set.e=4;  % Example Number look in Geo\Example.m 

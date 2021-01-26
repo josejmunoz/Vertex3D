@@ -56,10 +56,9 @@ for numCell = 1:Cell.n
         %% Calculate residual g
         g_current = computeGContractility(l_i0, l_i, y_1, y_2, C, Set);
         g = Assembleg(g, g_current, edgeVertices(numEdge, :));
-        contractileForcesOfCell(numEdge, 1) = norm(g_current(1:3));
         
         %% Save contractile forces (g) to output
-        
+        contractileForcesOfCell(numEdge, 1) = norm(g_current(1:3));
         
         %% AssembleK
         if  nargout>1

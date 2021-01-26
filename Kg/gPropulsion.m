@@ -7,12 +7,13 @@ dimg=Set.NumTotalV*3;
 
 gp=zeros(dimg,1); % Local cell residual
 
-
-
-
 %% Loop over Cells 
 %     % Analytical residual g and Jacobian K
 for i=1:Cell.n
+    if Cell.GhostCells(i)
+        continue
+    end
+    
     if ~Cell.AssembleAll
         if ~ismember(Cell.Int(i),Cell.AssembleNodes) 
            continue

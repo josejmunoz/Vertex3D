@@ -11,7 +11,6 @@ function [g,K,Cell,EnergyS]=KgLocalViscosityTriangleBasedParallel(Cell,Y,Set)
 ncell=Cell.n;
 
 %% Initialize
-%% Initialize
 dimg=Set.NumTotalV*3;
 
 g=zeros(dimg,1); % Local cell residual

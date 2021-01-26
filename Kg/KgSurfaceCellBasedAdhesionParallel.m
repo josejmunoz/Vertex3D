@@ -45,7 +45,7 @@ parfor i=1:ncell
     if CelAux.GhostCells(i)
         continue;
     end 
-    if ~CelAux.AssembleAll %#ok<PFBNS>
+    if ~CelAux.AssembleAll
         if ~ismember(CelAux.Int(i),CelAux.AssembleNodes)
             continue
         end

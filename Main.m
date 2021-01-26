@@ -76,12 +76,13 @@ while t<=Set.tend
             Set.cellsToAblate = [];
         end
         
-        tooSmallCells = Cell.Vol < (Cell.Vol0/10);
+        tooSmallCells = Cell.Vol < (Cell.Vol0/2);
         if any(tooSmallCells) % Remove cell in the case is too small
             Cell = Cell.removeCells(tooSmallCells);
             XgID = [XgID; tooSmallCells];
             Faces=Faces.CheckInteriorFaces(XgID);
             [Cell,Faces,nC,SCn,flag32] = ReBuildCells(Cell,T,Y,X,Faces,SCn);
+            Set.Ablation = false;
         end
     end
 

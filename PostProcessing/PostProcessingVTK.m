@@ -1,9 +1,6 @@
 function PostProcessingVTK(X,Y,T,Cn,Cell,folder,TimeStep,Set)
 % Create VTK files 
 
-CellNoAblated = Cell.removeCells(Cell.Int(Cell.GhostCells));
-CellOnlyAblated = Cell.removeCells(Cell.Int(Cell.GhostCells == 0));
-
 %Create Cell Volume
 CreateVtkVol(Y.DataOrdered,Cell,X,folder, '_All',TimeStep)
 
@@ -20,6 +17,9 @@ forceToDisplay_All = vertcat(Cell.ContractileForces{:});
 CreateVtkBar(edgeVertices, edgeConnections_All, forceToDisplay_All, folder, 'AllEdges_','contractility',TimeStep)
 
 if Set.Ablation
+    CellNoAblated = Cell.removeCells(Cell.Int(Cell.GhostCells));
+    CellOnlyAblated = Cell.removeCells(Cell.Int(Cell.GhostCells == 0));
+    
     %Create Cell Volume
     CreateVtkVol(Y.DataOrdered,CellNoAblated,X,folder, '_NoAblated', TimeStep)
     CreateVtkVol(Y.DataOrdered,CellOnlyAblated,X,folder,'_OnlyAblated', TimeStep)

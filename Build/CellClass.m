@@ -135,11 +135,12 @@ classdef CellClass
         % We assume there will only be one ablation. Thus, we could remove
         % the IDs from the middle.
         % TODO: Check if Cell.Int need to be in order in consecutive numbers
-        function obj = AblateCells(obj, cellsToRemove)
-            obj.GhostCells(obj.Int == cellsToRemove) = 1;
+        function Cell = AblateCells(obj, cellsToRemove)
+            obj.GhostCells(obj.Int == cellsToRemove) = true;
+            Cell = obj;
         end
         
-        function [obj] = removeCells(obj, cellsToRemove)
+        function Cell = removeCells(obj, cellsToRemove)
             obj.Int(cellsToRemove) = [];
             
             %Consequences:
@@ -172,6 +173,7 @@ classdef CellClass
             obj.n = obj.n - sum(cellsToRemove);
             obj.nTotalTris = sum(cellfun(@(X) size(X,1), obj.Tris));
             
+            Cell = obj;
         end
         
         %% Compute the length of the segments between vertices Xs

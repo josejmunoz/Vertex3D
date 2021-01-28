@@ -34,7 +34,7 @@ EnergyS=0;
 for i=1:ncell
 %     if Cell.GhostCells(i)
 %         continue;
-%     end 
+%     end
     if ~Cell.AssembleAll
         if ~ismember(Cell.Int(i),Cell.AssembleNodes)
             continue
@@ -50,8 +50,8 @@ for i=1:ncell
             Lambda=Set.lambdaS1*CellInput.LambdaS1Factor(i);
             fact0=fact0+Lambda*Cell.SAreaFace{i}(f);
         elseif  Faces.InterfaceType(Cell.Faces{i}.FaceCentresID(f))==1
-            
-            if any(Cell.GhostCells(Faces.Nodes(Cell.Faces{i}.FaceCentresID(f), :)))
+            cellsOfFace = Faces.Nodes(Cell.Faces{i}.FaceCentresID(f), :);
+            if any(Cell.GhostCells(ismember(Cell.Int, cellsOfFace)))
                 % Lambda of Cell-GhostCell faces
                 Lambda=Set.lambdaS4*CellInput.LambdaS4Factor(i);
             else

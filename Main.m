@@ -81,9 +81,16 @@ while t<=Set.tend
     
     tooSmallCells = Cell.Vol < (Cell.Vol0/10);
     if any(tooSmallCells) % Remove cell in the case is too small
+        idsToRemove = Cell.Int(tooSmallCells);
         Cell = Cell.removeCells(tooSmallCells);
-        XgID = [XgID; tooSmallCells];
+        CellInput.LambdaS1Factor(tooSmallCells) = 0;
+        CellInput.LambdaS2Factor(tooSmallCells) = 0;
+        CellInput.LambdaS3Factor(tooSmallCells) = 0;
+        CellInput.LambdaS4Factor(tooSmallCells) = 0;
+        XgID = [XgID; idsToRemove];
+        %Here it should change interior faces to exterior face from the smaller one
         Faces=Faces.CheckInteriorFaces(XgID);
+        Cell.AssembleNodes = Cell.Int;
         [Cell,Faces,nC,SCn,flag32] = ReBuildCells(Cell,T,Y,X,Faces,SCn);
     end
 

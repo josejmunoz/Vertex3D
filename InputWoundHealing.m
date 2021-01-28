@@ -1,6 +1,5 @@
-
+Set.OutputFolder = 'Result/CompressionAblationNoContractilityRemodel_3x3';
 Set.diary = true;
-Set.OutputFolder = 'Result/CompressionAblationNoRemodel_cContr_0_01_3x3';
 
 %% geometry
 Set.e=4;  % Example Number look in Geo\Example.m 
@@ -22,6 +21,8 @@ Set.lambdaS1=1;
 Set.lambdaS2=.5;
 % Cell-substrate
 Set.lambdaS3=.5;
+% Cell-GhostCell
+Set.lambdaS4=1;
 
 %---------- EnergyBarrier
 Set.EnergyBarrier=true;
@@ -34,8 +35,14 @@ Set.Bending=false;
 %------- Viscosity
 Set.nu=0.05;   % this is eta 
 
+% Set.Confinement=true;
+% Set.ConfinementX1=0.5;    
+% Set.ConfinementY1=0.5;
+% Set.ConfinementX2=-0.5;
+% Set.ConfinementY2=-0.5;
+
 %% Remodeling
-Set.Remodelling=false;
+Set.Remodelling=true;
 Set.RemodelTol=.5e-6;
 Set.RemodelingFrequency=2;
 
@@ -45,7 +52,7 @@ Set.Nincr=300;
     
 %% Contractility
 Set.Contractility = 0;
-Set.cContractility = 0.01;
+Set.cContractility = 0;
 
 %% Ablating cells
 Set.Ablation = true;

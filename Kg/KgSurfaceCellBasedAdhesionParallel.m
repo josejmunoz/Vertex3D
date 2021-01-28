@@ -42,9 +42,9 @@ CelAux.GhostCells = Cell.GhostCells;
 %% Loop over Cells
 %     % Analytical residual g and Jacobian K
 parfor i=1:ncell
-    if CelAux.GhostCells(i)
-        continue;
-    end 
+%     if CelAux.GhostCells(i)
+%         continue;
+%     end 
     if ~CelAux.AssembleAll
         if ~ismember(CelAux.Int(i),CelAux.AssembleNodes)
             continue

@@ -100,7 +100,8 @@ for i=1:ncell
             % External
             Lambda=Set.lambdaS1*CellInput.LambdaS1Factor(i);
         elseif  Faces.InterfaceType(Cell.Faces{i}.FaceCentresID(f))==1
-            if any(Cell.GhostCells(Faces.Nodes(Cell.Faces{i}.FaceCentresID(f), :)))
+            cellsOfFace = Faces.Nodes(Cell.Faces{i}.FaceCentresID(f), :);
+            if any(Cell.GhostCells(ismember(Cell.Int, cellsOfFace)))
                 % Lambda of Cell-GhostCell faces
                 Lambda=Set.lambdaS4*CellInput.LambdaS4Factor(i);
             else

@@ -5,10 +5,12 @@ function [CellInput]=InitializeInput(Cell,Set)
 if Set.SurfaceType==4
     aux1=Set.LambdaS1CellFactor;
     aux2=Set.LambdaS2CellFactor;
-    aux3=Set.LambdaS3CellFactor; 
+    aux3=Set.LambdaS3CellFactor;
+    aux4=Set.LambdaS4CellFactor; 
     CellInput.LambdaS1Factor=ones(Cell.n,1);
     CellInput.LambdaS2Factor=ones(Cell.n,1);
     CellInput.LambdaS3Factor=ones(Cell.n,1);
+    CellInput.LambdaS4Factor=ones(Cell.n,1);
     if ~isempty(aux1)
         for i=1:size(aux1,1)
             CellInput.LambdaS1Factor(aux1(i,1))=aux1(i,2);
@@ -25,11 +27,18 @@ if Set.SurfaceType==4
         for i=1:size(aux3,1)
             CellInput.LambdaS3Factor(aux3(i,1))=aux3(i,2);
         end
+    end
+    
+    if ~isempty(aux4)
+        for i=1:size(aux4,1)
+            CellInput.LambdaS4Factor(aux4(i,1))=aux4(i,2);
+        end
     end   
 else 
     CellInput.LambdaS1Factor=[];
     CellInput.LambdaS2Factor=[];
     CellInput.LambdaS3Factor=[];
+    CellInput.LambdaS4Factor=[];
 end 
 
 

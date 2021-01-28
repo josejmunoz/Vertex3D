@@ -87,6 +87,9 @@ end
 if ~isfield(Set,'LambdaS3CellFactor')
     Set.LambdaS3CellFactor=[];
 end 
+if ~isfield(Set,'LambdaS4CellFactor')
+    Set.LambdaS4CellFactor=[];
+end 
 
 %---------- EnergyBarrier -------------------------------------------------
 % Energy Barrier for small Triangles 

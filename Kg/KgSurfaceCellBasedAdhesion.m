@@ -32,9 +32,9 @@ EnergyS=0;
 %% Loop over Cells
 %     % Analytical residual g and Jacobian K
 for i=1:ncell
-    if Cell.GhostCells(i)
-        continue;
-    end 
+%     if Cell.GhostCells(i)
+%         continue;
+%     end 
     if ~Cell.AssembleAll
         if ~ismember(Cell.Int(i),Cell.AssembleNodes)
             continue
@@ -50,9 +50,17 @@ for i=1:ncell
             Lambda=Set.lambdaS1*CellInput.LambdaS1Factor(i);
             fact0=fact0+Lambda*Cell.SAreaFace{i}(f);
         elseif  Faces.InterfaceType(Cell.Faces{i}.FaceCentresID(f))==1
-            % Lambda of Cell-Cell faces
-            Lambda=Set.lambdaS2*CellInput.LambdaS2Factor(i);
+            
+            if any(Cell.GhostCells(Faces.Nodes(Cell.Faces{i}.FaceCentresID(f), :)))
+                % Lambda of Cell-GhostCell faces
+                Lambda=Set.lambdaS4*CellInput.LambdaS4Factor(i);
+            else
+                % Lambda of Cell-Cell faces
+                Lambda=Set.lambdaS2*CellInput.LambdaS2Factor(i);
+            end
+            
             fact0=fact0+Lambda*Cell.SAreaFace{i}(f);
+            
         elseif Faces.InterfaceType(Cell.Faces{i}.FaceCentresID(f))==2
             % Lambda of Cell-substrate faces
             Lambda=Set.lambdaS3*CellInput.LambdaS3Factor(i);
@@ -92,8 +100,13 @@ for i=1:ncell
             % External
             Lambda=Set.lambdaS1*CellInput.LambdaS1Factor(i);
         elseif  Faces.InterfaceType(Cell.Faces{i}.FaceCentresID(f))==1
-            % Cell-Cell
-            Lambda=Set.lambdaS2*CellInput.LambdaS2Factor(i);
+            if any(Cell.GhostCells(Faces.Nodes(Cell.Faces{i}.FaceCentresID(f), :)))
+                % Lambda of Cell-GhostCell faces
+                Lambda=Set.lambdaS4*CellInput.LambdaS4Factor(i);
+            else
+                % Cell-Cell
+                Lambda=Set.lambdaS2*CellInput.LambdaS2Factor(i);
+            end
         elseif Faces.InterfaceType(Cell.Faces{i}.FaceCentresID(f))==2
             % Cell-substrate
             Lambda=Set.lambdaS3*CellInput.LambdaS3Factor(i);

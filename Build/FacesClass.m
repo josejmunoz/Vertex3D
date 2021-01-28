@@ -27,6 +27,7 @@ classdef FacesClass
         %                    InterfaceType(i)=0 --> Face (i) is External
         %                    InterfaceType(i)=1 --> Face (i) is Internal (cell-cell interface)
         %                    InterfaceType(i)=2 --> Face (i) Substrate face (cell-substrate interface)
+        %                    InterfaceType(i)=3 --> Face (i) is Cell-GhostCell (cell-ablated cell interface)
         %---------------------------------------------------------------------
         NotEmpty        % - Logical array of size [NumFaces 1]
         %                    NotEmpty(i)= false -> Face (i) is empty,

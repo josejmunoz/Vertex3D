@@ -17,8 +17,13 @@ forceToDisplay_All = vertcat(Cell.ContractileForces{:});
 CreateVtkBar(edgeVertices, edgeConnections_All, forceToDisplay_All, folder, 'AllEdges_','contractility',TimeStep)
 
 if Set.Ablation
-    CellNoAblated = Cell.removeCells(Cell.Int(Cell.GhostCells));
-    CellOnlyAblated = Cell.removeCells(Cell.Int(Cell.GhostCells == 0));
+    if isempty(Set.cellsToAblate) == 0
+        Cell = Cell.AblateCells(Set.cellsToAblate);
+    end
+    
+    CellNoAblated = Cell.removeCells(Cell.GhostCells);
+    CellOnlyAblated = Cell.removeCells(Cell.GhostCells == 0);
+        
     
     %Create Cell Volume
     CreateVtkVol(Y.DataOrdered,CellNoAblated,X,folder, '_NoAblated', TimeStep)

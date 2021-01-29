@@ -1,4 +1,4 @@
-Set.OutputFolder = 'Result/CompressionAblationNoContractilityRemodel_3x3';
+Set.OutputFolder = 'Result/CompressionAblationNoContractilityNoRemodel_3x3';
 Set.diary = true;
 
 %% geometry
@@ -41,8 +41,16 @@ Set.nu=0.05;   % this is eta
 % Set.ConfinementX2=-0.5;
 % Set.ConfinementY2=-0.5;
 
+%% Compression or stretching
+Set.BC=2; % BC=1: Stretching, BC=2: Compression, BC=nan, substrate extrussion
+    Set.VFixd=-1.5;
+    Set.VPrescribed=1.5;
+    Set.dx=0;
+    Set.TStartBC=301;  %30  
+    Set.TStopBC=302;
+
 %% Remodeling
-Set.Remodelling=true;
+Set.Remodelling=false;
 Set.RemodelTol=.5e-6;
 Set.RemodelingFrequency=2;
 

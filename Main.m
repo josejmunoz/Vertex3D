@@ -99,7 +99,6 @@ while t<=Set.tend
         Cell.AssembleNodes = Cell.Int;
         [Cell,Faces,nC,SCn,flag32] = ReBuildCells(Cell,T,Y,X,Faces,SCn);
         
-        
         % Check consequences of this one:
         Dofs=GetDOFs(Y,Cell,Faces,Set);
     end
@@ -219,6 +218,11 @@ while t<=Set.tend
         Yn=Y;
         SCn=Cell.FaceCentres;
         Cell = Cell.computeEdgeLengths(Y);
+        
+        %% Analise cells
+        cellFeatures = Cell.exportTableWithCellFeatures(Y);
+        
+        %% Save for next steps
         for ii=1:Cell.n
             Cell.SAreaTrin{ii}=Cell.SAreaTri{ii};
             Cell.EdgeLengthsn{ii}=Cell.EdgeLengths{ii};

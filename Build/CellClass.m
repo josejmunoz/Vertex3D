@@ -204,22 +204,25 @@ classdef CellClass
         end
         
         function [obj, featuresTable] = exportTableWithCellFeatures(obj, Y)
-            
+            resolutionOfImage = 0.001;
+            featuresTable = [];
             for numCell = obj.Int
-                figure;
-                allVertices = Y.DataRow;
-                facesOfCell = obj.FaceCentres.DataRow;
+                allVertices = [Y.DataRow; obj.FaceCentres.DataRow];
                 
                 verticesConnectionsOfCell = obj.Tris{numCell};
                 verticesConnectionsOfCell(verticesConnectionsOfCell(:, 3)>=0, 3) = verticesConnectionsOfCell(verticesConnectionsOfCell(:, 3)>=0, 3) + size(allVertices, 1);
                 verticesConnectionsOfCell(verticesConnectionsOfCell(:, 3)<0, 3) = abs(verticesConnectionsOfCell(verticesConnectionsOfCell(:, 3)<0, 3));
-                triangulationsOfCell = triangulation(verticesConnectionsOfCell, [allVertices; facesOfCell]);
-                trisurf(triangulationsOfCell)
+                %triangulationsOfCell = triangulation(verticesConnectionsOfCell, allVertices);
                 
-               
+                DT = delaunayTriangulation(allVertices(unique(verticesConnectionsOfCell), :));
+                [X,Y,Z] = meshgrid(min(allVertices(:)):resolutionOfImage:max(allVertices(:)));
+                SI = pointLocation(DT,X(:),Y(:),Z(:));       %index of simplex (returns NaN for all points outside the convex hull)
+                mask = ~isnan(SI); %binary
+                mask = reshape(mask,size(X));
+                currentTable = regionprops3(mask, 'all');
+                currentTable.ID = numCell;
+                featuresTable = [featuresTable; currentTable];
             end
-            
-            
         end
     end
 end

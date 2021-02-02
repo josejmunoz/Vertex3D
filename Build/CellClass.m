@@ -204,7 +204,7 @@ classdef CellClass
         end
         
         function [obj, featuresTable] = exportTableWithCellFeatures(obj, Y)
-            resolutionOfImage = 0.005;
+            resolutionOfImage = 0.03;
             featuresTable = [];
             allVertices = [Y.DataRow; obj.FaceCentres.DataRow];
             [xPixels,yPixels,zPixels] = meshgrid(min(allVertices(:)):resolutionOfImage:max(allVertices(:)));
@@ -219,7 +219,7 @@ classdef CellClass
                 SI = pointLocation(DT,xPixels(:),yPixels(:),zPixels(:));       %index of simplex (returns NaN for all points outside the convex hull)
                 mask = ~isnan(SI); %binary
                 mask = reshape(mask,size(xPixels));
-                currentTable = regionprops3(mask, 'all');
+                currentTable = regionprops3(mask, {'Volume', 'EquivDiameter', 'Extent', 'PrincipalAxisLength', 'Orientation', 'ConvexVolume', 'Solidity', 'SurfaceArea'});
                 currentTable.ID = numCell;
                 featuresTable = [featuresTable; currentTable];
             end

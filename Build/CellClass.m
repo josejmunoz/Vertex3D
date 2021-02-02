@@ -206,18 +206,20 @@ classdef CellClass
         function [obj, featuresTable] = exportTableWithCellFeatures(obj, Y)
             
             for numCell = obj.Int
-                triangles=obj.Cv{numCell};
-                uniqueTriangles = unique(triangles(:));
-
-                verticesOfTriangles = [];
-                for triangle = 1:size(uniqueTriangles, 1)
-                    if triangle > 0
-                        verticesOfTriangles = [verticesOfTriangles, Y.DataRow(abs(triangles(triangle,3)))];
-                    else 
-                        verticesOfTriangles = [verticesOfTriangles, Cell.FaceCentres.DataRow(triangles(triangle,3),:)];
-                    end 
-                end
+                figure;
+                allVertices = Y.DataRow;
+                facesOfCell = obj.FaceCentres.DataRow;
+                
+                verticesConnectionsOfCell = obj.Tris{numCell};
+                verticesConnectionsOfCell(verticesConnectionsOfCell(:, 3)>=0, 3) = verticesConnectionsOfCell(verticesConnectionsOfCell(:, 3)>=0, 3) + size(allVertices, 1);
+                verticesConnectionsOfCell(verticesConnectionsOfCell(:, 3)<0, 3) = abs(verticesConnectionsOfCell(verticesConnectionsOfCell(:, 3)<0, 3));
+                triangulationsOfCell = triangulation(verticesConnectionsOfCell, [allVertices; facesOfCell]);
+                trisurf(triangulationsOfCell)
+                
+               
             end
+            
+            
         end
     end
 end

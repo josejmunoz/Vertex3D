@@ -203,9 +203,21 @@ classdef CellClass
             [~, uniqueEdges] = unique(allEdges, 'rows');
         end
         
-        function [obj, featuresTable] = exportTableWithCellFeatures(obj)
+        function [obj, featuresTable] = exportTableWithCellFeatures(obj, Y)
             
-            
+            for numCell = obj.Int
+                triangles=obj.Cv{numCell};
+                uniqueTriangles = unique(triangles(:));
+
+                verticesOfTriangles = [];
+                for triangle = 1:size(uniqueTriangles, 1)
+                    if triangle > 0
+                        verticesOfTriangles = [verticesOfTriangles, Y.DataRow(abs(triangles(triangle,3)))];
+                    else 
+                        verticesOfTriangles = [verticesOfTriangles, Cell.FaceCentres.DataRow(triangles(triangle,3),:)];
+                    end 
+                end
+            end
         end
     end
 end

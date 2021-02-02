@@ -36,12 +36,14 @@ EnergyB=zeros(Set.Nincr,1);  Energy.EB=0;
 EnergyC=zeros(Set.Nincr,1);  Energy.Ec=0;
 StepSize=zeros(Set.Nincr,1);
 
+cellFeatures=cell(Set.Nincr, 1);
+
 Set.N_Rejected_Transfromation=0; Set.N_Accepted_Transfromation=0;
 Set.N_Remodeling_Iterations=0;   Set.N_Global_Iterations=0;
 
 % Time
 t=0;
-i=1;
+numStep=1;
 Set.dt0=Set.tend/Set.Nincr;
 Set.dt=Set.dt0;
 Set.ReModel=true;
@@ -67,7 +69,7 @@ Set.MaxIter0=Set.MaxIter;
 
 while t<=Set.tend
     
-    if Set.SaveWorkspace,    save(strcat(Set.OutputFolder,Esc,'Workspace',Esc,['Workspace' num2str(i) '.mat'])); end
+    if Set.SaveWorkspace,    save(strcat(Set.OutputFolder,Esc,'Workspace',Esc,['Workspace' num2str(numStep) '.mat'])); end
     
     % ----------- Ablation ------------------------------------------------
     if Set.Ablation == true && Set.TAblation <= t
@@ -112,7 +114,7 @@ while t<=Set.tend
     %   Copy configuration in case the current step dose not converge  and need
     %   to be repeated
     tp=t; Yp=Y; Cellp=Cell;
-    Set.iIncr=i;
+    Set.iIncr=numStep;
     % ----------- Apply Boundary Condition --------------------------------
     if Set.BC==1 && t<=Set.TStopBC && t>=Set.TStartBC && Set.ApplyBC
         Y.DataRow(Dofs.PrescribedY,2)=Y.DataRow(Dofs.PrescribedY,2)+Set.dx/((Set.TStopBC-Set.TStartBC)/Set.dt);
@@ -141,7 +143,7 @@ while t<=Set.tend
     dyr=norm(dy(Dofs.FreeDofs));
     gr=norm(g(Dofs.FreeDofs));
     gr0=gr;
-    fprintf('Step: %i,Iter: %i ||gr||= %e ||dyr||= %e dt/dt0=%.3g\n',i,0,gr,dyr,Set.dt/Set.dt0);
+    fprintf('Step: %i,Iter: %i ||gr||= %e ||dyr||= %e dt/dt0=%.3g\n',numStep,0,gr,dyr,Set.dt/Set.dt0);
     
     if Set.VTK_iter, InitVtk(strcat(Set.OutputFolder,Esc,'ResultVTK_iter')); end
     if Set.VTK, PostProcessingVTK(X,Y,T.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end
@@ -166,7 +168,7 @@ while t<=Set.tend
         [g,K,Cell,Energy]=KgGlobal(Cell,Faces,Y,y,yn,Set,CellInput,XgSub);
         dyr=norm(dy(Dofs.FreeDofs));
         gr=norm(g(Dofs.FreeDofs));
-        fprintf('Step: % i,Iter: %i, Time: %g ||gr||= %.3e ||dyr||= %.3e alpha= %.3e  nu/nu0=%.3g \n',i,Set.iter,t,gr,dyr,alpha,Set.nu/Set.nu0);
+        fprintf('Step: % i,Iter: %i, Time: %g ||gr||= %.3e ||dyr||= %.3e alpha= %.3e  nu/nu0=%.3g \n',numStep,Set.iter,t,gr,dyr,alpha,Set.nu/Set.nu0);
         if Set.VTK_iter, PostProcessingVTK(X,Y,T.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK_iter'),Set.iter,Set); end
         Set.iter=Set.iter+1;
         Set.N_Global_Iterations=Set.N_Global_Iterations+1;
@@ -201,7 +203,7 @@ while t<=Set.tend
          Set.MaxIter=Set.MaxIter0;
          Set.nu=Set.nu0;
          Set.dt=Set.dt/2;
-         StepSize(i)=Set.dt;
+         StepSize(numStep)=Set.dt;
          t=t+Set.dt;
      elseif gr>Set.tol || dyr>Set.tol || any(isnan(g(Dofs.FreeDofs))) || any(isnan(dy(Dofs.FreeDofs)))
          fprintf('Step %i did not converge !! \n',Set.iIncr);
@@ -209,18 +211,18 @@ while t<=Set.tend
     else
         fprintf('STEP %i has converged ...\n',Set.iIncr)
         [X]=GetXFromY(Cell,Faces,X,T,Y,XgID,XgSub,Set);
-        EnergyS(i)=Energy.Es;
-        EnergyV(i)=Energy.Ev;
-        EnergyB(i)=Energy.EB;
-        EnergyF(i)=Energy.Ef;
-        if Set.Contractility,    EnergyC(i)=Energy.Ec; end 
+        EnergyS(numStep)=Energy.Es;
+        EnergyV(numStep)=Energy.Ev;
+        EnergyB(numStep)=Energy.EB;
+        EnergyF(numStep)=Energy.Ef;
+        if Set.Contractility,    EnergyC(numStep)=Energy.Ec; end 
         if Set.VTK, PostProcessingVTK(X,Y,T.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end
         Yn=Y;
         SCn=Cell.FaceCentres;
         Cell = Cell.computeEdgeLengths(Y);
         
         %% Analise cells
-        cellFeatures = Cell.exportTableWithCellFeatures(Y);
+        [~, cellFeatures{numStep}] = Cell.exportTableWithCellFeatures(Y);
         
         %% Save for next steps
         for ii=1:Cell.n
@@ -229,8 +231,8 @@ while t<=Set.tend
         end
         tp=t;
         t=t+Set.dt;
-        i=i+1;
-        StepSize(i)=Set.dt;
+        numStep=numStep+1;
+        StepSize(numStep)=Set.dt;
         Set.MaxIter=Set.MaxIter0;
         Set.dt=min(Set.dt+Set.dt*0.5,Set.dt0);
         Set.ReModel=true;

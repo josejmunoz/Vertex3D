@@ -75,6 +75,7 @@ while t<=Set.tend
             Cell = Cell.AblateCells(Set.cellsToAblate);
             Set.cellsToAblate = [];
             CellInput.LambdaS1Factor(Cell.GhostCells) = 0;
+            CellInput.LambdaS2Factor(Cell.GhostCells) = 0;
             CellInput.LambdaS3Factor(Cell.GhostCells) = 0;
         end
     end

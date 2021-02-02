@@ -5,8 +5,9 @@ fclose('all');
 diary off 
 R=pwd;
 DirOutput=fullfile(R,Set.OutputFolder);
-input('Remove everything from output directory?')
-if exist(DirOutput, 'dir')    
+if exist(DirOutput, 'dir')
+    input('Remove everything from output directory?')
+    
     % clean
     aux=fullfile(DirOutput,'LogFile.out');
     if exist(aux, 'file'), delete(aux); end

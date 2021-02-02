@@ -204,21 +204,21 @@ classdef CellClass
         end
         
         function [obj, featuresTable] = exportTableWithCellFeatures(obj, Y)
-            resolutionOfImage = 0.001;
+            resolutionOfImage = 0.005;
             featuresTable = [];
+            allVertices = [Y.DataRow; obj.FaceCentres.DataRow];
+            [xPixels,yPixels,zPixels] = meshgrid(min(allVertices(:)):resolutionOfImage:max(allVertices(:)));
             for numCell = obj.Int
-                allVertices = [Y.DataRow; obj.FaceCentres.DataRow];
                 
                 verticesConnectionsOfCell = obj.Tris{numCell};
-                verticesConnectionsOfCell(verticesConnectionsOfCell(:, 3)>=0, 3) = verticesConnectionsOfCell(verticesConnectionsOfCell(:, 3)>=0, 3) + size(allVertices, 1);
+                verticesConnectionsOfCell(verticesConnectionsOfCell(:, 3)>=0, 3) = verticesConnectionsOfCell(verticesConnectionsOfCell(:, 3)>=0, 3) + size(Y.DataRow, 1);
                 verticesConnectionsOfCell(verticesConnectionsOfCell(:, 3)<0, 3) = abs(verticesConnectionsOfCell(verticesConnectionsOfCell(:, 3)<0, 3));
                 %triangulationsOfCell = triangulation(verticesConnectionsOfCell, allVertices);
                 
                 DT = delaunayTriangulation(allVertices(unique(verticesConnectionsOfCell), :));
-                [X,Y,Z] = meshgrid(min(allVertices(:)):resolutionOfImage:max(allVertices(:)));
-                SI = pointLocation(DT,X(:),Y(:),Z(:));       %index of simplex (returns NaN for all points outside the convex hull)
+                SI = pointLocation(DT,xPixels(:),yPixels(:),zPixels(:));       %index of simplex (returns NaN for all points outside the convex hull)
                 mask = ~isnan(SI); %binary
-                mask = reshape(mask,size(X));
+                mask = reshape(mask,size(xPixels));
                 currentTable = regionprops3(mask, 'all');
                 currentTable.ID = numCell;
                 featuresTable = [featuresTable; currentTable];

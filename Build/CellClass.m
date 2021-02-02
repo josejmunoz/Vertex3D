@@ -202,5 +202,10 @@ classdef CellClass
             end
             [~, uniqueEdges] = unique(allEdges, 'rows');
         end
+        
+        function [obj, featuresTable] = exportTableWithCellFeatures(obj)
+            
+            
+        end
     end
 end

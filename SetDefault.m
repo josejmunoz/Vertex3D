@@ -327,4 +327,7 @@ if ~isfield(Set, 'Contractility')
     % Set.Contractility = 2; % Adding area of adjacent triangles
 end
 
+if ~isfield(Set, 'initEndContractility')
+    Set.initEndContractility = [];
+end
 end 

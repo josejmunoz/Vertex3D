@@ -25,7 +25,7 @@ fprintf('Model Initialized... \n');
 
 %% Initialize Data
 
-CellInput=InitializeInput(Cell,Set);
+[CellInput, Set] = InitializeInput(Cell,Set);
 
 % Energy
 EnergyS=zeros(Set.Nincr,1);  Energy.Es=0;

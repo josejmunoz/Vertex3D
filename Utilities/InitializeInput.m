@@ -1,6 +1,7 @@
-function [CellInput]=InitializeInput(Cell,Set)
+function [CellInput, Set]=InitializeInput(Cell,Set)
 % Initialize Lmabda-reduction-factor for each cell-inerface (check KgSurfaceCellBasedAdhesionParallel.m)
 % Initialize propulsion force for each cell (check gPropulsion.m)
+% Initialize contractility in time
 
 if Set.SurfaceType==4
     aux1=Set.LambdaS1CellFactor;
@@ -57,6 +58,5 @@ if isempty(Set.initEndContractility) == 0
     Set.initEndContractility = endContractility:-stepContractility:initContractility;
     Set.timeToReachFullContractility = length(Set.initEndContractility);
 end
-
 
 end 

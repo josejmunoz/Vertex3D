@@ -222,8 +222,10 @@ while t<=Set.tend
         Cell = Cell.computeEdgeLengths(Y);
         
         %% Analise cells
-        [~, cellFeatures{numStep}] = Cell.exportTableWithCellFeatures(Y, numStep);
-        csvwrite(strcat(Set.OutputFolder,Esc,'cellFeatures.csv'), vertcat(cellFeatures{:}))
+        [~, cellFeatures{numStep}, resultingImage] = Cell.exportTableWithCellFeatures(Y, numStep);
+        writetable(vertcat(cellFeatures{:}), strcat(Set.OutputFolder,Esc,'Analysis',Esc,'cellFeatures.csv'))
+        save(strcat(Set.OutputFolder,Esc,'Analysis', Esc,'resultingImage_', num2str(numStep), '.mat'), 'resultingImage');
+        
         
         %% Save for next steps
         for ii=1:Cell.n

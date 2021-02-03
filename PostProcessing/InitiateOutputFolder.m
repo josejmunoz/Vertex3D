@@ -35,6 +35,14 @@ if exist(DirOutput, 'dir')
         delete *.mat
         cd(R)
     end 
+    
+    if exist(fullfile(DirOutput, 'Analysis'), 'dir')
+        aux=fullfile(DirOutput, 'Analysis');
+        cd(aux)
+        delete *.csv
+        delete *.mat
+        cd(R)
+    end
 else 
     mkdir(DirOutput);
 end
@@ -54,7 +62,10 @@ if Set.diary
 end 
 if Set.SaveSetting
     save('Set','Set')
-end 
+end
+
+mkdir('Analysis')
+
 cd '..'
 cd '..'
 end 

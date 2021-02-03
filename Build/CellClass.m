@@ -203,11 +203,13 @@ classdef CellClass
             [~, uniqueEdges] = unique(allEdges, 'rows');
         end
         
-        function [obj, featuresTable] = exportTableWithCellFeatures(obj, Y, timeStep)
+        function [obj, featuresTable, resultingImage] = exportTableWithCellFeatures(obj, Y, timeStep)
             resolutionOfImage = 0.03;
             featuresTable = [];
             allVertices = [Y.DataRow; obj.FaceCentres.DataRow];
             [xPixels,yPixels,zPixels] = meshgrid(min(allVertices(:)):resolutionOfImage:max(allVertices(:)));
+            
+            resultingImage = uint8(size(xPixels));
             for numCell = 1:length(obj.Int)
                 
                 verticesConnectionsOfCell = obj.Tris{numCell};
@@ -219,10 +221,13 @@ classdef CellClass
                 SI = pointLocation(DT,xPixels(:),yPixels(:),zPixels(:));       %index of simplex (returns NaN for all points outside the convex hull)
                 mask = ~isnan(SI); %binary
                 mask = reshape(mask,size(xPixels));
+                resultingImage(mask) = obj.Int(numCell);
                 currentTable = regionprops3(mask, {'Volume', 'EquivDiameter', 'Extent', 'PrincipalAxisLength', 'Orientation', 'ConvexVolume', 'Solidity', 'SurfaceArea'});
                 
                 %% Get lateral faces and particular properties of ghost cells
                 
+                
+                %% Final touches
                 currentTable.ID = obj.Int(numCell);
                 currentTable.Time = repmat(timeStep, size(numCell));
                 featuresTable = [featuresTable; currentTable];

@@ -49,6 +49,14 @@ Set.dt=Set.dt0;
 Set.ReModel=true;
 Set.ApplyBC=true;
 
+if isempty(Set.initEndContractility) == 0
+    initContractility = Set.initEndContractility(1);
+    endContractility = Set.initEndContractility(2);
+    stepContractility = (endContractility - initContractility)/(Set.timeToReachFullContractility);
+    Set.initEndContractility = endContractility:-stepContractility:initContractility;
+    Set.timeToReachFullContractility = length(Set.initEndContractility);
+end
+
 % Dofs & Boundary
 if Set.BC==1 && ~Set.Substrate
     Dofs=GetDOFs(Y,Cell,Faces,Set);
@@ -70,40 +78,6 @@ Set.MaxIter0=Set.MaxIter;
 while t<=Set.tend
     
     if Set.SaveWorkspace,    save(strcat(Set.OutputFolder,Esc,'Workspace',Esc,['Workspace' num2str(numStep) '.mat'])); end
-    
-    % ----------- Ablation ------------------------------------------------
-    if Set.Ablation == true && Set.TAblation <= t
-        if isempty(Set.cellsToAblate)==0
-            Cell = Cell.AblateCells(Set.cellsToAblate);
-            Set.cellsToAblate = [];
-            CellInput.LambdaS1Factor(Cell.GhostCells) = 0;
-            CellInput.LambdaS2Factor(Cell.GhostCells) = 0;
-            CellInput.LambdaS3Factor(Cell.GhostCells) = 0;
-        end
-    end
-    
-    tooSmallCells = Cell.Vol < (Cell.Vol0/10);
-    if any(tooSmallCells) % Remove cell in the case is too small
-        idsToRemove = Cell.Int(tooSmallCells);
-        Cell = Cell.removeCells(tooSmallCells);
-        CellInput.LambdaS1Factor(tooSmallCells) = [];
-        CellInput.LambdaS2Factor(tooSmallCells) = [];
-        CellInput.LambdaS3Factor(tooSmallCells) = [];
-        CellInput.LambdaS4Factor(tooSmallCells) = [];
-        XgID = [XgID; idsToRemove];
-        
-        %Remove edges between ghost cell and external nodes. Therefore,
-        %also, remove faces between ghost cell and external nodes and
-        %associated vertices
-        
-        %Here it should change interior faces to exterior face from the smaller one
-        Faces=Faces.CheckInteriorFaces(XgID);
-        Cell.AssembleNodes = Cell.Int;
-        [Cell,Faces,nC,SCn,flag32] = ReBuildCells(Cell,T,Y,X,Faces,SCn);
-        
-        % Check consequences of this one:
-        Dofs=GetDOFs(Y,Cell,Faces,Set);
-    end
 
     % ----------- Remodel--------------------------------------------------
     if Set.Remodelling && Set.ReModel && abs(t-tr)>=Set.RemodelingFrequency
@@ -240,6 +214,45 @@ while t<=Set.tend
         Set.dt=min(Set.dt+Set.dt*0.5,Set.dt0);
         Set.ReModel=true;
         Set.ApplyBC=true;
+        
+        % ----------- Ablation ------------------------------------------------
+        if Set.Ablation == true && Set.TAblation <= t
+            if isempty(Set.cellsToAblate)==0
+                Cell = Cell.AblateCells(Set.cellsToAblate);
+                Set.cellsToAblate = [];
+                CellInput.LambdaS1Factor(Cell.GhostCells) = 0;
+                CellInput.LambdaS2Factor(Cell.GhostCells) = 0;
+                CellInput.LambdaS3Factor(Cell.GhostCells) = 0;
+            end
+
+            if isempty(Set.initEndContractility) == 0
+                Set.cContractility = Set.initEndContractility(Set.timeToReachFullContractility);
+                Set.timeToReachFullContractility = Set.timeToReachFullContractility - 1;
+            end
+        end
+
+        tooSmallCells = Cell.Vol < (Cell.Vol0/12);
+        if any(tooSmallCells) % Remove cell in the case is too small
+            idsToRemove = Cell.Int(tooSmallCells);
+            Cell = Cell.removeCells(tooSmallCells);
+            CellInput.LambdaS1Factor(tooSmallCells) = [];
+            CellInput.LambdaS2Factor(tooSmallCells) = [];
+            CellInput.LambdaS3Factor(tooSmallCells) = [];
+            CellInput.LambdaS4Factor(tooSmallCells) = [];
+            XgID = [XgID; idsToRemove];
+
+            %Remove edges between ghost cell and external nodes. Therefore,
+            %also, remove faces between ghost cell and external nodes and
+            %associated vertices
+
+            %Here it should change interior faces to exterior face from the smaller one
+            Faces=Faces.CheckInteriorFaces(XgID);
+            Cell.AssembleNodes = Cell.Int;
+            [Cell,Faces,nC,SCn,flag32] = ReBuildCells(Cell,T,Y,X,Faces,SCn);
+
+            % Check consequences of this one:
+            Dofs=GetDOFs(Y,Cell,Faces,Set);
+        end
     end
 end
 %%

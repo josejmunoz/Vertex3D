@@ -50,5 +50,13 @@ else
     CellInput.Propulsion=[];
 end 
 
+if isempty(Set.initEndContractility) == 0
+    initContractility = Set.initEndContractility(1);
+    endContractility = Set.initEndContractility(2);
+    stepContractility = (endContractility - initContractility)/(Set.timeToReachFullContractility);
+    Set.initEndContractility = endContractility:-stepContractility:initContractility;
+    Set.timeToReachFullContractility = length(Set.initEndContractility);
+end
+
 
 end 

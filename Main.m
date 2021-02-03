@@ -49,14 +49,6 @@ Set.dt=Set.dt0;
 Set.ReModel=true;
 Set.ApplyBC=true;
 
-if isempty(Set.initEndContractility) == 0
-    initContractility = Set.initEndContractility(1);
-    endContractility = Set.initEndContractility(2);
-    stepContractility = (endContractility - initContractility)/(Set.timeToReachFullContractility);
-    Set.initEndContractility = endContractility:-stepContractility:initContractility;
-    Set.timeToReachFullContractility = length(Set.initEndContractility);
-end
-
 % Dofs & Boundary
 if Set.BC==1 && ~Set.Substrate
     Dofs=GetDOFs(Y,Cell,Faces,Set);

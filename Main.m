@@ -67,6 +67,8 @@ tr=0;
 Set.nu0=Set.nu;
 Set.MaxIter0=Set.MaxIter;
 
+save(strcat(Set.OutputFolder,Esc,'set.mat'), 'Set');
+
 while t<=Set.tend
     
     if Set.SaveWorkspace,    save(strcat(Set.OutputFolder,Esc,'Workspace',Esc,['Workspace' num2str(numStep) '.mat'])); end

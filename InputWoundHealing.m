@@ -1,4 +1,4 @@
-Set.OutputFolder = 'Result/CompressionAblationNoContractilityNoRemodel_3x3';
+Set.OutputFolder = 'Result/AblationContractility_0.01_NoRemodel_S4_0.5_3x3';
 Set.diary = true;
 
 %% geometry
@@ -22,7 +22,7 @@ Set.lambdaS2=.5;
 % Cell-substrate
 Set.lambdaS3=.5;
 % Cell-GhostCell
-Set.lambdaS4=1;
+Set.lambdaS4=0.5;
 
 %---------- EnergyBarrier
 Set.EnergyBarrier=true;
@@ -60,7 +60,9 @@ Set.Nincr=300;
     
 %% Contractility
 Set.Contractility = 0;
-Set.cContractility = 0;
+Set.cContractility = 0.01;
+%Set.initEndContractility = [0.001 0.1];
+%Set.timeToReachFullContractility = 5;
 
 %% Ablating cells
 Set.Ablation = true;

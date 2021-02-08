@@ -209,7 +209,7 @@ classdef CellClass
             allVertices = [Y.DataRow; obj.FaceCentres.DataRow];
             [xPixels,yPixels,zPixels] = meshgrid(min(allVertices(:)):resolutionOfImage:max(allVertices(:)));
             
-            resultingImage = uint8(size(xPixels));
+            resultingImage = uint8(zeros(size(xPixels)));
             for numCell = 1:length(obj.Int)
                 
                 verticesConnectionsOfCell = obj.Tris{numCell};
@@ -221,7 +221,7 @@ classdef CellClass
                 SI = pointLocation(DT,xPixels(:),yPixels(:),zPixels(:));       %index of simplex (returns NaN for all points outside the convex hull)
                 mask = ~isnan(SI); %binary
                 mask = reshape(mask,size(xPixels));
-                resultingImage(mask) = obj.Int(numCell);
+                resultingImage(mask > 0) = mask(mask>0) .* obj.Int(numCell);
                 currentTable = regionprops3(mask, {'Volume', 'EquivDiameter', 'Extent', 'PrincipalAxisLength', 'Orientation', 'ConvexVolume', 'Solidity', 'SurfaceArea'});
                 
                 %% Get lateral faces and particular properties of ghost cells

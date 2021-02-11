@@ -62,7 +62,7 @@ else
 end
 
 %% Loop over time
-
+tp = 0
 tr=0;
 Set.nu0=Set.nu;
 Set.MaxIter0=Set.MaxIter;
@@ -81,7 +81,7 @@ while t<=Set.tend
     end  % ----------------------------------------------------------------
     %   Copy configuration in case the current step dose not converge  and need
     %   to be repeated
-    tp=t; Yp=Y; Cellp=Cell;
+    Yp=Y; Cellp=Cell;
     Set.iIncr=numStep;
     % ----------- Apply Boundary Condition --------------------------------
     if Set.BC==1 && t<=Set.TStopBC && t>=Set.TStartBC && Set.ApplyBC

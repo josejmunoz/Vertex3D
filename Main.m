@@ -144,13 +144,8 @@ while t<=Set.tend
     end
     
     %=================================================================
-
-    if gr>Set.tol || dyr>Set.tol || any(isnan(g(Dofs.FreeDofs))) || any(isnan(dy(Dofs.FreeDofs)))
-        fprintf('Step %i did not converge!! \n',Set.iIncr);
-        break;
-    end
     
-    if gr>Set.tol || dyr>Set.tol
+    if gr>Set.tol || dyr>Set.tol || any(isnan(g(Dofs.FreeDofs))) || any(isnan(dy(Dofs.FreeDofs)))
         fprintf('Convergence was not achieved ... \n');
         Y=Yp;
         Cell=Cellp;
@@ -172,6 +167,9 @@ while t<=Set.tend
             t=t+Set.dt;
             
             StepSize(numStep)=Set.dt;
+        else
+            fprintf('Step %i did not converge!! \n', Set.iIncr);
+            break;
         end
     else
         fprintf('STEP %i has converged ...\n',Set.iIncr)

@@ -153,20 +153,20 @@ while t<=Set.tend
         Cell=Cellp;
         Set.MaxIter=Set.MaxIter0*3;
         Set.nu=10*Set.nu0;
-     elseif Set.iter == Set.MaxIter && Set.iter > Set.MaxIter0  && Set.dt>Set.dt0/(2^6) && (gr>Set.tol || dyr>Set.tol)
-         fprintf('Convergence was not achieved ... \n');
-         fprintf('Second strategy ---> Repeating the step with half step-size...\n');
-         t=tp;
-         Y=Yp;
-         Cell=Cellp;
-         Set.MaxIter=Set.MaxIter0;
-         Set.nu=Set.nu0;
-         Set.dt=Set.dt/2;
-         StepSize(numStep)=Set.dt;
-         t=t+Set.dt;
-     elseif gr>Set.tol || dyr>Set.tol || any(isnan(g(Dofs.FreeDofs))) || any(isnan(dy(Dofs.FreeDofs)))
-         fprintf('Step %i did not converge !! \n',Set.iIncr);
-         break;
+    elseif Set.iter == Set.MaxIter && Set.iter > Set.MaxIter0  && Set.dt>Set.dt0/(2^6) && (gr>Set.tol || dyr>Set.tol)
+        fprintf('Convergence was not achieved ... \n');
+        fprintf('Second strategy ---> Repeating the step with half step-size...\n');
+        t=tp;
+        Y=Yp;
+        Cell=Cellp;
+        Set.MaxIter=Set.MaxIter0;
+        Set.nu=Set.nu0;
+        Set.dt=Set.dt/2;
+        StepSize(numStep)=Set.dt;
+        t=t+Set.dt;
+    elseif gr>Set.tol || dyr>Set.tol || any(isnan(g(Dofs.FreeDofs))) || any(isnan(dy(Dofs.FreeDofs)))
+        fprintf('Step %i did not converge !! \n',Set.iIncr);
+        break;
     else
         fprintf('STEP %i has converged ...\n',Set.iIncr)
         [X]=GetXFromY(Cell,Faces,X,T,Y,XgID,XgSub,Set);
@@ -174,7 +174,8 @@ while t<=Set.tend
         EnergyV(numStep)=Energy.Ev;
         EnergyB(numStep)=Energy.EB;
         EnergyF(numStep)=Energy.Ef;
-        if Set.Contractility,    EnergyC(numStep)=Energy.Ec; end 
+        if Set.Contractility,    EnergyC(numStep)=Energy.Ec; end
+        
         if Set.VTK, PostProcessingVTK(X,Y,T.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end
         Yn=Y;
         SCn=Cell.FaceCentres;

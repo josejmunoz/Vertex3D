@@ -8,6 +8,7 @@ addpath(strcat(pwd,Esc,'Utilities'));
 addpath(strcat(pwd,Esc,'Remodel'));
 addpath(strcat(pwd,Esc,'PostProcessing'));
 addpath(strcat(pwd,Esc,'Kg'));
+addpath(strcat(pwd,Esc,'Src'));
 
 
 %InputCompression
@@ -73,22 +74,22 @@ while t<=Set.tend
     
     if Set.SaveWorkspace,    save(strcat(Set.OutputFolder,Esc,'Workspace',Esc,['Workspace' num2str(numStep) '.mat'])); end
 
-    % ----------- Remodel--------------------------------------------------
+    %% ----------- Remodel--------------------------------------------------
     if Set.Remodelling && Set.ReModel && abs(t-tr)>=Set.RemodelingFrequency
         [Cell,Y,Yn,SCn,T,X,Faces,Dofs,Cn,Set]=Remodeling(Cell,Faces,Y,Yn,SCn,T,X,Set,Dofs,Energy,XgID,XgSub,CellInput);
         Set.ReModel=false;
         tr=t;
-    end  % ----------------------------------------------------------------
-    %   Copy configuration in case the current step dose not converge  and need
+    end
+    %   Copy configuration in case the current step does not converge  and need
     %   to be repeated
     Yp=Y; Cellp=Cell;
     Set.iIncr=numStep;
     
-    % ----------- Apply Boundary Condition --------------------------------
-    [Cell, Y, Dofs, Yt, Ytn, y, yn] = applyBoundaryCondition(t, Y, Set, Cell, Dofs)
+    %% ----------- Apply Boundary Condition --------------------------------
+    [Cell, Y, Dofs, Yt, Ytn, y, yn] = applyBoundaryCondition(t, Y, Set, Cell, Dofs);
     
     
-    % ----------- Compute K, g ---------------------------------------
+    %% ----------- Compute K, g ---------------------------------------
     [g,K,Cell,Energy]=KgGlobal(Cell,Faces,Y,y,yn,Set,CellInput,XgSub);
     dy=zeros(size(y));
     dyr=norm(dy(Dofs.FreeDofs));
@@ -99,12 +100,13 @@ while t<=Set.tend
     if Set.VTK_iter, InitVtk(strcat(Set.OutputFolder,Esc,'ResultVTK_iter')); end
     if Set.VTK, PostProcessingVTK(X,Y,T.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end
     
+    
+    %% Newton-raphson iterations ==========================================
     Set.iter=1;
     auxgr=zeros(3,1);
     auxgr(1)=gr;
     ig=1;
     while (gr>Set.tol || dyr>Set.tol) && Set.iter<Set.MaxIter
-        %% Newton-raphson iterations ==========================================
         dy(Dofs.FreeDofs)=-K(Dofs.FreeDofs,Dofs.FreeDofs)\g(Dofs.FreeDofs);
         [alpha]=LineSearch(Cell,Faces,y,yn,dy,g,Dofs.FreeDofs,Set,Y,CellInput,XgSub);
         % alpha=1;
@@ -120,15 +122,19 @@ while t<=Set.tend
         dyr=norm(dy(Dofs.FreeDofs));
         gr=norm(g(Dofs.FreeDofs));
         fprintf('Step: % i,Iter: %i, Time: %g ||gr||= %.3e ||dyr||= %.3e alpha= %.3e  nu/nu0=%.3g \n',numStep,Set.iter,t,gr,dyr,alpha,Set.nu/Set.nu0);
-        if Set.VTK_iter, PostProcessingVTK(X,Y,T.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK_iter'),Set.iter,Set); end
+        
+        %if Set.VTK_iter, PostProcessingVTK(X,Y,T.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK_iter'),Set.iter,Set); end
+        
         Set.iter=Set.iter+1;
         Set.N_Global_Iterations=Set.N_Global_Iterations+1;
         auxgr(ig+1)=gr;
+        
         if ig ==2
             ig=0;
         else
             ig=ig+1;
         end
+        
         if (abs(auxgr(1)-auxgr(2))/auxgr(1)<1e-3 &&...
                 abs(auxgr(1)-auxgr(3))/auxgr(1)<1e-3 &&...
                 abs(auxgr(3)-auxgr(2))/auxgr(3)<1e-3)...
@@ -195,43 +201,9 @@ while t<=Set.tend
         Set.ApplyBC=true;
         
         % ----------- Ablation ------------------------------------------------
-        if Set.Ablation == true && Set.TAblation <= t
-            if isempty(Set.cellsToAblate)==0
-                Cell = Cell.AblateCells(Set.cellsToAblate);
-                Set.cellsToAblate = [];
-                CellInput.LambdaS1Factor(Cell.GhostCells) = 0;
-                CellInput.LambdaS2Factor(Cell.GhostCells) = 0;
-                CellInput.LambdaS3Factor(Cell.GhostCells) = 0;
-            end
-
-            if isempty(Set.initEndContractility) == 0
-                Set.cContractility = Set.initEndContractility(Set.timeToReachFullContractility);
-                Set.timeToReachFullContractility = Set.timeToReachFullContractility - 1;
-            end
-        end
-
-        tooSmallCells = Cell.Vol < (Cell.Vol0/12);
-        if any(tooSmallCells) % Remove cell in the case is too small
-            idsToRemove = Cell.Int(tooSmallCells);
-            Cell = Cell.removeCells(tooSmallCells);
-            CellInput.LambdaS1Factor(tooSmallCells) = [];
-            CellInput.LambdaS2Factor(tooSmallCells) = [];
-            CellInput.LambdaS3Factor(tooSmallCells) = [];
-            CellInput.LambdaS4Factor(tooSmallCells) = [];
-            XgID = [XgID; idsToRemove];
-
-            %Remove edges between ghost cell and external nodes. Therefore,
-            %also, remove faces between ghost cell and external nodes and
-            %associated vertices
-
-            %Here it should change interior faces to exterior face from the smaller one
-            Faces=Faces.CheckInteriorFaces(XgID);
-            Cell.AssembleNodes = Cell.Int;
-            [Cell,Faces,nC,SCn,flag32] = ReBuildCells(Cell,T,Y,X,Faces,SCn);
-
-            % Check consequences of this one:
-            Dofs=GetDOFs(Y,Cell,Faces,Set);
-        end
+        [Cell, Set, CellInput] = performAblation(Cell, Set, CellInput);
+        
+        %[Cell, CellInput, XgID, Faces,nC,SCn,flag32, Dofs] = removeCellDependingVol(Cell, CellInput, XgID, Faces, T, Y, X, SCn)
     end
 end
 %%

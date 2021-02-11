@@ -262,14 +262,18 @@ classdef CellClass
                 lateralEdges = any(ismember(currentEdgesOfCell, apicalVertices), 2) + any(ismember(currentEdgesOfCell, basalVertices), 2) == 2;
                 
                 if sum(apicalEdges) > size(apicalVertices, 1)
-                    apicalPixels = apicoBasalVertices(apicoBasalVertices(:, 3) > mean(midZ), :);
-                    %[newEdges] = boundaryOfCell(apicalPixels(:, 1:2));
-                    [newEdges] = boundaryOfCell(cmdscale(pdist(apicalPixels), 2));
-                    apicalEdges = ismember(sort(currentEdgesOfCell, 2), sort(apicalVertices(newEdges), 2), 'rows');
-                    
-                    if sum(apicalEdges) ~= size(apicalVertices, 1)
-                        error('CellClass:boundary issue');
-                    end
+                    apicalVerticesIds = currentEdgesOfCell(apicalEdges, :);
+                    [numElements, elements] = hist(apicalVerticesIds(:), unique(currentEdgesOfCell(apicalEdges, :)));
+                    edgesToRemove = apicalVerticesIds(all(ismember(apicalVerticesIds, elements(numElements>2)), 2), :);
+                    apicalEdges(ismember(currentEdgesOfCell, edgesToRemove, 'row')) = 0;
+%                     apicalPixels = apicoBasalVertices(apicoBasalVertices(:, 3) > mean(midZ), :);
+%                     %[newEdges] = boundaryOfCell(apicalPixels(:, 1:2));
+%                     [newEdges] = boundaryOfCell(cmdscale(pdist(apicalPixels), 2));
+%                     apicalEdges = ismember(sort(currentEdgesOfCell, 2), sort(apicalVertices(newEdges), 2), 'rows');
+%                     
+%                     if sum(apicalEdges) ~= size(apicalVertices, 1)
+%                         error('CellClass:boundary issue');
+%                     end
                 end
                 
                 % 2:Basal 3:Apical 1:Lateral

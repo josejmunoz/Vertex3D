@@ -77,7 +77,7 @@ if nargout>1
     
     
     % ----------------- Contractility -------------------------------------
-    if Set.cContractility > 0
+    if Set.cPurseString > 0 || Set.cLateralCables > 0
         [gC,KC,Cell,Energy.Ec]=KgContractility(Cell,Y,Set);
          K=K+KC; g=g+gC;
     end

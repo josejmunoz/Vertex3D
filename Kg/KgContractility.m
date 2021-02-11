@@ -5,7 +5,6 @@ function [g,K,Cell,energy] = KgContractility(Cell,Y,Set)
 %   K: is a matrix
 
 %% Set parameters
-C = Set.cContractility;
 Set.Sparse = true;
 
 %% Initialize
@@ -26,6 +25,7 @@ energy = 0;
 
 %% Calculate basic information
 [Cell] = Cell.computeEdgeLengths(Y);
+[Cell] = Cell.computeEdgeLocation(Y);
 
 for numCell = 1:Cell.n
     edgeVertices = Cell.Cv{numCell};
@@ -38,6 +38,8 @@ for numCell = 1:Cell.n
     edgeLengths = Cell.EdgeLengths{numCell};
     edgeLengths0_average = Cell.EdgeLengths0_average;
     
+    edgeLocation = Cell.EdgeLocation{numCell};
+    
     contractileForcesOfCell = zeros(size(edgeVertices, 1), 1);
     
     for numEdge = 1:length(edgeLengths)
@@ -48,6 +50,14 @@ for numCell = 1:Cell.n
         else %Face center
             y_2 = Cell.FaceCentres.DataRow(abs(edgeVertices(numEdge, 2)), :);
             edgeVertices(numEdge, 2) = abs(edgeVertices(numEdge, 2)) + Y.n;
+        end
+        
+        if edgeLocation(numEdge) == 2 % Apical purseString
+            C = Set.cPurseString;
+        elseif edgeLocation(numEdge) == 1 %lateralCables
+            C = Set.cLateralCables;
+        else
+            C = 0;
         end
         
         l_i = edgeLengths(numEdge, 1);

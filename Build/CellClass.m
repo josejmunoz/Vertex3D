@@ -95,6 +95,8 @@ classdef CellClass
         %     Remark:- v1,v2,v3 and v4 <=Y.n  correspond to a vertex         (its position can be found as Y.DataRow(v1,:))
         %            - v1,v2,v3 and v4 >Y.n   correspond to a face-centre    (its position can be found as Cell.FaceCentres.DataRow(v1-T.n,:))
         %--------------------------------------------------------------------
+        EdgeLocation
+        %--------------------------------------------------------------------
         GhostCells            % Ghost cells
         %--------------------------------------------------------------------
         ContractileForces
@@ -128,6 +130,7 @@ classdef CellClass
                 Cell.EdgeLengthsn=cell(nC,1);
                 Cell.GhostCells=false(nC, 1);
                 Cell.ContractileForces=cell(nC, 1);
+                Cell.EdgeLocation=cell(nC,1);
             end
         end
         
@@ -231,6 +234,44 @@ classdef CellClass
                 currentTable.ID = obj.Int(numCell);
                 currentTable.Time = repmat(timeStep, size(numCell));
                 featuresTable = [featuresTable; currentTable];
+            end
+        end
+        
+        function [obj] = computeEdgeLocation(obj, Y)
+            for numCell=1:obj.n
+                currentEdgesOfCell = obj.Cv{numCell};
+                uniqueCurrentVertices = unique(currentEdgesOfCell(currentEdgesOfCell > 0));
+                remainingEdges = vertcat(obj.Cv{setdiff(obj.Int, numCell)});
+                uniqueRemainingEdges = unique(remainingEdges(remainingEdges > 0));
+
+                sharedVertices = uniqueCurrentVertices(ismember(uniqueCurrentVertices, uniqueRemainingEdges));
+                
+                edgesToFaces = ismember(currentEdgesOfCell(:, 1), sharedVertices) & currentEdgesOfCell(:, 2) < 0;
+                [numElements, elements] = hist(currentEdgesOfCell(edgesToFaces, 2), unique(currentEdgesOfCell(edgesToFaces, 2)));
+                cellCellFaceCentres = elements(numElements > 3);
+                midZ = obj.FaceCentres.DataRow(abs(cellCellFaceCentres),3);
+                if length(midZ) <= 3
+                    %It may be a border cell
+                end
+                apicoBasalVertices = Y.DataRow(sharedVertices,:);
+                apicalVertices = sharedVertices(apicoBasalVertices(:, 3) < mean(midZ));
+                basalVertices = sharedVertices(apicoBasalVertices(:, 3) > mean(midZ));
+                
+                apicalEdges = all(ismember(currentEdgesOfCell, apicalVertices), 2);
+                basalEdges = all(ismember(currentEdgesOfCell, basalVertices), 2);
+                
+                if sum(apicalEdges) > size(apicalVertices, 1)
+                    apicalPixels = apicoBasalVertices(apicoBasalVertices(:, 3) < mean(midZ), :);
+                    [newEdges] = boundaryOfCell(apicalPixels(:, 1:2));
+                    apicalEdges = ismember(currentEdgesOfCell, apicalVertices(newEdges), 'rows');
+                    if sum(apicalEdges) ~= size(apicalVertices, 1)
+                        error('CellClass:boundary issue');
+                    end
+                end
+                
+                % 2 Basal 3 Apical 1 Lateral
+                obj.EdgeLocation{numCell}=all(ismember(currentEdgesOfCell, sharedVertices),2) + 2*apicalEdges + basalEdges;
+                
             end
         end
     end

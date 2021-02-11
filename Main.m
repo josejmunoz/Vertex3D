@@ -217,7 +217,10 @@ while t<=Set.tend
         % ----------- Ablation ------------------------------------------------
         [Cell, Set, CellInput] = performAblation(Cell, Set, CellInput, t);
         
-        [Cell, CellInput, XgID, Faces,nC,SCn,flag32, Dofs] = removeCellDependingVol(Cell, CellInput, XgID, Faces, T, Y, X, SCn);
+        tooSmallCells = Cell.Vol < (Cell.Vol0/1000);
+        %if any(tooSmallCells) % Remove cell in the case is too small
+            [Cell, CellInput, XgID, Faces,nC,SCn,flag32, Dofs] = removeCell(Cell, CellInput, XgID, Faces, T, Y, X, SCn);
+        %end
     end
 end
 %%

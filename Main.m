@@ -145,61 +145,74 @@ while t<=Set.tend
     
     %=================================================================
 
-
-    if Set.iter == Set.MaxIter0 &&  (gr>Set.tol || dyr>Set.tol)
-        fprintf('Convergence was not achieved ... \n');
-        fprintf('First strategy ---> Repeating the step with higher viscosity... \n');
-        Y=Yp;
-        Cell=Cellp;
-        Set.MaxIter=Set.MaxIter0*3;
-        Set.nu=10*Set.nu0;
-    elseif Set.iter == Set.MaxIter && Set.iter > Set.MaxIter0  && Set.dt>Set.dt0/(2^6) && (gr>Set.tol || dyr>Set.tol)
-        fprintf('Convergence was not achieved ... \n');
-        fprintf('Second strategy ---> Repeating the step with half step-size...\n');
-        t=tp;
-        Y=Yp;
-        Cell=Cellp;
-        Set.MaxIter=Set.MaxIter0;
-        Set.nu=Set.nu0;
-        Set.dt=Set.dt/2;
-        StepSize(numStep)=Set.dt;
-        t=t+Set.dt;
-    elseif gr>Set.tol || dyr>Set.tol || any(isnan(g(Dofs.FreeDofs))) || any(isnan(dy(Dofs.FreeDofs)))
-        fprintf('Step %i did not converge !! \n',Set.iIncr);
+    if gr>Set.tol || dyr>Set.tol || any(isnan(g(Dofs.FreeDofs))) || any(isnan(dy(Dofs.FreeDofs)))
+        fprintf('Step %i did not converge!! \n',Set.iIncr);
         break;
+    end
+    
+    if gr>Set.tol || dyr>Set.tol
+        fprintf('Convergence was not achieved ... \n');
+        Y=Yp;
+        Cell=Cellp;
+        
+        if Set.iter == Set.MaxIter0 
+            fprintf('First strategy ---> Repeating the step with higher viscosity... \n');
+            
+            Set.MaxIter=Set.MaxIter0*3;
+            Set.nu=10*Set.nu0;
+            
+        elseif Set.iter == Set.MaxIter && Set.iter > Set.MaxIter0 && Set.dt>Set.dt0/(2^6)
+            fprintf('Second strategy ---> Repeating the step with half step-size...\n');
+            
+            Set.MaxIter=Set.MaxIter0;
+            Set.nu=Set.nu0;
+            
+            t=tp;
+            Set.dt=Set.dt/2;
+            t=t+Set.dt;
+            
+            StepSize(numStep)=Set.dt;
+        end
     else
         fprintf('STEP %i has converged ...\n',Set.iIncr)
-        [X]=GetXFromY(Cell,Faces,X,T,Y,XgID,XgSub,Set);
-        EnergyS(numStep)=Energy.Es;
-        EnergyV(numStep)=Energy.Ev;
-        EnergyB(numStep)=Energy.EB;
-        EnergyF(numStep)=Energy.Ef;
-        if Set.Contractility,    EnergyC(numStep)=Energy.Ec; end
         
-        if Set.VTK, PostProcessingVTK(X,Y,T.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end
-        Yn=Y;
-        SCn=Cell.FaceCentres;
+        %Update Nodes (X) from Vertices (Y)
+        [X]=GetXFromY(Cell,Faces,X,T,Y,XgID,XgSub,Set);
         Cell = Cell.computeEdgeLengths(Y);
+        
+        %% Post processing
+        if Set.VTK, PostProcessingVTK(X,Y,T.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end
         
         %% Analise cells
         [~, cellFeatures{numStep}, resultingImage] = Cell.exportTableWithCellFeatures(Y, numStep);
         writetable(vertcat(cellFeatures{:}), strcat(Set.OutputFolder,Esc,'Analysis',Esc,'cellFeatures.csv'))
         save(strcat(Set.OutputFolder,Esc,'Analysis', Esc,'resultingImage_', num2str(numStep), '.mat'), 'resultingImage');
         
-        
+        %% Update energies
+        EnergyS(numStep)=Energy.Es;
+        EnergyV(numStep)=Energy.Ev;
+        EnergyB(numStep)=Energy.EB;
+        EnergyF(numStep)=Energy.Ef;
+        if Set.Contractility,    EnergyC(numStep)=Energy.Ec; end
+
         %% Save for next steps
         for ii=1:Cell.n
             Cell.SAreaTrin{ii}=Cell.SAreaTri{ii};
             Cell.EdgeLengthsn{ii}=Cell.EdgeLengths{ii};
         end
+        
+        Yn=Y;
+        SCn=Cell.FaceCentres;
+        Set.MaxIter=Set.MaxIter0;
+        Set.ReModel=true;
+        Set.ApplyBC=true;
+        
+        % Update time
         tp=t;
         t=t+Set.dt;
         numStep=numStep+1;
         StepSize(numStep)=Set.dt;
-        Set.MaxIter=Set.MaxIter0;
-        Set.dt=min(Set.dt+Set.dt*0.5,Set.dt0);
-        Set.ReModel=true;
-        Set.ApplyBC=true;
+        Set.dt=min(Set.dt+Set.dt*0.5, Set.dt0);
         
         % ----------- Ablation ------------------------------------------------
         [Cell, Set, CellInput] = performAblation(Cell, Set, CellInput);

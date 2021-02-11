@@ -1,13 +1,13 @@
-function [Cell, CellInput, XgID, Faces,nC,SCn,flag32, Dofs] = removeCell(Cell, CellInput, XgID, Faces, T, Y, X, SCn)
+function [Cell, CellInput, XgID, Faces,nC,SCn,flag32, Dofs] = removeCell(Cell, CellInput, XgID, Faces, T, Y, X, SCn, cellsToRemove, Set)
 %REMOVECELLDEPENDINGVOL Summary of this function goes here
 %   Detailed explanation goes here
 
-idsToRemove = Cell.Int(tooSmallCells);
-Cell = Cell.removeCells(tooSmallCells);
-CellInput.LambdaS1Factor(tooSmallCells) = [];
-CellInput.LambdaS2Factor(tooSmallCells) = [];
-CellInput.LambdaS3Factor(tooSmallCells) = [];
-CellInput.LambdaS4Factor(tooSmallCells) = [];
+idsToRemove = Cell.Int(cellsToRemove);
+Cell = Cell.removeCells(cellsToRemove);
+CellInput.LambdaS1Factor(cellsToRemove) = [];
+CellInput.LambdaS2Factor(cellsToRemove) = [];
+CellInput.LambdaS3Factor(cellsToRemove) = [];
+CellInput.LambdaS4Factor(cellsToRemove) = [];
 XgID = [XgID; idsToRemove];
 
 %Remove edges between ghost cell and external nodes. Therefore,

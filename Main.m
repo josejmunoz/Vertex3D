@@ -86,7 +86,7 @@ while t<=Set.tend
     Set.iIncr=numStep;
     
     %% ----------- Apply Boundary Condition --------------------------------
-    [Cell, Y, Dofs, Yt, Ytn, y, yn] = applyBoundaryCondition(t, Y, Set, Cell, Dofs);
+    [Cell, Y, Dofs, Yt, Ytn, y, yn] = applyBoundaryCondition(t, Y, Set, Cell, Dofs, SCn, Yn);
     
     
     %% ----------- Compute K, g ---------------------------------------

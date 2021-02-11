@@ -145,33 +145,7 @@ while t<=Set.tend
     
     %=================================================================
     
-    if gr>Set.tol || dyr>Set.tol || any(isnan(g(Dofs.FreeDofs))) || any(isnan(dy(Dofs.FreeDofs)))
-        fprintf('Convergence was not achieved ... \n');
-        Y=Yp;
-        Cell=Cellp;
-        
-        if Set.iter == Set.MaxIter0 
-            fprintf('First strategy ---> Repeating the step with higher viscosity... \n');
-            
-            Set.MaxIter=Set.MaxIter0*3;
-            Set.nu=10*Set.nu0;
-            
-        elseif Set.iter == Set.MaxIter && Set.iter > Set.MaxIter0 && Set.dt>Set.dt0/(2^6)
-            fprintf('Second strategy ---> Repeating the step with half step-size...\n');
-            
-            Set.MaxIter=Set.MaxIter0;
-            Set.nu=Set.nu0;
-            
-            t=tp;
-            Set.dt=Set.dt/2;
-            t=t+Set.dt;
-            
-            StepSize(numStep)=Set.dt;
-        else
-            fprintf('Step %i did not converge!! \n', Set.iIncr);
-            break;
-        end
-    else
+    if gr<Set.tol && dyr<Set.tol && all(isnan(g(Dofs.FreeDofs)) == 0) && all(isnan(dy(Dofs.FreeDofs)) == 0)
         fprintf('STEP %i has converged ...\n',Set.iIncr)
         
         %Update Nodes (X) from Vertices (Y)
@@ -218,6 +192,32 @@ while t<=Set.tend
         tooSmallCells = Cell.Vol < (Cell.Vol0/1000);
         if any(tooSmallCells) % Remove cell in the case is too small
             [Cell, CellInput, XgID, Faces,nC,SCn,flag32, Dofs] = removeCell(Cell, CellInput, XgID, Faces, T, Y, X, SCn, tooSmallCells, Set);
+        end
+    else 
+        fprintf('Convergence was not achieved ... \n');
+        Y=Yp;
+        Cell=Cellp;
+        
+        if Set.iter == Set.MaxIter0 
+            fprintf('First strategy ---> Repeating the step with higher viscosity... \n');
+            
+            Set.MaxIter=Set.MaxIter0*3;
+            Set.nu=10*Set.nu0;
+            
+        elseif Set.iter == Set.MaxIter && Set.iter > Set.MaxIter0 && Set.dt>Set.dt0/(2^6)
+            fprintf('Second strategy ---> Repeating the step with half step-size...\n');
+            
+            Set.MaxIter=Set.MaxIter0;
+            Set.nu=Set.nu0;
+            
+            t=tp;
+            Set.dt=Set.dt/2;
+            t=t+Set.dt;
+            
+            StepSize(numStep)=Set.dt;
+        else
+            fprintf('Step %i did not converge!! \n', Set.iIncr);
+            break;
         end
     end
 end

@@ -254,23 +254,24 @@ classdef CellClass
                     %It may be a border cell
                 end
                 apicoBasalVertices = Y.DataRow(sharedVertices,:);
-                apicalVertices = sharedVertices(apicoBasalVertices(:, 3) < mean(midZ));
-                basalVertices = sharedVertices(apicoBasalVertices(:, 3) > mean(midZ));
+                apicalVertices = sharedVertices(apicoBasalVertices(:, 3) > mean(midZ));
+                basalVertices = sharedVertices(apicoBasalVertices(:, 3) < mean(midZ));
                 
                 apicalEdges = all(ismember(currentEdgesOfCell, apicalVertices), 2);
                 basalEdges = all(ismember(currentEdgesOfCell, basalVertices), 2);
+                lateralEdges = any(ismember(currentEdgesOfCell, apicalVertices), 2) + any(ismember(currentEdgesOfCell, basalVertices), 2) == 2;
                 
                 if sum(apicalEdges) > size(apicalVertices, 1)
-                    apicalPixels = apicoBasalVertices(apicoBasalVertices(:, 3) < mean(midZ), :);
+                    apicalPixels = apicoBasalVertices(apicoBasalVertices(:, 3) > mean(midZ), :);
                     [newEdges] = boundaryOfCell(apicalPixels(:, 1:2));
-                    apicalEdges = ismember(currentEdgesOfCell, apicalVertices(newEdges), 'rows');
+                    apicalEdges = ismember(sort(currentEdgesOfCell, 2), sort(apicalVertices(newEdges), 2), 'rows');
                     if sum(apicalEdges) ~= size(apicalVertices, 1)
                         error('CellClass:boundary issue');
                     end
                 end
                 
-                % 2 Basal 3 Apical 1 Lateral
-                obj.EdgeLocation{numCell}=all(ismember(currentEdgesOfCell, sharedVertices),2) + 2*apicalEdges + basalEdges;
+                % 2:Basal 3:Apical 1:Lateral
+                obj.EdgeLocation{numCell} = lateralEdges + 3*apicalEdges + 2*basalEdges;
                 
             end
         end

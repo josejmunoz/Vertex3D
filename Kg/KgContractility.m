@@ -52,7 +52,7 @@ for numCell = 1:Cell.n
             edgeVertices(numEdge, 2) = abs(edgeVertices(numEdge, 2)) + Y.n;
         end
         
-        if edgeLocation(numEdge) == 2 % Apical purseString
+        if edgeLocation(numEdge) == 3 % Apical purseString
             C = Set.cPurseString;
         elseif edgeLocation(numEdge) == 1 %lateralCables
             C = Set.cLateralCables;

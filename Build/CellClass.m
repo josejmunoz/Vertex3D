@@ -263,8 +263,10 @@ classdef CellClass
                 
                 if sum(apicalEdges) > size(apicalVertices, 1)
                     apicalPixels = apicoBasalVertices(apicoBasalVertices(:, 3) > mean(midZ), :);
-                    [newEdges] = boundaryOfCell(apicalPixels(:, 1:2));
+                    %[newEdges] = boundaryOfCell(apicalPixels(:, 1:2));
+                    [newEdges] = boundaryOfCell(cmdscale(pdist(apicalPixels), 2));
                     apicalEdges = ismember(sort(currentEdgesOfCell, 2), sort(apicalVertices(newEdges), 2), 'rows');
+                    
                     if sum(apicalEdges) ~= size(apicalVertices, 1)
                         error('CellClass:boundary issue');
                     end

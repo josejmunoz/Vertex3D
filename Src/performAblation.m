@@ -1,4 +1,4 @@
-function [Cell, Set, CellInput] = performAblation(Cell, Set, CellInput)
+function [Cell, Set, CellInput] = performAblation(Cell, Set, CellInput, t)
 %PERFORMABLATION Summary of this function goes here
 %   Detailed explanation goes here
 if Set.Ablation == true && Set.TAblation <= t

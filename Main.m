@@ -215,9 +215,9 @@ while t<=Set.tend
         Set.dt=min(Set.dt+Set.dt*0.5, Set.dt0);
         
         % ----------- Ablation ------------------------------------------------
-        [Cell, Set, CellInput] = performAblation(Cell, Set, CellInput);
+        [Cell, Set, CellInput] = performAblation(Cell, Set, CellInput, t);
         
-        %[Cell, CellInput, XgID, Faces,nC,SCn,flag32, Dofs] = removeCellDependingVol(Cell, CellInput, XgID, Faces, T, Y, X, SCn)
+        [Cell, CellInput, XgID, Faces,nC,SCn,flag32, Dofs] = removeCellDependingVol(Cell, CellInput, XgID, Faces, T, Y, X, SCn);
     end
 end
 %%

@@ -2,6 +2,9 @@ function [Cell,Y,Yn,SCn,T,X,Faces,Dofs,Set, Vnew] = flip32(Cell,Faces,Y,Yn,SCn,T
 %FLIP32 Summary of this function goes here
 %   Detailed explanation goes here
 %% loop over 3-vertices-faces (Flip32)
+
+DidNotConverge = false;
+
 for i=1:Faces.n
     Faces=Faces.ComputeAreaTri(Y.DataRow,Cell.FaceCentres.DataRow);
     Faces=Faces.ComputeEnergy(Set);
@@ -46,30 +49,27 @@ for i=1:Faces.n
     end
     
     % Remove the face
-    T=T.Remove(oV);
-    Y=Y.Remove(oV);
-    Yn=Yn.Remove(oV);
-    Faces=Faces.Remove(i);
-    SCn=SCn.Remove(i);
-    Cell.FaceCentres=Cell.FaceCentres.Remove(i);
+    [T, Y, Yn, Faces, SCn, Cell] = removeFaceInRemodelling(T, Y, Yn, Faces, SCn, Cell, oV, i);
     
     % add new vertices 
-    [T, Y, Yn, Cell, nV, Vnew, nC, SCn, Faces, Set, V3] = addNewVerticesInRemodelling(T, Tnew, Y, Ynew, Yn, Cell, Vnew, X, Faces, SCn, XgID, XgSub, Set);
+    [T, Y, Yn, Cell, nV, Vnew, nC, SCn, Faces, Set, V3, flag] = addNewVerticesInRemodelling(T, Tnew, Y, Ynew, Yn, Cell, Vnew, X, Faces, SCn, XgID, XgSub, Set);
     
+    if ~flag
+        fprintf('Vertices number %i %i %i -> were replaced by -> %i %i.\n',oV(1),oV(2),oV(3),nV(1),nV(2));
+        
+        if Set.Substrate
+            [Dofs]=UpdateDofsSub(Y,Faces,Cell,Set,nV,[]);
+        else
+            [Dofs]=UpdateDofs(Dofs,oV,nV,i,[],Y,V3);
+        end
+        Cell.RemodelledVertices=nV;
+        [Cell,Faces,Y,Yn,SCn,X,Dofs,Set,~,DidNotConverge]=SolveRemodelingStep(Cell,Faces,Y,X,Dofs,Set,Yn,SCn,CellInput,[]);
+        Yn.DataRow(nV,:)=Y.DataRow(nV,:);
+    else
+        error('check Flip32 flag');
+    end
     
-    fprintf('Vertices number %i %i %i -> were replaced by -> %i %i.\n',oV(1),oV(2),oV(3),nV(1),nV(2));
-    
-    if Set.Substrate
-        [Dofs]=UpdateDofsSub(Y,Faces,Cell,Set,nV,[]);
-    else 
-        [Dofs]=UpdateDofs(Dofs,oV,nV,i,[],Y,V3);
-    end 
-    Cell.RemodelledVertices=nV;
-    [Cell,Faces,Y,Yn,SCn,X,Dofs,Set,~,DidNotConverge]=SolveRemodelingStep(Cell,Faces,Y,X,Dofs,Set,Yn,SCn,CellInput,[]);
-    Yn.DataRow(nV,:)=Y.DataRow(nV,:);
-    
-    
-    if  DidNotConverge %|| NotConvexCell(Cell,Y)
+    if  DidNotConverge || flag %|| NotConvexCell(Cell,Y)
         [Cell, Y, Yn, SCn, T, X, Faces, Dofs, Set, Vnew] = backToPreviousStep(Cellp, Yp, Ynp, SCnp, Tp, Xp, Facesp, Dofsp, Setp, Vnewp);
         fprintf('=>> Local problem did not converge -> 32 Flip rejected !! \n');
     else

@@ -2,6 +2,7 @@ function [Cell,Y,Yn,SCn,T,X,Faces,Dofs,Set, Vnew] = flip44(Cell,Faces,Y,Yn,SCn,T
 %flip44 Summary of this function goes here
 %   Detailed explanation goes here
 %% loop over 4-vertices-faces (Flip44)
+DidNotConverge=false;
 for i=1:Faces.n
     Faces=Faces.ComputeAreaTri(Y.DataRow,Cell.FaceCentres.DataRow);
     Faces=Faces.ComputeEnergy(Set);
@@ -58,26 +59,28 @@ for i=1:Faces.n
     end 
     
     % Remove the face
-    [T, Y, Yn, Faces, SCn, Cell] = removeFaceInRemodelling(T, Y, Yn, Faces, SCn, Cell, i);
+    [T, Y, Yn, Faces, SCn, Cell] = removeFaceInRemodelling(T, Y, Yn, Faces, SCn, Cell, oV, i);
     
     % add new vertices 
-    [T, Y, Yn, Cell, nV, Vnew, nC, SCn, Faces, Set, V3] = addNewVerticesInRemodelling(T, Tnew, Y, Ynew, Yn, Cell, Vnew, X, Faces, SCn, XgID, XgSub, Set);
+    [T, Y, Yn, Cell, nV, Vnew, nC, SCn, Faces, Set, V3, flag] = addNewVerticesInRemodelling(T, Tnew, Y, Ynew, Yn, Cell, Vnew, X, Faces, SCn, XgID, XgSub, Set);
     
+    if ~flag
+        fprintf('Vertices number %i %i %i %i -> were replaced by -> %i %i %i %i.\n',oV(1),oV(2),oV(3),oV(4),nV(1),nV(2),nV(3),nV(4));
     
-    fprintf('Vertices number %i %i %i %i -> were replaced by -> %i %i %i %i.\n',oV(1),oV(2),oV(3),oV(4),nV(1),nV(2),nV(3),nV(4));
-    
-    if Set.Substrate
-        [Dofs]=UpdateDofsSub(Y,Faces,Cell,Set,nV,nC);
+        if Set.Substrate
+            [Dofs]=UpdateDofsSub(Y,Faces,Cell,Set,nV,nC);
+        else
+            [Dofs]=UpdateDofs(Dofs,oV,nV,i,nC,Y,V3);
+        end
+
+        Cell.RemodelledVertices=[nV;nC+Y.n];
+        [Cell,Faces,Y,Yn,SCn,X,Dofs,Set,~,DidNotConverge]=SolveRemodelingStep(Cell,Faces,Y,X,Dofs,Set,Yn,SCn,CellInput,XgSub);
+        Yn.DataRow(nV,:)=Y.DataRow(nV,:);
     else
-        [Dofs]=UpdateDofs(Dofs,oV,nV,i,nC,Y,V3);
+        error('check Flip44 flag');
     end
     
-    Cell.RemodelledVertices=[nV;nC+Y.n];
-    [Cell,Faces,Y,Yn,SCn,X,Dofs,Set,~,DidNotConverge]=SolveRemodelingStep(Cell,Faces,Y,X,Dofs,Set,Yn,SCn,CellInput,XgSub);
-    Yn.DataRow(nV,:)=Y.DataRow(nV,:);
-    
-    
-    if  DidNotConverge %|| NotConvexCell(Cell,Y)
+    if  DidNotConverge || flag %|| NotConvexCell(Cell,Y)
         [Cell, Y, Yn, SCn, T, X, Faces, Dofs, Set, Vnew] = backToPreviousStep(Cellp, Yp, Ynp, SCnp, Tp, Xp, Facesp, Dofsp, Setp, Vnewp);
         fprintf('=>> Local problem did not converge -> 44 Flip rejected !! \n');
         Set.N_Rejected_Transfromation=Set.N_Rejected_Transfromation+1;

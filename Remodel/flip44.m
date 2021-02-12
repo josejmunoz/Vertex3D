@@ -94,7 +94,7 @@ for i=1:Faces.n
     if Set.Substrate
         [Dofs]=UpdateDofsSub(Y,Faces,Cell,Set,nV,nC);
     else
-        [Dofs]=UpdatDofs(Dofs,oV,nV,i,nC,Y,V3);
+        [Dofs]=UpdateDofs(Dofs,oV,nV,i,nC,Y,V3);
     end
     Cell.RemodelledVertices=[nV;nC+Y.n];
     [Cell,Faces,Y,Yn,SCn,X,Dofs,Set,~,DidNotConverge]=SolveRemodelingStep(Cell,Faces,Y,X,Dofs,Set,Yn,SCn,CellInput,XgSub);

@@ -136,11 +136,11 @@ while ListIsNotEmpty
 %         end
 %         V3=1:Faces.n;
 %         V3=V3(Faces.V3(V3));
-%         [Dofs]=UpdatDofs(Dofs,oV,nV,[],[],Y,V3);
+%         [Dofs]=UpdateDofs(Dofs,oV,nV,[],[],Y,V3);
 %             if Set.Substrat
 %               [Dofs]=UpdateDofsSub(Y,Faces,Cell,Set,nV,[]);
 %             else 
-%               [Dofs]=UpdatDofs(Dofs,oV,nV,[],[],Y,V3);
+%               [Dofs]=UpdateDofs(Dofs,oV,nV,[],[],Y,V3);
 %             end 
 %         Cell.RemodelledVertices=nV;
 %         [Cell,Faces,Y,Yn,SCn,X,Dofs,Set,~,DidNotConverge]=SolveRemodelingStep(Cell,Faces,Y,X,Dofs,Set,Yn,SCn,CellInput,XgSub);
@@ -215,7 +215,7 @@ while ListIsNotEmpty
             if Set.Substrate
                 [Dofs]=UpdateDofsSub(Y,Faces,Cell,Set,nV,nC);
             else 
-                [Dofs]=UpdatDofs(Dofs,oV,nV,[],nC,Y,V3);
+                [Dofs]=UpdateDofs(Dofs,oV,nV,[],nC,Y,V3);
             end 
             Cell.RemodelledVertices=nV;
             [Cell,Faces,Y,Yn,SCn,X,Dofs,Set,~,DidNotConverge]=SolveRemodelingStep(Cell,Faces,Y,X,Dofs,Set,Yn,SCn,CellInput,XgSub);  

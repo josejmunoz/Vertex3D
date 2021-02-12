@@ -8,6 +8,7 @@ aux=Faces.n;
 ii=1;
 i=FacesList(ii);
 ListIsNotEmpty=true;
+DidNotConverge=false;
 while ListIsNotEmpty 
     Faces=Faces.ComputeAreaTri(Y.DataRow,Cell.FaceCentres.DataRow);
     Faces=Faces.ComputeEnergy(Set);

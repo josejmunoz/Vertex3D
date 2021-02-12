@@ -316,8 +316,12 @@ end
 
 %% ============================= Contractility ============================
 
-if ~isfield(Set, 'cContractility')  % Contractility coefficient
-    Set.cContractility = 0.0;
+if ~isfield(Set, 'cPurseString')  % Contractility coefficient of purse string
+    Set.cPurseString = 0;
+end
+
+if ~isfield(Set, 'cLateralCables')
+    Set.cLateralCables = 0;
 end
 
 if ~isfield(Set, 'Contractility')

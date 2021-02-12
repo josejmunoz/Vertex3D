@@ -54,31 +54,11 @@ for i=1:Faces.n
     Cell.FaceCentres=Cell.FaceCentres.Remove(i);
     
     % add new vertices 
-    [T,nV]=T.Add(Tnew);
-    Y=Y.Add(Ynew);
-    Yn=Yn.Add(Ynew);
-    fprintf('Vertices number %i %i %i -> were replaced by -> %i %i.\n',oV(1),oV(2),oV(3),nV(1),nV(2));
-
+    [T, Y, Yn, Cell, nV, Vnew, nC, SCn, Faces, Set, V3] = addNewVerticesInRemodelling(T, Tnew, Y, Ynew, Yn, Cell, Vnew, X, Faces, SCn, XgID, XgSub, Set);
     
-    Cell.AssembleNodes=unique(Tnew);
-    Vnew=Vnew.Add(nV);
-    [Cell,Faces,~,SCn]=ReBuildCells(Cell,T,Y,X,Faces,SCn);
-    if Set.Substrate
-        Faces=Faces.CheckInteriorFaces(XgID,XgSub);
-    else 
-        Faces=Faces.CheckInteriorFaces(XgID);
-    end 
-    Set.NumMainV=Y.n;
-    Set.NumAuxV=Cell.FaceCentres.n;
-    Set.NumTotalV=Set.NumMainV+Set.NumAuxV;
-    [Cell]=ComputeCellVolume(Cell,Y);
-    Cell = Cell.computeEdgeLengths(Y);
-    for jj=1:Cell.n
-        Cell.SAreaTrin{jj}=Cell.SAreaTri{jj};
-        Cell.EdgeLengthsn{jj}=Cell.EdgeLengths{jj};
-    end
-    V3=1:Faces.n;
-    V3=V3(Faces.V3(V3));
+    
+    fprintf('Vertices number %i %i %i -> were replaced by -> %i %i.\n',oV(1),oV(2),oV(3),nV(1),nV(2));
+    
     if Set.Substrate
         [Dofs]=UpdateDofsSub(Y,Faces,Cell,Set,nV,[]);
     else 
@@ -87,19 +67,11 @@ for i=1:Faces.n
     Cell.RemodelledVertices=nV;
     [Cell,Faces,Y,Yn,SCn,X,Dofs,Set,~,DidNotConverge]=SolveRemodelingStep(Cell,Faces,Y,X,Dofs,Set,Yn,SCn,CellInput,[]);
     Yn.DataRow(nV,:)=Y.DataRow(nV,:);
+    
+    
     if  DidNotConverge %|| NotConvexCell(Cell,Y)
-        Cell=Cellp;
-        Y=Yp;
-        Yn=Ynp;
-        SCn=SCnp;
-        T=Tp;
-        X=Xp;
-        Faces=Facesp;
-        Dofs=Dofsp;
-        Set=Setp;
-        Vnew=Vnewp;
+        [Cell, Y, Yn, SCn, T, X, Faces, Dofs, Set, Vnew] = backToPreviousStep(Cellp, Yp, Ynp, SCnp, Tp, Xp, Facesp, Dofsp, Setp, Vnewp);
         fprintf('=>> Local problem did not converge -> 32 Flip rejected !! \n');
-        Set.N_Rejected_Transfromation=Set.N_Rejected_Transfromation+1;
     else
         Set.N_Accepted_Transfromation=Set.N_Accepted_Transfromation+1;
     end

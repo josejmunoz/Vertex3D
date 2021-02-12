@@ -58,58 +58,27 @@ for i=1:Faces.n
     end 
     
     % Remove the face
-    T=T.Remove(oV);
-    Y=Y.Remove(oV);
-    Yn=Yn.Remove(oV);
-    Faces=Faces.Remove(i);
-    SCn=SCn.Remove(i);
-    Cell.FaceCentres=Cell.FaceCentres.Remove(i);
+    [T, Y, Yn, Faces, SCn, Cell] = removeFaceInRemodelling(T, Y, Yn, Faces, SCn, Cell, i);
     
     % add new vertices 
-    [T,nV]=T.Add(Tnew);
-    Y=Y.Add(Ynew);
-    Yn=Yn.Add(Ynew);
+    [T, Y, Yn, Cell, nV, Vnew, nC, SCn, Faces, Set, V3] = addNewVerticesInRemodelling(T, Tnew, Y, Ynew, Yn, Cell, Vnew, X, Faces, SCn, XgID, XgSub, Set);
+    
+    
     fprintf('Vertices number %i %i %i %i -> were replaced by -> %i %i %i %i.\n',oV(1),oV(2),oV(3),oV(4),nV(1),nV(2),nV(3),nV(4));
     
-
-    Cell.AssembleNodes=unique(Tnew);
-    Vnew=Vnew.Add(nV);
-    [Cell,Faces,nC,SCn]=ReBuildCells(Cell,T,Y,X,Faces,SCn);
-    if Set.Substrate
-        Faces=Faces.CheckInteriorFaces(XgID,XgSub);
-    else 
-        Faces=Faces.CheckInteriorFaces(XgID);
-    end
-    Set.NumMainV=Y.n;
-    Set.NumAuxV=Cell.FaceCentres.n;
-    Set.NumTotalV=Set.NumMainV+Set.NumAuxV;
-    [Cell]=ComputeCellVolume(Cell,Y);
-    Cell = Cell.computeEdgeLengths(Y);
-    for jj=1:Cell.n
-        Cell.SAreaTrin{jj}=Cell.SAreaTri{jj};
-        Cell.EdgeLengthsn{jj}=Cell.EdgeLengths{jj};
-    end
-    V3=1:Faces.n;
-    V3=V3(Faces.V3(V3));
     if Set.Substrate
         [Dofs]=UpdateDofsSub(Y,Faces,Cell,Set,nV,nC);
     else
         [Dofs]=UpdateDofs(Dofs,oV,nV,i,nC,Y,V3);
     end
+    
     Cell.RemodelledVertices=[nV;nC+Y.n];
     [Cell,Faces,Y,Yn,SCn,X,Dofs,Set,~,DidNotConverge]=SolveRemodelingStep(Cell,Faces,Y,X,Dofs,Set,Yn,SCn,CellInput,XgSub);
     Yn.DataRow(nV,:)=Y.DataRow(nV,:);
+    
+    
     if  DidNotConverge %|| NotConvexCell(Cell,Y)
-        Cell=Cellp;
-        Y=Yp;
-        Yn=Ynp;
-        SCn=SCnp;
-        T=Tp;
-        X=Xp;
-        Faces=Facesp;
-        Dofs=Dofsp;
-        Set=Setp;
-        Vnew=Vnewp;
+        [Cell, Y, Yn, SCn, T, X, Faces, Dofs, Set, Vnew] = backToPreviousStep(Cellp, Yp, Ynp, SCnp, Tp, Xp, Facesp, Dofsp, Setp, Vnewp);
         fprintf('=>> Local problem did not converge -> 44 Flip rejected !! \n');
         Set.N_Rejected_Transfromation=Set.N_Rejected_Transfromation+1;
     else

@@ -131,7 +131,7 @@ else
     end
     
     % ----------------- Contractility -------------------------------------
-    if Set.cContractility > 0
+    if Set.cPurseString > 0 || Set.cLateralCables > 0
         [gc]=KgContractility(Cell,Y,Set);
         g=g+gc;
     end

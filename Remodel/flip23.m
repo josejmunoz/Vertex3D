@@ -262,8 +262,7 @@ function Yn=Flip23(Yo,Tnew,X,n3)
 % the barycenter of the corresponding tet  
 
 % Center and Length  of The line to be removed 
-length=norm(Yo(1,:)-Yo(2,:));   
- length=length;
+length=norm(Yo(1,:)-Yo(2,:));
 center=sum(Yo,1)/2;
 
 % % barycenters

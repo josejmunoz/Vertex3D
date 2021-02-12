@@ -6,10 +6,6 @@ function [Cell,Y,Yn,SCn,T,X,Faces,Dofs,Cn,Set]=Remodeling(Cell,Faces,Y,Yn,SCn,T,
 % Second loop  (44Flip): checks faces with four vertices and dose 44flip if needed.
 % Third  loop  (23Flip): checks all faces dose 23flip if needed.
 
-
-
-
-
 % Vnew should be split to Vnew Vchecked
 
 

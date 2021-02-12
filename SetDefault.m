@@ -55,6 +55,10 @@ end
 if ~isfield(Set,'lambdaV')    %  Volume-Energy Constant (bulk modulus).
     Set.lambdaV=1;
 end 
+
+if ~isfield(Set,'lambdaV_Debris')    %  Volume-Energy Constant (bulk modulus).
+    Set.lambdaV_Debris=0.001;
+end 
 %---------- Surface -------------------------------------------------------
 % Set.SurfaceType=1 : Surface-Energy based on the whole Cell-area
 %        - Set.A0eq0=false --> W_s= sum_cell ((Ac-Ac0)/Ac0)^2  (Ac: Cell area). Reference area larger than 0

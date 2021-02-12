@@ -1,4 +1,4 @@
-function [outputArg1,outputArg2] = flip23(inputArg1,inputArg2)
+function [Cell,Y,Yn,SCn,T,X,Faces,Dofs,Set, Vnew] = flip23(Cell,Faces,Y,Yn,SCn,T,X,Set,Dofs,XgID,XgSub,CellInput, Vnew)
 %FLIP23 Summary of this function goes here
 %   Detailed explanation goes here
 %% loop over the rest of faces (Flip23)
@@ -138,7 +138,7 @@ while ListIsNotEmpty
 %         V3=V3(Faces.V3(V3));
 %         [Dofs]=UpdatDofs(Dofs,oV,nV,[],[],Y,V3);
 %             if Set.Substrat
-%               [Dofs]=UpdatDofsSub(Y,Faces,Cell,Set,nV,[]);
+%               [Dofs]=UpdateDofsSub(Y,Faces,Cell,Set,nV,[]);
 %             else 
 %               [Dofs]=UpdatDofs(Dofs,oV,nV,[],[],Y,V3);
 %             end 
@@ -213,7 +213,7 @@ while ListIsNotEmpty
             V3=1:Faces.n;
             V3=V3(Faces.V3(V3));
             if Set.Substrate
-                [Dofs]=UpdatDofsSub(Y,Faces,Cell,Set,nV,nC);
+                [Dofs]=UpdateDofsSub(Y,Faces,Cell,Set,nV,nC);
             else 
                 [Dofs]=UpdatDofs(Dofs,oV,nV,[],nC,Y,V3);
             end 
@@ -251,4 +251,81 @@ while ListIsNotEmpty
     end 
 end
 end
+
+
+
+%% ========================================================================
+function Yn=Flip23(Yo,Tnew,X,n3)
+
+% the new vertices are place at a distance "Length of the line to b
+% removed" from the "center of the line to be removed" in the direction of
+% the barycenter of the corresponding tet  
+
+% Center and Length  of The line to be removed 
+length=norm(Yo(1,:)-Yo(2,:));   
+ length=length;
+center=sum(Yo,1)/2;
+
+% % barycenters
+% br1=sum(X(Tnew(1,:),:),1)/4; dir1=br1-center; dir1=dir1/norm(dir1);
+% br2=sum(X(Tnew(2,:),:),1)/4; dir2=br2-center; dir2=dir2/norm(dir2);
+% br3=sum(X(Tnew(3,:),:),1)/4; dir3=br3-center; dir3=dir3/norm(dir3);
+
+
+% Stratagy Number 2
+center2=sum(X(n3,:),1)/3;
+
+
+
+%             Tnew=[n3([1 2]) n1 n2;
+%                 n3([2 3]) n1 n2;
+%                 n3([1 3]) n1 n2];
+
+node1=(X(n3(1),:)+X(n3(2),:))./2; dir1=node1-center2; dir1=dir1/norm(dir1);
+node2=(X(n3(2),:)+X(n3(3),:))./2; dir2=node2-center2; dir2=dir2/norm(dir2);
+node3=(X(n3(1),:)+X(n3(3),:))./2; dir3=node3-center2; dir3=dir3/norm(dir3);
+
+% node1=X(n3(1),:); dir1=node1-center2; dir1=dir1/norm(dir1);
+% node2=X(n3(2),:); dir2=node2-center2; dir2=dir2/norm(dir2);
+% node3=X(n3(3),:); dir3=node3-center2; dir3=dir3/norm(dir3);
+
+
+Yn=[center+dir1*length;
+    center+dir2*length;
+    center+dir3*length];
+
+end 
+
+
+%% ========================================================================
+function [Yn]=Flip322(Y,X12)
+    length=norm(Y(1,:)-Y(2,:))    ;
+    perpen=cross(Y(1,:)-Y(2,:),Y(3,:)-Y(2,:));
+    Nperpen=perpen/norm(perpen);
+    center=(Y(1,:)+Y(2,:))./2;
+    Nx=X12(1,:)-center; Nx=Nx/norm(Nx);
+    if dot(Nperpen,Nx)>0
+        Y1=center+(length).*Nperpen;
+        Y2=center-(length).*Nperpen;
+    else
+        Y1=center-(length).*Nperpen;
+        Y2=center+(length).*Nperpen;
+    end 
+    Yn=[Y1;Y2];
+end 
+
+%% ========================================================================
+function [s]=CheckSkinnyTriangles(Y1,Y2,CC)
+YY12=norm(Y1-Y2);
+Y1=norm(Y1-CC);
+Y2=norm(Y2-CC);
+
+
+if YY12>2*Y1 || YY12>Y2*2
+    s=true;
+else 
+    s=false;
+end 
+
+end 
 

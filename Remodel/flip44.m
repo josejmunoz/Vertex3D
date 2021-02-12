@@ -1,4 +1,4 @@
-function [outputArg1,outputArg2] = flip44(inputArg1,inputArg2)
+function [Cell,Y,Yn,SCn,T,X,Faces,Dofs,Set, Vnew] = flip44(Cell,Faces,Y,Yn,SCn,T,X,Set,Dofs,XgID,XgSub,CellInput, Vnew)
 %flip44 Summary of this function goes here
 %   Detailed explanation goes here
 %% loop over 4-vertices-faces (Flip44)
@@ -92,7 +92,7 @@ for i=1:Faces.n
     V3=1:Faces.n;
     V3=V3(Faces.V3(V3));
     if Set.Substrate
-        [Dofs]=UpdatDofsSub(Y,Faces,Cell,Set,nV,nC);
+        [Dofs]=UpdateDofsSub(Y,Faces,Cell,Set,nV,nC);
     else
         [Dofs]=UpdatDofs(Dofs,oV,nV,i,nC,Y,V3);
     end
@@ -117,4 +117,26 @@ for i=1:Faces.n
     end
 end
 end
+
+%%
+function Yn=Flip44(Y,Tnew,L,X)
+center=sum(Y,1)./4;
+% L=mean(L)/2;
+L=mean(L);
+
+c1=sum(X(Tnew(1,:),:),1)./4;
+c2=sum(X(Tnew(2,:),:),1)./4;
+c3=sum(X(Tnew(3,:),:),1)./4;
+c4=sum(X(Tnew(4,:),:),1)./4;
+Lc1=c1-center; Lc1=Lc1/norm(Lc1);
+Lc2=c2-center; Lc2=Lc2/norm(Lc2);
+Lc3=c3-center; Lc3=Lc3/norm(Lc3);
+Lc4=c4-center; Lc4=Lc4/norm(Lc4);
+Y1=center+L.*Lc1;
+Y2=center+L.*Lc2;
+Y3=center+L.*Lc3;
+Y4=center+L.*Lc4;
+Yn=[Y1;Y2;Y3;Y4];
+end
+
 

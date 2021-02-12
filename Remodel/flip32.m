@@ -1,4 +1,4 @@
-function [outputArg1,outputArg2] = flip32(inputArg1,inputArg2)
+function [Cell,Y,Yn,SCn,T,X,Faces,Dofs,Set, Vnew] = flip32(Cell,Faces,Y,Yn,SCn,T,X,Set,Dofs,XgID,XgSub,CellInput, Vnew)
 %FLIP32 Summary of this function goes here
 %   Detailed explanation goes here
 %% loop over 3-vertices-faces (Flip32)
@@ -80,9 +80,9 @@ for i=1:Faces.n
     V3=1:Faces.n;
     V3=V3(Faces.V3(V3));
     if Set.Substrate
-        [Dofs]=UpdatDofsSub(Y,Faces,Cell,Set,nV,[]);
+        [Dofs]=UpdateDofsSub(Y,Faces,Cell,Set,nV,[]);
     else 
-        [Dofs]=UpdatDofs(Dofs,oV,nV,i,[],Y,V3);
+        [Dofs]=UpdateDofs(Dofs,oV,nV,i,[],Y,V3);
     end 
     Cell.RemodelledVertices=nV;
     [Cell,Faces,Y,Yn,SCn,X,Dofs,Set,~,DidNotConverge]=SolveRemodelingStep(Cell,Faces,Y,X,Dofs,Set,Yn,SCn,CellInput,[]);
@@ -104,5 +104,25 @@ for i=1:Faces.n
         Set.N_Accepted_Transfromation=Set.N_Accepted_Transfromation+1;
     end
 end
+end
+
+%% ========================================================================
+function [Yn]=Flip32(Y,X12)
+length=[norm(Y(1,:)-Y(2,:)) norm(Y(3,:)-Y(2,:)) norm(Y(1,:)-Y(3,:))];
+length=min(length);
+perpen=cross(Y(1,:)-Y(2,:),Y(3,:)-Y(2,:));
+Nperpen=perpen/norm(perpen);
+center=sum(Y,1)./3;
+Nx=X12(1,:)-center; Nx=Nx/norm(Nx);
+if dot(Nperpen,Nx)>0
+    Y1=center+(length).*Nperpen;
+    Y2=center-(length).*Nperpen;
+else
+    Y1=center-(length).*Nperpen;
+    Y2=center+(length).*Nperpen;
+end 
+% Y1=center+(length).*Nperpen;
+% Y2=center-(length).*Nperpen;
+Yn=[Y1;Y2];
 end
 

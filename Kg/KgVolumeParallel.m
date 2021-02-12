@@ -2,9 +2,6 @@ function [g,K,Cell,EnergyV]=KgVolumeParallel(Cell,Y,Set)
 % The residual g and Jacobian K of Volume Energy
 % Energy W_s= sum_cell lambdaV ((V-V0)/V0)^2
 
-
-
-
 %% Set parameters
 ncell=Cell.n;
 
@@ -25,13 +22,12 @@ end
 
 K=sparse(zeros(dimg)); % Also used in sparse
 
-
-
 EnergyV=0;
 %% Compute Volume
 [Cell]=ComputeCellVolume(Cell,Y);
 
-lambdaV=Set.lambdaV;
+lambdaV_Regular=Set.lambdaV;
+lambdaV_Debris = Set.lambdaV_Debris;
 CellVol=Cell.Vol;
 CellVol0=Cell.Vol0;
 CellTris=Cell.Tris;
@@ -44,14 +40,18 @@ CellGhostCells = Cell.GhostCells;
 %% Loop over Cells
 %     % Analytical residual g and Jacobian K
 parfor i=1:ncell
-    if CellGhostCells(i)
-        continue;
-    end 
     if ~CellAssembleAll
         if ~ismember(CellInt(i),CellAssembleNodes)
             continue
         end
     end
+    
+    if CellGhostCells(i)
+        lambdaV=lambdaV_Debris;
+    else
+        lambdaV=lambdaV_Regular;
+    end
+    
     fact=lambdaV*(CellVol(i)-CellVol0(i))/CellVol0(i)^2;
     ge=zeros(dimg,1); % Local cell residual
     

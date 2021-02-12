@@ -34,15 +34,17 @@ EnergyV=0;
 %% Loop over Cells 
      % Analytical residual g and Jacobian K
 for i=1:ncell
-    if Cell.GhostCells(i)
-        continue;
-    end 
     if ~Cell.AssembleAll
         if ~ismember(Cell.Int(i),Cell.AssembleNodes) 
            continue
         end 
     end 
-    lambdaV=Set.lambdaV;
+    
+    if Cell.GhostCells(i)
+        lambdaV=Set.lambdaV_Debris;
+    else
+        lambdaV=Set.lambdaV;
+    end
     fact=lambdaV*(Cell.Vol(i)-Cell.Vol0(i))/Cell.Vol0(i)^2;
     ge=zeros(dimg,1); % Local cell residual
     

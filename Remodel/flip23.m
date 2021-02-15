@@ -174,7 +174,7 @@ while ListIsNotEmpty
             if any(ismember(Tnew(3,:),XgSub)), Ynew(3,3)=Set.SubstrateZ; end
         end 
         
-        [T, Y, Yn, Faces, SCn, Cell] = removeFaceInRemodelling(T, Y, Yn, Faces, SCn, Cell, oV, []);
+        [T, Y, Yn, Faces, SCn, Cell] = removeFaceInRemodelling(T, Y, Yn, Faces, SCn, Cell, oV, []); %% last param? should be 'i'? or just empty []? Face should be removed?
         
         % filter ghost tets
         filter=ismember(Tnew,XgID);
@@ -193,7 +193,7 @@ while ListIsNotEmpty
         
         if ~flag
             if Set.Substrate
-                [Dofs]=UpdateDofsSub(Y,Faces,Cell,Set,nV,nC);
+                [Dofs]=UpdateDofsSub(Y,Faces,Cell,Set,nV, nC);
             else 
                 [Dofs]=UpdateDofs(Dofs,oV,nV,[],nC,Y,V3);
             end 

@@ -44,7 +44,7 @@ for i=1:Faces.n
     end 
     
     if CheckConvexityCondition(Tnew,T)
-       fprintf('=>> 32-Flip is not compatible rejected.\n');
+        fprintf('=>> 32-Flip is not compatible rejected.\n');
         continue
     end
     

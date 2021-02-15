@@ -1,7 +1,7 @@
 function [Cell, Set, CellInput] = performAblation(Cell, Set, CellInput, t)
 %PERFORMABLATION Summary of this function goes here
 %   Detailed explanation goes here
-if Set.Ablation == true && Set.TAblation <= t
+if Set.Ablation == true && Set.TAblation < t
     if isempty(Set.cellsToAblate)==0
         Cell = Cell.AblateCells(Set.cellsToAblate);
         Set.cellsToAblate = [];

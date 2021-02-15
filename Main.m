@@ -150,7 +150,6 @@ while t<=Set.tend
         
         %Update Nodes (X) from Vertices (Y)
         [X]=GetXFromY(Cell,Faces,X,T,Y,XgID,XgSub,Set);
-        Cell = Cell.computeEdgeLengths(Y);
         
         %% Post processing
         if Set.VTK, PostProcessingVTK(X,Y,T.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end
@@ -165,7 +164,7 @@ while t<=Set.tend
         EnergyV(numStep)=Energy.Ev;
         EnergyB(numStep)=Energy.EB;
         EnergyF(numStep)=Energy.Ef;
-        if Set.Contractility,    EnergyC(numStep)=Energy.Ec; end
+        if Set.cPurseString > 0 || Set.cLateralCables > 0,    EnergyC(numStep)=Energy.Ec; end
 
         %% Save for next steps
         for ii=1:Cell.n

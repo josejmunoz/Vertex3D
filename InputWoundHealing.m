@@ -1,5 +1,6 @@
-Set.OutputFolder = 'Result/AblationContractility_0.01_NoRemodel_S4_0.5_3x3';
+Set.OutputFolder = 'Result/Test3' ;%'Result/Ablation_Contractility_0.01_NoRemodel_S4_0.5_3x3';
 Set.diary = true;
+Set.MaxIter = 400;
 
 %% geometry
 Set.e=4;  % Example Number look in Geo\Example.m 
@@ -11,6 +12,7 @@ Set.f=Set.s/2;
 %%  Mechanics
 %---------- Volume
 Set.lambdaV=5;
+Set.lambdaV_Debris=0.001;
 
 %---------- Surface
 % Set.SurfaceType=4 : Surface-Energy based on the whole cell area differential adhsion
@@ -18,9 +20,9 @@ Set.SurfaceType=4;
 % external 
 Set.lambdaS1=1;
 % Cell-Cell 
-Set.lambdaS2=.5;
+Set.lambdaS2=0.5;
 % Cell-substrate
-Set.lambdaS3=.5;
+Set.lambdaS3=0.5;
 % Cell-GhostCell
 Set.lambdaS4=0.5;
 
@@ -48,26 +50,32 @@ Set.BC=2; % BC=1: Stretching, BC=2: Compression, BC=nan, substrate extrussion
     Set.dx=0;
     Set.TStartBC=301;  %30  
     Set.TStopBC=302;
+    
+%% Substrate
+Set.Substrate = true;
+Set.kSubstrate = 0.01;
 
 %% Remodeling
-Set.Remodelling=false;
+Set.Remodelling=true;
 Set.RemodelTol=.5e-6;
 Set.RemodelingFrequency=2;
 
 %% time
 Set.tend=300;
-Set.Nincr=300;
-    
-%% Contractility
-Set.Contractility = 0;
-Set.cContractility = 0.01;
-%Set.initEndContractility = [0.001 0.1];
-%Set.timeToReachFullContractility = 5;
+Set.Nincr=Set.tend*10;
 
 %% Ablating cells
 Set.Ablation = true;
 Set.cellsToAblate = findCentralCells(Example(Set.e), 1);
+Set.TAblation = 1;
 
+%% Contractility
+Set.Contractility = 0;
 
+Set.cPurseString = 0.05;
+% Set.initMidEndContractility_PurseString = [1 2.5 2]*Set.cPurseString;
+% Set.initMidEndContractilityTime_PurseString = [0 18 60]/60;
 
-
+Set.cLateralCables = 0.05;
+% Set.initMidEndContractility_LateralCables = [0.5 1.4 1.4]*Set.cLateralCables;
+% Set.initMidEndContractilityTime_LateralCables = [0 18 60]/60;

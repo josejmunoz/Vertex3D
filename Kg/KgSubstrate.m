@@ -23,8 +23,8 @@ kSubstrate = Set.kSubstrate;
 
 for numCell = 1:Cell.n
 
-    substrateForce = zeros(length(Cell.BasalVertices), 1);
-    
+    substrateForcesOfCell = zeros(length(Cell.BasalVertices), 1);
+    numVertexElem = 1;
     for numVertex = Cell.BasalVertices{numCell}'
 
         %% Calculate residual g
@@ -32,7 +32,7 @@ for numCell = 1:Cell.n
         g = Assembleg(g, g_current, numVertex);
         
         %% Save contractile forces (g) to output
-        substrateForcesOfCell(numVertex, 1) = g_current(3);
+        substrateForcesOfCell(numVertexElem, 1) = g_current(3);
         
         %% AssembleK
         if  nargout>1
@@ -50,7 +50,7 @@ for numCell = 1:Cell.n
         end
     end
 
-    substrateForce(numCell) = substrateForcesOfCell;
+    %Cell.SubstrateForce(numCell) = {substrateForcesOfCell};
 end
 
 if Set.Sparse && nargout>1

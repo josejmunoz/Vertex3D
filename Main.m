@@ -106,7 +106,7 @@ while t<=Set.tend
     ig=1;
     while (gr>Set.tol || dyr>Set.tol) && Set.iter<Set.MaxIter
         dy(Dofs.FreeDofs)=-K(Dofs.FreeDofs,Dofs.FreeDofs)\g(Dofs.FreeDofs);
-        [alpha]=LineSearch(Cell,Faces,y,yn,dy,g,Dofs.FreeDofs,Set,Y,CellInput);
+        [alpha]=LineSearch(Cell,Faces,y,yn,dy,g,Dofs.FreeDofs,Set,Y,Yn,CellInput);
         % alpha=1;
         y=y+alpha*dy; % update nodes
         Yt=reshape(y,3,Set.NumTotalV)';
@@ -161,10 +161,16 @@ while t<=Set.tend
         EnergyS(numStep)=Energy.Es;
         EnergyV(numStep)=Energy.Ev;
         EnergyB(numStep)=Energy.EB;
-        Energyb(numStep)=Energy.Eb;
+        if Set.Bending 
+            Energyb(numStep)=Energy.Eb;
+        end
         EnergyF(numStep)=Energy.Ef;
-        EnergyC(numStep)=Energy.Ec;
-        EnergySub(numStep) = Energy.Esub;
+        if Set.Contractility
+            EnergyC(numStep)=Energy.Ec;
+        end
+        if Set.Substrate
+            EnergySub(numStep) = Energy.Esub;
+        end
 
         %% Save for next steps
         for ii=1:Cell.n

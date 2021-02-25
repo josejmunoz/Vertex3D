@@ -1,4 +1,4 @@
-function [g,K,Cell,energy] = KgSubstrate(Cell,Y,Set)
+function [g,K,Cell,energy] = KgSubstrate(Cell, Y, Set)
 %KGSUBSTRATE Summary of this function goes here
 %   Detailed explanation goes here
 %% Set parameters
@@ -19,38 +19,37 @@ else
 end
 
 energy = 0;
+kSubstrate = Set.kSubstrate;
 
 for numCell = 1:Cell.n
 
+    substrateForce = zeros(length(Cell.BasalVertices), 1);
     
-    contractileForcesOfCell = zeros(size(edgeVertices, 1), 1);
-    
-    for numVertex
-        
-        
+    for numVertex = Cell.BasalVertices(numCell)
+
         %% Calculate residual g
-        g_current = computeGContractility(l_i0, l_i, y_1, y_2, C, Set);
-        g = Assembleg(g, g_current, edgeVertices(numEdge, :));
+        g_current = computeGSubstrate(kSubstrate, Y, Yz0);
+        g = Assembleg(g, g_current, numVertex);
         
         %% Save contractile forces (g) to output
-        %contractileForcesOfCell(numEdge, 1) = norm(g_current(1:3));
+        substrateForcesOfCell(numVertex, 1) = g_current(3);
         
         %% AssembleK
         if  nargout>1
             %% Calculate Jacobian
-            K_current = computeKContractility(l_i0, l_i, y_1, y_2, C, Set);
+            K_current = computeKSubstrate(kSubstrate);
 
             if Set.Sparse
-                [si,sj,sv,sk] = AssembleKSparse(K_current, edgeVertices(numEdge, :), si, sj, sv, sk);
+                [si,sj,sv,sk] = AssembleKSparse(K_current, numVertex, si, sj, sv, sk);
             else
-                K = AssembleK(K, K_current, edgeVertices(numEdge, :));
+                K = AssembleK(K, K_current, numVertex);
             end
 
             %% Calculate energy
-            energy = energy + computeEnergyContractility(l_i0, l_i, C, Set);
+            energy = energy + computeEnergySubstrate(kSubstrate, Yz, Yz0);
         end
     end
-    
+
     %Cell.ContractileForces{numCell} = contractileForcesOfCell;
 end
 
@@ -60,49 +59,25 @@ end
 
 end
 
-function [kContractility] = computeKContractility(l_i0, l_i, y_1, y_2, C, Set)
+function [kContractility] = computeKSubstrate(K)
 %COMPUTEGCONTRACTILITY Summary of this function goes here
 %   Detailed explanation goes here
 
-dim = 3;
-
-if Set.Contractility == 0
-    kContractility(1:3, 1:3) = -(C / l_i0) *  ((1 / l_i^2) * (y_1 - y_2)) .* ((1/l_i) * (y_1 - y_2)') + ((C / l_i0) * eye(dim));
-    kContractility(1:3, 4:6) = -kContractility(1:3, 1:3);
-    kContractility(4:6, 1:3) = -kContractility(1:3, 1:3);
-    kContractility(4:6, 4:6) = kContractility(1:3, 1:3);
-elseif Set.Contractility == 1
-    % Angle added
-elseif Set.Contractility == 2
-    % Adjacent triangle areas added
-end
+    kContractility(1:3, 1:3) = [0 0 0; 0 0 0; 0 0 K];
 
 end
 
-function [gContractility] = computeGContractility(l_i0, l_i, y_1, y_2, C, Set)
+function [gContractility] = computeGSubstrate(K, Yz, Yz0)
 %COMPUTEGCONTRACTILITY Summary of this function goes here
 %   Detailed explanation goes here
 
-if Set.Contractility == 0
-    gContractility(1:3, 1) = (C / l_i0) * (y_1 - y_2) / l_i;
-    gContractility(4:6, 1) = -gContractility(1:3);
-elseif Set.Contractility == 1
-    % Angle added
-elseif Set.Contractility == 2
-    % Adjacent triangle areas added
-end
+gContractility(1:3, 1) = [0 0 (K * (Yz - Yz0))];
 
 end
 
-function [energyConctratility] = computeEnergyContractility(l_i0, l_i, C, Set)
+function [energyConctratility] = computeEnergySubstrate(K, Yz, Yz0)
 
-if Set.Contractility == 0
-    energyConctratility = (C / l_i0) * l_i;
-elseif Set.Contractility == 1
-    % Angle added
-elseif Set.Contractility == 2
-    % Adjacent triangle areas added
-end
+energyConctratility = 1/2 * K * (Yz - Yz0)^2;
 
 end
 

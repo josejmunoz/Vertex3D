@@ -14,11 +14,11 @@ Cell = CellClass(nC,xInternal);
 TetIDs=1:size(T,1);
 %% Initiate global database
 Cv=zeros(Cell.n*16*8,2);
-count0=1; % counter for the number of vertex-bar Elements 
+numVertexBarElem=1; % counter for the number of vertex-bar Elements 
 Cell.FaceCentres=zeros(size(X,1)*4,3); % the position of Cell-surface centres
 SharedFaces = FacesClass(size(X,1)*4);
-count1=1; % counter for the number of FaceCentres / faces; 
-count2=0; % counter for total number of SurfsTris 
+numFaceCentresFaces=1; % counter for the number of FaceCentres / faces; 
+numTotalSurfsTris=0; % counter for total number of SurfsTris 
 
 Includedx=false(size(Cell.Int,2),1);
 %% Build Interior Cells
@@ -43,9 +43,9 @@ for i=1:length(Cell.Int) % loop over  Interior cells
     Cell.Faces{i}.Tris=cell(nS,1);
 
     Cell.Tris{i}=zeros(120,3);
-    count3=1;  % counter for cellular-number of SurfsTris   
+    numCell_SurfsTris=1;  % counter for cellular-number of SurfsTris   
     Cell.Cv{i}=zeros(16*8,2);
-    count4=1;  % counter for cellular-number of vertex-bars  
+    numCell_VertexBars=1;  % counter for cellular-number of vertex-bars  
     
     for j=1:length(Cell.cNodes{i}) % loop over cell-Faces
         %%
@@ -93,7 +93,7 @@ for i=1:length(Cell.Int) % loop over  Interior cells
                  dir=(aux-X(Cell.Int(i),:)); dir=dir/norm(dir);
                  aux=X(Cell.Int(i),:)+H.*dir;
              end
-              aux2=count1;
+              aux2=numFaceCentresFaces;
          end 
          
          
@@ -125,62 +125,62 @@ for i=1:length(Cell.Int) % loop over  Interior cells
          if Includedx(oppNode)
              Cell.Faces{i}.FaceCentresID(j)=cID;
          else 
-             Cell.FaceCentres(count1,:)=aux;
-             Cell.Faces{i}.FaceCentresID(j)=count1;
+             Cell.FaceCentres(numFaceCentresFaces,:)=aux;
+             Cell.Faces{i}.FaceCentresID(j)=numFaceCentresFaces;
              % Save Face-data base 
               SharedFaces = SharedFaces.Add(SurfAxes,SurfVertices,Y.DataOrdered,Cell.FaceCentres);
-              count1=count1+1;
+              numFaceCentresFaces=numFaceCentresFaces+1;
          end
         
         
          % Build Triangles and CellCv
          if length(SurfVertices)==3 % && false
                % Build Triangles and CellCv
-             Cell.Tris{i}(count3,:)=[SurfVertices(1) SurfVertices(2) -SurfVertices(3)];
+             Cell.Tris{i}(numCell_SurfsTris,:)=[SurfVertices(1) SurfVertices(2) -SurfVertices(3)];
              Cell.Faces{i}.Tris{j}=[SurfVertices(1) SurfVertices(2) -SurfVertices(3)];
              auxCv=[SurfVertices(1) SurfVertices(2);
                            SurfVertices(2) SurfVertices(3);
                            SurfVertices(3) SurfVertices(1)];
-             count2=count2+1;
-             count3=count3+1;
+             numTotalSurfsTris=numTotalSurfsTris+1;
+             numCell_SurfsTris=numCell_SurfsTris+1;
              
              auxCv(ismember(auxCv,Cell.Cv{i},'rows') | ismember(flip(auxCv,2),Cell.Cv{i},'rows'),:)=[];
-             Cell.Cv{i}(count4:count4+size(auxCv,1)-1,:)=auxCv;
-             count4=count4+size(auxCv,1);
+             Cell.Cv{i}(numCell_VertexBars:numCell_VertexBars+size(auxCv,1)-1,:)=auxCv;
+             numCell_VertexBars=numCell_VertexBars+size(auxCv,1);
          else 
              auxCv=zeros(length(SurfVertices)*2,2);
              Cell.Faces{i}.Tris{j}=zeros(length(SurfVertices),3);
              for h=2:length(SurfVertices)
-                Cell.Tris{i}(count3,:)=[SurfVertices(h-1) SurfVertices(h) aux2];
+                Cell.Tris{i}(numCell_SurfsTris,:)=[SurfVertices(h-1) SurfVertices(h) aux2];
                 Cell.Faces{i}.Tris{j}(h-1,:)=[SurfVertices(h-1) SurfVertices(h) aux2];
                 auxCv(2*(h-1)-1,:)=[SurfVertices(h-1) SurfVertices(h)];
                 auxCv(2*(h-1),:)=[SurfVertices(h-1) -aux2];
-                count2=count2+1;
-                count3=count3+1;
+                numTotalSurfsTris=numTotalSurfsTris+1;
+                numCell_SurfsTris=numCell_SurfsTris+1;
              end 
-             Cell.Tris{i}(count3,:)=[SurfVertices(end) SurfVertices(1) aux2];
+             Cell.Tris{i}(numCell_SurfsTris,:)=[SurfVertices(end) SurfVertices(1) aux2];
              Cell.Faces{i}.Tris{j}(h,:)=[SurfVertices(end) SurfVertices(1) aux2];
 
              auxCv(2*h-1,:)=[SurfVertices(end) SurfVertices(1)];
              auxCv(2*h,:)=[SurfVertices(end) -aux2];
              % remove do duplicated bars
              auxCv(ismember(auxCv,Cell.Cv{i},'rows') | ismember(flip(auxCv,2),Cell.Cv{i},'rows'),:)=[];
-             Cell.Cv{i}(count4:count4+size(auxCv,1)-1,:)=auxCv;
-             count2=count2+1;
-             count3=count3+1;
-             count4=count4+size(auxCv,1);
+             Cell.Cv{i}(numCell_VertexBars:numCell_VertexBars+size(auxCv,1)-1,:)=auxCv;
+             numTotalSurfsTris=numTotalSurfsTris+1;
+             numCell_SurfsTris=numCell_SurfsTris+1;
+             numCell_VertexBars=numCell_VertexBars+size(auxCv,1);
          end 
     end 
-    Cell.Tris{i}(count3:end,:)=[];
-    Cell.Cv{i}(count4:end,:)=[];
+    Cell.Tris{i}(numCell_SurfsTris:end,:)=[];
+    Cell.Cv{i}(numCell_VertexBars:end,:)=[];
     
-    Cell.CvID{i}=count0:count0+size(Cell.Cv{i},1)-1;
-    Cv(count0:count0+size(Cell.Cv{i},1)-1,:)=Cell.Cv{i};
-    count0=count0+size(Cell.Cv{i},1);
+    Cell.CvID{i}=numVertexBarElem:numVertexBarElem+size(Cell.Cv{i},1)-1;
+    Cv(numVertexBarElem:numVertexBarElem+size(Cell.Cv{i},1)-1,:)=Cell.Cv{i};
+    numVertexBarElem=numVertexBarElem+size(Cell.Cv{i},1);
 end 
-Cell.FaceCentres(count1:end,:)=[];
-Cv(count0:end,:)=[];
-Cell.nTotalTris=count2;
+Cell.FaceCentres(numFaceCentresFaces:end,:)=[];
+Cv(numVertexBarElem:end,:)=[];
+Cell.nTotalTris=numTotalSurfsTris;
 
 
 
@@ -200,6 +200,8 @@ end
 Cell.SAreaFace0=Cell.SAreaFace;
 SharedFaces=SharedFaces.ComputeAreaTri(Y.DataRow,Cell.FaceCentres.DataRow);
 
+%% Apico-basal distinction
+[Cell] = Cell.computeEdgeLocation(Y);
 
 %% Contractility L_0
 [Cell, uniqueEdges] = Cell.computeEdgeLengths(Y);

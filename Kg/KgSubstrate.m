@@ -1,4 +1,4 @@
-function [g,K,Cell,energy] = KgSubstrate(Cell, Y, Set)
+function [g,K,Cell,energy] = KgSubstrate(Cell, Y, Yn, Set)
 %KGSUBSTRATE Summary of this function goes here
 %   Detailed explanation goes here
 %% Set parameters
@@ -25,10 +25,10 @@ for numCell = 1:Cell.n
 
     substrateForce = zeros(length(Cell.BasalVertices), 1);
     
-    for numVertex = Cell.BasalVertices(numCell)
+    for numVertex = Cell.BasalVertices{numCell}'
 
         %% Calculate residual g
-        g_current = computeGSubstrate(kSubstrate, Y, Yz0);
+        g_current = computeGSubstrate(kSubstrate, Y.DataRow(numVertex, 3), Yn.DataRow(numVertex, 3));
         g = Assembleg(g, g_current, numVertex);
         
         %% Save contractile forces (g) to output
@@ -46,11 +46,11 @@ for numCell = 1:Cell.n
             end
 
             %% Calculate energy
-            energy = energy + computeEnergySubstrate(kSubstrate, Yz, Yz0);
+            energy = energy + computeEnergySubstrate(kSubstrate, Y.DataRow(numVertex, 3), Yn.DataRow(numVertex, 3));
         end
     end
 
-    %Cell.ContractileForces{numCell} = contractileForcesOfCell;
+    substrateForce(numCell) = substrateForcesOfCell;
 end
 
 if Set.Sparse && nargout>1

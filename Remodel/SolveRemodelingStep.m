@@ -1,4 +1,4 @@
-function [Cell,Faces,Y,Yn,SCn,X,Dofs,Set,Energy,DidNotConverge]=SolveRemodelingStep(Cell,Faces,Y,X,Dofs,Set,Yn,SCn,CellInput,XgSub)
+function [Cell,Faces,Y,Yn,SCn,X,Dofs,Set,Energy,DidNotConverge]=SolveRemodelingStep(Cell,Faces,Y,X,Dofs,Set,Yn,SCn,CellInput)
 
 % This function solves local problem to obtain the position of the newly
 % remodeled vertices with prescribed settings (Set.***_LP), e.g.
@@ -79,7 +79,7 @@ while(1)
     y=reshape(Yt',Set.NumTotalV*3,1);
     yn=reshape(Ytn',Set.NumTotalV*3,1);
 
-    [g,K,Cell,Energy]=KgGlobal(Cell,Faces,Y,y,yn,Set,CellInput,XgSub);
+    [g,K,Cell,Energy]=KgGlobal(Cell,Faces,Y,y,yn,Set,CellInput);
     
     dy=zeros(size(y));
     dyr=norm(dy(Dofs.Remodel));
@@ -96,7 +96,7 @@ while(1)
     while (gr>Set.tol || dyr>Set.tol) && Set.iter<Set.MaxIter
         
         dy(Dofs.Remodel)=-K(Dofs.Remodel,Dofs.Remodel)\g(Dofs.Remodel);
-        [alpha0]=LineSearch(Cell,Faces,y,yn,dy,g,Dofs.Remodel,Set,Y,CellInput,XgSub);
+        [alpha0]=LineSearch(Cell,Faces,y,yn,dy,g,Dofs.Remodel,Set,Y,CellInput);
         
         y=y+alpha0*dy; % update 
         Yt=reshape(y,3,Set.NumTotalV)';
@@ -108,7 +108,7 @@ while(1)
             Set.nu = max(Set.nu/2,Set.nu0);
         end
         
-        [g,K,Cell,Energy]=KgGlobal(Cell,Faces,Y,y,yn,Set,CellInput,XgSub);        
+        [g,K,Cell,Energy]=KgGlobal(Cell,Faces,Y,y,yn,Set,CellInput);        
         
         dyr=norm(dy(Dofs.Remodel));
         gr=norm(g(Dofs.Remodel));

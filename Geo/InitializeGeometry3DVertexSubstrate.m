@@ -56,8 +56,6 @@ Twg(all(ismember(Twg,XgID),2),:)=[];
 [N]=GetN(Twg);
 Set.nodes=size(X,1);
 Yaux=GetY(X,XgID,Twg,N,Set.f);
-L=Set.Substrate;
-Yaux=GetYSubstrate(Yaux,X,Twg,XgSub,XgID,Set.f,L);
 Y=DynamicArray(ceil(size(Yaux,1)*1.5),size(Yaux,2));
 Y=Y.Add(Yaux);
 
@@ -68,13 +66,6 @@ xInternal=1:size(X,1);
 xInternal(XgID)=[];
 xExternal=XgID;
 [Cv,Cell,Faces]=BuildCells(Twg,Y,X,xInternal,xExternal,Set.f);
-
-% update the position of the surface centers on the substrate
-for i=1:Faces.n
-    if any(ismember(Faces.Nodes(i,:),XgSub))
-        Cell.SurfsCenters.DataRow(i,3)=L;
-    end 
-end
 
 % Compute Cells volume
 [Cell]=ComputeCellVolume(Cell,Y);

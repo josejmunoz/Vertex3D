@@ -1,4 +1,4 @@
-function [g,K,Cell,Energy,gs,gv,gf,gB,gb]=KgGlobal(Cell,Faces,Y,y,yn,Set,CellInput,XgSub)
+function [g,K,Cell,Energy,gs,gv,gf,gB,gb]=KgGlobal(Cell,Faces,Y,Yn,y,yn,Set,CellInput)
 % The residual g and Jacobian K of all energies
 
 
@@ -71,7 +71,7 @@ if nargout>1
     
     % Propulsion Forces -------------------------------------------------------
     if Set.Propulsion
-        [gp]=gPropulsion(Cell,Y,Set,CellInput,XgSub);
+        [gp]=gPropulsion(Cell,Y,Set,CellInput);
         g=g-gp;
     end
     
@@ -80,6 +80,12 @@ if nargout>1
     if Set.cPurseString > 0 || Set.cLateralCables > 0
         [gC,KC,Cell,Energy.Ec]=KgContractility(Cell,Y,Set);
          K=K+KC; g=g+gC;
+    end
+    
+    % ----------------- Substrate -----------------------------------------
+    if Set.Substrate && Set.kSubstrate > 0
+        [gSub,KSub,Cell,Energy.Esub]=KgSubstrate(Cell, Y, Yn, Set);
+        K=K+KSub; g=g+gSub;
     end
     
     
@@ -126,7 +132,7 @@ else
     
     % Propulsion Forces -------------------------------------------------------
     if Set.Propulsion
-        [gp]=gPropulsion(Cell,Y,Set,CellInput,XgSub);
+        [gp]=gPropulsion(Cell,Y,Set,CellInput);
         g=g-gp;
     end
     
@@ -134,6 +140,12 @@ else
     if Set.cPurseString > 0 || Set.cLateralCables > 0
         [gc]=KgContractility(Cell,Y,Set);
         g=g+gc;
+    end
+    
+    % ----------------- Substrate -----------------------------------------
+    if Set.Substrate && Set.kSubstrate > 0
+        [gSub]=KgSubstrate(Cell, Y, Yn, Set);
+        g=g+gSub;
     end
     
 end

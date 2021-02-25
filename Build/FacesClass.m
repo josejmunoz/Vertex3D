@@ -225,33 +225,15 @@ classdef FacesClass
         end
         
         %-------------Obtain the type of Faces -----------------
-        function [obj]=CheckInteriorFaces(obj,XgID,XgSub)
-            if nargin==2
-                for i=1:obj.n
-                    if obj.NotEmpty(i)
-                        if any(ismember(obj.Nodes(i,:),XgID))
-                            % external face
-                            obj.InterfaceType(i)=0;
-                        else
-                            % cell-cell face
-                            obj.InterfaceType(i)=1;
-                        end
-                    end
-                end
-            else
-                XgID(XgID==XgSub)=[];
-                for i=1:obj.n
-                    if obj.NotEmpty(i)
-                        if any(ismember(obj.Nodes(i,:),XgID))
-                            % external face
-                            obj.InterfaceType(i)=0;
-                        elseif any(ismember(obj.Nodes(i,:),XgSub))
-                            % cell-substrate face
-                            obj.InterfaceType(i)=2;
-                        else
-                            % cell-cell face
-                            obj.InterfaceType(i)=1;
-                        end
+        function [obj]=CheckInteriorFaces(obj,XgID)
+            for i=1:obj.n
+                if obj.NotEmpty(i)
+                    if any(ismember(obj.Nodes(i,:),XgID))
+                        % external face
+                        obj.InterfaceType(i)=0;
+                    else
+                        % cell-cell face
+                        obj.InterfaceType(i)=1;
                     end
                 end
             end

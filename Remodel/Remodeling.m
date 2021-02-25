@@ -1,4 +1,4 @@
-function [Cell,Y,Yn,SCn,T,X,Faces,Dofs,Cn,Set]=Remodeling(Cell,Faces,Y,Yn,SCn,T,X,Set,Dofs,Energy0,XgID,XgSub,CellInput)
+function [Cell,Y,Yn,SCn,T,X,Faces,Dofs,Cn,Set]=Remodeling(Cell,Faces,Y,Yn,SCn,T,X,Set,Dofs,Energy0,XgID,CellInput)
 % This function Remodels cell junctions using three types of local
 % transfromation (23flip , 32flip and 44flip)
 % It executes three types of loops
@@ -11,11 +11,11 @@ function [Cell,Y,Yn,SCn,T,X,Faces,Dofs,Cn,Set]=Remodeling(Cell,Faces,Y,Yn,SCn,T,
 
 Vnew=DynamicArray(Y.n,1);
 
-[Cell,Y,Yn,SCn,T,X,Faces,Dofs,Set, Vnew] = flip44(Cell,Faces,Y,Yn,SCn,T,X,Set,Dofs,XgID,XgSub,CellInput, Vnew);
+[Cell,Y,Yn,SCn,T,X,Faces,Dofs,Set, Vnew] = flip44(Cell,Faces,Y,Yn,SCn,T,X,Set,Dofs,XgID,CellInput, Vnew);
 
-[Cell,Y,Yn,SCn,T,X,Faces,Dofs,Set, Vnew] = flip32(Cell,Faces,Y,Yn,SCn,T,X,Set,Dofs,XgID,XgSub,CellInput, Vnew);
+[Cell,Y,Yn,SCn,T,X,Faces,Dofs,Set, Vnew] = flip32(Cell,Faces,Y,Yn,SCn,T,X,Set,Dofs,XgID,CellInput, Vnew);
 
-[Cell,Y,Yn,SCn,T,X,Faces,Dofs,Set, Vnew] = flip23(Cell,Faces,Y,Yn,SCn,T,X,Set,Dofs,XgID,XgSub,CellInput, Vnew);
+[Cell,Y,Yn,SCn,T,X,Faces,Dofs,Set, Vnew] = flip23(Cell,Faces,Y,Yn,SCn,T,X,Set,Dofs,XgID,CellInput, Vnew);
 
 %% Update
 Set.NumMainV=Y.n;

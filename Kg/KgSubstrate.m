@@ -19,9 +19,14 @@ else
 end
 
 energy = 0;
-kSubstrate = Set.kSubstrate;
 
 for numCell = 1:Cell.n
+    
+    if Cell.GhostCells(numCell)
+        kSubstrate = 0;
+    else
+        kSubstrate = Set.kSubstrate;
+    end
 
     substrateForcesOfCell = zeros(length(Cell.BasalVertices), 1);
     numVertexElem = 1;

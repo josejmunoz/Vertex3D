@@ -48,7 +48,7 @@ for numCell = 1:Cell.n
             y_2 = Y.DataRow(edgeVertices(numEdge, 2), :);
         else %Face center
             y_2 = Cell.FaceCentres.DataRow(abs(edgeVertices(numEdge, 2)), :);
-            edgeVertices(numEdge, 2) = (abs(edgeVertices(numEdge, 2)) - 1) + Set.NumMainV;
+            edgeVertices(numEdge, 2) = abs(edgeVertices(numEdge, 2)) + Set.NumMainV;
         end
         
         if edgeLocation(numEdge) == 3 % Apical purseString

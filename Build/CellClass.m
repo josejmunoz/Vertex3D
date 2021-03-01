@@ -276,8 +276,8 @@ classdef CellClass
                 upperZMinimum = (mean(midZ) + mean(Y.DataRow(upperVerticesBorder, 3))/10);
                 bottomZMinimum = (mean(midZ) - mean(Y.DataRow(upperVerticesBorder, 3))/10);       
 
-                obj.ApicalVertices{numCell} = vertcat(uniqueCurrentVertices(Y.DataRow(uniqueCurrentVertices, 3) > upperZMinimum), - find(obj.FaceCentres.DataRow(:, 3) > upperZMinimum & obj.FaceCentres.EmptyList == 0));
-                obj.BasalVertices{numCell} = vertcat(uniqueCurrentVertices(Y.DataRow(uniqueCurrentVertices, 3) < bottomZMinimum), - find(obj.FaceCentres.DataRow(:, 3) < bottomZMinimum & obj.FaceCentres.EmptyList == 0));
+                obj.ApicalVertices{numCell} = vertcat(uniqueCurrentVertices(Y.DataRow(uniqueCurrentVertices, 3) > upperZMinimum), - find(obj.FaceCentres.DataRow(1:obj.FaceCentres.n, 3) > upperZMinimum));
+                obj.BasalVertices{numCell} = vertcat(uniqueCurrentVertices(Y.DataRow(uniqueCurrentVertices, 3) < bottomZMinimum), - find(obj.FaceCentres.DataRow(1:obj.FaceCentres.n, 3) < bottomZMinimum));
                 
                 obj.SubstrateForce{numCell} = zeros(length(obj.BasalVertices{numCell}), 1);
                 

@@ -21,7 +21,7 @@ if Set.Substrate
     allVerticesValues = vertcat(Cell.SubstrateForce{:});
     uniqueVerticesValues = allVerticesValues(indicesOfOldArray);
     
-    uniqueVerticesIds(uniqueVerticesIds<0) = abs(uniqueVerticesIds(uniqueVerticesIds<0)) + Y.n;
+    uniqueVerticesIds(uniqueVerticesIds<0) = abs(uniqueVerticesIds(uniqueVerticesIds<0)) + size(Y.DataRow, 1);
     
     CreateVtkPoint(vertices, uniqueVerticesIds, uniqueVerticesValues, folder, TimeStep)
 end

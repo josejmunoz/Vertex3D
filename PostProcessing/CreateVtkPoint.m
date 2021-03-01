@@ -1,4 +1,4 @@
-function CreateVtkPoint(allVertices, verticesPerCell, verticesValues, NameFile, Index)
+function CreateVtkPoint(allVertices, uniqueVerticesIds, uniqueVerticesValues, NameFile, Index)
 % Prints output for owunded and unwounded cells
 % INPUT:
 % step = step number
@@ -35,9 +35,7 @@ for i=1:nodes
     end
 end
 
-[uniqueVerticesIds, indicesOfOldArray] = unique(vertcat(verticesPerCell{:}));
-allVerticesValues = vertcat(verticesValues{:});
-uniqueVerticesValues = allVerticesValues(indicesOfOldArray);
+
 fprintf(file,'%s %d %d\n','CELLS', length(uniqueVerticesIds), length(uniqueVerticesIds)*2);
 for numPoint = 1:length(uniqueVerticesIds)
     fprintf(file,'1 %d\n', uniqueVerticesIds(numPoint)-1);

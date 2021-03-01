@@ -1,4 +1,4 @@
-function [alpha]=LineSearch(Cell,Faces,y,yn,dy,gc,dof,Set,Y,Yn, CellInput)
+function [alpha]=LineSearch(Cell,Faces, SCn,y,yn,dy,gc,dof,Set,Y,Yn, CellInput)
 
 
 y0=y;
@@ -12,7 +12,7 @@ Cell.FaceCentres=Cell.FaceCentres.Modify(Yt(Set.NumMainV+1:Set.NumTotalV,:));
 
 
 
-[g]=KgGlobal(Cell,Faces,Y,Yn,y,yn,Set,CellInput);
+[g]=KgGlobal(Cell,Faces,SCn,Y,Yn,y,yn,Set,CellInput);
 gr0=norm(gc(dof));   
 gr=norm(g(dof));   
 

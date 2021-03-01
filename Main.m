@@ -88,7 +88,7 @@ while t<=Set.tend
     
     
     %% ----------- Compute K, g ---------------------------------------
-    [g,K,Cell,Energy]=KgGlobal(Cell,Faces,Y,Yn,y,yn,Set,CellInput);
+    [g,K,Cell,Energy]=KgGlobal(Cell,Faces,SCn,Y,Yn,y,yn,Set,CellInput);
     dy=zeros(size(y));
     dyr=norm(dy(Dofs.FreeDofs));
     gr=norm(g(Dofs.FreeDofs));
@@ -106,7 +106,7 @@ while t<=Set.tend
     ig=1;
     while (gr>Set.tol || dyr>Set.tol) && Set.iter<Set.MaxIter
         dy(Dofs.FreeDofs)=-K(Dofs.FreeDofs,Dofs.FreeDofs)\g(Dofs.FreeDofs);
-        [alpha]=LineSearch(Cell,Faces,y,yn,dy,g,Dofs.FreeDofs,Set,Y,Yn,CellInput);
+        [alpha]=LineSearch(Cell,Faces,SCn, y,yn,dy,g,Dofs.FreeDofs,Set,Y,Yn,CellInput);
         % alpha=1;
         y=y+alpha*dy; % update nodes
         Yt=reshape(y,3,Set.NumTotalV)';
@@ -116,7 +116,7 @@ while t<=Set.tend
             Set.nu = max(Set.nu/2,Set.nu0);
         end
         % ----------- Compute K, g ---------------------------------------
-        [g,K,Cell,Energy]=KgGlobal(Cell,Faces,Y,Yn,y,yn,Set,CellInput);
+        [g,K,Cell,Energy]=KgGlobal(Cell,Faces,SCn,Y,Yn,y,yn,Set,CellInput);
         dyr=norm(dy(Dofs.FreeDofs));
         gr=norm(g(Dofs.FreeDofs));
         fprintf('Step: % i,Iter: %i, Time: %g ||gr||= %.3e ||dyr||= %.3e alpha= %.3e  nu/nu0=%.3g \n',numStep,Set.iter,t,gr,dyr,alpha,Set.nu/Set.nu0);

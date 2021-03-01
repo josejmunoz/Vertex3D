@@ -1,4 +1,4 @@
-function [g,K,Cell,Energy,gs,gv,gf,gB,gb]=KgGlobal(Cell,Faces,Y,Yn,y,yn,Set,CellInput)
+function [g,K,Cell,Energy,gs,gv,gf,gB,gb]=KgGlobal(Cell,Faces,SCn,Y,Yn,y,yn,Set,CellInput)
 % The residual g and Jacobian K of all energies
 
 
@@ -84,7 +84,7 @@ if nargout>1
     
     % ----------------- Substrate -----------------------------------------
     if Set.Substrate && Set.kSubstrate > 0
-        [gSub,KSub,Cell,Energy.Esub]=KgSubstrate(Cell, Y, Yn, Set);
+        [gSub,KSub,Cell,Energy.Esub]=KgSubstrate(Cell, SCn, Y, Yn, Set);
         K=K+KSub; g=g+gSub;
     end
     
@@ -144,7 +144,7 @@ else
     
     % ----------------- Substrate -----------------------------------------
     if Set.Substrate && Set.kSubstrate > 0
-        [gSub]=KgSubstrate(Cell, Y, Yn, Set);
+        [gSub]=KgSubstrate(Cell, SCn, Y, Yn, Set);
         g=g+gSub;
     end
     

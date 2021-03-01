@@ -1,4 +1,4 @@
-function [g,K,Cell,energy] = KgSubstrate(Cell, Y, Yn, Set)
+function [g,K,Cell,energy] = KgSubstrate(Cell, SCn, Y, Yn, Set)
 %KGSUBSTRATE Summary of this function goes here
 %   Detailed explanation goes here
 %% Set parameters
@@ -31,10 +31,20 @@ for numCell = 1:Cell.n
     substrateForcesOfCell = zeros(length(Cell.BasalVertices), 1);
     numVertexElem = 1;
     for numVertex = Cell.BasalVertices{numCell}'
+        
+        if numVertex < 0 %% Face centre
+            currentVertex = Cell.FaceCentres.DataRow(abs(numVertex), :);
+            currentVertexPrev = SCn.DataRow(abs(numVertex), :);
+            vertexIndex = numVertex + Y.n;
+        else %% Regular Vertex
+            currentVertex = Y.DataRow(numVertex, :);
+            currentVertexPrev = Yn.DataRow(numVertex, :);
+            vertexIndex = numVertex;
+        end
 
         %% Calculate residual g
-        g_current = computeGSubstrate(kSubstrate, Y.DataRow(numVertex, 3), Yn.DataRow(numVertex, 3));
-        g = Assembleg(g, g_current, numVertex);
+        g_current = computeGSubstrate(kSubstrate, currentVertex(:, 3), currentVertexPrev(:, 3));
+        g = Assembleg(g, g_current, vertexIndex);
         
         %% Save contractile forces (g) to output
         substrateForcesOfCell(numVertexElem, 1) = g_current(3);
@@ -45,13 +55,13 @@ for numCell = 1:Cell.n
             K_current = computeKSubstrate(kSubstrate);
 
             if Set.Sparse
-                [si,sj,sv,sk] = AssembleKSparse(K_current, numVertex, si, sj, sv, sk);
+                [si,sj,sv,sk] = AssembleKSparse(K_current, vertexIndex, si, sj, sv, sk);
             else
-                K = AssembleK(K, K_current, numVertex);
+                K = AssembleK(K, K_current, vertexIndex);
             end
 
             %% Calculate energy
-            energy = energy + computeEnergySubstrate(kSubstrate, Y.DataRow(numVertex, 3), Yn.DataRow(numVertex, 3));
+            energy = energy + computeEnergySubstrate(kSubstrate, currentVertex(:, 3), currentVertexPrev(:, 3));
         end
         
     end

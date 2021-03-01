@@ -16,6 +16,10 @@ forceToDisplay_All = vertcat(Cell.ContractileForces{:});
 
 CreateVtkBar(edgeVertices, edgeConnections_All, forceToDisplay_All, folder, 'AllEdges_','contractility',TimeStep)
 
+if Set.Substrate
+    CreateVtkPoint(Y.DataRow, Cell.BasalVertices, folder, TimeStep)
+end
+
 if Set.Ablation
     if isempty(Set.cellsToAblate) == 0
         Cell = Cell.AblateCells(Set.cellsToAblate);

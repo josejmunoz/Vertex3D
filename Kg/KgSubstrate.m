@@ -35,7 +35,7 @@ for numCell = 1:Cell.n
         if numVertex < 0 %% Face centre
             currentVertex = Cell.FaceCentres.DataRow(abs(numVertex), :);
             currentVertexPrev = SCn.DataRow(abs(numVertex), :);
-            vertexIndex = abs(numVertex) + Set.NumMainV;
+            vertexIndex = (abs(numVertex) - 1) + Set.NumMainV;
         else %% Regular Vertex
             currentVertex = Y.DataRow(numVertex, :);
             currentVertexPrev = Yn.DataRow(numVertex, :);

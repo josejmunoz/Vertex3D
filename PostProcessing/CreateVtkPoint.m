@@ -1,4 +1,4 @@
-function CreateVtkPoint(allVertices, verticesPerCell, NameFile, Index)
+function CreateVtkPoint(allVertices, verticesPerCell, verticesValues, NameFile, Index)
 % Prints output for owunded and unwounded cells
 % INPUT:
 % step = step number
@@ -35,15 +35,24 @@ for i=1:nodes
     end
 end
 
-allVerticesIds = unique(vertcat(verticesPerCell{:}));
-fprintf(file,'%s %d %d\n','CELLS', length(allVerticesIds), length(allVerticesIds)+10);
-for numPoint = 1:length(allVerticesIds)
-    fprintf(file,'1 %d\n', allVerticesIds(numPoint)-1);
+[uniqueVerticesIds, indicesOfOldArray] = unique(vertcat(verticesPerCell{:}));
+allVerticesValues = vertcat(verticesValues{:});
+uniqueVerticesValues = allVerticesValues(indicesOfOldArray);
+fprintf(file,'%s %d %d\n','CELLS', length(uniqueVerticesIds), length(uniqueVerticesIds)*2);
+for numPoint = 1:length(uniqueVerticesIds)
+    fprintf(file,'1 %d\n', uniqueVerticesIds(numPoint)-1);
 end
 
-fprintf(file,'%s %d\n','CELL_TYPES', length(allVerticesIds));
-for numPoint = 1:length(allVerticesIds)
+fprintf(file,'%s %d\n','CELL_TYPES', length(uniqueVerticesIds));
+for numPoint = 1:length(uniqueVerticesIds)
     fprintf(file,'%d\n',1);
+end
+
+fprintf(file,'%s %d \n','CELL_DATA', length(uniqueVerticesIds));
+fprintf(file,'%s \n',strcat('SCALARS SubstrateSpring double '));
+fprintf(file,'%s \n','LOOKUP_TABLE default');
+for i=uniqueVerticesValues'
+    fprintf(file,'%f\n',i);
 end
 
 fclose(file);

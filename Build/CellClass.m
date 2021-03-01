@@ -100,6 +100,8 @@ classdef CellClass
         ApicalVertices
         BasalVertices
         %--------------------------------------------------------------------
+        SubstrateForce
+        %--------------------------------------------------------------------
         GhostCells            % Ghost cells
         %--------------------------------------------------------------------
         ContractileForces
@@ -136,6 +138,7 @@ classdef CellClass
                 Cell.EdgeLocation=cell(nC,1);
                 Cell.ApicalVertices=cell(nC, 1);
                 Cell.BasalVertices=cell(nC, 1);
+                Cell.SubstrateForce=cell(nC, 1);
             end
         end
         
@@ -270,11 +273,13 @@ classdef CellClass
                 
                 
                 %% Get all apical and basal vertices
-                upperZMinimum = (mean(midZ) + mean(Y.DataRow(upperVerticesBorder, 3))/2);
-                bottomZMinimum = (mean(midZ) - mean(Y.DataRow(upperVerticesBorder, 3))/2);       
+                upperZMinimum = (mean(midZ) + mean(Y.DataRow(upperVerticesBorder, 3))/10);
+                bottomZMinimum = (mean(midZ) - mean(Y.DataRow(upperVerticesBorder, 3))/10);       
 
                 obj.ApicalVertices{numCell} = uniqueCurrentVertices(Y.DataRow(uniqueCurrentVertices, 3) > upperZMinimum);
                 obj.BasalVertices{numCell} = uniqueCurrentVertices(Y.DataRow(uniqueCurrentVertices, 3) < bottomZMinimum);
+                
+                obj.SubstrateForce{numCell} = zeros(length(obj.BasalVertices{numCell}), 1);
                 
                 %% Get apical and basal border vertices
                 if sum(apicalEdges) > size(upperVerticesBorder, 1)

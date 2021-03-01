@@ -38,7 +38,7 @@ for numCell = 1:Cell.n
         
         %% Save contractile forces (g) to output
         substrateForcesOfCell(numVertexElem, 1) = g_current(3);
-        
+        numVertexElem = numVertexElem + 1;
         %% AssembleK
         if  nargout>1
             %% Calculate Jacobian
@@ -53,9 +53,10 @@ for numCell = 1:Cell.n
             %% Calculate energy
             energy = energy + computeEnergySubstrate(kSubstrate, Y.DataRow(numVertex, 3), Yn.DataRow(numVertex, 3));
         end
+        
     end
 
-    %Cell.SubstrateForce(numCell) = {substrateForcesOfCell};
+    Cell.SubstrateForce(numCell) = {substrateForcesOfCell};
 end
 
 if Set.Sparse && nargout>1

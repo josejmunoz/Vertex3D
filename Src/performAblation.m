@@ -8,6 +8,12 @@ if Set.Ablation == true && Set.TAblation < t
         CellInput.LambdaS1Factor(Cell.GhostCells) = 0;
         CellInput.LambdaS2Factor(Cell.GhostCells) = 0;
         CellInput.LambdaS3Factor(Cell.GhostCells) = 0;
+        
+        %% Smaller time-steps
+        disp('Updating time-step after ablation');
+        Set.Nincr = Set.Nincr*100;
+        Set.dt0=Set.tend/Set.Nincr;
+        Set.dt=Set.dt0;
     end
     
     if isempty(Set.initEndContractility) == 0

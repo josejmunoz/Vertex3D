@@ -183,14 +183,7 @@ while t<=Set.tend
         Set.MaxIter=Set.MaxIter0;
         Set.ReModel=true;
         Set.ApplyBC=true;
-        
-        % Update time
-        tp=t;
-        t=t+Set.dt;
-        numStep=numStep+1;
-        StepSize(numStep)=Set.dt;
-        Set.dt=min(Set.dt+Set.dt*0.5, Set.dt0);
-        
+              
         % ----------- Ablation ------------------------------------------------
         [Cell, Set, CellInput] = performAblation(Cell, Set, CellInput, t);
         
@@ -198,6 +191,14 @@ while t<=Set.tend
         if any(tooSmallCells) % Remove cell in the case is too small
             [Cell, CellInput, XgID, Faces,nC,SCn,flag32, Dofs] = removeCell(Cell, CellInput, XgID, Faces, T, Y, X, SCn, tooSmallCells, Set);
         end
+        
+        %% Update time
+        tp=t;
+        t=t+Set.dt;
+        numStep=numStep+1;
+        StepSize(numStep)=Set.dt;
+        Set.dt=min(Set.dt+Set.dt*0.5, Set.dt0);
+ 
     else 
         fprintf('Convergence was not achieved ... \n');
         Y=Yp;

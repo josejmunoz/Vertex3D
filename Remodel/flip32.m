@@ -53,7 +53,7 @@ for i=1:Faces.n
         
         [Dofs]=UpdateDofs(Dofs,oV,nV,i,[],Y,V3);
         Cell.RemodelledVertices=nV;
-        [Cell,Faces,Y,Yn,SCn,X,Dofs,Set,~,DidNotConverge]=SolveRemodelingStep(Cell,Faces,Y,X,Dofs,Set,Yn,SCn,CellInput,[]);
+        [Cell,Faces,Y,Yn,SCn,X,Dofs,Set,~,DidNotConverge]=SolveRemodelingStep(Cell,Faces,Y,X,Dofs,Set,Yn,SCn,CellInput);
         Yn.DataRow(nV,:)=Y.DataRow(nV,:);
     else
         error('check Flip32 flag');

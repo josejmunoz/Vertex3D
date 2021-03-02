@@ -1,8 +1,7 @@
 function [g,K,Cell,Energy,gs,gv,gf,gB,gb]=KgGlobal(Cell,Faces,SCn,Y,Yn,y,yn,Set,CellInput)
 % The residual g and Jacobian K of all energies
 
-
-
+%%
 if nargout>1
     %% Compute both The residual g and Jacobian K
     % Surface Energy ----------------------------------------------------------
@@ -76,8 +75,8 @@ if nargout>1
     end
     
     
-    % ----------------- Contractility -------------------------------------
-    if Set.cPurseString > 0 || Set.cLateralCables > 0
+    % ----------------- Contractility -------------------------------------    
+    if Set.cPurseString > 0 || Set.cLateralCables > 0        
         [gC,KC,Cell,Energy.Ec]=KgContractility(Cell,Y,Set);
          K=K+KC; g=g+gC;
     end

@@ -88,6 +88,7 @@ while t<=Set.tend
     
     
     %% ----------- Compute K, g ---------------------------------------
+    [Set] = updateContractilityOnTime(t, Set, Cell);
     [g,K,Cell,Energy]=KgGlobal(Cell,Faces,SCn,Y,Yn,y,yn,Set,CellInput);
     dy=zeros(size(y));
     dyr=norm(dy(Dofs.FreeDofs));

@@ -15,11 +15,6 @@ if Set.Ablation == true && Set.TAblation <= t
         Set.dt0=Set.tend/Set.Nincr;
         Set.dt=Set.dt0;
     end
-    
-    if isempty(Set.initEndContractility) == 0
-        Set.cContractility = Set.initEndContractility(Set.timeToReachFullContractility);
-        Set.timeToReachFullContractility = Set.timeToReachFullContractility - 1;
-    end
 end
 end
 

@@ -42,8 +42,6 @@ else
     CellInput.LambdaS4Factor=[];
 end 
 
-
-
 if Set.Propulsion
     CellInput.Propulsion=zeros(Cell.n,3);
     CellInput.Propulsion(:,1:2)=(rand(Cell.n,2)-0.5)./50;
@@ -51,12 +49,32 @@ else
     CellInput.Propulsion=[];
 end 
 
-if isempty(Set.initEndContractility) == 0
-    initContractility = Set.initEndContractility(1);
-    endContractility = Set.initEndContractility(2);
-    stepContractility = (endContractility - initContractility)/(Set.timeToReachFullContractility);
-    Set.initEndContractility = endContractility:-stepContractility:initContractility;
-    Set.timeToReachFullContractility = length(Set.initEndContractility);
+if isempty(Set.initMidEndContractility_PurseString) == 0
+    initT_Contractility = Set.initMidEndContractilityTime_PurseString(1);
+    midT_Contractility = Set.initMidEndContractilityTime_PurseString(2);
+    endT_Contractility = Set.initMidEndContractilityTime_PurseString(3);
+    
+    initC_Contractility = Set.initMidEndContractility_PurseString(1);
+    midC_Contractility = Set.initMidEndContractility_PurseString(2);
+    endC_Contractility = Set.initMidEndContractility_PurseString(3);
+    
+    [Set.cPurseString_InitMidTimeDependent] = contractilityFunction(initC_Contractility, midC_Contractility, initT_Contractility, midT_Contractility, Set);
+    
+    [Set.cPurseString_MidEndTimeDependent] = contractilityFunction(midC_Contractility, endC_Contractility, midT_Contractility, endT_Contractility, Set);
+end
+
+if isempty(Set.initMidEndContractility_LateralCables) == 0
+    initT_Contractility = Set.initMidEndContractilityTime_LateralCables(1);
+    midT_Contractility = Set.initMidEndContractilityTime_LateralCables(2);
+    endT_Contractility = Set.initMidEndContractilityTime_LateralCables(3);
+    
+    initC_Contractility = Set.initMidEndContractility_LateralCables(1);
+    midC_Contractility = Set.initMidEndContractility_LateralCables(2);
+    endC_Contractility = Set.initMidEndContractility_LateralCables(3);
+    
+    [Set.cLateralCables_InitMidTimeDependent] = contractilityFunction(initC_Contractility, midC_Contractility, initT_Contractility, midT_Contractility, Set);
+    
+    [Set.cLateralCables_MidEndTimeDependent] = contractilityFunction(midC_Contractility, endC_Contractility, midT_Contractility, endT_Contractility, Set);
 end
 
 end 

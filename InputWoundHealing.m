@@ -73,9 +73,9 @@ Set.TAblation = 1;
 Set.Contractility = 0;
 
 Set.cPurseString = 0.05;
-% Set.initMidEndContractility_PurseString = [1 2.5 2]*Set.cPurseString;
-% Set.initMidEndContractilityTime_PurseString = [0 18 60]/60;
+Set.initMidEndContractility_PurseString = [1 2.5 2]*Set.cPurseString;
+Set.initMidEndContractilityTime_PurseString = [0 18 60]/60*(Set.tend - Set.TAblation);
 
 Set.cLateralCables = 0.05;
-% Set.initMidEndContractility_LateralCables = [0.5 1.4 1.4]*Set.cLateralCables;
-% Set.initMidEndContractilityTime_LateralCables = [0 18 60]/60;
+Set.initMidEndContractility_LateralCables = [0.5 1.4 1.4]*Set.cLateralCables;
+Set.initMidEndContractilityTime_LateralCables = [0 18 60]/60*(Set.tend - Set.TAblation);

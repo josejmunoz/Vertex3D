@@ -79,7 +79,7 @@ while(1)
     y=reshape(Yt',Set.NumTotalV*3,1);
     yn=reshape(Ytn',Set.NumTotalV*3,1);
 
-    [g,K,Cell,Energy]=KgGlobal(Cell,Faces,Y,y,yn,Set,CellInput);
+    [g,K,Cell,Energy]=KgGlobal(Cell,Faces,SCn, Y,y,yn,Set,CellInput);
     
     dy=zeros(size(y));
     dyr=norm(dy(Dofs.Remodel));
@@ -108,7 +108,7 @@ while(1)
             Set.nu = max(Set.nu/2,Set.nu0);
         end
         
-        [g,K,Cell,Energy]=KgGlobal(Cell,Faces,Y,y,yn,Set,CellInput);        
+        [g,K,Cell,Energy]=KgGlobal(Cell,Faces,SCn,Y,y,yn,Set,CellInput);        
         
         dyr=norm(dy(Dofs.Remodel));
         gr=norm(g(Dofs.Remodel));

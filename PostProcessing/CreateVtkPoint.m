@@ -1,4 +1,4 @@
-function CreateVtkPoint(allVertices, uniqueVerticesIds, uniqueVerticesValues, NameFile, Index)
+function CreateVtkPoint(allVertices, uniqueVerticesIds, uniqueVerticesValues, NameFile, AdditionalInfo, Index)
 % Prints output for owunded and unwounded cells
 % INPUT:
 % step = step number
@@ -16,7 +16,7 @@ if ~exist(newSubFolder, 'dir')
 end
 %cd(newSubFolder);        % go to the new folder 
 % Write non-ablated rod elements
-nameout=strcat(folderName, '/' ,'Points', timeStep, fileExtension);   % full name of the file 
+nameout=strcat(folderName, '/' ,'Vertices', AdditionalInfo, timeStep, fileExtension);   % full name of the file 
 file=fopen(nameout,'w');
 fprintf(file,'%s\n','# vtk DataFile Version 3.98');
 fprintf(file,'%s\n','Delaunay_vtk');

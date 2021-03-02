@@ -23,8 +23,9 @@ if Set.Substrate
     
     uniqueVerticesIds(uniqueVerticesIds<0) = abs(uniqueVerticesIds(uniqueVerticesIds<0)) + size(Y.DataRow, 1);
     
-    CreateVtkPoint(vertices, uniqueVerticesIds, uniqueVerticesValues, folder, TimeStep)
+    CreateVtkPoint(vertices, uniqueVerticesIds, uniqueVerticesValues, folder, '_Basal',TimeStep);
 end
+
 
 if Set.Ablation
     if isempty(Set.cellsToAblate) == 0

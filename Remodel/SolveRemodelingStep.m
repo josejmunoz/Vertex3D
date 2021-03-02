@@ -96,7 +96,7 @@ while(1)
     while (gr>Set.tol || dyr>Set.tol) && Set.iter<Set.MaxIter
         
         dy(Dofs.Remodel)=-K(Dofs.Remodel,Dofs.Remodel)\g(Dofs.Remodel);
-        [alpha0]=LineSearch(Cell,Faces,y,yn,dy,g,Dofs.Remodel,Set,Y,CellInput);
+        [alpha0]=LineSearch(Cell,Faces,SCn,y,yn,dy,g,Dofs.Remodel,Set,Y, Yn,CellInput);
         
         y=y+alpha0*dy; % update 
         Yt=reshape(y,3,Set.NumTotalV)';

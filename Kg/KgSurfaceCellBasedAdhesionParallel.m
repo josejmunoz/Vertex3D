@@ -73,9 +73,9 @@ parfor i=1:ncell
             fact0=fact0+Lambda*CelAux.SAreaFace{i}(f);
             
         elseif  FacesInterfaceType(CelAux.Faces{i}.FaceCentresID (f))==1
-            cellsOfFace = FacesAux.Nodes(CellAux.Faces{i}.FaceCentresID(f), :);
+            cellsOfFace = FacesAux.Nodes(CelAux.Faces{i}.FaceCentresID(f), :);
             % Cell-Cell
-            if any(CellAux.GhostCells(ismember(CellAux.Int, cellsOfFace)))
+            if any(CelAux.GhostCells(ismember(CelAux.Int, cellsOfFace)))
                 % Lambda of Cell-GhostCell faces
                 Lambda=Set.lambdaS4*CellInput.LambdaS4Factor(i);
             else
@@ -123,9 +123,9 @@ parfor i=1:ncell
             % External
             Lambda=Set.lambdaS1*CellInput.LambdaS1Factor(i);
         elseif  FacesInterfaceType(CelAux.Faces{i}.FaceCentresID (f))==1
-            cellsOfFace = FacesAux.Nodes(CellAux.Faces{i}.FaceCentresID(f), :);
+            cellsOfFace = FacesAux.Nodes(CelAux.Faces{i}.FaceCentresID(f), :);
             % Cell-Cell
-            if any(CellAux.GhostCells(ismember(CellAux.Int, cellsOfFace)))
+            if any(CelAux.GhostCells(ismember(CelAux.Int, cellsOfFace)))
                 % Lambda of Cell-GhostCell faces
                 Lambda=Set.lambdaS4*CellInput.LambdaS4Factor(i);
             else

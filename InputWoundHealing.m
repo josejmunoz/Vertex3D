@@ -1,9 +1,11 @@
-Set.OutputFolder = 'Result/Test3' ;%'Result/Ablation_Contractility_0.01_NoRemodel_S4_0.5_3x3';
+Set.OutputFolder = 'Result/Test' ;%'Result/Ablation_Contractility_0.01_NoRemodel_S4_0.5_3x3';
 Set.diary = true;
 Set.MaxIter = 400;
+Set.Parallel = true;
+Set.tol=1e-8;
 
 %% geometry
-Set.e=4;  % Example Number look in Geo\Example.m 
+Set.e=25;  % Example Number look in Geo\Example.m 
 Set.Method=1;
 % Tuning parameters
 Set.s=1.5;
@@ -22,9 +24,9 @@ Set.lambdaS1=1;
 % Cell-Cell 
 Set.lambdaS2=0.5;
 % Cell-substrate
-Set.lambdaS3=0.5;
+Set.lambdaS3=Set.lambdaS2;
 % Cell-GhostCell
-Set.lambdaS4=0.5;
+Set.lambdaS4=Set.lambdaS2;
 
 %---------- EnergyBarrier
 Set.EnergyBarrier=true;
@@ -52,22 +54,22 @@ Set.BC=2; % BC=1: Stretching, BC=2: Compression, BC=nan, substrate extrussion
     Set.TStopBC=302;
     
 %% Substrate
-Set.Substrate = true;
-Set.kSubstrate = 0.01;
+Set.Substrate = false;
+Set.kSubstrate = 0;
 
 %% Remodeling
-Set.Remodelling=true;
+Set.Remodelling=false;
 Set.RemodelTol=.5e-6;
-Set.RemodelingFrequency=2;
+Set.RemodelingFrequency=1;
 
 %% time
 Set.tend=300;
-Set.Nincr=Set.tend;
+Set.Nincr=Set.tend*3;
 
 %% Ablating cells
 Set.Ablation = true;
 Set.cellsToAblate = findCentralCells(Example(Set.e), 1);
-Set.TAblation = 3;
+Set.TAblation = 10;
 Set.TToCompleteAblation = 100;
 
 %% Contractility

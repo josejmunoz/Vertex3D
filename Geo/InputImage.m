@@ -3,11 +3,14 @@ function [] = InputImage(inputFile, cellHeight)
 %   Detailed explanation goes here
 
 img = imread(inputFile);
+labelledImg = bwlabel(1-img, 8);
 
-labelledImg = bwlabel(img, 8);
+ratio = 3;
 
-[imgNeighbours] = calculateNeighbours(labelledImg, 3);
+[imgNeighbours] = calculateNeighbours(labelledImg, ratio);
+[ verticesInfo ] = calculateVertices( labelledImg, imgNeighbours, ratio);
 
+verticesInfo
 
 end
 

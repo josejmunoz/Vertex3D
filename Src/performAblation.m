@@ -11,9 +11,9 @@ if Set.Ablation == true && Set.TAblation <= t
         
         %% Smaller time-steps
         disp('Updating time-step after ablation');
-        Set.Nincr = Set.Nincr*10;
-        Set.dt0=Set.tend/Set.Nincr;
-        Set.dt=Set.dt0;
+%         Set.Nincr = Set.Nincr*10;
+%         Set.dt0=Set.tend/Set.Nincr;
+%         Set.dt=Set.dt0;
     end
 end
 end

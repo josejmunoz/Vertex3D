@@ -1,5 +1,7 @@
 Set.OutputFolder = 'Result/AblationContractility_0.01_NoRemodel_S4_0.5_3x3';
 Set.diary = true;
+Set.MaxIter = 400;
+Set.tol=1e-8;
 
 %% geometry
 Set.e=4;  % Example Number look in Geo\Example.m 
@@ -56,7 +58,7 @@ Set.RemodelingFrequency=2;
 
 %% time
 Set.tend=300;
-Set.Nincr=300;
+Set.Nincr=Set.tend*2;
     
 %% Contractility
 Set.Contractility = 0;
@@ -64,10 +66,17 @@ Set.cContractility = 0.01;
 %Set.initEndContractility = [0.001 0.1];
 %Set.timeToReachFullContractility = 5;
 
+
 %% Ablating cells
 Set.Ablation = true;
 Set.cellsToAblate = findCentralCells(Example(Set.e), 1);
+Set.TAblation = 3;
+Set.TToCompleteAblation = 20;
 
+Set.cPurseString = 0.5;
+Set.initMidEndContractility_PurseString = ([1 2.5 2] - 1) * Set.cPurseString;
+Set.initMidEndContractilityTime_PurseString = [0 18 60]/60*(Set.tend - Set.TAblation);
 
-
-
+Set.cLateralCables = 0.25;
+Set.initMidEndContractility_LateralCables = ([0.5 1.4 1.4] - 0.5) * Set.cLateralCables;
+Set.initMidEndContractilityTime_LateralCables = [0 18 60]/60*(Set.tend - Set.TAblation);

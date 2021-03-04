@@ -1,4 +1,4 @@
-function [Set] = updateParametersOnTime(currentT, Set, Cell)
+function [Set, CellInput] = updateParametersOnTime(currentT, Set, Cell, CellInput)
 %UPDATEPARAMETERSONTIME Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -20,6 +20,7 @@ if any(Cell.GhostCells)
     if currentT < (Set.TAblation + Set.TToCompleteAblation)
         Set.lambdaV_Debris = Set.lambdaV_DebrisTime(currentT);
         Set.lambdaS4 = Set.lambdaS4_Time(currentT);
+        CellInput.LambdaS1Factor(Cell.GhostCells) = Set.LambdaS1FactorDebris_Time(currentT);
     end
 else
     Set.cPurseString = 0;

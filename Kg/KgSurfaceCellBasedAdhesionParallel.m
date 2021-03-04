@@ -39,6 +39,7 @@ CelAux.SArea0=Cell.SArea0;
 CelAux.RemodelledVertices=Cell.RemodelledVertices;
 CelAux.Tris=Cell.Tris;
 CelAux.GhostCells = Cell.GhostCells;
+FacesAux = Faces;
 %% Loop over Cells
 %     % Analytical residual g and Jacobian K
 parfor i=1:ncell
@@ -72,8 +73,15 @@ parfor i=1:ncell
             fact0=fact0+Lambda*CelAux.SAreaFace{i}(f);
             
         elseif  FacesInterfaceType(CelAux.Faces{i}.FaceCentresID (f))==1
+            cellsOfFace = FacesAux.Nodes(CellAux.Faces{i}.FaceCentresID(f), :);
             % Cell-Cell
-            Lambda=Set.lambdaS2*CellInput.LambdaS2Factor(i);
+            if any(CellAux.GhostCells(ismember(CellAux.Int, cellsOfFace)))
+                % Lambda of Cell-GhostCell faces
+                Lambda=Set.lambdaS4*CellInput.LambdaS4Factor(i);
+            else
+                % Lambda of Cell-Cell faces
+                Lambda=Set.lambdaS2*CellInput.LambdaS2Factor(i);
+            end
             fact0=fact0+Lambda*CelAux.SAreaFace{i}(f);
             
         elseif FacesInterfaceType(CelAux.Faces{i}.FaceCentresID (f))==2
@@ -115,8 +123,15 @@ parfor i=1:ncell
             % External
             Lambda=Set.lambdaS1*CellInput.LambdaS1Factor(i);
         elseif  FacesInterfaceType(CelAux.Faces{i}.FaceCentresID (f))==1
+            cellsOfFace = FacesAux.Nodes(CellAux.Faces{i}.FaceCentresID(f), :);
             % Cell-Cell
-            Lambda=Set.lambdaS2*CellInput.LambdaS2Factor(i);
+            if any(CellAux.GhostCells(ismember(CellAux.Int, cellsOfFace)))
+                % Lambda of Cell-GhostCell faces
+                Lambda=Set.lambdaS4*CellInput.LambdaS4Factor(i);
+            else
+                % Cell-Cell
+                Lambda=Set.lambdaS2*CellInput.LambdaS2Factor(i);
+            end
         elseif FacesInterfaceType(CelAux.Faces{i}.FaceCentresID (f))==2
             % Cell-substrate
             Lambda=Set.lambdaS3*CellInput.LambdaS3Factor(i);

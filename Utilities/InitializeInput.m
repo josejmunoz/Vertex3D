@@ -58,9 +58,9 @@ if isempty(Set.initMidEndContractility_PurseString) == 0
     midC_Contractility = Set.initMidEndContractility_PurseString(2);
     endC_Contractility = Set.initMidEndContractility_PurseString(3);
     
-    [Set.cPurseString_InitMidTimeDependent] = contractilityFunction(initC_Contractility, midC_Contractility, initT_Contractility, midT_Contractility, Set);
+    [Set.cPurseString_InitMidTimeDependent] = functionVariableOnTime(initC_Contractility, midC_Contractility, initT_Contractility, midT_Contractility, Set);
     
-    [Set.cPurseString_MidEndTimeDependent] = contractilityFunction(midC_Contractility, endC_Contractility, midT_Contractility, endT_Contractility, Set);
+    [Set.cPurseString_MidEndTimeDependent] = functionVariableOnTime(midC_Contractility, endC_Contractility, midT_Contractility, endT_Contractility, Set);
 end
 
 if isempty(Set.initMidEndContractility_LateralCables) == 0
@@ -72,9 +72,15 @@ if isempty(Set.initMidEndContractility_LateralCables) == 0
     midC_Contractility = Set.initMidEndContractility_LateralCables(2);
     endC_Contractility = Set.initMidEndContractility_LateralCables(3);
     
-    [Set.cLateralCables_InitMidTimeDependent] = contractilityFunction(initC_Contractility, midC_Contractility, initT_Contractility, midT_Contractility, Set);
+    [Set.cLateralCables_InitMidTimeDependent] = functionVariableOnTime(initC_Contractility, midC_Contractility, initT_Contractility, midT_Contractility, Set);
     
-    [Set.cLateralCables_MidEndTimeDependent] = contractilityFunction(midC_Contractility, endC_Contractility, midT_Contractility, endT_Contractility, Set);
+    [Set.cLateralCables_MidEndTimeDependent] = functionVariableOnTime(midC_Contractility, endC_Contractility, midT_Contractility, endT_Contractility, Set);
 end
+
+if Set.TToCompleteAblation > 0
+    Set.lambdaV_DebrisTime = functionVariableOnTime(Set.lambdaV, Set.lambdaV_Debris, 0, Set.TToCompleteAblation, Set);
+    Set.lambdaS4_Time = functionVariableOnTime(Set.lambdaS2, Set.lambdaS4, 0, Set.TToCompleteAblation, Set);
+end
+
 
 end 

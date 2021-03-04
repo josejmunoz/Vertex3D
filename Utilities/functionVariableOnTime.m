@@ -2,6 +2,6 @@ function [contractilityTimeDependent] = functionVariableOnTime(initValue, endVal
 %FUNCTIONVARIABLEONTIME Summary of this function goes here
 %   Detailed explanation goes here
     slope1 = (endValue - initValue) / (endTime - initTime);
-    contractilityTimeDependent = @(timePoint) (slope1 * (timePoint - Set.TAblation - initTime)); %initC_Contractility;
+    contractilityTimeDependent = @(timePoint) (slope1 * (timePoint - Set.TAblation - initTime) + initValue);
 end
 

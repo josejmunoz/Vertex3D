@@ -79,6 +79,7 @@ end
 
 if Set.TToCompleteAblation > 0
     Set.lambdaV_DebrisTime = functionVariableOnTime(Set.lambdaV, Set.lambdaV_Debris, 0, Set.TToCompleteAblation, Set);
+    Set.lambdaS4_Time = functionVariableOnTime(Set.lambdaS2, Set.lambdaS4, 0, Set.TToCompleteAblation, Set);
 end
 
 

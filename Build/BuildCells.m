@@ -209,11 +209,4 @@ allEdges = vertcat(Cell.EdgeLengths{:});
 Cell.EdgeLengths0_average = mean(allEdges(uniqueEdges));
 Cell.EdgeLengthsn = Cell.EdgeLengths;
 
-end 
-
-
-
-%%
-
-
-
+end

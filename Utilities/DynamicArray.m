@@ -49,6 +49,7 @@ classdef DynamicArray
                  obj.DataRow( obj.n+1 : obj.n+size(D(i:end,:),1) ,:)=D(i:end,:);
                  list(i:end)=obj.n+1 : obj.n+size(D(i:end,:),1);
                  obj.NotEmpty( obj.n+1 : obj.n+size(D(i:end,:),1) )=true;
+                 obj.EmptyList( obj.n+1 : obj.n+size(D(i:end,:),1) ) = 0;
                  obj.n=obj.n+size(D(i:end,:),1);
                  break
              end 

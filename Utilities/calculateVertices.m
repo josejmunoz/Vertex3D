@@ -59,17 +59,19 @@ function [ verticesInfo ] = calculateVertices( labelledImg, neighbours, ratio)
     end
     
     %storing vertices and deleting artefacts
-    verticesInfo.verticesPerCell = vertices;
-    verticesInfo.verticesConnectCells = neighboursVertices;
+    verticesInfo.location = vertices;
+    verticesInfo.connectedCells = neighboursVertices;
     
-    notEmptyCells=cellfun(@(x) ~isempty(x),verticesInfo.verticesPerCell,'UniformOutput',true);
-    if size(verticesInfo.verticesPerCell,2)==2
-        verticesInfo.verticesPerCell=[verticesInfo.verticesPerCell(notEmptyCells(:,1),1);verticesInfo.verticesPerCell(notEmptyCells(:,2),2)];
-        verticesInfo.verticesConnectCells=[verticesInfo.verticesConnectCells(notEmptyCells(:,1),:);verticesInfo.verticesConnectCells(notEmptyCells(:,2),:)];
+    notEmptyCells=cellfun(@(x) ~isempty(x),verticesInfo.location,'UniformOutput',true);
+    if size(verticesInfo.location,2)==2
+        verticesInfo.location=[verticesInfo.location(notEmptyCells(:,1),1);verticesInfo.location(notEmptyCells(:,2),2)];
+        verticesInfo.connectedCells=[verticesInfo.connectedCells(notEmptyCells(:,1),:);verticesInfo.connectedCells(notEmptyCells(:,2),:)];
     else
-        verticesInfo.verticesPerCell=verticesInfo.verticesPerCell(notEmptyCells,:);
-        verticesInfo.verticesConnectCells=verticesInfo.verticesConnectCells(notEmptyCells,:);
+        verticesInfo.location=verticesInfo.location(notEmptyCells,:);
+        verticesInfo.connectedCells=verticesInfo.connectedCells(notEmptyCells,:);
     end
+    
+    verticesInfo.location = vertcat(verticesInfo.location{:});
 
 end
 

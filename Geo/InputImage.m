@@ -4,9 +4,13 @@ function [] = InputImage(inputFile, cellHeight)
 
 %% Processed input image to obtain the information
 img = imread(inputFile);
+img(1:end, 1) = 1;
+img(1:end, end) = 1;
+img(1, 1:end) = 1;
+img(end, 1:end) = 1;
 labelledImg = bwlabel(1-img, 8);
 
-ratio = 3;
+ratio = 5;
 
 [imgNeighbours] = calculateNeighbours(labelledImg, ratio);
 [ verticesInfo ] = calculateVertices( labelledImg, imgNeighbours, ratio);
@@ -18,15 +22,19 @@ verticesInfo.PerCell = cell(totalCells, 1);
 
 for numCell = 1:totalCells
     verticesOfCell = find(any(ismember(verticesInfo.connectedCells, numCell), 2));
+    verticesInfo.PerCell{numCell} = verticesOfCell;
     currentVertices = verticesInfo.location(verticesOfCell, :);
     currentConnectedCells = verticesInfo.connectedCells(verticesOfCell, :)';
     currentConnectedCells(currentConnectedCells == numCell) = [];
     currentConnectedCells = vertcat(currentConnectedCells(1:2:length(currentConnectedCells)), currentConnectedCells(2:2:length(currentConnectedCells)))';
     verticesInfo.edges{numCell, 1} = verticesOfCell(boundaryOfCell(currentVertices, currentConnectedCells));
-    if size(verticesInfo.edges{numCell, 1}, 1) ~= length(imgNeighbours{numCell})
-        disp('Error')
+    if size(verticesInfo.edges{numCell, 1}, 1) < length(imgNeighbours{numCell})
+        verticesInfo.edges{numCell, 1} = [];
     end
 end
+
+% figure, imshow(labelledImg, colorcube(600))
+% figure, imshow(ismember(labelledImg, find(cellfun(@isempty, verticesInfo.edges) == 0)).*labelledImg, colorcube(600))
 
 %% Create vertices Y
 Y=DynamicArray(size(verticesInfo.location, 1)*3, 3);
@@ -42,7 +50,10 @@ Y = Y.Add([vertex2D, repmat(-cellHeight/2, size(vertex2D, 1), 1)]);
 
 % Vertices of faces in depth: 
 % x,y: mean([vertex1, vertex2], [], 2); z: 0
-
+allEdges = vertcat(verticesInfo.edges{:});
+allEdgesVertices = verticesInfo.location(allEdges, :);
+allEdgesVertices = round(horzcat(mean(horzcat(allEdgesVertices(1:2:size(allEdgesVertices, 1), 1), allEdgesVertices(2:2:size(allEdgesVertices, 1), 1)), 2), mean(horzcat(allEdgesVertices(1:2:size(allEdgesVertices, 1), 2), allEdgesVertices(2:2:size(allEdgesVertices, 1), 2)), 2)));
+Y = Y.Add([allEdgesVertices, zeros(size(allEdgesVertices, 1), 1)]);
 
 %% Create Face Centres
 

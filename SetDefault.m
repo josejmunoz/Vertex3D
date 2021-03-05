@@ -39,7 +39,7 @@ end
 if ~isfield(Set,'Substrate')
     Set.Substrate=false; % true  --> There is a substrate, 
                          % false --> no substrate   
-    Set.SubstrateZ=0;    % the z-coordinate of the substrate   
+    Set.kSubstrate=0;    % the z-coordinate of the substrate   
 end 
 %% ============================= Time =====================================
 if ~isfield(Set,'tend') % total simulation  Time 
@@ -269,15 +269,13 @@ end
 % Set.BC =~ 1,2;  % Substrate
 
 % ------ Default setting ---------------------------------------------------
-if ~isfield(Set,'BC') && ~Set.Substrate
+if ~isfield(Set,'BC')
     Set.BC=1; % BC=1: Stretching, BC=2: Compression, BC=nan, substrate extrussion
     Set.VFixd=-1.5;
     Set.VPrescribed=1.5;
     Set.dx=2;
     Set.TStartBC=20;  %30  
     Set.TStopBC=100;
-elseif  Set.Substrate
-    Set.BC=nan;
 end 
 
 %% ============================= PostProcessing ===========================

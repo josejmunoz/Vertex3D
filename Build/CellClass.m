@@ -97,6 +97,11 @@ classdef CellClass
         %--------------------------------------------------------------------
         EdgeLocation
         %--------------------------------------------------------------------
+        ApicalVertices
+        BasalVertices
+        %--------------------------------------------------------------------
+        SubstrateForce
+        %--------------------------------------------------------------------
         GhostCells            % Ghost cells
         %--------------------------------------------------------------------
         ContractileForces
@@ -131,6 +136,9 @@ classdef CellClass
                 Cell.GhostCells=false(nC, 1);
                 Cell.ContractileForces=cell(nC, 1);
                 Cell.EdgeLocation=cell(nC,1);
+                Cell.ApicalVertices=cell(nC, 1);
+                Cell.BasalVertices=cell(nC, 1);
+                Cell.SubstrateForce=cell(nC, 1);
             end
         end
         
@@ -250,18 +258,31 @@ classdef CellClass
                 [numElements, elements] = hist(currentEdgesOfCell(edgesToFaces, 2), unique(currentEdgesOfCell(edgesToFaces, 2)));
                 cellCellFaceCentres = elements(numElements > 3);
                 midZ = obj.FaceCentres.DataRow(abs(cellCellFaceCentres),3);
+                
                 if length(midZ) <= 3
                     %It may be a border cell
                 end
+                
                 apicoBasalVertices = Y.DataRow(sharedVertices,:);
-                apicalVertices = sharedVertices(apicoBasalVertices(:, 3) > mean(midZ));
-                basalVertices = sharedVertices(apicoBasalVertices(:, 3) < mean(midZ));
+                upperVerticesBorder = sharedVertices(apicoBasalVertices(:, 3) > mean(midZ));
+                bottomVerticesBorder = sharedVertices(apicoBasalVertices(:, 3) < mean(midZ));
                 
-                apicalEdges = all(ismember(currentEdgesOfCell, apicalVertices), 2);
-                basalEdges = all(ismember(currentEdgesOfCell, basalVertices), 2);
-                lateralEdges = any(ismember(currentEdgesOfCell, apicalVertices), 2) + any(ismember(currentEdgesOfCell, basalVertices), 2) == 2;
+                apicalEdges = all(ismember(currentEdgesOfCell, upperVerticesBorder), 2);
+                basalEdges = all(ismember(currentEdgesOfCell, bottomVerticesBorder), 2);
+                lateralEdges = any(ismember(currentEdgesOfCell, upperVerticesBorder), 2) + any(ismember(currentEdgesOfCell, bottomVerticesBorder), 2) == 2;
                 
-                if sum(apicalEdges) > size(apicalVertices, 1)
+                
+                %% Get all apical and basal vertices
+                upperZMinimum = (mean(midZ) + mean(Y.DataRow(upperVerticesBorder, 3))/10);
+                bottomZMinimum = (mean(midZ) - mean(Y.DataRow(upperVerticesBorder, 3))/10);       
+
+                obj.ApicalVertices{numCell} = vertcat(uniqueCurrentVertices(Y.DataRow(uniqueCurrentVertices, 3) > upperZMinimum), - find(obj.FaceCentres.DataRow(1:obj.FaceCentres.n, 3) > upperZMinimum));
+                obj.BasalVertices{numCell} = vertcat(uniqueCurrentVertices(Y.DataRow(uniqueCurrentVertices, 3) < bottomZMinimum), - find(obj.FaceCentres.DataRow(1:obj.FaceCentres.n, 3) < bottomZMinimum));
+                
+                obj.SubstrateForce{numCell} = zeros(length(obj.BasalVertices{numCell}), 1);
+                
+                %% Get apical and basal border vertices
+                if sum(apicalEdges) > size(upperVerticesBorder, 1)
                     apicalVerticesIds = currentEdgesOfCell(apicalEdges, :);
                     [numElements, elements] = hist(apicalVerticesIds(:), unique(currentEdgesOfCell(apicalEdges, :)));
                     edgesToRemove = apicalVerticesIds(all(ismember(apicalVerticesIds, elements(numElements>2)), 2), :);

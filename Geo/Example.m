@@ -75,4 +75,11 @@ elseif e==16
     X=reshape(X,size(X,1)*size(X,2),1);
     Y=reshape(Y,size(Y,1)*size(Y,2),1);
     X=[X Y ones(length(X),1)+rand(length(X),1)*0];
+elseif e==25
+    X=0:4;
+    Y=0:4;
+    [X,Y]=meshgrid(X,Y);
+    X=reshape(X,size(X,1)*size(X,2),1);
+    Y=reshape(Y,size(Y,1)*size(Y,2),1);
+    X=[X Y ones(length(X),1)+rand(length(X),1)*0];
 end 

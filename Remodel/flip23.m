@@ -1,4 +1,4 @@
-function [Cell,Y,Yn,SCn,T,X,Faces,Dofs,Set, Vnew] = flip23(Cell,Faces,Y,Yn,SCn,T,X,Set,Dofs,XgID,XgSub,CellInput, Vnew)
+function [Cell,Y,Yn,SCn,T,X,Faces,Dofs,Set, Vnew] = flip23(Cell,Faces,Y,Yn,SCn,T,X,Set,Dofs,XgID,CellInput, Vnew)
 %FLIP23 Summary of this function goes here
 %   Detailed explanation goes here
 %% loop over the rest of faces (Flip23)
@@ -168,12 +168,6 @@ while ListIsNotEmpty
         fprintf('=>> 23 Flip.\n');
         Ynew=Flip23(Y.DataRow(oV,:),Tnew,X,n3);
         
-        if Set.Substrate
-            if any(ismember(Tnew(1,:),XgSub)), Ynew(1,3)=Set.SubstrateZ; end
-            if any(ismember(Tnew(2,:),XgSub)), Ynew(2,3)=Set.SubstrateZ; end
-            if any(ismember(Tnew(3,:),XgSub)), Ynew(3,3)=Set.SubstrateZ; end
-        end 
-        
         [T, Y, Yn, Faces, SCn, Cell] = removeFaceInRemodelling(T, Y, Yn, Faces, SCn, Cell, oV, []); %% last param? should be 'i'? or just empty []? Face should be removed?
         
         % filter ghost tets
@@ -182,7 +176,7 @@ while ListIsNotEmpty
         if any(filter), Tnew(filter,:)=[]; Ynew(filter,:)=[]; end 
         
         
-        [T, Y, Yn, Cell, nV, Vnew, nC, SCn, Faces, Set, V3, flag] = addNewVerticesInRemodelling(T, Tnew, Y, Ynew, Yn, Cell, Vnew, X, Faces, SCn, XgID, XgSub, Set);
+        [T, Y, Yn, Cell, nV, Vnew, nC, SCn, Faces, Set, V3, flag] = addNewVerticesInRemodelling(T, Tnew, Y, Ynew, Yn, Cell, Vnew, X, Faces, SCn, XgID, Set);
         
         if length(nV) ==3
             fprintf('Vertices number %i %i -> were replaced by -> %i %i %i.\n',oV(1),oV(2),nV(1),nV(2),nV(3));
@@ -192,13 +186,9 @@ while ListIsNotEmpty
         
         
         if ~flag
-            if Set.Substrate
-                [Dofs]=UpdateDofsSub(Y,Faces,Cell,Set,nV, nC);
-            else 
-                [Dofs]=UpdateDofs(Dofs,oV,nV,[],nC,Y,V3);
-            end 
+            [Dofs]=UpdateDofs(Dofs,oV,nV,[],nC,Y,V3);
             Cell.RemodelledVertices=nV;
-            [Cell,Faces,Y,Yn,SCn,X,Dofs,Set,~,DidNotConverge]=SolveRemodelingStep(Cell,Faces,Y,X,Dofs,Set,Yn,SCn,CellInput,XgSub);  
+            [Cell,Faces,Y,Yn,SCn,X,Dofs,Set,~,DidNotConverge]=SolveRemodelingStep(Cell,Faces,Y,X,Dofs,Set,Yn,SCn,CellInput);  
         else
             fprintf('=>> Flip23 is is not compatible rejected !! \n');
         end

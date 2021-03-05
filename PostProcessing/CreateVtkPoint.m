@@ -1,54 +1,56 @@
-function CreateVtkPoint(X,NameFile,Index)
+function CreateVtkPoint(allVertices, uniqueVerticesIds, uniqueVerticesValues, NameFile, AdditionalInfo, Index)
 % Prints output for owunded and unwounded cells
 % INPUT:
 % step = step number
-% X    = current nodal coordinates
+% allVertices    = current nodal coordinates
 % lnod = nodal network connectivity
 
 %% ------- Initiate ---------------------------------------------------
 % str0='VTKResults';
-str0=NameFile;                          % First Name of the file 
-str2='.vtk';                            % extension
-str3=Index;
-newSubFolder = strcat(pwd,Esc,str0);    % make folder 
+folderName=NameFile;                          % First Name of the file 
+fileExtension='.vtk';                            % extension
+timeStep=num2str(Index);
+newSubFolder = strcat(pwd,Esc,folderName);    % make folder 
 if ~exist(newSubFolder, 'dir')
     mkdir(newSubFolder);
 end
-cd(newSubFolder);        % go to the new folder 
+%cd(newSubFolder);        % go to the new folder 
 % Write non-ablated rod elements
-nameout=strcat(str0,'P',str2,str3);   % full name of the file 
+nameout=strcat(folderName, '/' ,'Vertices', AdditionalInfo, timeStep, fileExtension);   % full name of the file 
 file=fopen(nameout,'w');
 fprintf(file,'%s\n','# vtk DataFile Version 3.98');
 fprintf(file,'%s\n','Delaunay_vtk');
 fprintf(file,'%s\n','ASCII');
 fprintf(file,'%s\n','DATASET UNSTRUCTURED_GRID');
-nodes=size(X,1);
+nodes=size(allVertices,1);
 
 %% ------- Write Points ---------------------------------------------------
 fprintf(file,'%s %d %s\n','POINTS',nodes,'float');
-dim=size(X,2);
+dim=size(allVertices,2);
 for i=1:nodes
     if dim==2
-        fprintf(file,' %f %f %f\n',X(i,1),X(i,2),0);
+        fprintf(file,' %f %f %f\n',allVertices(i,1),allVertices(i,2),0);
     else
-        fprintf(file,' %f %f %f\n',X(i,1),X(i,2),X(i,3));
+        fprintf(file,' %f %f %f\n',allVertices(i,1),allVertices(i,2),allVertices(i,3));
     end
 end
 
-%% ------- Write connectivity ---------------------------------------------
-% nT1=size(T,1);
-% nT2=size(T,2);
-% 
-% fprintf(file,'%s %d %d\n','CELLS',nT1,nT1*(nT2+1));
-% TT=T-1;
-% for j=1:nT1
-%     fprintf(file,'%d %d %d %d %d\n',nT2,TT(j,1),TT(j,2),TT(j,3),TT(j,4));
-% end
-% fprintf(file,'%s %d\n','CELL_TYPES',nT1);
-% for j=1:nT1
-%     fprintf(file,'%d\n',10);
-% end
 
+fprintf(file,'%s %d %d\n','CELLS', length(uniqueVerticesIds), length(uniqueVerticesIds)*2);
+for numPoint = 1:length(uniqueVerticesIds)
+    fprintf(file,'1 %d\n', uniqueVerticesIds(numPoint)-1);
+end
+
+fprintf(file,'%s %d\n','CELL_TYPES', length(uniqueVerticesIds));
+for numPoint = 1:length(uniqueVerticesIds)
+    fprintf(file,'%d\n',1);
+end
+
+fprintf(file,'%s %d \n','CELL_DATA', length(uniqueVerticesIds));
+fprintf(file,'%s \n',strcat('SCALARS SubstrateSpring double '));
+fprintf(file,'%s \n','LOOKUP_TABLE default');
+for i=uniqueVerticesValues'
+    fprintf(file,'%f\n',i);
+end
 
 fclose(file);
-cd '..'

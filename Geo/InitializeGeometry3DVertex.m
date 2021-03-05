@@ -1,4 +1,4 @@
-function [X,Y,Yt,T,XgID,Cell,Faces,Cn,Cv,Yn,SCn,Set,XgSub]=InitializeGeometry3DVertex(X,Set)
+function [X,Y,Yt,T,XgID,Cell,Faces,Cn,Cv,Yn,SCn,Set]=InitializeGeometry3DVertex(X,Set)
 %% This function creates the initial geometry of cells and the initial data structure
 % SeedingMethod 1 :  The free boundary is obtained using bounding box 
 % SeedingMethod 2 :  The free boundary is obtained by computing distance function          
@@ -9,7 +9,6 @@ function [X,Y,Yt,T,XgID,Cell,Faces,Cn,Cv,Yn,SCn,Set,XgSub]=InitializeGeometry3DV
 %            - Set.SeedingMethod==2 ---> h: Mesh size while solving for distance function h=s/3  (hard coded) 
 %                                        w: The interval in which the ghost nodes are chosen w=[s+h/2 s+h] (hard coded)
 %            - Set.f: The distance of the free-boundary vertices from cell centre f=s/2 (hard coded in SetDefault) 
-%            - Set.SubstrateZ: The z-coordinate of the substrate (if needed)
 %  ========================================================================
 %  Output:   - Cell  data Structure 
 %            - Faces data Structure
@@ -37,15 +36,6 @@ elseif Set.SeedingMethod==2
     % Fast marching method  
     [XgID,X]=SeedWithDistanceFunction(X,Set.s);
 end
-
-if Set.Substrate
-    %% Add far node in the bottom  
-    Xg=X(XgID,:); X(XgID,:)=[];
-    Xg(Xg(:,3)<mean(X(:,3)),:)=[];
-    XgID=size(X,1)+1:size(X,1)+size(Xg,1)+1;
-    X=[X;Xg;mean(X(:,1)) mean(X(:,2)) -10*max(max(abs(X)))];     % position of the far node in the bottom 
-    XgSub=size(X,1);
-end 
 
 
 
@@ -77,10 +67,6 @@ end
 X=newX(1:aux2-1,:);
 XgID=newXgID(1:aux3-1);
 Twg=newTwg;
-    
-if Set.Substrate 
-    XgSub=aux1(XgSub);
-end 
 
 
 
@@ -88,9 +74,6 @@ end
 % [N]=GetN(Twg);
 Set.nodes=size(X,1);
 Yaux=GetYFromX(X,XgID,Twg,Set.f);
-if Set.Substrate
-    Yaux=GetYSubstrate(Yaux,X,Twg,XgSub,XgID,Set.f,Set.SubstrateZ);
-end 
 Y=DynamicArray(ceil(size(Yaux,1)*1.5),size(Yaux,2));
 Y=Y.Add(Yaux);
 
@@ -102,37 +85,13 @@ xInternal(XgID)=[];
 [Cv,Cell,Faces]=BuildCells(Twg,Y,X,xInternal,Set.f);
 
 
-% update the position of the surface centres on the substrate
-if Set.Substrate
-    for i=1:Faces.n
-        if any(ismember(Faces.Nodes(i,:),XgSub))
-            Cell.FaceCentres.DataRow(i,3)=Set.SubstrateZ;
-        end
-    end
-    % Update Volume and Area 
-    [Cell]=ComputeCellVolume(Cell,Y);
-    Cell.Vol0=Cell.Vol;
-    Cell.SArea0=Cell.SArea;
-    for i=1:Cell.n
-        Cell.SAreaTrin{i}=Cell.SAreaTri{i};
-    end
-    Cell.SAreaFace0=Cell.SAreaFace;
-end 
-
-
 Set.NumMainV=Y.n;
 Set.NumAuxV=Cell.FaceCentres.n;
 Set.NumTotalV=Set.NumMainV+Set.NumAuxV;
 Cn=BuildCn(Twg);
 
 Faces=Faces.ComputeAreaTri(Y.DataRow,Cell.FaceCentres.DataRow);
-if Set.Substrate
-    Faces=Faces.CheckInteriorFaces(XgID,XgSub);
-    X(XgSub,3)=-5*max(X(:,3));
-else 
-    Faces=Faces.CheckInteriorFaces(XgID);
-    XgSub=[];
-end 
+Faces=Faces.CheckInteriorFaces(XgID);
 
 Yn=Y;
 SCn=Cell.FaceCentres;
@@ -178,42 +137,5 @@ for i=1:nvert
         end
     end 
 end
-end 
-
-
-function Y=GetYSubstrate(Y,X,T,XgSub,XgID,f,S)
-%% This function updates the position of vertices to be placed on the substrate (S) (Y) 
-nvert=size(Y,1);
-for i=1:nvert
-    aux=ismember(T(i,:),XgSub);
-    if abs(sum(aux))>eps
-        XX=X(T(i,~ismember(T(i,:),XgID)),:);
-        if size(XX,1)==1
-            x=X(T(i,~aux),:);
-            Center=1/3*(sum(x,1));
-            vc=Center-X(T(i,~ismember(T(i,:),XgID)),:);
-            dis=norm(vc);
-            dir=vc/dis;
-            offset=f*dir;
-            Y(i,:)=X(T(i,~ismember(T(i,:),XgID)),:)+offset;
-            Y(i,3)=S;
-        elseif size(XX,1)==2
-            X12=XX(1,:)-XX(2,:);
-            ff=sqrt(f^2-(norm(X12)/2)^2);
-            XX=sum(XX,1)/2;
-            Center=1/3*(sum(X(T(i,~ismember(T(i,:),XgSub)),:),1));
-            vc=Center-XX;
-            dis=norm(vc);
-            dir=vc/dis;
-            offset=ff*dir;
-            Y(i,:)=XX+offset;
-            Y(i,3)=S;
-        elseif size(XX,1)==3
-            Y(i,:)=(1/3).*(sum(X(T(i,~ismember(T(i,:),XgSub)),:),1));
-            Y(i,3)=S;
-
-        end 
-    end 
 end
-end 
 

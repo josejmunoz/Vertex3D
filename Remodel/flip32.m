@@ -1,4 +1,4 @@
-function [Cell,Y,Yn,SCn,T,X,Faces,Dofs,Set, Vnew] = flip32(Cell,Faces,Y,Yn,SCn,T,X,Set,Dofs,XgID,XgSub,CellInput, Vnew)
+function [Cell,Y,Yn,SCn,T,X,Faces,Dofs,Set, Vnew] = flip32(Cell,Faces,Y,Yn,SCn,T,X,Set,Dofs,XgID,CellInput, Vnew)
 %FLIP32 Summary of this function goes here
 %   Detailed explanation goes here
 %% loop over 3-vertices-faces (Flip32)
@@ -37,12 +37,6 @@ for i=1:Faces.n
     % The new vertices 
     Ynew=Flip32(Y.DataRow(oV,:),X(n,:));
     
-    if Set.Substrate
-        % Check if the new vertices should be on the substrate
-        if any(ismember(Tnew(1,:),XgSub)), Ynew(1,3)=Set.SubstrateZ; end
-        if any(ismember(Tnew(2,:),XgSub)), Ynew(2,3)=Set.SubstrateZ; end
-    end 
-    
     if CheckConvexityCondition(Tnew,T)
         fprintf('=>> 32-Flip is not compatible rejected.\n');
         continue
@@ -52,18 +46,14 @@ for i=1:Faces.n
     [T, Y, Yn, Faces, SCn, Cell] = removeFaceInRemodelling(T, Y, Yn, Faces, SCn, Cell, oV, i);
     
     % add new vertices 
-    [T, Y, Yn, Cell, nV, Vnew, nC, SCn, Faces, Set, V3, flag] = addNewVerticesInRemodelling(T, Tnew, Y, Ynew, Yn, Cell, Vnew, X, Faces, SCn, XgID, XgSub, Set);
+    [T, Y, Yn, Cell, nV, Vnew, nC, SCn, Faces, Set, V3, flag] = addNewVerticesInRemodelling(T, Tnew, Y, Ynew, Yn, Cell, Vnew, X, Faces, SCn, XgID, Set);
     
     if ~flag
         fprintf('Vertices number %i %i %i -> were replaced by -> %i %i.\n',oV(1),oV(2),oV(3),nV(1),nV(2));
         
-        if Set.Substrate
-            [Dofs]=UpdateDofsSub(Y,Faces,Cell,Set,nV,[]);
-        else
-            [Dofs]=UpdateDofs(Dofs,oV,nV,i,[],Y,V3);
-        end
+        [Dofs]=UpdateDofs(Dofs,oV,nV,i,[],Y,V3);
         Cell.RemodelledVertices=nV;
-        [Cell,Faces,Y,Yn,SCn,X,Dofs,Set,~,DidNotConverge]=SolveRemodelingStep(Cell,Faces,Y,X,Dofs,Set,Yn,SCn,CellInput,[]);
+        [Cell,Faces,Y,Yn,SCn,X,Dofs,Set,~,DidNotConverge]=SolveRemodelingStep(Cell,Faces,Y,X,Dofs,Set,Yn,SCn,CellInput);
         Yn.DataRow(nV,:)=Y.DataRow(nV,:);
     else
         error('check Flip32 flag');

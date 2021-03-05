@@ -20,12 +20,11 @@ InputWoundHealing
 InitiateOutputFolder(Set)
 %% Mesh generation
 [X]=Example(Set.e);
-[X,Y,Yt,T,XgID,Cell,Faces,Cn,~,Yn,SCn,Set,XgSub]=InitializeGeometry3DVertex(X,Set);
+[X,Y,Yt,T,XgID,Cell,Faces,Cn,~,Yn,SCn,Set]=InitializeGeometry3DVertex(X,Set);
 if Set.VTK, PostProcessingVTK(X,Y,T.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),0,Set); end
 fprintf('Model Initialized... \n');
 
 %% Initialize Data
-
 [CellInput, Set] = InitializeInput(Cell,Set);
 
 % Energy
@@ -35,6 +34,7 @@ EnergyF=zeros(Set.Nincr,1);  Energy.Ef=0;
 Energyb=zeros(Set.Nincr,1);  Energy.Eb=0;
 EnergyB=zeros(Set.Nincr,1);  Energy.EB=0;
 EnergyC=zeros(Set.Nincr,1);  Energy.Ec=0;
+EnergySub=zeros(Set.Nincr,1);  Energy.Esub=0;
 StepSize=zeros(Set.Nincr,1);
 
 cellFeatures=cell(Set.Nincr, 1);
@@ -51,13 +51,11 @@ Set.ReModel=true;
 Set.ApplyBC=true;
 
 % Dofs & Boundary
-if Set.BC==1 && ~Set.Substrate
+if Set.BC==1
     Dofs=GetDOFs(Y,Cell,Faces,Set);
-elseif Set.BC==2 && ~Set.Substrate
+elseif Set.BC==2
     Set.WallPosition=max(Y.DataRow(:,2))+0.2;
     Dofs=GetWallBoundaryCondition(Set,Y,Cell,Faces);
-elseif Set.Substrate
-    Dofs=GetDOFsSubsrtate(Y,Cell,Set,Faces);
 else
     error('Invalid Input in Set.BC and Set.Substrate. \n')
 end
@@ -76,7 +74,7 @@ while t<=Set.tend
 
     %% ----------- Remodel--------------------------------------------------
     if Set.Remodelling && Set.ReModel && abs(t-tr)>=Set.RemodelingFrequency
-        [Cell,Y,Yn,SCn,T,X,Faces,Dofs,Cn,Set]=Remodeling(Cell,Faces,Y,Yn,SCn,T,X,Set,Dofs,Energy,XgID,XgSub,CellInput);
+        [Cell,Y,Yn,SCn,T,X,Faces,Dofs,Cn,Set]=Remodeling(Cell,Faces,Y,Yn,SCn,T,X,Set,Dofs,Energy,XgID,CellInput);
         Set.ReModel=false;
         tr=t;
     end
@@ -90,7 +88,9 @@ while t<=Set.tend
     
     
     %% ----------- Compute K, g ---------------------------------------
-    [g,K,Cell,Energy]=KgGlobal(Cell,Faces,Y,y,yn,Set,CellInput,XgSub);
+    [Set, CellInput] = updateParametersOnTime(t, Set, Cell, CellInput);
+    fprintf('Step: %i - LambdaV_Debris: %d, LambdaS1_Ghost: %d, cPurseString: %d, cLateralCables: %d\n', numStep, Set.lambdaV_Debris, Set.lambdaS1 * CellInput.LambdaS1Factor(Cell.GhostCells), Set.cPurseString, Set.cLateralCables);
+    [g,K,Cell,Energy]=KgGlobal(Cell,Faces,SCn,Y,Yn,y,yn,Set,CellInput);
     dy=zeros(size(y));
     dyr=norm(dy(Dofs.FreeDofs));
     gr=norm(g(Dofs.FreeDofs));
@@ -108,7 +108,7 @@ while t<=Set.tend
     ig=1;
     while (gr>Set.tol || dyr>Set.tol) && Set.iter<Set.MaxIter
         dy(Dofs.FreeDofs)=-K(Dofs.FreeDofs,Dofs.FreeDofs)\g(Dofs.FreeDofs);
-        [alpha]=LineSearch(Cell,Faces,y,yn,dy,g,Dofs.FreeDofs,Set,Y,CellInput,XgSub);
+        [alpha]=LineSearch(Cell,Faces,SCn, y,yn,dy,g,Dofs.FreeDofs,Set,Y,Yn,CellInput);
         % alpha=1;
         y=y+alpha*dy; % update nodes
         Yt=reshape(y,3,Set.NumTotalV)';
@@ -118,7 +118,7 @@ while t<=Set.tend
             Set.nu = max(Set.nu/2,Set.nu0);
         end
         % ----------- Compute K, g ---------------------------------------
-        [g,K,Cell,Energy]=KgGlobal(Cell,Faces,Y,y,yn,Set,CellInput,XgSub);
+        [g,K,Cell,Energy]=KgGlobal(Cell,Faces,SCn,Y,Yn,y,yn,Set,CellInput);
         dyr=norm(dy(Dofs.FreeDofs));
         gr=norm(g(Dofs.FreeDofs));
         fprintf('Step: % i,Iter: %i, Time: %g ||gr||= %.3e ||dyr||= %.3e alpha= %.3e  nu/nu0=%.3g \n',numStep,Set.iter,t,gr,dyr,alpha,Set.nu/Set.nu0);
@@ -149,7 +149,7 @@ while t<=Set.tend
         fprintf('STEP %i has converged ...\n',Set.iIncr)
         
         %Update Nodes (X) from Vertices (Y)
-        [X]=GetXFromY(Cell,Faces,X,T,Y,XgID,XgSub,Set);
+        [X]=GetXFromY(Cell,Faces,X,T,Y,XgID,Set);
         
         %% Post processing
         if Set.VTK, PostProcessingVTK(X,Y,T.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end
@@ -163,8 +163,16 @@ while t<=Set.tend
         EnergyS(numStep)=Energy.Es;
         EnergyV(numStep)=Energy.Ev;
         EnergyB(numStep)=Energy.EB;
+        if Set.Bending 
+            Energyb(numStep)=Energy.Eb;
+        end
         EnergyF(numStep)=Energy.Ef;
-        if Set.cPurseString > 0 || Set.cLateralCables > 0,    EnergyC(numStep)=Energy.Ec; end
+        if Set.Contractility
+            EnergyC(numStep)=Energy.Ec;
+        end
+        if Set.Substrate
+            EnergySub(numStep) = Energy.Esub;
+        end
 
         %% Save for next steps
         for ii=1:Cell.n
@@ -177,14 +185,7 @@ while t<=Set.tend
         Set.MaxIter=Set.MaxIter0;
         Set.ReModel=true;
         Set.ApplyBC=true;
-        
-        % Update time
-        tp=t;
-        t=t+Set.dt;
-        numStep=numStep+1;
-        StepSize(numStep)=Set.dt;
-        Set.dt=min(Set.dt+Set.dt*0.5, Set.dt0);
-        
+              
         % ----------- Ablation ------------------------------------------------
         [Cell, Set, CellInput] = performAblation(Cell, Set, CellInput, t);
         
@@ -192,6 +193,14 @@ while t<=Set.tend
         if any(tooSmallCells) % Remove cell in the case is too small
             [Cell, CellInput, XgID, Faces,nC,SCn,flag32, Dofs] = removeCell(Cell, CellInput, XgID, Faces, T, Y, X, SCn, tooSmallCells, Set);
         end
+        
+        %% Update time
+        tp=t;
+        t=t+Set.dt;
+        numStep=numStep+1;
+        StepSize(numStep)=Set.dt;
+        Set.dt=min(Set.dt+Set.dt*0.5, Set.dt0);
+ 
     else 
         fprintf('Convergence was not achieved ... \n');
         Y=Yp;

@@ -1,4 +1,4 @@
-function [Cell,Y,Yn,SCn,T,X,Faces,Dofs,Set, Vnew] = flip44(Cell,Faces,Y,Yn,SCn,T,X,Set,Dofs,XgID,XgSub,CellInput, Vnew)
+function [Cell,Y,Yn,SCn,T,X,Faces,Dofs,Set, Vnew] = flip44(Cell,Faces,Y,Yn,SCn,T,X,Set,Dofs,XgID,CellInput, Vnew)
 %flip44 Summary of this function goes here
 %   Detailed explanation goes here
 %% loop over 4-vertices-faces (Flip44)
@@ -50,31 +50,19 @@ for i=1:Faces.n
     % The new vertices
     Ynew=Flip44(Y.DataRow(oV,:),Tnew,L,X);
     
-    if Set.Substrate
-        % Check if the new vertices should be on the substrate
-        if any(ismember(Tnew(1,:),XgSub)), Ynew(1,3)=Set.SubstrateZ; end
-        if any(ismember(Tnew(2,:),XgSub)), Ynew(2,3)=Set.SubstrateZ; end
-        if any(ismember(Tnew(3,:),XgSub)), Ynew(3,3)=Set.SubstrateZ; end
-        if any(ismember(Tnew(4,:),XgSub)), Ynew(4,3)=Set.SubstrateZ; end
-    end 
-    
     % Remove the face
     [T, Y, Yn, Faces, SCn, Cell] = removeFaceInRemodelling(T, Y, Yn, Faces, SCn, Cell, oV, i);
     
     % add new vertices 
-    [T, Y, Yn, Cell, nV, Vnew, nC, SCn, Faces, Set, V3, flag] = addNewVerticesInRemodelling(T, Tnew, Y, Ynew, Yn, Cell, Vnew, X, Faces, SCn, XgID, XgSub, Set);
+    [T, Y, Yn, Cell, nV, Vnew, nC, SCn, Faces, Set, V3, flag] = addNewVerticesInRemodelling(T, Tnew, Y, Ynew, Yn, Cell, Vnew, X, Faces, SCn, XgID, Set);
     
     if ~flag
         fprintf('Vertices number %i %i %i %i -> were replaced by -> %i %i %i %i.\n',oV(1),oV(2),oV(3),oV(4),nV(1),nV(2),nV(3),nV(4));
-    
-        if Set.Substrate
-            [Dofs]=UpdateDofsSub(Y,Faces,Cell,Set,nV,nC);
-        else
-            [Dofs]=UpdateDofs(Dofs,oV,nV,i,nC,Y,V3);
-        end
+
+        [Dofs]=UpdateDofs(Dofs,oV,nV,i,nC,Y,V3);
 
         Cell.RemodelledVertices=[nV;nC+Y.n];
-        [Cell,Faces,Y,Yn,SCn,X,Dofs,Set,~,DidNotConverge]=SolveRemodelingStep(Cell,Faces,Y,X,Dofs,Set,Yn,SCn,CellInput,XgSub);
+        [Cell,Faces,Y,Yn,SCn,X,Dofs,Set,~,DidNotConverge]=SolveRemodelingStep(Cell,Faces,Y,X,Dofs,Set,Yn,SCn,CellInput);
         Yn.DataRow(nV,:)=Y.DataRow(nV,:);
     else
         error('check Flip44 flag');

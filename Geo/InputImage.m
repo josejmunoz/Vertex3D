@@ -34,6 +34,11 @@ for numCell = 1:totalCells
 end
 
 % figure, imshow(labelledImg, colorcube(600))
+% hold on;
+% for numVertex = 1:size(verticesInfo.location, 1)
+%     plot(round(verticesInfo.location(numVertex, 2)), round(verticesInfo.location(numVertex, 1)), 'rx');
+%     hold on;
+% end
 % figure, imshow(ismember(labelledImg, find(cellfun(@isempty, verticesInfo.edges) == 0)).*labelledImg, colorcube(600))
 
 %% Create vertices Y
@@ -66,19 +71,29 @@ X = horzcat(vertcat(faceCentres(nonEmptyCells).Centroid), zeros(totalRegularCell
 
 % Ghost nodes:
 % Above vertices (including faces) of top and bottom
-XgTopFaceCentre = horzcat(vertcat(faceCentres(nonEmptyCells).Centroid), repmat(cellHeight, size(vertex2D, 1), 1));
-XgBottomFaceCentre = horzcat(vertcat(faceCentres(nonEmptyCells).Centroid), repmat(-cellHeight, size(vertex2D, 1), 1));
+XgTopFaceCentre = horzcat(vertcat(faceCentres(nonEmptyCells).Centroid), repmat(cellHeight, sum(nonEmptyCells), 1));
+XgBottomFaceCentre = horzcat(vertcat(faceCentres(nonEmptyCells).Centroid), repmat(-cellHeight, sum(nonEmptyCells), 1));
 XgTopVertices = [vertex2D, repmat(cellHeight, size(vertex2D, 1), 1)];
 XgBottomVertices = [vertex2D, repmat(-cellHeight, size(vertex2D, 1), 1)];
+X = vertcat(X, XgBottomFaceCentre, XgBottomVertices, XgTopFaceCentre, XgTopVertices);
 
+% Lateral boundary ghost cells
+XgBoundary_1 = horzcat(vertcat(faceCentres(nonEmptyCells == 0).Centroid), zeros(sum(nonEmptyCells == 0), 1));
+XgBoundary_2 = horzcat(vertcat(faceCentres(nonEmptyCells == 0).Centroid), repmat(cellHeight/4, sum(nonEmptyCells == 0), 1));
+XgBoundary_3 = horzcat(vertcat(faceCentres(nonEmptyCells == 0).Centroid), repmat(-cellHeight/4, sum(nonEmptyCells == 0), 1));
 
-XgID = totalRegularCells+1:size(X, 1);
+X = vertcat(X, XgBoundary_1, XgBoundary_2, XgBoundary_3);
+
+XgID = (totalRegularCells+1):size(X, 1);
 
 %% Create tetrahedra
 Twg=delaunay(X);
 
 % Remove Ghost tets 
 Twg(all(ismember(Twg,XgID),2),:)=[];
+
+% Remove connection from internal cells centroids and add the correct ones
+% (from verticesInfo.connectedCells)
 
 % Remove addition nodes- not used
 newTwg=zeros(size(Twg));

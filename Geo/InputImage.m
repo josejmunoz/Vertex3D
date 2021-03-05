@@ -16,9 +16,16 @@ faceCentres = regionprops(labelledImg, 'centroid');
 totalCells = max(verticesInfo.connectedCells(:));
 verticesInfo.PerCell = cell(totalCells, 1);
 
-for numCell = 2%1:totalCells
+for numCell = 1:totalCells
     verticesOfCell = find(any(ismember(verticesInfo.connectedCells, numCell), 2));
-    
+    currentVertices = verticesInfo.location(verticesOfCell, :);
+    currentConnectedCells = verticesInfo.connectedCells(verticesOfCell, :)';
+    currentConnectedCells(currentConnectedCells == numCell) = [];
+    currentConnectedCells = vertcat(currentConnectedCells(1:2:length(currentConnectedCells)), currentConnectedCells(2:2:length(currentConnectedCells)))';
+    verticesInfo.edges{numCell, 1} = verticesOfCell(boundaryOfCell(currentVertices, currentConnectedCells));
+    if size(verticesInfo.edges{numCell, 1}, 1) ~= length(imgNeighbours{numCell})
+        disp('Error')
+    end
 end
 
 %% Create vertices Y

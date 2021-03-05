@@ -58,14 +58,21 @@ Y = Y.Add([vertex2D, repmat(-cellHeight/2, size(vertex2D, 1), 1)]);
 
 %% Create nodes X from Y
 % Cell nodes:
-% x,y: vertices connected (edges); z: 0
-totalRegularCells = sum(cellfun(@isempty, verticesInfo.edges) == 0);
+% x,y: centroidsOfCells; z: 0
+nonEmptyCells = cellfun(@isempty, verticesInfo.edges) == 0;
+totalRegularCells = sum(nonEmptyCells);
 xInternal = 1:totalRegularCells;
-
+X = horzcat(vertcat(faceCentres(nonEmptyCells).Centroid), zeros(totalRegularCells, 1));
 
 % Ghost nodes:
 % Above vertices (including faces) of top and bottom
-X = faces
+XgTopFaceCentre = horzcat(vertcat(faceCentres(nonEmptyCells).Centroid), repmat(cellHeight, size(vertex2D, 1), 1));
+XgBottomFaceCentre = horzcat(vertcat(faceCentres(nonEmptyCells).Centroid), repmat(-cellHeight, size(vertex2D, 1), 1));
+XgTopVertices = [vertex2D, repmat(cellHeight, size(vertex2D, 1), 1)];
+XgBottomVertices = [vertex2D, repmat(-cellHeight, size(vertex2D, 1), 1)];
+
+
+XgID = totalRegularCells+1:size(X, 1);
 
 %% Create tetrahedra
 Twg=delaunay(X);

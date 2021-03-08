@@ -80,8 +80,8 @@ cellIdsAsInternal = findCentralCells(vertcat(faceCentres.Centroid), 10);
 nonEmptyCells(cellIdsAsInternal) = 1;
 
 totalRegularCells = sum(nonEmptyCells);
-X = horzcat(vertcat(faceCentres(nonEmptyCells).Centroid), zeros(totalRegularCells, 1));
-X = vertcat(X, horzcat(vertcat(faceCentres(nonEmptyCells == 0).Centroid), zeros(sum(nonEmptyCells == 0), 1)));
+
+X = horzcat(vertcat(faceCentres.Centroid), zeros(size(nonEmptyCells)));
 
 % Ghost nodes:
 % Above vertices (including faces) of top and bottom
@@ -89,7 +89,15 @@ XgTopFaceCentre = horzcat(vertcat(faceCentres.Centroid), repmat(cellHeight, leng
 XgBottomFaceCentre = horzcat(vertcat(faceCentres.Centroid), repmat(-cellHeight, length(faceCentres), 1));
 XgTopVertices = [vertex2D, repmat(cellHeight, size(vertex2D, 1), 1)];
 XgBottomVertices = [vertex2D, repmat(-cellHeight, size(vertex2D, 1), 1)];
-X = vertcat(X, XgBottomFaceCentre, XgBottomVertices, XgTopFaceCentre, XgTopVertices);
+
+X_bottomNodes = vertcat(XgBottomFaceCentre, XgBottomVertices);
+X_bottomIds = size(X, 1) + 1: size(X, 1) + size(X_bottomNodes, 1);
+X = vertcat(X, X_bottomNodes);
+
+X_topNodes = vertcat(XgTopFaceCentre, XgTopVertices);
+X_topIds = size(X, 1) + 1: size(X, 1) + size(X_topNodes, 1);
+X = vertcat(X, X_topNodes);
+
 
 % % Lateral boundary ghost cells
 % XgBoundary_1 = horzcat(vertcat(faceCentres(nonEmptyCells == 0).Centroid), repmat(cellHeight/4, sum(nonEmptyCells == 0), 1));
@@ -105,20 +113,30 @@ XgID = horzcat(find(nonEmptyCells == 0)', (length(faceCentres)+1):size(X, 1));
 % XgID = (totalRegularCells+1):size(X, 1);
 
 % Centre Nodal position at (0,0)
-X(:,1)=X(:,1)-mean(X(:,1));
-X(:,2)=X(:,2)-mean(X(:,2));
-X(:,3)=X(:,3)-mean(X(:,3));
+% X(:,1)=X(:,1)-mean(X(:,1));
+% X(:,2)=X(:,2)-mean(X(:,2));
+% X(:,3)=X(:,3)-mean(X(:,3));
 
 %% Create tetrahedra
 
 % Initial 2D delaunay between cell nodes
-delaunay2D_real = delaunayTriangulation(vertcat(faceCentres.Centroid), neighboursNetwork);
-realConnectivity = sort(delaunay2D_real.ConnectivityList, 2);
+delaunay2D_real = delaunayTriangulation(X(1:length(faceCentres), 1:2), neighboursNetwork);
+trianglesConnectivity = delaunay2D_real.ConnectivityList;
 
 % Add connections between real nodes and ghost cells
 % Relationships: 1 ghost node, three cell nodes
+verticesTriangles_1 = X(trianglesConnectivity(:, 1), :);
+verticesTriangles_2 = X(trianglesConnectivity(:, 2), :);
+verticesTriangles_3 = X(trianglesConnectivity(:, 3), :);
+meanTriangles = arrayfun(@(x, y, z) mean([x, y, z]), verticesTriangles_1, verticesTriangles_2, verticesTriangles_3);
 
+[~, indices] = pdist2(X_topNodes, meanTriangles, 'euclidean', 'smallest', 1);
+Twg = horzcat(trianglesConnectivity, X_topIds(indices)');
 
+[~, indices] = pdist2(X_bottomNodes, meanTriangles, 'euclidean', 'smallest', 1);
+Twg = [Twg; horzcat(trianglesConnectivity, X_bottomIds(indices)')];
+
+indices
 % Relationships: 2 ghost nodes, two cell nodes
 
 

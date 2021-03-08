@@ -75,8 +75,13 @@ Y = Y.Add([vertex2D, repmat(-cellHeight/2, size(vertex2D, 1), 1)]);
 % x,y: centroidsOfCells; z: 0
 nonEmptyCells = cellfun(@isempty, verticesInfo.edges) == 0;
 
+nonEmptyCells = zeros(size(nonEmptyCells)) == 1;
+cellIdsAsInternal = findCentralCells(vertcat(faceCentres.Centroid), 10);
+nonEmptyCells(cellIdsAsInternal) = 1;
+
 totalRegularCells = sum(nonEmptyCells);
 X = horzcat(vertcat(faceCentres(nonEmptyCells).Centroid), zeros(totalRegularCells, 1));
+X = vertcat(X, horzcat(vertcat(faceCentres(nonEmptyCells == 0).Centroid), zeros(sum(nonEmptyCells == 0), 1)));
 
 % Ghost nodes:
 % Above vertices (including faces) of top and bottom
@@ -86,52 +91,43 @@ XgTopVertices = [vertex2D, repmat(cellHeight, size(vertex2D, 1), 1)];
 XgBottomVertices = [vertex2D, repmat(-cellHeight, size(vertex2D, 1), 1)];
 X = vertcat(X, XgBottomFaceCentre, XgBottomVertices, XgTopFaceCentre, XgTopVertices);
 
-% Lateral boundary ghost cells
-XgBoundary_1 = horzcat(vertcat(faceCentres(nonEmptyCells == 0).Centroid), repmat(cellHeight/4, sum(nonEmptyCells == 0), 1));
-XgBoundary_2 = horzcat(vertcat(faceCentres(nonEmptyCells == 0).Centroid), repmat(-cellHeight/4, sum(nonEmptyCells == 0), 1));
+% % Lateral boundary ghost cells
+% XgBoundary_1 = horzcat(vertcat(faceCentres(nonEmptyCells == 0).Centroid), repmat(cellHeight/4, sum(nonEmptyCells == 0), 1));
+% XgBoundary_2 = horzcat(vertcat(faceCentres(nonEmptyCells == 0).Centroid), repmat(-cellHeight/4, sum(nonEmptyCells == 0), 1));
+% X = vertcat(X, XgBoundary_1, XgBoundary_2);
 
-X = vertcat(X, XgBoundary_1, XgBoundary_2);
 
-totalRegularCells = sum(nonEmptyCells);
-%xInternal = find(nonEmptyCells);
-%XgID = horzcat(find(nonEmptyCells == 0)', (length(faceCentres)+1):size(X, 1));
-xInternal = 1:totalRegularCells;
-XgID = horzcat(find(nonEmptyCells == 0)', (totalRegularCells+1):size(X, 1));
+% Difference cell nodes and ghost nodes
+xInternal = find(nonEmptyCells);
+XgID = horzcat(find(nonEmptyCells == 0)', (length(faceCentres)+1):size(X, 1));
+% totalRegularCells = sum(nonEmptyCells);
+% xInternal = 1:totalRegularCells;
+% XgID = (totalRegularCells+1):size(X, 1);
+
+% Centre Nodal position at (0,0)
+X(:,1)=X(:,1)-mean(X(:,1));
+X(:,2)=X(:,2)-mean(X(:,2));
+X(:,3)=X(:,3)-mean(X(:,3));
 
 %% Create tetrahedra
-tetrahedraConn = delaunayTriangulation(X);
-Twg = tetrahedraConn.ConnectivityList;
+
+% Initial 2D delaunay between cell nodes
 delaunay2D_real = delaunayTriangulation(vertcat(faceCentres.Centroid), neighboursNetwork);
 realConnectivity = sort(delaunay2D_real.ConnectivityList, 2);
 
-delaunay2D_artificial = delaunayTriangulation(vertcat(faceCentres.Centroid));
-artificialConnectivity = sort(delaunay2D_artificial.ConnectivityList, 2);
+% Add connections between real nodes and ghost cells
+% Relationships: 1 ghost node, three cell nodes
 
+
+% Relationships: 2 ghost nodes, two cell nodes
+
+
+% Relationships: 1 cell node and 3 ghost nodes
+
+
+%% Filtering of unnecessary nodes
 % Remove Ghost tets 
 Twg(all(ismember(Twg,XgID),2),:)=[];
-
-% %% Fix tetrhaedra with labelled img neighbours
-% % Consider connections from internal cells instead of delaunay created ones
-% 
-% % Relationships: 1 ghost cell, three regular cells
-% threeRegCellsTw = sort(Twg(sum(ismember(Twg, neighboursNetwork), 2) == 3, :), 2);
-% toBeFixed_threeRegCellsTw = threeRegCellsTw(ismember(threeRegCellsTw(:, 1:3), realConnectivity, 'rows') == 0, :);
-% correct_triangles = realConnectivity(ismember(realConnectivity, threeRegCellsTw(:, 1:3), 'rows') == 0, :);
-% 
-% triplot(correct_triangles)
-% 
-% % Relationships: 2 ghost cells, two regular cells
-% twoRegCellsTw = sort(Twg(sum(ismember(Twg, neighboursNetwork), 2) == 2, :), 2);
-% 
-% 
-% 
-% % Relationships: check incongruencies with 1 regular cell and 3 ghost cells
-% Twg(sum(ismember(Twg, neighboursNetwork), 2) == 1, :)
-% 
-% %%%% PODRIAN APARECER TETRAHEDRONS QUE OVERLAPEN, QUIZAS LOS TETRAHEDROS
-% %%%% TAMBIEN NECESITAN SER AJUSTADOS CUANDO SE REEMPLACEN LAS CONEXIONES.
-% %%%% LO QUE HAY QUE HACER ES INTERCAMBIAR OTRO BOUNDARY NODE (EL MAS
-% %%%% CERCANO) CUANDO CAMBIEMOS VECINOS.
 
 % Remove addition nodes- not used
 newTwg=zeros(size(Twg));
@@ -142,24 +138,26 @@ aux2=1;
 aux3=1;
 for i=1:size(X,1)
     if ismember(i,Twg)
-       newTwg(ismember(Twg,i))=aux2;
-       newX(aux2,:)=X(i,:);
-       aux1(i)=aux2;
-       if ismember(i,XgID)
-           newXgID(aux3)=aux2;
-           aux3=aux3+1;
-       end 
-       aux2=aux2+1;
-    end 
-end 
+        newTwg(ismember(Twg,i))=aux2;
+        newX(aux2,:)=X(i,:);
+        aux1(i)=aux2;
+        if ismember(i,XgID)
+            newXgID(aux3)=aux2;
+            aux3=aux3+1;
+        end
+        aux2=aux2+1;
+    end
+end
 X=newX(1:aux2-1,:);
 XgID=newXgID(1:aux3-1);
 Twg=newTwg;
 
-Y=GetYFromX(X,XgID,Twg,cellHeight);
+% Y_new=GetYFromX(X,XgID,Twg,cellHeight);
+% Y=DynamicArray(ceil(size(Y_new,1)*1.5),size(Y_new,2));
+% Y=Y.Add(Y_new);
 
 %% Create cells
-[Cv,Cell,SharedFaces]=BuildCells(Twg,Y,X,xInternal, cellHeight);
+[Cv,Cell,Faces]=BuildCells(Twg,Y,X,xInternal, cellHeight);
 
 
 Set.NumMainV=Y.n;

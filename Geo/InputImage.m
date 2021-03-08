@@ -15,6 +15,15 @@ ratio = 5;
 [imgNeighbours] = calculateNeighbours(labelledImg, ratio);
 [ verticesInfo ] = calculateVertices( labelledImg, imgNeighbours, ratio);
 
+neighboursNetwork = [];
+
+for numCell = 1:length(imgNeighbours)
+    currentNeighbours = imgNeighbours{numCell};
+    currentCellNeighbours = [ones(length(currentNeighbours), 1) * numCell, currentNeighbours];
+    
+    neighboursNetwork = vertcat(neighboursNetwork, currentCellNeighbours);
+end
+
 faceCentres = regionprops(labelledImg, 'centroid');
 
 totalCells = max(verticesInfo.connectedCells(:));
@@ -65,26 +74,26 @@ Y = Y.Add([vertex2D, repmat(-cellHeight/2, size(vertex2D, 1), 1)]);
 % Cell nodes:
 % x,y: centroidsOfCells; z: 0
 nonEmptyCells = cellfun(@isempty, verticesInfo.edges) == 0;
-totalRegularCells = sum(nonEmptyCells);
-xInternal = 1:totalRegularCells;
-X = horzcat(vertcat(faceCentres(nonEmptyCells).Centroid), zeros(totalRegularCells, 1));
+
+xInternal = find(nonEmptyCells);
+X = horzcat(vertcat(faceCentres.Centroid), zeros(length(faceCentres), 1));
 
 % Ghost nodes:
 % Above vertices (including faces) of top and bottom
-XgTopFaceCentre = horzcat(vertcat(faceCentres(nonEmptyCells).Centroid), repmat(cellHeight, sum(nonEmptyCells), 1));
-XgBottomFaceCentre = horzcat(vertcat(faceCentres(nonEmptyCells).Centroid), repmat(-cellHeight, sum(nonEmptyCells), 1));
+XgTopFaceCentre = horzcat(vertcat(faceCentres.Centroid), repmat(cellHeight, length(faceCentres), 1));
+XgBottomFaceCentre = horzcat(vertcat(faceCentres.Centroid), repmat(-cellHeight, length(faceCentres), 1));
 XgTopVertices = [vertex2D, repmat(cellHeight, size(vertex2D, 1), 1)];
 XgBottomVertices = [vertex2D, repmat(-cellHeight, size(vertex2D, 1), 1)];
 X = vertcat(X, XgBottomFaceCentre, XgBottomVertices, XgTopFaceCentre, XgTopVertices);
 
 % Lateral boundary ghost cells
-XgBoundary_1 = horzcat(vertcat(faceCentres(nonEmptyCells == 0).Centroid), zeros(sum(nonEmptyCells == 0), 1));
-XgBoundary_2 = horzcat(vertcat(faceCentres(nonEmptyCells == 0).Centroid), repmat(cellHeight/4, sum(nonEmptyCells == 0), 1));
-XgBoundary_3 = horzcat(vertcat(faceCentres(nonEmptyCells == 0).Centroid), repmat(-cellHeight/4, sum(nonEmptyCells == 0), 1));
+XgBoundary_1 = horzcat(vertcat(faceCentres(nonEmptyCells == 0).Centroid), repmat(cellHeight/4, sum(nonEmptyCells == 0), 1));
+XgBoundary_2 = horzcat(vertcat(faceCentres(nonEmptyCells == 0).Centroid), repmat(-cellHeight/4, sum(nonEmptyCells == 0), 1));
 
-X = vertcat(X, XgBoundary_1, XgBoundary_2, XgBoundary_3);
+X = vertcat(X, XgBoundary_1, XgBoundary_2);
 
-XgID = (totalRegularCells+1):size(X, 1);
+totalRegularCells = sum(nonEmptyCells);
+XgID = horzcat(find(nonEmptyCells == 0)', (totalRegularCells+1):size(X, 1));
 
 %% Create tetrahedra
 Twg=delaunay(X);

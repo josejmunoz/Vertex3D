@@ -1,4 +1,4 @@
-function [] = InputImage(inputFile, cellHeight)
+function [X,Y,Yt,T,XgID,Cell,Faces,Cn,Cv,Yn,SCn,Set] = InputImage(inputFile, cellHeight, Set)
 %INPUTIMAGE Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -93,16 +93,42 @@ XgBoundary_2 = horzcat(vertcat(faceCentres(nonEmptyCells == 0).Centroid), repmat
 X = vertcat(X, XgBoundary_1, XgBoundary_2);
 
 totalRegularCells = sum(nonEmptyCells);
-XgID = horzcat(find(nonEmptyCells == 0)', (totalRegularCells+1):size(X, 1));
+XgID = horzcat(find(nonEmptyCells == 0)', (length(faceCentres)+1):size(X, 1));
 
 %% Create tetrahedra
-Twg=delaunay(X);
+tetrahedraConn = delaunayTriangulation(X);
+Twg = tetrahedraConn.ConnectivityList;
+delaunay2D_real = delaunayTriangulation(vertcat(faceCentres.Centroid), neighboursNetwork);
+realConnectivity = sort(delaunay2D_real.ConnectivityList, 2);
+
+delaunay2D_artificial = delaunayTriangulation(vertcat(faceCentres.Centroid));
+artificialConnectivity = sort(delaunay2D_artificial.ConnectivityList, 2);
 
 % Remove Ghost tets 
 Twg(all(ismember(Twg,XgID),2),:)=[];
 
-% Remove connection from internal cells centroids and add the correct ones
-% (from verticesInfo.connectedCells)
+% %% Fix tetrhaedra with labelled img neighbours
+% % Consider connections from internal cells instead of delaunay created ones
+% 
+% % Relationships: 1 ghost cell, three regular cells
+% threeRegCellsTw = sort(Twg(sum(ismember(Twg, neighboursNetwork), 2) == 3, :), 2);
+% toBeFixed_threeRegCellsTw = threeRegCellsTw(ismember(threeRegCellsTw(:, 1:3), realConnectivity, 'rows') == 0, :);
+% correct_triangles = realConnectivity(ismember(realConnectivity, threeRegCellsTw(:, 1:3), 'rows') == 0, :);
+% 
+% triplot(correct_triangles)
+% 
+% % Relationships: 2 ghost cells, two regular cells
+% twoRegCellsTw = sort(Twg(sum(ismember(Twg, neighboursNetwork), 2) == 2, :), 2);
+% 
+% 
+% 
+% % Relationships: check incongruencies with 1 regular cell and 3 ghost cells
+% Twg(sum(ismember(Twg, neighboursNetwork), 2) == 1, :)
+% 
+% %%%% PODRIAN APARECER TETRAHEDRONS QUE OVERLAPEN, QUIZAS LOS TETRAHEDROS
+% %%%% TAMBIEN NECESITAN SER AJUSTADOS CUANDO SE REEMPLACEN LAS CONEXIONES.
+% %%%% LO QUE HAY QUE HACER ES INTERCAMBIAR OTRO BOUNDARY NODE (EL MAS
+% %%%% CERCANO) CUANDO CAMBIEMOS VECINOS.
 
 % Remove addition nodes- not used
 newTwg=zeros(size(Twg));
@@ -126,10 +152,39 @@ end
 X=newX(1:aux2-1,:);
 XgID=newXgID(1:aux3-1);
 Twg=newTwg;
-% Keep only nodes-ghost, the others are already from verticesInfo
 
 %% Create cells
-[Cv,Cell,SharedFaces]=BuildCells(Twg,Y,X,xInternal,H);
+[Cv,Cell,SharedFaces]=BuildCells(Twg,Y,X,xInternal, cellHeight);
+
+
+Set.NumMainV=Y.n;
+Set.NumAuxV=Cell.FaceCentres.n;
+Set.NumTotalV=Set.NumMainV+Set.NumAuxV;
+Cn=BuildCn(Twg);
+
+Faces=Faces.ComputeAreaTri(Y.DataRow,Cell.FaceCentres.DataRow);
+Faces=Faces.CheckInteriorFaces(XgID);
+
+Yn=Y;
+SCn=Cell.FaceCentres;
+Yt=[Y.DataOrdered ;Cell.FaceCentres.DataOrdered];
+
+T=DynamicArray(ceil(size(Twg,1)*1.5),size(Twg,2));
+T=T.Add(Twg);
+
+
+% Regularize small Triangles (Uncomment this line if there are very small triangles in the initial mesh)
+% [Y,Cell,Faces,Yn,SCn]=RegularizeMesh(Y,Cell,Faces,Set,Yn,SCn);
+
+
+Set.BarrierTri0=realmax; 
+for i=1:Cell.n
+    Set.BarrierTri0=min([Cell.SAreaTri{i}; Set.BarrierTri0]);
+end
+Set.BarrierTri0=Set.BarrierTri0/10;
+
+
+[Cell,Faces,Y]=CheckOrderingOfTriangulaiton(Cell,Faces,Y,Set);
 
 %%%%% Go again to notes to see if anything is missing
 

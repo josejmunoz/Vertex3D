@@ -75,8 +75,8 @@ Y = Y.Add([vertex2D, repmat(-cellHeight/2, size(vertex2D, 1), 1)]);
 % x,y: centroidsOfCells; z: 0
 nonEmptyCells = cellfun(@isempty, verticesInfo.edges) == 0;
 
-xInternal = find(nonEmptyCells);
-X = horzcat(vertcat(faceCentres.Centroid), zeros(length(faceCentres), 1));
+totalRegularCells = sum(nonEmptyCells);
+X = horzcat(vertcat(faceCentres(nonEmptyCells).Centroid), zeros(totalRegularCells, 1));
 
 % Ghost nodes:
 % Above vertices (including faces) of top and bottom
@@ -93,7 +93,10 @@ XgBoundary_2 = horzcat(vertcat(faceCentres(nonEmptyCells == 0).Centroid), repmat
 X = vertcat(X, XgBoundary_1, XgBoundary_2);
 
 totalRegularCells = sum(nonEmptyCells);
-XgID = horzcat(find(nonEmptyCells == 0)', (length(faceCentres)+1):size(X, 1));
+%xInternal = find(nonEmptyCells);
+%XgID = horzcat(find(nonEmptyCells == 0)', (length(faceCentres)+1):size(X, 1));
+xInternal = 1:totalRegularCells;
+XgID = horzcat(find(nonEmptyCells == 0)', (totalRegularCells+1):size(X, 1));
 
 %% Create tetrahedra
 tetrahedraConn = delaunayTriangulation(X);
@@ -152,6 +155,8 @@ end
 X=newX(1:aux2-1,:);
 XgID=newXgID(1:aux3-1);
 Twg=newTwg;
+
+Y=GetYFromX(X,XgID,Twg,cellHeight);
 
 %% Create cells
 [Cv,Cell,SharedFaces]=BuildCells(Twg,Y,X,xInternal, cellHeight);

@@ -92,6 +92,8 @@ XgBottomVertices = [vertex2D, repmat(-cellHeight, size(vertex2D, 1), 1)];
 
 X_bottomNodes = vertcat(XgBottomFaceCentre, XgBottomVertices);
 X_bottomIds = size(X, 1) + 1: size(X, 1) + size(X_bottomNodes, 1);
+X_bottomFaceIds = X_bottomIds(1:size(XgBottomFaceCentre, 1));
+X_bottomVerticesIds = X_bottomIds(size(XgBottomFaceCentre, 1)+1:end);
 X = vertcat(X, X_bottomNodes);
 
 X_topNodes = vertcat(XgTopFaceCentre, XgTopVertices);
@@ -118,30 +120,8 @@ XgID = horzcat(find(nonEmptyCells == 0)', (length(faceCentres)+1):size(X, 1));
 % X(:,3)=X(:,3)-mean(X(:,3));
 
 %% Create tetrahedra
-
-% Initial 2D delaunay between cell nodes
-delaunay2D_real = delaunayTriangulation(X(1:length(faceCentres), 1:2), neighboursNetwork);
-trianglesConnectivity = delaunay2D_real.ConnectivityList;
-
-% Add connections between real nodes and ghost cells
-% Relationships: 1 ghost node, three cell nodes
-verticesTriangles_1 = X(trianglesConnectivity(:, 1), :);
-verticesTriangles_2 = X(trianglesConnectivity(:, 2), :);
-verticesTriangles_3 = X(trianglesConnectivity(:, 3), :);
-meanTriangles = arrayfun(@(x, y, z) mean([x, y, z]), verticesTriangles_1, verticesTriangles_2, verticesTriangles_3);
-
-[~, indices] = pdist2(X_topNodes, meanTriangles, 'euclidean', 'smallest', 1);
-Twg = horzcat(trianglesConnectivity, X_topIds(indices)');
-
-[~, indices] = pdist2(X_bottomNodes, meanTriangles, 'euclidean', 'smallest', 1);
-Twg = [Twg; horzcat(trianglesConnectivity, X_bottomIds(indices)')];
-
-indices
-% Relationships: 2 ghost nodes, two cell nodes
-
-
-% Relationships: 1 cell node and 3 ghost nodes
-
+trianglesConnectivity = verticesInfo.connectedCells;
+[Twg] = createTetrahedra(trianglesConnectivity, neighboursNetwork, X, xInternal, X_bottomFaceIds, X_bottomVerticesIds);
 
 %% Filtering of unnecessary nodes
 % Remove Ghost tets 

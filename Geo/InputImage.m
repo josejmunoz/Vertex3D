@@ -34,17 +34,12 @@ for numCell = 1:totalCells
 end
 
 neighboursNetwork = [];
-verticesNodesNetwork =[];
 
 for numCell = 1:length(imgNeighbours)
     currentNeighbours = imgNeighbours{numCell};
     currentCellNeighbours = [ones(length(currentNeighbours), 1) * numCell, currentNeighbours];
     
     neighboursNetwork = vertcat(neighboursNetwork, currentCellNeighbours);
-    
-    % First column: currentCell; Second column: vertex index;
-    currentVerticesOfCell = [ones(length(verticesInfo.PerCell{numCell}), 1) * numCell, verticesInfo.PerCell{numCell}];
-    verticesNodesNetwork = vertcat(verticesNodesNetwork, currentVerticesOfCell);
 end
 
 % figure, imshow(labelledImg, colorcube(600))
@@ -103,6 +98,8 @@ X = vertcat(X, X_bottomNodes);
 
 X_topNodes = vertcat(XgTopFaceCentre, XgTopVertices);
 X_topIds = size(X, 1) + 1: size(X, 1) + size(X_topNodes, 1);
+X_topFaceIds = X_topIds(1:size(XgTopFaceCentre, 1));
+X_topVerticesIds = X_topIds(size(XgTopFaceCentre, 1)+1:end);
 X = vertcat(X, X_topNodes);
 
 
@@ -126,7 +123,10 @@ XgID = horzcat(find(nonEmptyCells == 0)', (length(faceCentres)+1):size(X, 1));
 
 %% Create tetrahedra
 trianglesConnectivity = verticesInfo.connectedCells;
-[Twg] = createTetrahedra(trianglesConnectivity, neighboursNetwork, verticesNodesNetwork, X, xInternal, X_bottomNodes, X_bottomFaceIds, X_bottomVerticesIds);
+[Twg_bottom] = createTetrahedra(trianglesConnectivity, neighboursNetwork, verticesInfo.edges, X, xInternal, X_bottomNodes, X_bottomFaceIds, X_bottomVerticesIds);
+[Twg_top] = createTetrahedra(trianglesConnectivity, neighboursNetwork, verticesInfo.edges, X, xInternal, X_topNodes, X_topFaceIds, X_topVerticesIds);
+
+Twg = vertcat(Twg_top, Twg_bottom);
 
 %% Filtering of unnecessary nodes
 % Remove Ghost tets 
@@ -155,7 +155,7 @@ X=newX(1:aux2-1,:);
 XgID=newXgID(1:aux3-1);
 Twg=newTwg;
 
-% Y_new=GetYFromX(X,XgID,Twg,cellHeight);
+Y_new=GetYFromX(X,XgID,Twg,cellHeight);
 % Y=DynamicArray(ceil(size(Y_new,1)*1.5),size(Y_new,2));
 % Y=Y.Add(Y_new);
 

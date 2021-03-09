@@ -1,8 +1,8 @@
-function [Twg] = createTetrahedra(trianglesConnectivity, neighboursNetwork, verticesNodesNetwork, X, xInternal, X_bottomNodes, X_bottomFaceIds, X_bottomVerticesIds)
+function [Twg] = createTetrahedra(trianglesConnectivity, neighboursNetwork, edgesOfVertices, X, xInternal, X_Nodes, X_FaceIds, X_VerticesIds)
 %CREATETETRAHEDRA Add connections between real nodes and ghost cells
 %   Detailed explanation goes here
 
-X_bottomIds = [X_bottomFaceIds, X_bottomVerticesIds];
+X_Ids = [X_FaceIds, X_VerticesIds];
 
 % Relationships: 1 ghost node, three cell nodes
 verticesTriangles_1 = X(trianglesConnectivity(:, 1), :);
@@ -10,12 +10,12 @@ verticesTriangles_2 = X(trianglesConnectivity(:, 2), :);
 verticesTriangles_3 = X(trianglesConnectivity(:, 3), :);
 meanTriangles = arrayfun(@(x, y, z) mean([x, y, z]), verticesTriangles_1, verticesTriangles_2, verticesTriangles_3);
 
-[~, indices] = pdist2(X_bottomNodes, meanTriangles, 'euclidean', 'smallest', 1);
-Twg = horzcat(trianglesConnectivity, X_bottomIds(indices)');
+[~, indices] = pdist2(X_Nodes, meanTriangles, 'euclidean', 'smallest', 1);
+Twg = horzcat(trianglesConnectivity, X_Ids(indices)');
 
 % Relationships: 2 ghost nodes, two cell nodes
 % two of the previous ones go with 
-Twg_sorted = sort(Twg(any(ismember(Twg, X_bottomIds), 2), :), 2);
+Twg_sorted = sort(Twg(any(ismember(Twg, X_Ids), 2), :), 2);
 internalNeighbourNetwork = neighboursNetwork(any(ismember(neighboursNetwork, xInternal), 2), :);
 internalNeighbourNetwork = unique(sort(internalNeighbourNetwork, 2), 'rows');
 
@@ -37,13 +37,14 @@ Twg = [Twg; newAdditions];
 newAdditions = [];
 
 % Cells and faces share the same order of Ids
-for numCell = xInternal
-     faceId = X_bottomFaceIds(numCell);
-     verticesToConnect = verticesNodesNetwork(verticesNodesNetwork(:, 1) == numCell, 2);
+for numCell = xInternal'
+     faceId = X_FaceIds(numCell);
+     verticesToConnect = edgesOfVertices{numCell};
+     verticesToConnect = verticesToConnect(1:end-1, :);
      
-     newAdditions = [newAdditions; [numCell, faceId]];
+     newAdditions = [newAdditions; repmat([numCell, faceId], size(verticesToConnect, 1), 1), X_VerticesIds(verticesToConnect)];
 end
 
-
+Twg = [Twg; newAdditions];
 end
 

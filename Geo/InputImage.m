@@ -16,6 +16,7 @@ ratio = 5;
 [ verticesInfo ] = calculateVertices( labelledImg, imgNeighbours, ratio);
 
 faceCentres = regionprops(labelledImg, 'centroid');
+faceCentresVertices = fliplr(vertcat(faceCentres.Centroid));
 
 totalCells = max(verticesInfo.connectedCells(:));
 verticesInfo.PerCell = cell(totalCells, 1);
@@ -45,6 +46,7 @@ end
 % figure, imshow(labelledImg, colorcube(600))
 % hold on;
 % for numVertex = 1:size(verticesInfo.location, 1)
+%     plot(round(faceCentresVertices(numVertex, 2)), round(faceCentresVertices(numVertex, 1)), 'bo');
 %     plot(round(verticesInfo.location(numVertex, 2)), round(verticesInfo.location(numVertex, 1)), 'rx');
 %     hold on;
 % end
@@ -76,17 +78,17 @@ Y = Y.Add([vertex2D, repmat(-cellHeight/2, size(vertex2D, 1), 1)]);
 nonEmptyCells = cellfun(@isempty, verticesInfo.edges) == 0;
 
 nonEmptyCells = zeros(size(nonEmptyCells)) == 1;
-cellIdsAsInternal = findCentralCells(vertcat(faceCentres.Centroid), 10);
+cellIdsAsInternal = findCentralCells(faceCentresVertices, 10);
 nonEmptyCells(cellIdsAsInternal) = 1;
 
 totalRegularCells = sum(nonEmptyCells);
 
-X = horzcat(vertcat(faceCentres.Centroid), zeros(size(nonEmptyCells)));
+X = horzcat(faceCentresVertices, zeros(size(nonEmptyCells)));
 
 % Ghost nodes:
 % Above vertices (including faces) of top and bottom
-XgTopFaceCentre = horzcat(vertcat(faceCentres.Centroid), repmat(cellHeight, length(faceCentres), 1));
-XgBottomFaceCentre = horzcat(vertcat(faceCentres.Centroid), repmat(-cellHeight, length(faceCentres), 1));
+XgTopFaceCentre = horzcat(faceCentresVertices, repmat(cellHeight, length(faceCentresVertices), 1));
+XgBottomFaceCentre = horzcat(faceCentresVertices, repmat(-cellHeight, length(faceCentresVertices), 1));
 XgTopVertices = [vertex2D, repmat(cellHeight, size(vertex2D, 1), 1)];
 XgBottomVertices = [vertex2D, repmat(-cellHeight, size(vertex2D, 1), 1)];
 
@@ -111,7 +113,7 @@ X = vertcat(X, X_topNodes);
 
 % Difference cell nodes and ghost nodes
 xInternal = find(nonEmptyCells);
-XgID = horzcat(find(nonEmptyCells == 0)', (length(faceCentres)+1):size(X, 1));
+XgID = horzcat(find(nonEmptyCells == 0)', (length(faceCentresVertices)+1):size(X, 1));
 % totalRegularCells = sum(nonEmptyCells);
 % xInternal = 1:totalRegularCells;
 % XgID = (totalRegularCells+1):size(X, 1);
@@ -160,6 +162,7 @@ Y=DynamicArray(ceil(size(Y_new,1)*1.5),size(Y_new,2));
 Y=Y.Add(Y_new);
 
 %% Create cells
+xInternal = xInternal';
 [Cv,Cell,Faces]=BuildCells(Twg,Y,X,xInternal, cellHeight);
 
 

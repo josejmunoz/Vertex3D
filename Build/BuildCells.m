@@ -20,7 +20,7 @@ SharedFaces = FacesClass(size(X,1)*4);
 numFaceCentresFaces=1; % counter for the number of FaceCentres / faces;
 numTotalSurfsTris=0; % counter for total number of SurfsTris
 
-Includedx=false(size(Cell.Int,2),1);
+Includedx=false(size(Cell.Int, 2),1);
 %% Build Interior Cells
 for i=1:length(Cell.Int) % loop over  Interior cells
     Includedx(i)=true;

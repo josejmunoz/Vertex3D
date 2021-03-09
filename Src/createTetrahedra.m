@@ -40,7 +40,6 @@ newAdditions = [];
 for numCell = xInternal'
      faceId = X_FaceIds(numCell);
      verticesToConnect = edgesOfVertices{numCell};
-     verticesToConnect = verticesToConnect(1:end-1, :);
      
      newAdditions = [newAdditions; repmat([numCell, faceId], size(verticesToConnect, 1), 1), X_VerticesIds(verticesToConnect)];
 end

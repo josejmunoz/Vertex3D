@@ -249,7 +249,7 @@ classdef CellClass
             for numCell=1:obj.n
                 currentEdgesOfCell = obj.Cv{numCell};
                 uniqueCurrentVertices = unique(currentEdgesOfCell(currentEdgesOfCell > 0));
-                remainingEdges = vertcat(obj.Cv{setdiff(obj.Int, numCell)});
+                remainingEdges = vertcat(obj.Cv{setdiff(1:obj.n, numCell)});
                 uniqueRemainingEdges = unique(remainingEdges(remainingEdges > 0));
 
                 sharedVertices = uniqueCurrentVertices(ismember(uniqueCurrentVertices, uniqueRemainingEdges));

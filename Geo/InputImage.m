@@ -132,32 +132,32 @@ Twg = vertcat(Twg_top, Twg_bottom);
 % Remove Ghost tets 
 Twg(all(ismember(Twg,XgID),2),:)=[];
 
-% Remove addition nodes- not used
-newTwg=zeros(size(Twg));
-newX=zeros(size(X));
-newXgID=zeros(size(X,1),1);
-aux1=zeros(size(X,1),1);
-aux2=1;
-aux3=1;
-for i=1:size(X,1)
-    if ismember(i,Twg)
-        newTwg(ismember(Twg,i))=aux2;
-        newX(aux2,:)=X(i,:);
-        aux1(i)=aux2;
-        if ismember(i,XgID)
-            newXgID(aux3)=aux2;
-            aux3=aux3+1;
-        end
-        aux2=aux2+1;
-    end
-end
-X=newX(1:aux2-1,:);
-XgID=newXgID(1:aux3-1);
-Twg=newTwg;
+% % Remove addition nodes- not used
+% newTwg=zeros(size(Twg));
+% newX=zeros(size(X));
+% newXgID=zeros(size(X,1),1);
+% aux1=zeros(size(X,1),1);
+% aux2=1;
+% aux3=1;
+% for i=1:size(X,1)
+%     if ismember(i,Twg)
+%         newTwg(ismember(Twg,i))=aux2;
+%         newX(aux2,:)=X(i,:);
+%         aux1(i)=aux2;
+%         if ismember(i,XgID)
+%             newXgID(aux3)=aux2;
+%             aux3=aux3+1;
+%         end
+%         aux2=aux2+1;
+%     end
+% end
+% X=newX(1:aux2-1,:);
+% XgID=newXgID(1:aux3-1);
+% Twg=newTwg;
 
 Y_new=GetYFromX(X,XgID,Twg,cellHeight);
-% Y=DynamicArray(ceil(size(Y_new,1)*1.5),size(Y_new,2));
-% Y=Y.Add(Y_new);
+Y=DynamicArray(ceil(size(Y_new,1)*1.5),size(Y_new,2));
+Y=Y.Add(Y_new);
 
 %% Create cells
 [Cv,Cell,Faces]=BuildCells(Twg,Y,X,xInternal, cellHeight);

@@ -15,15 +15,6 @@ ratio = 5;
 [imgNeighbours] = calculateNeighbours(labelledImg, ratio);
 [ verticesInfo ] = calculateVertices( labelledImg, imgNeighbours, ratio);
 
-neighboursNetwork = [];
-
-for numCell = 1:length(imgNeighbours)
-    currentNeighbours = imgNeighbours{numCell};
-    currentCellNeighbours = [ones(length(currentNeighbours), 1) * numCell, currentNeighbours];
-    
-    neighboursNetwork = vertcat(neighboursNetwork, currentCellNeighbours);
-end
-
 faceCentres = regionprops(labelledImg, 'centroid');
 
 totalCells = max(verticesInfo.connectedCells(:));
@@ -40,6 +31,20 @@ for numCell = 1:totalCells
     if size(verticesInfo.edges{numCell, 1}, 1) < length(imgNeighbours{numCell})
         verticesInfo.edges{numCell, 1} = [];
     end
+end
+
+neighboursNetwork = [];
+verticesNodesNetwork =[];
+
+for numCell = 1:length(imgNeighbours)
+    currentNeighbours = imgNeighbours{numCell};
+    currentCellNeighbours = [ones(length(currentNeighbours), 1) * numCell, currentNeighbours];
+    
+    neighboursNetwork = vertcat(neighboursNetwork, currentCellNeighbours);
+    
+    % First column: currentCell; Second column: vertex index;
+    currentVerticesOfCell = [ones(length(verticesInfo.PerCell{numCell}), 1) * numCell, verticesInfo.PerCell{numCell}];
+    verticesNodesNetwork = vertcat(verticesNodesNetwork, currentVerticesOfCell);
 end
 
 % figure, imshow(labelledImg, colorcube(600))
@@ -121,7 +126,7 @@ XgID = horzcat(find(nonEmptyCells == 0)', (length(faceCentres)+1):size(X, 1));
 
 %% Create tetrahedra
 trianglesConnectivity = verticesInfo.connectedCells;
-[Twg] = createTetrahedra(trianglesConnectivity, neighboursNetwork, X, xInternal, X_bottomFaceIds, X_bottomVerticesIds);
+[Twg] = createTetrahedra(trianglesConnectivity, neighboursNetwork, verticesNodesNetwork, X, xInternal, X_bottomNodes, X_bottomFaceIds, X_bottomVerticesIds);
 
 %% Filtering of unnecessary nodes
 % Remove Ghost tets 

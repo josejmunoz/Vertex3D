@@ -3,8 +3,10 @@ function [Twg] = createTetrahedra(trianglesConnectivity, neighboursNetwork, edge
 %   Detailed explanation goes here
 
 X_Ids = [X_FaceIds, X_VerticesIds];
+Twg = [];
 
-% Relationships: 1 ghost node, three cell nodes
+% Relationships: 1 ghost node, three cell nodes - NOT added to the final
+% tetrahedra
 verticesTriangles_1 = X(trianglesConnectivity(:, 1), :);
 verticesTriangles_2 = X(trianglesConnectivity(:, 2), :);
 verticesTriangles_3 = X(trianglesConnectivity(:, 3), :);
@@ -12,6 +14,7 @@ meanTriangles = arrayfun(@(x, y, z) mean([x, y, z]), verticesTriangles_1, vertic
 
 [~, indices] = pdist2(X_Nodes, meanTriangles, 'euclidean', 'smallest', 1);
 Twg = horzcat(trianglesConnectivity, X_Ids(indices)');
+
 
 % Relationships: 2 ghost nodes, two cell nodes
 % two of the previous ones go with 
@@ -28,7 +31,8 @@ for numPair = 1:size(internalNeighbourNetwork, 1)
     end
 end
 
-Twg = [Twg; newAdditions];
+%Twg = [Twg; newAdditions];
+Twg = newAdditions;
 
 % Relationships: 1 cell node and 3 ghost nodes
 % These are the ones are with the face ghost cell on top and bottom
@@ -44,6 +48,7 @@ for numCell = xInternal'
      newAdditions = [newAdditions; repmat([numCell, faceId], size(verticesToConnect, 1), 1), X_VerticesIds(verticesToConnect)];
 end
 
+%Twg = newAdditions;
 Twg = [Twg; newAdditions];
 end
 

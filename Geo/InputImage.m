@@ -52,26 +52,6 @@ end
 % end
 % figure, imshow(ismember(labelledImg, find(cellfun(@isempty, verticesInfo.edges) == 0)).*labelledImg, colorcube(600))
 
-%% Create vertices Y
-Y=DynamicArray(size(verticesInfo.location, 1)*3, 3);
-
-% Top vertices:
-% x,y: imgNeighbours; z:cellHeight/2
-vertex2D = verticesInfo.location;
-Y = Y.Add([vertex2D, repmat(cellHeight/2, size(vertex2D, 1), 1)]);
-
-% Bottom vertices:
-% x,y: imgNeighbours; z:-cellHeight/2
-Y = Y.Add([vertex2D, repmat(-cellHeight/2, size(vertex2D, 1), 1)]);
-
-% % Vertices of faces in depth:
-% % x,y: mean([vertex1, vertex2], [], 2); z: 0
-% allEdges = vertcat(verticesInfo.edges{:});
-% allEdgesVertices = verticesInfo.location(allEdges, :);
-% allEdgesVertices = round(horzcat(mean(horzcat(allEdgesVertices(1:2:size(allEdgesVertices, 1), 1), allEdgesVertices(2:2:size(allEdgesVertices, 1), 1)), 2), mean(horzcat(allEdgesVertices(1:2:size(allEdgesVertices, 1), 2), allEdgesVertices(2:2:size(allEdgesVertices, 1), 2)), 2)));
-% Y = Y.Add([allEdgesVertices, zeros(size(allEdgesVertices, 1), 1)]);
-
-
 %% Create nodes X from Y
 % Cell nodes:
 % x,y: centroidsOfCells; z: 0
@@ -84,6 +64,8 @@ nonEmptyCells(cellIdsAsInternal) = 1;
 totalRegularCells = sum(nonEmptyCells);
 
 X = horzcat(faceCentresVertices, zeros(size(nonEmptyCells)));
+
+vertex2D = verticesInfo.location;
 
 % Ghost nodes:
 % Above vertices (including faces) of top and bottom
@@ -117,11 +99,6 @@ XgID = horzcat(find(nonEmptyCells == 0)', (length(faceCentresVertices)+1):size(X
 % totalRegularCells = sum(nonEmptyCells);
 % xInternal = 1:totalRegularCells;
 % XgID = (totalRegularCells+1):size(X, 1);
-
-% Centre Nodal position at (0,0)
-% X(:,1)=X(:,1)-mean(X(:,1));
-% X(:,2)=X(:,2)-mean(X(:,2));
-% X(:,3)=X(:,3)-mean(X(:,3));
 
 %% Create tetrahedra
 trianglesConnectivity = verticesInfo.connectedCells;
@@ -157,9 +134,43 @@ Twg(all(ismember(Twg,XgID),2),:)=[];
 % XgID=newXgID(1:aux3-1);
 % Twg=newTwg;
 
-Y_new=GetYFromX(X,XgID,Twg,cellHeight);
+%Centre Nodal position at (0,0)
+X(:,1)=X(:,1)-mean(X(:,1));
+X(:,2)=X(:,2)-mean(X(:,2));
+X(:,3)=X(:,3)-mean(X(:,3));
+
+%% Create vertices Y
+Y=DynamicArray(size(verticesInfo.location, 1)*3, 3);
+
+% Top vertices:
+% x,y: imgNeighbours; z:cellHeight/2
+Y = Y.Add([vertex2D, repmat(cellHeight/2, size(vertex2D, 1), 1)]);
+
+% Bottom vertices:
+% x,y: imgNeighbours; z:-cellHeight/2
+Y = Y.Add([vertex2D, repmat(-cellHeight/2, size(vertex2D, 1), 1)]);
+
+% % Vertices of faces in depth:
+% % x,y: mean([vertex1, vertex2], [], 2); z: 0
+% allEdges = vertcat(verticesInfo.edges{:});
+% allEdgesVertices = verticesInfo.location(allEdges, :);
+% allEdgesVertices = round(horzcat(mean(horzcat(allEdgesVertices(1:2:size(allEdgesVertices, 1), 1), allEdgesVertices(2:2:size(allEdgesVertices, 1), 1)), 2), mean(horzcat(allEdgesVertices(1:2:size(allEdgesVertices, 1), 2), allEdgesVertices(2:2:size(allEdgesVertices, 1), 2)), 2)));
+% Y = Y.Add([allEdgesVertices, zeros(size(allEdgesVertices, 1), 1)]);
+
+%Y_new=GetYFromX(X,XgID,Twg,cellHeight/2);
+
+for numTetrahedron = 1:size(Twg, 1)
+    Y_new(numTetrahedron, :) = mean(X(Twg(numTetrahedron, :), :));
+    %Y_new(numTetrahedron, 3) = cellHeight/2;
+end
+
 Y=DynamicArray(ceil(size(Y_new,1)*1.5),size(Y_new,2));
 Y=Y.Add(Y_new);
+
+% sum(any(ismember(Twg, xInternal(2)), 2))
+% figure, tetramesh(Twg, X)
+% index = any(ismember(Twg, xInternal(2)), 2);
+% hold on, plot3(Y.DataRow(index, 1), Y.DataRow(index, 2), Y.DataRow(index, 3), 'rx');
 
 %% Create cells
 xInternal = xInternal';

@@ -107,6 +107,10 @@ trianglesConnectivity = verticesInfo.connectedCells;
 
 Twg = vertcat(Twg_top, Twg_bottom);
 
+% for numVertex = 1:length(X_topVerticesIds)
+%     ismember(Twg_top, X_topVerticesIds(numVertex))
+% end
+
 %% Filtering of unnecessary nodes
 % Remove Ghost tets 
 Twg(all(ismember(Twg,XgID),2),:)=[];
@@ -168,8 +172,8 @@ Y=DynamicArray(ceil(size(Y_new,1)*1.5),size(Y_new,2));
 Y=Y.Add(Y_new);
 
 % sum(any(ismember(Twg, xInternal(2)), 2))
-% figure, tetramesh(Twg, X)
 % index = any(ismember(Twg, xInternal(2)), 2);
+% figure, tetramesh(Twg(index, :), X);
 % hold on, plot3(Y.DataRow(index, 1), Y.DataRow(index, 2), Y.DataRow(index, 3), 'rx');
 
 %% Create cells

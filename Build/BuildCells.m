@@ -27,8 +27,9 @@ for i=1:length(Cell.Int) % loop over  Interior cells
     % i Should be Cell.Int(i) when boundary nodes are included
     
     %% Build Tetrahedra of the nodes
-    Cell.cTet{i}=T(any(ismember(T,Cell.Int(i)),2),:);
-    Cell.cTetID{i}=TetIDs(any(ismember(T,Cell.Int(i)),2));
+    currentTetrahedra = any(ismember(T,Cell.Int(i)),2);
+    Cell.cTet{i}=T(currentTetrahedra,:);
+    Cell.cTetID{i}=TetIDs(currentTetrahedra);
     Cell.cNodes{i}=unique(Cell.cTet{i});
     Cell.cNodes{i}(Cell.cNodes{i}==Cell.Int(i))=[];
     
@@ -53,28 +54,29 @@ for i=1:length(Cell.Int) % loop over  Interior cells
         
         %% Order Surface Vertices\Tets as loop
         SurfVertices=zeros(length(SurfTetID),1);
-        AuxSurfTet=SurfTet;
-        AuxSurfTetID=SurfTetID; % To be arranged
+        remainingSurfTet=SurfTet;
+        remainingSurfTetID=SurfTetID; % To be arranged
         % Take the first
         SurfVertices(1)=SurfTetID(1);
-        AuxSurfTet(1,:)=[];
-        AuxSurfTetID(1)=[];
+        remainingSurfTet(1,:)=[];
+        remainingSurfTetID(1)=[];
         % Take the nearby regardless of the direction
-        NextVertexlogic=sum(ismember(AuxSurfTet,SurfTet(1,:)),2)==3;
-        aux1=1:length(NextVertexlogic); aux1=aux1(NextVertexlogic);
-        SurfVertices(2)=AuxSurfTetID(aux1(1));
+        NextVertexlogic=sum(ismember(remainingSurfTet,SurfTet(1,:)),2)==3;
+        remainingVertices=1:length(NextVertexlogic); 
+        remainingVertices=remainingVertices(NextVertexlogic);
+        SurfVertices(2)=remainingSurfTetID(remainingVertices(1));
         %remove the Found
-        aux2=AuxSurfTet(aux1(1),:);
-        AuxSurfTet(aux1(1),:)=[];
-        AuxSurfTetID(aux1(1))=[];
+        previousSurfTet=remainingSurfTet(remainingVertices(1),:);
+        remainingSurfTet(remainingVertices(1),:)=[];
+        remainingSurfTetID(remainingVertices(1))=[];
         for k=3:length(SurfVertices) %loop over Surf-vertices
             % Find the next, as the one who share three nodes with previous
-            NextVertexlogic=sum(ismember(AuxSurfTet,aux2),2)==3;
-            SurfVertices(k)=AuxSurfTetID(NextVertexlogic);
+            NextVertexlogic=sum(ismember(remainingSurfTet,previousSurfTet),2)==3;
+            SurfVertices(k)=remainingSurfTetID(NextVertexlogic);
             %remove the Found
-            aux2=AuxSurfTet(NextVertexlogic,:);
-            AuxSurfTet(NextVertexlogic,:)=[];
-            AuxSurfTetID(NextVertexlogic)=[];
+            previousSurfTet=remainingSurfTet(NextVertexlogic,:);
+            remainingSurfTet(NextVertexlogic,:)=[];
+            remainingSurfTetID(NextVertexlogic)=[];
         end
         
         %% Build the centre of the face (interpolation)
@@ -82,15 +84,15 @@ for i=1:length(Cell.Int) % loop over  Interior cells
         oppNode=Cell.Int==SurfAxes(2);
         if Includedx(oppNode)
             cID=Cell.Faces{oppNode}.FaceCentresID(Cell.cNodes{oppNode}==SurfAxes(1));
-            aux2=cID;
-            aux=Cell.FaceCentres(aux2,:);
+            previousSurfTet=cID;
+            aux=Cell.FaceCentres(previousSurfTet,:);
         else
             aux=sum(Y.DataRow(SurfVertices,:),1)/length(SurfVertices);
             if sum(ismember(SurfAxes,Cell.Int))==1
                 dir=(aux-X(Cell.Int(i),:)); dir=dir/norm(dir);
                 aux=X(Cell.Int(i),:)+H.*dir;
             end
-            aux2=numFaceCentresFaces;
+            previousSurfTet=numFaceCentresFaces;
         end
         
         Order=0;
@@ -142,18 +144,18 @@ for i=1:length(Cell.Int) % loop over  Interior cells
             auxCv=zeros(length(SurfVertices)*2,2);
             Cell.Faces{i}.Tris{j}=zeros(length(SurfVertices),3);
             for h=2:length(SurfVertices)
-                Cell.Tris{i}(numCell_SurfsTris,:)=[SurfVertices(h-1) SurfVertices(h) aux2];
-                Cell.Faces{i}.Tris{j}(h-1,:)=[SurfVertices(h-1) SurfVertices(h) aux2];
+                Cell.Tris{i}(numCell_SurfsTris,:)=[SurfVertices(h-1) SurfVertices(h) previousSurfTet];
+                Cell.Faces{i}.Tris{j}(h-1,:)=[SurfVertices(h-1) SurfVertices(h) previousSurfTet];
                 auxCv(2*(h-1)-1,:)=[SurfVertices(h-1) SurfVertices(h)];
-                auxCv(2*(h-1),:)=[SurfVertices(h-1) -aux2];
+                auxCv(2*(h-1),:)=[SurfVertices(h-1) -previousSurfTet];
                 numTotalSurfsTris=numTotalSurfsTris+1;
                 numCell_SurfsTris=numCell_SurfsTris+1;
             end
-            Cell.Tris{i}(numCell_SurfsTris,:)=[SurfVertices(end) SurfVertices(1) aux2];
-            Cell.Faces{i}.Tris{j}(h,:)=[SurfVertices(end) SurfVertices(1) aux2];
+            Cell.Tris{i}(numCell_SurfsTris,:)=[SurfVertices(end) SurfVertices(1) previousSurfTet];
+            Cell.Faces{i}.Tris{j}(h,:)=[SurfVertices(end) SurfVertices(1) previousSurfTet];
             
             auxCv(2*h-1,:)=[SurfVertices(end) SurfVertices(1)];
-            auxCv(2*h,:)=[SurfVertices(end) -aux2];
+            auxCv(2*h,:)=[SurfVertices(end) -previousSurfTet];
             % remove do duplicated bars
             auxCv(ismember(auxCv,Cell.Cv{i},'rows') | ismember(flip(auxCv,2),Cell.Cv{i},'rows'),:)=[];
             Cell.Cv{i}(numCell_VertexBars:numCell_VertexBars+size(auxCv,1)-1,:)=auxCv;

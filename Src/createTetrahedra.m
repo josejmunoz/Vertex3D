@@ -31,8 +31,8 @@ for numPair = 1:size(internalNeighbourNetwork, 1)
     end
 end
 
-%Twg = [Twg; newAdditions];
-Twg = newAdditions;
+Twg = [Twg; newAdditions];
+%Twg = newAdditions;
 
 % Relationships: 1 cell node and 3 ghost nodes
 % These are the ones are with the face ghost cell on top and bottom

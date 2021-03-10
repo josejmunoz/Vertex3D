@@ -46,7 +46,7 @@ end
 % figure, imshow(labelledImg, colorcube(600))
 % hold on;
 % for numVertex = 1:size(verticesInfo.location, 1)
-%     plot(round(faceCentresVertices(numVertex, 2)), round(faceCentresVertices(numVertex, 1)), 'bo');
+%     %plot(round(faceCentresVertices(numVertex, 2)), round(faceCentresVertices(numVertex, 1)), 'bo');
 %     plot(round(verticesInfo.location(numVertex, 2)), round(verticesInfo.location(numVertex, 1)), 'rx');
 %     hold on;
 % end
@@ -163,6 +163,7 @@ Y = Y.Add([vertex2D, repmat(-cellHeight/2, size(vertex2D, 1), 1)]);
 
 %Y_new=GetYFromX(X,XgID,Twg,cellHeight/2);
 
+Y_new = zeros(size(Twg, 1), 1);
 for numTetrahedron = 1:size(Twg, 1)
     Y_new(numTetrahedron, :) = mean(X(Twg(numTetrahedron, :), :));
     %Y_new(numTetrahedron, 3) = cellHeight/2;

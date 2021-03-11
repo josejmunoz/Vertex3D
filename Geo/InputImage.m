@@ -22,6 +22,8 @@ for numCell = 1:totalCells
     newLabelledImg(ismember(labelledImg, cellIdsAsInternal(numCell))) = numCell;
 end
 
+labelledImg = newLabelledImg;
+
 cellIdsAsInternal = 1:totalCells;
 
 [imgNeighbours] = calculateNeighbours(labelledImg, ratio);

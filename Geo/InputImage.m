@@ -10,8 +10,11 @@ img(1, 1:end) = 1;
 img(end, 1:end) = 1;
 labelledImg = bwlabel(1-img, 8);
 
+imgSize = size(labelledImg, 1);
+cellHeight = cellHeight/imgSize;
+
 ratio = 5;
-totalCells = 10;
+totalCells = 12;
 faceCentres = regionprops(labelledImg, 'centroid');
 faceCentresVertices = fliplr(vertcat(faceCentres.Centroid));
 cellIdsAsInternal = findCentralCells(faceCentresVertices, totalCells);
@@ -30,7 +33,7 @@ cellIdsAsInternal = 1:totalCells;
 [ verticesInfo ] = calculateVertices( labelledImg, imgNeighbours, ratio);
 
 faceCentres = regionprops(labelledImg, 'centroid');
-faceCentresVertices = fliplr(vertcat(faceCentres.Centroid));
+faceCentresVertices = fliplr(vertcat(faceCentres.Centroid)) / imgSize;
 
 totalCells = max(verticesInfo.connectedCells(:));
 verticesInfo.PerCell = cell(totalCells, 1);
@@ -78,7 +81,7 @@ totalRegularCells = sum(nonEmptyCells);
 
 X = horzcat(faceCentresVertices, zeros(size(nonEmptyCells)));
 
-vertex2D = verticesInfo.location;
+vertex2D = verticesInfo.location / imgSize;
 
 % Ghost nodes:
 % Above vertices (including faces) of top and bottom

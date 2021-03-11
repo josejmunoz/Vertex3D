@@ -163,25 +163,29 @@ Y = Y.Add([vertex2D, repmat(-cellHeight/2, size(vertex2D, 1), 1)]);
 % allEdgesVertices = round(horzcat(mean(horzcat(allEdgesVertices(1:2:size(allEdgesVertices, 1), 1), allEdgesVertices(2:2:size(allEdgesVertices, 1), 1)), 2), mean(horzcat(allEdgesVertices(1:2:size(allEdgesVertices, 1), 2), allEdgesVertices(2:2:size(allEdgesVertices, 1), 2)), 2)));
 % Y = Y.Add([allEdgesVertices, zeros(size(allEdgesVertices, 1), 1)]);
 
-%Y_new=GetYFromX(X,XgID,Twg,cellHeight/2);
+Y_new=GetYFromX(X,XgID,Twg,cellHeight/2);
 
 Y_new = zeros(size(Twg, 1), 3);
 for numTetrahedron = 1:size(Twg, 1)
     Y_new(numTetrahedron, :) = mean(X(Twg(numTetrahedron, :), :));
-    %Y_new(numTetrahedron, 3) = cellHeight/2;
+    if  Y_new(numTetrahedron, 3) > 0
+        Y_new(numTetrahedron, 3) = cellHeight/2;
+    elseif Y_new(numTetrahedron, 3) < 0
+        Y_new(numTetrahedron, 3) = -cellHeight/2;
+    end
 end
 
 Y=DynamicArray(ceil(size(Y_new,1)*1.5),size(Y_new,2));
 Y=Y.Add(Y_new);
 
-% sum(any(ismember(Twg, xInternal(2)), 2))
-% index = any(ismember(Twg, xInternal(2)), 2);
+% % sum(any(ismember(Twg, xInternal(2)), 2))
+% index = any(ismember(Twg, xInternal(1)), 2);
 % figure, tetramesh(Twg(index, :), X);
 % hold on, plot3(Y.DataRow(index, 1), Y.DataRow(index, 2), Y.DataRow(index, 3), 'rx');
 
 %% Create cells
 xInternal = xInternal';
-[Cv,Cell,Faces]=BuildCells(Twg,Y,X,xInternal, cellHeight);
+[Cv,Cell,Faces]=BuildCells(Twg,Y,X,xInternal, cellHeight, false);
 
 
 Set.NumMainV=Y.n;

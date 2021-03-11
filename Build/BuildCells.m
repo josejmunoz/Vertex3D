@@ -1,4 +1,4 @@
-function [Cv,Cell,SharedFaces]=BuildCells(T,Y,X,xInternal,H)
+function [Cv,Cell,SharedFaces]=BuildCells(T,Y,X,xInternal,H, extrapolateFaceCentre)
 % Basically in this function  the cells are built by doing the following loops
 % Loop i over cell
 %   Loop j over the segment connecting the node (cell centre) i with neighbouring nodes (cells) j,  in the same time each segment (ij) correspond to a face shared by cell i and j.
@@ -80,36 +80,7 @@ for i=1:length(Cell.Int) % loop over  Interior cells
         end
         
         %% Build the centre of the face (interpolation)
-        % check if the centre i already built
-        oppNode=Cell.Int==SurfAxes(2);
-        if Includedx(oppNode)
-            cID=Cell.Faces{oppNode}.FaceCentresID(Cell.cNodes{oppNode}==SurfAxes(1));
-            previousSurfTet=cID;
-            aux=Cell.FaceCentres(previousSurfTet,:);
-        else
-            aux=sum(Y.DataRow(SurfVertices,:),1)/length(SurfVertices);
-            if sum(ismember(SurfAxes,Cell.Int))==1
-                dir=(aux-X(Cell.Int(i),:)); dir=dir/norm(dir);
-                aux=X(Cell.Int(i),:)+H.*dir;
-            end
-            previousSurfTet=numFaceCentresFaces;
-        end
-        
-        Order=0;
-        for iii=1:length(SurfVertices)
-            if iii==length(SurfVertices)
-                v1=Y.DataRow(SurfVertices(iii),:)-aux;
-                v2=Y.DataRow(SurfVertices(1),:)-aux;
-                Order=Order+dot(cross(v1,v2),aux-X(Cell.Int(i),:))/length(SurfVertices);
-            else
-                v1=Y.DataRow(SurfVertices(iii),:)-aux;
-                v2=Y.DataRow(SurfVertices(iii+1),:)-aux;
-                Order=Order+dot(cross(v1,v2),aux-X(Cell.Int(i),:))/length(SurfVertices);
-            end
-        end
-        if Order<0
-            SurfVertices=flip(SurfVertices);
-        end
+        [SurfVertices, previousSurfTet, faceCentrePos, oppNode, cID] = BuildFaceCentre(i, SurfAxes, Cell, X, Y, SurfVertices, Includedx, H, numFaceCentresFaces, extrapolateFaceCentre);
         
         % Save Face vertices
         Cell.Faces{i}.Vertices{j}=SurfVertices;
@@ -118,7 +89,7 @@ for i=1:length(Cell.Int) % loop over  Interior cells
         if Includedx(oppNode)
             Cell.Faces{i}.FaceCentresID(j)=cID;
         else
-            Cell.FaceCentres(numFaceCentresFaces,:)=aux;
+            Cell.FaceCentres(numFaceCentresFaces,:)=faceCentrePos;
             Cell.Faces{i}.FaceCentresID(j)=numFaceCentresFaces;
             % Save Face-data base
             SharedFaces = SharedFaces.Add(SurfAxes,SurfVertices,Y.DataOrdered,Cell.FaceCentres);
@@ -179,9 +150,9 @@ Cell.nTotalTris=numTotalSurfsTris;
 
 %% change type of data structure (should be done in the beginning)
 
-aux=Cell.FaceCentres;
+faceCentrePos=Cell.FaceCentres;
 Cell.FaceCentres=DynamicArray(size(X,1)*8,3);
-Cell.FaceCentres=Cell.FaceCentres.Add(aux);
+Cell.FaceCentres=Cell.FaceCentres.Add(faceCentrePos);
 [Cell]=BuildEdges(Cell,Y);
 %% Compute Cells volume
 [Cell]=ComputeCellVolume(Cell,Y);

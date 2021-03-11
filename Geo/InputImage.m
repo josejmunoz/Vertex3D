@@ -11,6 +11,18 @@ img(end, 1:end) = 1;
 labelledImg = bwlabel(1-img, 8);
 
 ratio = 5;
+totalCells = 10;
+faceCentres = regionprops(labelledImg, 'centroid');
+faceCentresVertices = fliplr(vertcat(faceCentres.Centroid));
+cellIdsAsInternal = findCentralCells(faceCentresVertices, totalCells);
+
+newLabelledImg = labelledImg;
+for numCell = 1:totalCells
+    newLabelledImg(ismember(labelledImg, numCell)) = cellIdsAsInternal(numCell);
+    newLabelledImg(ismember(labelledImg, cellIdsAsInternal(numCell))) = numCell;
+end
+
+cellIdsAsInternal = 1:totalCells;
 
 [imgNeighbours] = calculateNeighbours(labelledImg, ratio);
 [ verticesInfo ] = calculateVertices( labelledImg, imgNeighbours, ratio);
@@ -163,7 +175,6 @@ Y = Y.Add([vertex2D, repmat(-cellHeight/2, size(vertex2D, 1), 1)]);
 % allEdgesVertices = round(horzcat(mean(horzcat(allEdgesVertices(1:2:size(allEdgesVertices, 1), 1), allEdgesVertices(2:2:size(allEdgesVertices, 1), 1)), 2), mean(horzcat(allEdgesVertices(1:2:size(allEdgesVertices, 1), 2), allEdgesVertices(2:2:size(allEdgesVertices, 1), 2)), 2)));
 % Y = Y.Add([allEdgesVertices, zeros(size(allEdgesVertices, 1), 1)]);
 
-Y_new=GetYFromX(X,XgID,Twg,cellHeight/2);
 
 Y_new = zeros(size(Twg, 1), 3);
 for numTetrahedron = 1:size(Twg, 1)

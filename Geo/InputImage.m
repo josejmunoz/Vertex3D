@@ -70,7 +70,6 @@ end
 nonEmptyCells = cellfun(@isempty, verticesInfo.edges) == 0;
 
 nonEmptyCells = zeros(size(nonEmptyCells)) == 1;
-cellIdsAsInternal = findCentralCells(faceCentresVertices, 10);
 nonEmptyCells(cellIdsAsInternal) = 1;
 
 totalRegularCells = sum(nonEmptyCells);
@@ -175,7 +174,7 @@ Y = Y.Add([vertex2D, repmat(-cellHeight/2, size(vertex2D, 1), 1)]);
 % allEdgesVertices = round(horzcat(mean(horzcat(allEdgesVertices(1:2:size(allEdgesVertices, 1), 1), allEdgesVertices(2:2:size(allEdgesVertices, 1), 1)), 2), mean(horzcat(allEdgesVertices(1:2:size(allEdgesVertices, 1), 2), allEdgesVertices(2:2:size(allEdgesVertices, 1), 2)), 2)));
 % Y = Y.Add([allEdgesVertices, zeros(size(allEdgesVertices, 1), 1)]);
 
-
+%Y_new=GetYFromX(X,XgID,Twg,cellHeight/2);
 Y_new = zeros(size(Twg, 1), 3);
 for numTetrahedron = 1:size(Twg, 1)
     Y_new(numTetrahedron, :) = mean(X(Twg(numTetrahedron, :), :));
@@ -197,7 +196,6 @@ Y=Y.Add(Y_new);
 %% Create cells
 xInternal = xInternal';
 [Cv,Cell,Faces]=BuildCells(Twg,Y,X,xInternal, cellHeight, false);
-
 
 Set.NumMainV=Y.n;
 Set.NumAuxV=Cell.FaceCentres.n;
@@ -227,8 +225,6 @@ Set.BarrierTri0=Set.BarrierTri0/10;
 
 
 [Cell,Faces,Y]=CheckOrderingOfTriangulaiton(Cell,Faces,Y,Set);
-
-%%%%% Go again to notes to see if anything is missing
 
 end
 

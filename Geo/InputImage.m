@@ -106,6 +106,8 @@ trianglesConnectivity = verticesInfo.connectedCells;
 [Twg_top] = createTetrahedra(trianglesConnectivity, neighboursNetwork, verticesInfo.edges, X, xInternal, X_topNodes, X_topFaceIds, X_topVerticesIds);
 
 Twg = vertcat(Twg_top, Twg_bottom);
+% X = horzcat(faceCentresVertices, zeros(size(nonEmptyCells)));
+% Twg = delaunay(vertcat(X, XgTopFaceCentre, XgBottomFaceCentre));
 
 % for numVertex = 1:length(X_topVerticesIds)
 %     ismember(Twg_top, X_topVerticesIds(numVertex))
@@ -163,7 +165,7 @@ Y = Y.Add([vertex2D, repmat(-cellHeight/2, size(vertex2D, 1), 1)]);
 
 %Y_new=GetYFromX(X,XgID,Twg,cellHeight/2);
 
-Y_new = zeros(size(Twg, 1), 1);
+Y_new = zeros(size(Twg, 1), 3);
 for numTetrahedron = 1:size(Twg, 1)
     Y_new(numTetrahedron, :) = mean(X(Twg(numTetrahedron, :), :));
     %Y_new(numTetrahedron, 3) = cellHeight/2;

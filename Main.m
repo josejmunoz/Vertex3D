@@ -20,7 +20,9 @@ InputWoundHealing
 InitiateOutputFolder(Set)
 %% Mesh generation
 [X]=Example(Set.e);
-[X,Y,Yt,T,XgID,Cell,Faces,Cn,~,Yn,SCn,Set]=InitializeGeometry3DVertex(X,Set);
+
+%[X,Y,Yt,T,XgID,Cell,Faces,Cn,~,Yn,SCn,Set]=InitializeGeometry3DVertex(X,Set);
+[X,Y,Yt,T,XgID,Cell,Faces,Cn,~,Yn,SCn,Set] = InputImage('InputImage_dWP3.bmp', 200, Set);
 if Set.VTK, PostProcessingVTK(X,Y,T.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),0,Set); end
 fprintf('Model Initialized... \n');
 

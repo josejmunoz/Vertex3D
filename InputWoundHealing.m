@@ -4,7 +4,11 @@ Set.MaxIter = 400;
 Set.tol=1e-8;
 
 %% geometry
-Set.e=25;  % Example Number look in Geo\Example.m 
+Set.InputSegmentedImage = 'InputImage_dWP3.bmp';
+Set.CellHeight = 400;
+Set.TotalCells = 30;
+
+%Set.e=25;  % Example Number look in Geo\Example.m 
 Set.Method=1;
 % Tuning parameters
 Set.s=1.5;
@@ -63,7 +67,7 @@ Set.RemodelingFrequency=1;
 
 %% time
 Set.tend=300;
-Set.Nincr=300000;
+Set.Nincr=600;
     
 %% Contractility
 Set.Contractility = 0;
@@ -75,7 +79,7 @@ Set.cContractility = 0.01;
 
 %% Ablating cells
 Set.Ablation = true;
-Set.cellsToAblate = findCentralCells(Example(Set.e), 1);
+Set.cellsToAblate = 1;
 Set.TAblation = 10;
 Set.TToCompleteAblation = 100;
 

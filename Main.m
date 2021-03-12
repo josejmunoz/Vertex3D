@@ -18,11 +18,15 @@ InputWoundHealing
 
 [Set]=SetDefault(Set);
 InitiateOutputFolder(Set)
-%% Mesh generation
-[X]=Example(Set.e);
 
-%[X,Y,Yt,T,XgID,Cell,Faces,Cn,~,Yn,SCn,Set]=InitializeGeometry3DVertex(X,Set);
-[X,Y,Yt,T,XgID,Cell,Faces,Cn,~,Yn,SCn,Set] = InputImage('InputImage_dWP3.bmp', 200, Set);
+%% Mesh generation
+if isempty(Set.InputSegmentedImage)
+    [X]=Example(Set.e);
+    [X,Y,Yt,T,XgID,Cell,Faces,Cn,~,Yn,SCn,Set]=InitializeGeometry3DVertex(X,Set);
+else
+    [X,Y,Yt,T,XgID,Cell,Faces,Cn,~,Yn,SCn,Set] = InputImage(Set);
+end
+
 if Set.VTK, PostProcessingVTK(X,Y,T.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),0,Set); end
 fprintf('Model Initialized... \n');
 
@@ -85,6 +89,26 @@ while t<=Set.tend
     Yp=Y; Cellp=Cell;
     Set.iIncr=numStep;
     
+    if isempty(Set.InputSegmentedImage) == 0 && t == 0
+        Nincr_inital = Set.Nincr;
+        Set.Nincr = Set.tend * 10000;
+        Set.dt0=Set.tend/Set.Nincr;
+        Set.dt=Set.dt0;
+        for numCycle = 1:5
+            [Cell, Y, Dofs, Yt, Ytn, y, yn] = applyBoundaryCondition(t, Y, Set, Cell, Dofs, SCn, Yn);
+            [g,K,Cell,Energy]=KgGlobal(Cell,Faces,SCn,Y,Yn,y,yn,Set,CellInput);
+            % Run a very small step to achieve a bit of force equilibrium
+            [g,K,Cell, y, Y, Yt, Energy, Set, gr, dyr]  = newtonRaphson(Set, Cell, Faces, SCn, y, yn, K, g, Dofs, Y, Yn, CellInput, 0, t);
+            %Update Nodes (X) from Vertices (Y)
+            [X]=GetXFromY(Cell,Faces,X,T,Y,XgID,Set);
+            Yn=Y;
+            SCn=Cell.FaceCentres;
+        end
+        Set.Nincr = Nincr_inital;
+        Set.dt0=Set.tend/Set.Nincr;
+        Set.dt=Set.dt0;
+    end
+    
     %% ----------- Apply Boundary Condition --------------------------------
     [Cell, Y, Dofs, Yt, Ytn, y, yn] = applyBoundaryCondition(t, Y, Set, Cell, Dofs, SCn, Yn);
     
@@ -93,60 +117,13 @@ while t<=Set.tend
     [Set, CellInput] = updateParametersOnTime(t, Set, Cell, CellInput);
     fprintf('Step: %i - LambdaV_Debris: %d, LambdaS1_Ghost: %d, cPurseString: %d, cLateralCables: %d\n', numStep, Set.lambdaV_Debris, Set.lambdaS1 * CellInput.LambdaS1Factor(Cell.GhostCells), Set.cPurseString, Set.cLateralCables);
     [g,K,Cell,Energy]=KgGlobal(Cell,Faces,SCn,Y,Yn,y,yn,Set,CellInput);
-    dy=zeros(size(y));
-    dyr=norm(dy(Dofs.FreeDofs));
-    gr=norm(g(Dofs.FreeDofs));
-    gr0=gr;
-    fprintf('Step: %i,Iter: %i ||gr||= %e ||dyr||= %e dt/dt0=%.3g\n',numStep,0,gr,dyr,Set.dt/Set.dt0);
     
-    if Set.VTK_iter, InitVtk(strcat(Set.OutputFolder,Esc,'ResultVTK_iter')); end
-    if Set.VTK, PostProcessingVTK(X,Y,T.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end
+    if Set.VTK, PostProcessingVTK(X,Y,T.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end    
     
+    %% Newton-raphson iterations 
+    [g,K,Cell, y, Y, Yt, Energy, Set, gr, dyr] = newtonRaphson(Set, Cell, Faces, SCn, y, yn, K, g, Dofs, Y, Yn, CellInput, numStep, t);
     
-    %% Newton-raphson iterations ==========================================
-    Set.iter=1;
-    auxgr=zeros(3,1);
-    auxgr(1)=gr;
-    ig=1;
-    while (gr>Set.tol || dyr>Set.tol) && Set.iter<Set.MaxIter
-        dy(Dofs.FreeDofs)=-K(Dofs.FreeDofs,Dofs.FreeDofs)\g(Dofs.FreeDofs);
-        [alpha]=LineSearch(Cell,Faces,SCn, y,yn,dy,g,Dofs.FreeDofs,Set,Y,Yn,CellInput);
-        % alpha=1;
-        y=y+alpha*dy; % update nodes
-        Yt=reshape(y,3,Set.NumTotalV)';
-        Y=Y.Modify(Yt(1:Set.NumMainV,:));
-        Cell.FaceCentres=Cell.FaceCentres.Modify(Yt(Set.NumMainV+1:Set.NumTotalV,:));
-        if Set.nu > Set.nu0 &&  gr<1e-8
-            Set.nu = max(Set.nu/2,Set.nu0);
-        end
-        % ----------- Compute K, g ---------------------------------------
-        [g,K,Cell,Energy]=KgGlobal(Cell,Faces,SCn,Y,Yn,y,yn,Set,CellInput);
-        dyr=norm(dy(Dofs.FreeDofs));
-        gr=norm(g(Dofs.FreeDofs));
-        fprintf('Step: % i,Iter: %i, Time: %g ||gr||= %.3e ||dyr||= %.3e alpha= %.3e  nu/nu0=%.3g \n',numStep,Set.iter,t,gr,dyr,alpha,Set.nu/Set.nu0);
-        
-        %if Set.VTK_iter, PostProcessingVTK(X,Y,T.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK_iter'),Set.iter,Set); end
-        
-        Set.iter=Set.iter+1;
-        Set.N_Global_Iterations=Set.N_Global_Iterations+1;
-        auxgr(ig+1)=gr;
-        
-        if ig ==2
-            ig=0;
-        else
-            ig=ig+1;
-        end
-        
-        if (abs(auxgr(1)-auxgr(2))/auxgr(1)<1e-3 &&...
-                abs(auxgr(1)-auxgr(3))/auxgr(1)<1e-3 &&...
-                abs(auxgr(3)-auxgr(2))/auxgr(3)<1e-3)...
-                || abs((gr0-gr)./gr0)>1e3
-            Set.iter=Set.MaxIter;
-        end
-    end
-    
-    %=================================================================
-    
+    %%
     if gr<Set.tol && dyr<Set.tol && all(isnan(g(Dofs.FreeDofs)) == 0) && all(isnan(dy(Dofs.FreeDofs)) == 0)
         fprintf('STEP %i has converged ...\n',Set.iIncr)
         

@@ -1,9 +1,9 @@
-function [X,Y,Yt,T,XgID,Cell,Faces,Cn,Cv,Yn,SCn,Set] = InputImage(inputFile, cellHeight, Set)
+function [X,Y,Yt,T,XgID,Cell,Faces,Cn,Cv,Yn,SCn,Set] = InputImage(Set)
 %INPUTIMAGE Summary of this function goes here
 %   Detailed explanation goes here
 
 %% Processed input image to obtain the information
-img = imread(inputFile);
+img = imread(Set.InputSegmentedImage);
 img(1:end, 1) = 1;
 img(1:end, end) = 1;
 img(1, 1:end) = 1;
@@ -11,10 +11,10 @@ img(end, 1:end) = 1;
 labelledImg = bwlabel(1-img, 8);
 
 imgSize = size(labelledImg, 1);
-cellHeight = cellHeight/imgSize;
+cellHeight = Set.CellHeight/imgSize;
+totalCells = Set.TotalCells;
 
 ratio = 5;
-totalCells = 30;
 faceCentres = regionprops(labelledImg, 'centroid');
 faceCentresVertices = fliplr(vertcat(faceCentres.Centroid));
 cellIdsAsInternal = findCentralCells(faceCentresVertices, totalCells);

@@ -86,10 +86,6 @@ while t<=Set.tend
         Set.ReModel=false;
         tr=t;
     end
-    %   Copy configuration in case the current step does not converge  and need
-    %   to be repeated
-    Yp=Y; Cellp=Cell;
-    Set.iIncr=numStep;
     
     if t == 0 && initEquilibrium == 0
         Nincr_inital = Set.Nincr;
@@ -111,6 +107,11 @@ while t<=Set.tend
         Set.dt=Set.dt0;
         initEquilibrium = 1;
     end
+    
+    %   Copy configuration in case the current step does not converge  and need
+    %   to be repeated
+    Yp=Y; Cellp=Cell;
+    Set.iIncr=numStep;
     
     %% ----------- Apply Boundary Condition --------------------------------
     [Cell, Y, Dofs, Yt, Ytn, y, yn] = applyBoundaryCondition(t, Y, Set, Cell, Dofs, SCn, Yn);

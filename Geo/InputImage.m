@@ -14,7 +14,7 @@ imgSize = size(labelledImg, 1);
 cellHeight = cellHeight/imgSize;
 
 ratio = 5;
-totalCells = 12;
+totalCells = 30;
 faceCentres = regionprops(labelledImg, 'centroid');
 faceCentresVertices = fliplr(vertcat(faceCentres.Centroid));
 cellIdsAsInternal = findCentralCells(faceCentresVertices, totalCells);
@@ -30,6 +30,26 @@ labelledImg = newLabelledImg;
 cellIdsAsInternal = 1:totalCells;
 
 [imgNeighbours] = calculateNeighbours(labelledImg, ratio);
+
+%% Remove quartets
+[quartets] = getFourFoldVertices(imgNeighbours, labelledImg);
+for numQuartets = 1:size(quartets, 1)
+    currentCentroids = faceCentresVertices(quartets(numQuartets, :), :);
+    distanceBetweenCentroids = squareform(pdist(currentCentroids));
+    [maxDistance] = max(distanceBetweenCentroids(:));
+    [row, col] = find(distanceBetweenCentroids == maxDistance);
+    
+    % Remove first neighbour from the furthest pair of neighbour
+    currentNeighs = imgNeighbours{quartets(numQuartets, col(1))};
+    currentNeighs(currentNeighs == quartets(numQuartets, row(1))) = [];
+    imgNeighbours{quartets(numQuartets, col(1))} = currentNeighs;
+    
+    % Remove the second of the same pair
+    currentNeighs = imgNeighbours{quartets(numQuartets, row(1))};
+    currentNeighs(currentNeighs == quartets(numQuartets, col(1))) = [];
+    imgNeighbours{quartets(numQuartets, row(1))} = currentNeighs;
+end
+
 [ verticesInfo ] = calculateVertices( labelledImg, imgNeighbours, ratio);
 
 faceCentres = regionprops(labelledImg, 'centroid');

@@ -5,16 +5,12 @@ function [Twg] = createTetrahedra(trianglesConnectivity, neighboursNetwork, edge
 X_Ids = [X_FaceIds, X_VerticesIds];
 Twg = [];
 
-% Relationships: 1 ghost node, three cell nodes - NOT added to the final
-% tetrahedra
-verticesTriangles_1 = X(trianglesConnectivity(:, 1), :);
-verticesTriangles_2 = X(trianglesConnectivity(:, 2), :);
-verticesTriangles_3 = X(trianglesConnectivity(:, 3), :);
-meanTriangles = arrayfun(@(x, y, z) mean([x, y, z]), verticesTriangles_1, verticesTriangles_2, verticesTriangles_3);
+% Relationships: 1 ghost node, three cell nodes
+Twg_vertices = horzcat(trianglesConnectivity, X_VerticesIds');
 
-[~, indices] = pdist2(X_Nodes, meanTriangles, 'euclidean', 'smallest', 1);
-Twg = horzcat(trianglesConnectivity, X_Ids(indices)');
+Twg_faces = [];
 
+Twg = vertcat(Twg_vertices, Twg_faces);
 
 % Relationships: 2 ghost nodes, two cell nodes
 % two of the previous ones go with 

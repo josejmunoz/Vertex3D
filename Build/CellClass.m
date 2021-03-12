@@ -149,7 +149,7 @@ classdef CellClass
         function Cell = AblateCells(obj, cellsToRemove)
             obj.GhostCells(ismember(obj.Int, cellsToRemove)) = true;
             Cell = obj;
-        end
+        end 
         
         function Cell = removeCells(obj, cellsToRemove)
             obj.Int(cellsToRemove) = [];

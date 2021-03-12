@@ -23,8 +23,10 @@ InitiateOutputFolder(Set)
 if isempty(Set.InputSegmentedImage)
     [X]=Example(Set.e);
     [X,Y,Yt,T,XgID,Cell,Faces,Cn,~,Yn,SCn,Set]=InitializeGeometry3DVertex(X,Set);
+    initEquilibrium = 1;
 else
     [X,Y,Yt,T,XgID,Cell,Faces,Cn,~,Yn,SCn,Set] = InputImage(Set);
+    initEquilibrium = 0;
 end
 
 if Set.VTK, PostProcessingVTK(X,Y,T.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),0,Set); end
@@ -89,7 +91,7 @@ while t<=Set.tend
     Yp=Y; Cellp=Cell;
     Set.iIncr=numStep;
     
-    if isempty(Set.InputSegmentedImage) == 0 && t == 0
+    if t == 0 && initEquilibrium == 0
         Nincr_inital = Set.Nincr;
         Set.Nincr = Set.tend * 10000;
         Set.dt0=Set.tend/Set.Nincr;
@@ -107,6 +109,7 @@ while t<=Set.tend
         Set.Nincr = Nincr_inital;
         Set.dt0=Set.tend/Set.Nincr;
         Set.dt=Set.dt0;
+        initEquilibrium = 1;
     end
     
     %% ----------- Apply Boundary Condition --------------------------------

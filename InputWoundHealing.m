@@ -63,6 +63,7 @@ Set.RemodelingFrequency=1;
 
 %% time
 Set.tend=300;
+Set.Nincr=300000;
     
 %% Contractility
 Set.Contractility = 0;

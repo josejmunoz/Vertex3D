@@ -147,7 +147,7 @@ classdef CellClass
         % the IDs from the middle.
         % TODO: Check if Cell.Int need to be in order in consecutive numbers
         function Cell = AblateCells(obj, cellsToRemove)
-            obj.GhostCells(obj.Int == cellsToRemove) = true;
+            obj.GhostCells(ismember(obj.Int, cellsToRemove)) = true;
             Cell = obj;
         end
         

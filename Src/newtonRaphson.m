@@ -1,4 +1,4 @@
-function [g,K,Cell, y, Y, Yt, Energy, Set, gr, dyr] = newtonRaphson(Set, Cell, Faces, SCn, y, yn, K, g, Dofs, Y, Yn, CellInput, numStep, t)
+function [g,K,Cell, y, Y, Yt, Energy, Set, gr, dyr, dy] = newtonRaphson(Set, Cell, Faces, SCn, y, yn, K, g, Dofs, Y, Yn, CellInput, numStep, t)
 %NEWTONRAPHSON Summary of this function goes here
 %   Detailed explanation goes here
 

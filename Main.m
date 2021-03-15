@@ -125,7 +125,7 @@ while t<=Set.tend
     if Set.VTK, PostProcessingVTK(X,Y,T.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end    
     
     %% Newton-raphson iterations 
-    [g,K,Cell, y, Y, Yt, Energy, Set, gr, dyr] = newtonRaphson(Set, Cell, Faces, SCn, y, yn, K, g, Dofs, Y, Yn, CellInput, numStep, t);
+    [g,K,Cell, y, Y, Yt, Energy, Set, gr, dyr, dy] = newtonRaphson(Set, Cell, Faces, SCn, y, yn, K, g, Dofs, Y, Yn, CellInput, numStep, t);
     
     %%
     if gr<Set.tol && dyr<Set.tol && all(isnan(g(Dofs.FreeDofs)) == 0) && all(isnan(dy(Dofs.FreeDofs)) == 0)

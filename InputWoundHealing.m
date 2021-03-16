@@ -5,8 +5,10 @@ Set.tol=1e-8;
 
 %% geometry
 Set.InputSegmentedImage = 'InputImage_dWP3.bmp';
-Set.CellHeight = 400;
-Set.TotalCells = 30;
+Set.CellHeight = 4.5;
+Set.zScale = 19;
+Set.CellHeight = Set.CellHeight * Set.zScale;
+Set.TotalCells = 8;
 
 %Set.e=25;  % Example Number look in Geo\Example.m 
 Set.Method=1;
@@ -28,7 +30,7 @@ Set.lambdaS1=1;
 Set.lambdaS2=0.5;
 % Cell-substrate
 Set.lambdaS3=Set.lambdaS2;
-% Cell-GhostCell
+% Cell-DebrisCell
 Set.lambdaS4=Set.lambdaS2;
 
 %---------- EnergyBarrier

@@ -32,18 +32,19 @@ for numCell = 1:Cell.n
     numVertexElem = 1;
     for numVertex = Cell.BasalVertices{numCell}'
         
+        z0 = Set.z0Substrate;
         if numVertex < 0 %% Face centre
             currentVertex = Cell.FaceCentres.DataRow(abs(numVertex), :);
-            currentVertexPrev = SCn.DataRow(abs(numVertex), :);
+            %z0 = SCn.DataRow(abs(numVertex), 3);
             vertexIndex = abs(numVertex) + Set.NumMainV;
         else %% Regular Vertex
             currentVertex = Y.DataRow(numVertex, :);
-            currentVertexPrev = Yn.DataRow(numVertex, :);
+            %z0 = Yn.DataRow(numVertex, 3);
             vertexIndex = numVertex;
         end
 
         %% Calculate residual g
-        g_current = computeGSubstrate(kSubstrate, currentVertex(:, 3), currentVertexPrev(:, 3));
+        g_current = computeGSubstrate(kSubstrate, currentVertex(:, 3), z0);
         g = Assembleg(g, g_current, vertexIndex);
         
         %% Save contractile forces (g) to output
@@ -61,7 +62,7 @@ for numCell = 1:Cell.n
             end
 
             %% Calculate energy
-            energy = energy + computeEnergySubstrate(kSubstrate, currentVertex(:, 3), currentVertexPrev(:, 3));
+            energy = energy + computeEnergySubstrate(kSubstrate, currentVertex(:, 3), z0);
         end
         
     end

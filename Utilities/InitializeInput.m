@@ -62,7 +62,7 @@ end
 
 if isempty(Set.initMidEndContractility_LateralCables) == 0
     for numTimePoint = 2:length(Set.initMidEndContractility_LateralCables)
-        [Set.cPurseString_TimeDependent{numTimePoint-1}] = functionVariableOnTime(Set.initMidEndContractility_LateralCables(numTimePoint-1), Set.initMidEndContractility_LateralCables(numTimePoint), Set.initMidEndContractilityTime_LateralCables(numTimePoint-1), Set.initMidEndContractilityTime_LateralCables(numTimePoint), Set);
+        [Set.cLateralCables_TimeDependent{numTimePoint-1}] = functionVariableOnTime(Set.initMidEndContractility_LateralCables(numTimePoint-1), Set.initMidEndContractility_LateralCables(numTimePoint), Set.initMidEndContractilityTime_LateralCables(numTimePoint-1), Set.initMidEndContractilityTime_LateralCables(numTimePoint), Set);
     end
 end
 

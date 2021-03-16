@@ -29,9 +29,6 @@ else
     initEquilibrium = 0;
 end
 
-%% Set z0Substrate
-Set.z0Substrate = min(Y.DataRow(:,3))*1.2;
-
 if Set.VTK, PostProcessingVTK(X,Y,T.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),0,Set); end
 fprintf('Model Initialized... \n');
 

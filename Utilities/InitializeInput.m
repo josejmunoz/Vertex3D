@@ -47,8 +47,13 @@ if Set.Propulsion
     CellInput.Propulsion(:,1:2)=(rand(Cell.n,2)-0.5)./50;
 else 
     CellInput.Propulsion=[];
-end 
+end
 
+%% Set z0Substrate
+Set.z0Substrate = min(Y.DataRow(:,3))*1.2;
+
+
+%% Contractility
 if isempty(Set.initMidEndContractility_PurseString) == 0
     initT_Contractility = Set.initMidEndContractilityTime_PurseString(1);
     midT_Contractility = Set.initMidEndContractilityTime_PurseString(2);

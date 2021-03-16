@@ -33,7 +33,7 @@ if Set.VTK, PostProcessingVTK(X,Y,T.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'Re
 fprintf('Model Initialized... \n');
 
 %% Initialize Data
-[CellInput, Set] = InitializeInput(Cell,Set);
+[CellInput, Set] = InitializeInput(Cell, Set, Y);
 
 % Energy
 EnergyS=zeros(Set.Nincr,1);  Energy.Es=0;

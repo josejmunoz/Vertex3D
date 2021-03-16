@@ -1,4 +1,4 @@
-function [CellInput, Set]=InitializeInput(Cell,Set)
+function [CellInput, Set]=InitializeInput(Cell, Set, Y)
 % Initialize Lmabda-reduction-factor for each cell-inerface (check KgSurfaceCellBasedAdhesionParallel.m)
 % Initialize propulsion force for each cell (check gPropulsion.m)
 % Initialize contractility in time
@@ -55,36 +55,20 @@ Set.z0Substrate = min(Y.DataRow(:,3))*1.2;
 
 %% Contractility
 if isempty(Set.initMidEndContractility_PurseString) == 0
-    initT_Contractility = Set.initMidEndContractilityTime_PurseString(1);
-    midT_Contractility = Set.initMidEndContractilityTime_PurseString(2);
-    endT_Contractility = Set.initMidEndContractilityTime_PurseString(3);
-    
-    initC_Contractility = Set.initMidEndContractility_PurseString(1);
-    midC_Contractility = Set.initMidEndContractility_PurseString(2);
-    endC_Contractility = Set.initMidEndContractility_PurseString(3);
-    
-    [Set.cPurseString_InitMidTimeDependent] = functionVariableOnTime(initC_Contractility, midC_Contractility, initT_Contractility, midT_Contractility, Set);
-    
-    [Set.cPurseString_MidEndTimeDependent] = functionVariableOnTime(midC_Contractility, endC_Contractility, midT_Contractility, endT_Contractility, Set);
+    for numTimePoint = 2:length(Set.initMidEndContractility_PurseString)
+        [Set.cPurseString_TimeDependent{numTimePoint}] = functionVariableOnTime(Set.initMidEndContractility_PurseString(numTimePoint-1), Set.initMidEndContractility_PurseString(numTimePoint), Set.initMidEndContractilityTime_PurseString(numTimePoint-1), Set.initMidEndContractilityTime_PurseString(numTimePoint), Set);
+    end
 end
 
 if isempty(Set.initMidEndContractility_LateralCables) == 0
-    initT_Contractility = Set.initMidEndContractilityTime_LateralCables(1);
-    midT_Contractility = Set.initMidEndContractilityTime_LateralCables(2);
-    endT_Contractility = Set.initMidEndContractilityTime_LateralCables(3);
-    
-    initC_Contractility = Set.initMidEndContractility_LateralCables(1);
-    midC_Contractility = Set.initMidEndContractility_LateralCables(2);
-    endC_Contractility = Set.initMidEndContractility_LateralCables(3);
-    
-    [Set.cLateralCables_InitMidTimeDependent] = functionVariableOnTime(initC_Contractility, midC_Contractility, initT_Contractility, midT_Contractility, Set);
-    
-    [Set.cLateralCables_MidEndTimeDependent] = functionVariableOnTime(midC_Contractility, endC_Contractility, midT_Contractility, endT_Contractility, Set);
+    for numTimePoint = 2:length(Set.initMidEndContractility_LateralCables)
+        [Set.cPurseString_TimeDependent{numTimePoint}] = functionVariableOnTime(Set.initMidEndContractility_LateralCables(numTimePoint-1), Set.initMidEndContractility_LateralCables(numTimePoint), Set.initMidEndContractilityTime_LateralCables(numTimePoint-1), Set.initMidEndContractilityTime_LateralCables(numTimePoint), Set);
+    end
 end
 
 if Set.TToCompleteAblation > 0
     Set.lambdaV_DebrisTime = functionVariableOnTime(Set.lambdaV, Set.lambdaV_Debris, 0, Set.TToCompleteAblation, Set);
     Set.lambdaS4_Time = functionVariableOnTime(Set.lambdaS2, Set.lambdaS4, 0, Set.TToCompleteAblation, Set);
-    Set.LambdaS1FactorDebris_Time = functionVariableOnTime(0, 0, 0, Set.TToCompleteAblation/10, Set);
+    Set.LambdaS1FactorDebris_Time = functionVariableOnTime(0.001, 0.001, 0.001, Set.TToCompleteAblation/10, Set);
 end
 end 

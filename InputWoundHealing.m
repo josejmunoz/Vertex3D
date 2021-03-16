@@ -89,9 +89,9 @@ Set.TToCompleteAblation = 100;
 Set.Contractility = 0;
 
 Set.cPurseString = 0.1;
-Set.initMidEndContractility_PurseString = ([1 2.5 2] - 1) * Set.cPurseString;
-Set.initMidEndContractilityTime_PurseString = [0 18 60]/60*(Set.tend - Set.TAblation);
+Set.initMidEndContractility_PurseString = ([1 1 2.5 2] - 1) * Set.cPurseString;
+Set.initMidEndContractilityTime_PurseString = [0 7 16 60]/60*(Set.tend - Set.TAblation);
 
 Set.cLateralCables = 0.05;
 Set.initMidEndContractility_LateralCables = ([0.5 1.4 1.4] - 0.5) * Set.cLateralCables;
-Set.initMidEndContractilityTime_LateralCables = [0 18 60]/60*(Set.tend - Set.TAblation);
+Set.initMidEndContractilityTime_LateralCables = [0 16 60]/60*(Set.tend - Set.TAblation);

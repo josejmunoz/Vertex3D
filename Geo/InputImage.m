@@ -11,7 +11,6 @@ img(end, 1:end) = 1;
 labelledImg = bwlabel(1-img, 8);
 
 imgSize = size(labelledImg, 1);
-cellHeight = Set.CellHeight/imgSize;
 totalCells = Set.TotalCells;
 
 ratio = 5;
@@ -26,6 +25,11 @@ for numCell = 1:totalCells
 end
 
 labelledImg = newLabelledImg;
+
+
+cellArea = regionprops(labelledImg, 'Area');
+avgCellArea = mean(vertcat(cellArea(1:totalCells).Area))/(imgSize^2);
+cellHeight = Set.CellHeight * avgCellArea;
 
 cellIdsAsInternal = 1:totalCells;
 
@@ -159,8 +163,8 @@ Y=DynamicArray(ceil(size(Y_new,1)*1.5),size(Y_new,2));
 Y=Y.Add(Y_new);
 
 % % sum(any(ismember(Twg, xInternal(2)), 2))
-% index = any(ismember(Twg, xInternal(1)), 2);
-% figure, tetramesh(Twg(index, :), X);
+index = any(ismember(Twg, xInternal(1)), 2);
+figure, tetramesh(Twg(index, :), X);
 % hold on, plot3(Y.DataRow(index, 1), Y.DataRow(index, 2), Y.DataRow(index, 3), 'rx');
 
 %% Create cells

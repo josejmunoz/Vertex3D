@@ -4,17 +4,13 @@ function [Set, CellInput] = updateParametersOnTime(currentT, Set, Cell, CellInpu
 
 if any(Cell.DebrisCells)
     %% Contractility time dependent
-    if currentT > (Set.TAblation + Set.initMidEndContractilityTime_PurseString(2))
-        Set.cPurseString = Set.cPurseString_MidEndTimeDependent(currentT);
-    else
-        Set.cPurseString = Set.cPurseString_InitMidTimeDependent(currentT);
-    end
+    % Purse string
+    achievedTimes = find(currentT >= (Set.TAblation + Set.initMidEndContractilityTime_PurseString));
+    Set.cPurseString = Set.cPurseString_TimeDependent{achievedTimes(end)}(currentT);
     
-    if currentT > (Set.TAblation + Set.initMidEndContractilityTime_LateralCables(2))
-        Set.cLateralCables = Set.cLateralCables_MidEndTimeDependent(currentT);
-    else
-        Set.cLateralCables = Set.cLateralCables_InitMidTimeDependent(currentT);
-    end
+    % Lateral cables
+    achievedTimes = find(currentT >= (Set.TAblation + Set.initMidEndContractilityTime_LateralCables));
+    Set.cLateralCables = Set.cLateralCables_TimeDependent{achievedTimes(end)}(currentT);
     
     %% Volume degradation & Surface Cell-Debris/Debris
     if currentT < (Set.TAblation + Set.TToCompleteAblation)

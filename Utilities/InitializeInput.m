@@ -56,13 +56,13 @@ Set.z0Substrate = min(Y.DataRow(:,3))*1.2;
 %% Contractility
 if isempty(Set.initMidEndContractility_PurseString) == 0
     for numTimePoint = 2:length(Set.initMidEndContractility_PurseString)
-        [Set.cPurseString_TimeDependent{numTimePoint}] = functionVariableOnTime(Set.initMidEndContractility_PurseString(numTimePoint-1), Set.initMidEndContractility_PurseString(numTimePoint), Set.initMidEndContractilityTime_PurseString(numTimePoint-1), Set.initMidEndContractilityTime_PurseString(numTimePoint), Set);
+        [Set.cPurseString_TimeDependent{numTimePoint-1}] = functionVariableOnTime(Set.initMidEndContractility_PurseString(numTimePoint-1), Set.initMidEndContractility_PurseString(numTimePoint), Set.initMidEndContractilityTime_PurseString(numTimePoint-1), Set.initMidEndContractilityTime_PurseString(numTimePoint), Set);
     end
 end
 
 if isempty(Set.initMidEndContractility_LateralCables) == 0
     for numTimePoint = 2:length(Set.initMidEndContractility_LateralCables)
-        [Set.cPurseString_TimeDependent{numTimePoint}] = functionVariableOnTime(Set.initMidEndContractility_LateralCables(numTimePoint-1), Set.initMidEndContractility_LateralCables(numTimePoint), Set.initMidEndContractilityTime_LateralCables(numTimePoint-1), Set.initMidEndContractilityTime_LateralCables(numTimePoint), Set);
+        [Set.cPurseString_TimeDependent{numTimePoint-1}] = functionVariableOnTime(Set.initMidEndContractility_LateralCables(numTimePoint-1), Set.initMidEndContractility_LateralCables(numTimePoint), Set.initMidEndContractilityTime_LateralCables(numTimePoint-1), Set.initMidEndContractilityTime_LateralCables(numTimePoint), Set);
     end
 end
 

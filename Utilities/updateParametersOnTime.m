@@ -2,7 +2,7 @@ function [Set, CellInput] = updateParametersOnTime(currentT, Set, Cell, CellInpu
 %UPDATEPARAMETERSONTIME Summary of this function goes here
 %   Detailed explanation goes here
 
-if any(Cell.GhostCells)
+if any(Cell.DebrisCells)
     %% Contractility time dependent
     if currentT > (Set.TAblation + Set.initMidEndContractilityTime_PurseString(2))
         Set.cPurseString = Set.cPurseString_MidEndTimeDependent(currentT);
@@ -16,11 +16,11 @@ if any(Cell.GhostCells)
         Set.cLateralCables = Set.cLateralCables_InitMidTimeDependent(currentT);
     end
     
-    %% Volume degradation & Surface Cell-Debris/Ghost
+    %% Volume degradation & Surface Cell-Debris/Debris
     if currentT < (Set.TAblation + Set.TToCompleteAblation)
         Set.lambdaV_Debris = Set.lambdaV_DebrisTime(currentT);
         Set.lambdaS4 = Set.lambdaS4_Time(currentT);
-        CellInput.LambdaS1Factor(Cell.GhostCells) = Set.LambdaS1FactorDebris_Time(currentT);
+        CellInput.LambdaS1Factor(Cell.DebrisCells) = Set.LambdaS1FactorDebris_Time(currentT);
     end
 else
     Set.cPurseString = 0;

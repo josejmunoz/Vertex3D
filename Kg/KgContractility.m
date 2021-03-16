@@ -33,7 +33,7 @@ for numCell = 1:Cell.n
     edgeLengths = Cell.EdgeLengths{numCell};
     edgeLengths0_average = Cell.EdgeLengths0_average;
     
-    if Cell.GhostCells(numCell)
+    if Cell.DebrisCells(numCell)
         edgeLocation = Cell.EdgeLocation{numCell};
     else
         edgeLocation = zeros(size(Cell.EdgeLocation{numCell}));

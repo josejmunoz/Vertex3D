@@ -32,7 +32,7 @@ EnergyBar=0;
 %% Loop over Cells
 %   % Analytical residual g and Jacobian K
 for i=1:ncell
-    if Cell.GhostCells(i)
+    if Cell.Debris(i)
         continue;
     end 
     if ~Cell.AssembleAll

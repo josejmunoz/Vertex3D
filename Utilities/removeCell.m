@@ -10,7 +10,7 @@ CellInput.LambdaS3Factor(cellsToRemove) = [];
 CellInput.LambdaS4Factor(cellsToRemove) = [];
 XgID = [XgID; idsToRemove];
 
-%Remove edges between ghost cell and external nodes. Therefore,
+%Remove edges between debris cell and external nodes. Therefore,
 %also, remove faces between ghost cell and external nodes and
 %associated vertices
 

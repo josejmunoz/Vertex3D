@@ -29,7 +29,7 @@ Energy=0;
 
 %% Loop over cells 
 for i=1:ncell
-    if Cell.GhostCells(i)
+    if Cell.DebrisCells(i)
         continue;
     end 
     if ~Cell.AssembleAll

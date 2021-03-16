@@ -119,7 +119,7 @@ while t<=Set.tend
     
     %% ----------- Compute K, g ---------------------------------------
     [Set, CellInput] = updateParametersOnTime(t, Set, Cell, CellInput);
-    fprintf('Step: %i - LambdaV_Debris: %d, LambdaS1_Ghost: %d, cPurseString: %d, cLateralCables: %d\n', numStep, Set.lambdaV_Debris, Set.lambdaS1 * CellInput.LambdaS1Factor(Cell.GhostCells), Set.cPurseString, Set.cLateralCables);
+    fprintf('Step: %i - LambdaV_Debris: %d, LambdaS1_Debris: %d, cPurseString: %d, cLateralCables: %d\n', numStep, Set.lambdaV_Debris, Set.lambdaS1 * CellInput.LambdaS1Factor(Cell.DebrisCells), Set.cPurseString, Set.cLateralCables);
     [g,K,Cell,Energy]=KgGlobal(Cell,Faces,SCn,Y,Yn,y,yn,Set,CellInput);
     
     if Set.VTK, PostProcessingVTK(X,Y,T.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end    

@@ -102,7 +102,7 @@ classdef CellClass
         %--------------------------------------------------------------------
         SubstrateForce
         %--------------------------------------------------------------------
-        GhostCells            % Ghost cells
+        DebrisCells            % Debris cells
         %--------------------------------------------------------------------
         ContractileForces
     end
@@ -133,7 +133,7 @@ classdef CellClass
                 Cell.EdgeLengths=cell(nC,1);
                 Cell.EdgeLengths0_average=-1;
                 Cell.EdgeLengthsn=cell(nC,1);
-                Cell.GhostCells=false(nC, 1);
+                Cell.DebrisCells=false(nC, 1);
                 Cell.ContractileForces=cell(nC, 1);
                 Cell.EdgeLocation=cell(nC,1);
                 Cell.ApicalVertices=cell(nC, 1);
@@ -147,7 +147,7 @@ classdef CellClass
         % the IDs from the middle.
         % TODO: Check if Cell.Int need to be in order in consecutive numbers
         function Cell = AblateCells(obj, cellsToRemove)
-            obj.GhostCells(ismember(obj.Int, cellsToRemove)) = true;
+            obj.DebrisCells(ismember(obj.Int, cellsToRemove)) = true;
             Cell = obj;
         end 
         
@@ -179,7 +179,7 @@ classdef CellClass
             obj.EdgeLengths(cellsToRemove) = [];
             obj.EdgeLengthsn(cellsToRemove) = [];
             obj.ContractileForces(cellsToRemove) = [];
-            obj.GhostCells(cellsToRemove) = [];
+            obj.DebrisCells(cellsToRemove) = [];
             
             obj.n = obj.n - sum(cellsToRemove);
             obj.nTotalTris = sum(cellfun(@(X) size(X,1), obj.Tris));

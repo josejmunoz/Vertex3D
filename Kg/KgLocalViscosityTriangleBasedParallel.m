@@ -40,12 +40,12 @@ CellAux.Tris=Cell.Tris;
 CellAux.SAreaTri=Cell.SAreaTri;
 CellAux.SAreaTrin=Cell.SAreaTrin;
 CellAux.RemodelledVertices=Cell.RemodelledVertices;
-CellAux.GhostCells = Cell.GhostCells;
+CellAux.DebrisCells = Cell.DebrisCells;
 
 %% Loop over Cells
 %     % Analytical residual g and Jacobian K
 parfor i=1:ncell
-    if CellAux.GhostCells(i)
+    if CellAux.DebrisCells(i)
         continue;
     end 
     if ~CellAux.AssembleAll

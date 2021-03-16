@@ -22,7 +22,7 @@ energy = 0;
 
 for numCell = 1:Cell.n
     
-    if Cell.GhostCells(numCell)
+    if Cell.DebrisCells(numCell)
         kSubstrate = 0;
     else
         kSubstrate = Set.kSubstrate;

@@ -36,7 +36,7 @@ CellAssembleAll=Cell.AssembleAll;
 CellInt=Cell.Int;
 CellAssembleNodes=Cell.AssembleNodes;
 CellRemodelledVertices=Cell.RemodelledVertices;
-CellGhostCells = Cell.GhostCells;
+CellDebrisCells = Cell.DebrisCells;
 %% Loop over Cells
 %     % Analytical residual g and Jacobian K
 parfor i=1:ncell
@@ -46,7 +46,7 @@ parfor i=1:ncell
         end
     end
     
-    if CellGhostCells(i)
+    if CellDebrisCells(i)
         lambdaV=lambdaV_Debris;
     else
         lambdaV=lambdaV_Regular;

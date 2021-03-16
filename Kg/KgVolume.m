@@ -40,7 +40,7 @@ for i=1:ncell
         end 
     end 
     
-    if Cell.GhostCells(i)
+    if Cell.DebrisCells(i)
         lambdaV=Set.lambdaV_Debris;
     else
         lambdaV=Set.lambdaV;

@@ -36,9 +36,9 @@ CellAssembleNodes=Cell.AssembleNodes;
 CellEdges=Cell.Edges;
 CellFaceCentres=Cell.FaceCentres;
 CellRemodelledVertices=Cell.RemodelledVertices;
-CellGhostCells = Cell.GhostCells;
+CellDebrisCells = Cell.DebrisCells;
 parfor i=1:ncell
-    if CellGhostCells(i)
+    if CellDebrisCells(i)
         continue;
     end 
     if ~CellAssembleAll

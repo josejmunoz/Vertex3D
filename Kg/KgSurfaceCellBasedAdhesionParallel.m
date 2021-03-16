@@ -38,12 +38,12 @@ CelAux.FaceCentres=Cell.FaceCentres;
 CelAux.SArea0=Cell.SArea0;
 CelAux.RemodelledVertices=Cell.RemodelledVertices;
 CelAux.Tris=Cell.Tris;
-CelAux.GhostCells = Cell.GhostCells;
+CelAux.DebrisCells = Cell.DebrisCells;
 FacesAux = Faces;
 %% Loop over Cells
 %     % Analytical residual g and Jacobian K
 parfor i=1:ncell
-%     if CelAux.GhostCells(i)
+%     if CelAux.DebrisCells(i)
 %         continue;
 %     end 
     if ~CelAux.AssembleAll
@@ -75,8 +75,8 @@ parfor i=1:ncell
         elseif  FacesInterfaceType(CelAux.Faces{i}.FaceCentresID (f))==1
             cellsOfFace = FacesAux.Nodes(CelAux.Faces{i}.FaceCentresID(f), :);
             % Cell-Cell
-            if any(CelAux.GhostCells(ismember(CelAux.Int, cellsOfFace)))
-                % Lambda of Cell-GhostCell faces
+            if any(CelAux.DebrisCells(ismember(CelAux.Int, cellsOfFace)))
+                % Lambda of Cell-DebrisCell faces
                 Lambda=Set.lambdaS4*CellInput.LambdaS4Factor(i);
             else
                 % Lambda of Cell-Cell faces
@@ -125,8 +125,8 @@ parfor i=1:ncell
         elseif  FacesInterfaceType(CelAux.Faces{i}.FaceCentresID (f))==1
             cellsOfFace = FacesAux.Nodes(CelAux.Faces{i}.FaceCentresID(f), :);
             % Cell-Cell
-            if any(CelAux.GhostCells(ismember(CelAux.Int, cellsOfFace)))
-                % Lambda of Cell-GhostCell faces
+            if any(CelAux.DebrisCells(ismember(CelAux.Int, cellsOfFace)))
+                % Lambda of Cell-DebrisCell faces
                 Lambda=Set.lambdaS4*CellInput.LambdaS4Factor(i);
             else
                 % Cell-Cell

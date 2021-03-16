@@ -32,8 +32,8 @@ if Set.Ablation
         Cell = Cell.AblateCells(Set.cellsToAblate);
     end
     
-    CellNoAblated = Cell.removeCells(Cell.GhostCells);
-    CellOnlyAblated = Cell.removeCells(Cell.GhostCells == 0);
+    CellNoAblated = Cell.removeCells(Cell.DebrisCells);
+    CellOnlyAblated = Cell.removeCells(Cell.DebrisCells == 0);
         
     
     %Create Cell Volume

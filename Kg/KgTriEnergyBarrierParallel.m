@@ -35,12 +35,12 @@ CellTris=Cell.Tris;
 CellSAreaTri=Cell.SAreaTri;
 CellFaceCentres=Cell.FaceCentres;
 CellRemodelledVertices=Cell.RemodelledVertices;
-CellGhostCells = Cell.GhostCells;
+CellDebrisCells = Cell.DebrisCells;
 
 %% Loop over Cells
 % Analytical residual g and Jacobian K
 parfor i=1:ncell
-    if CellGhostCells(i)
+    if CellDebrisCells(i)
         continue;
     end 
     if ~CellAssembleAll

@@ -174,7 +174,11 @@ Y=Y.Add(Y_new);
 xInternal = xInternal';
 [Cv,Cell,Faces]=BuildCells(Twg,Y,X,xInternal, cellHeight, false);
 
-Cell.BorderVertices = sum(ismember(Twg, borderPairs(1:22, 2)), 2) >= 1;
+borderPairs = neighboursNetwork(sum(ismember(neighboursNetwork, xInternal), 2) == 1, :);
+borderPairs = unique(sort(borderPairs, 2), 'rows');
+Cell.BorderVertices = find(sum(ismember(Twg, borderPairs(:, 2)), 2) >= 1);
+% Add facecentres
+Cell.BorderVertices = [Cell.BorderVertices; -find(ismember(Faces.Nodes, borderPairs, 'rows'))];
 Set.NumMainV=Y.n;
 Set.NumAuxV=Cell.FaceCentres.n;
 Set.NumTotalV=Set.NumMainV+Set.NumAuxV;

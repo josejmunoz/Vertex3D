@@ -163,14 +163,18 @@ Y=DynamicArray(ceil(size(Y_new,1)*1.5),size(Y_new,2));
 Y=Y.Add(Y_new);
 
 % % sum(any(ismember(Twg, xInternal(2)), 2))
-% index = any(ismember(Twg, xInternal(1)), 2);
-% figure, tetramesh(Twg(index, :), X);
-% hold on, plot3(Y.DataRow(index, 1), Y.DataRow(index, 2), Y.DataRow(index, 3), 'rx');
+% index = any(ismember(Twg, xInternal), 2);
+% %figure, tetramesh(Twg(index, :), X);
+% figure, plot3(Y.DataRow(index, 1), Y.DataRow(index, 2), Y.DataRow(index, 3), 'rx');
+% %indexVertices = sum(ismember(Twg, borderPairs), 2) == 1;
+% indexVertices = sum(ismember(Twg, borderPairs(1:22, 2)), 2) >= 1;
+% hold on, plot3(Y.DataRow(indexVertices, 1), Y.DataRow(indexVertices, 2), Y.DataRow(indexVertices, 3), 'bo');
 
 %% Create cells
 xInternal = xInternal';
 [Cv,Cell,Faces]=BuildCells(Twg,Y,X,xInternal, cellHeight, false);
 
+Cell.BorderVertices = sum(ismember(Twg, borderPairs(1:22, 2)), 2) >= 1;
 Set.NumMainV=Y.n;
 Set.NumAuxV=Cell.FaceCentres.n;
 Set.NumTotalV=Set.NumMainV+Set.NumAuxV;

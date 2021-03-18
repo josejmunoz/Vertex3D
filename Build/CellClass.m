@@ -100,6 +100,8 @@ classdef CellClass
         ApicalVertices
         BasalVertices
         %--------------------------------------------------------------------
+        BorderVertices
+        %--------------------------------------------------------------------
         SubstrateForce
         %--------------------------------------------------------------------
         DebrisCells            % Debris cells
@@ -139,6 +141,7 @@ classdef CellClass
                 Cell.ApicalVertices=cell(nC, 1);
                 Cell.BasalVertices=cell(nC, 1);
                 Cell.SubstrateForce=cell(nC, 1);
+                Cell.BorderVertices = [];
             end
         end
         

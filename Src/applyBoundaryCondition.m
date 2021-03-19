@@ -18,6 +18,10 @@ function [Cell, Y, Dofs, Yt, Ytn, y, yn] = applyBoundaryCondition(t, Y, Set, Cel
         Dofs.FreeDofs=unique([Dofs.FreeDofs Dofs.dofC Dofs.dofP]);
     end
     
+    if isempty(Set.InputSegmentedImage) == 0 %% Constraining border cells
+        Dofs.FreeDofs(ismember(Dofs.FreeDofs, Dofs.dofC)) = [];
+    end
+    
     Ytn=[Yn.DataOrdered ;SCn.DataOrdered];
     Yt=[Y.DataOrdered ;Cell.FaceCentres.DataOrdered];
     y=reshape(Yt',Set.NumTotalV*3,1);

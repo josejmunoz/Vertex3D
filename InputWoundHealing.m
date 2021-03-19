@@ -74,17 +74,17 @@ Set.Nincr=1200;
 
 %% Ablating cells
 Set.Ablation = true;
-Set.cellsToAblate = [1 2 3 4];
-Set.TAblation = 2;
-Set.TToCompleteAblation = 100;
+Set.cellsToAblate = 1; %findCentralCells(Example(Set.e), 1);
+Set.TInitAblation = 2;
+Set.TEndAblation = 100;
 
 %% Contractility
-Set.Contractility = 0;
+Set.Contractility = true;
 
 Set.cPurseString = 0.05;
-Set.initMidEndContractility_PurseString = ([1 1 2.5 2] - 1) * Set.cPurseString;
-Set.initMidEndContractilityTime_PurseString = [0 7 16 60]/60*(Set.tend - Set.TAblation);
+Set.Contractility_Variability_PurseString = ([1 1 2.5 2] - 1) * Set.cPurseString;
+Set.Contractility_TimeVariability_PurseString = [0 7 16 60]/60*(Set.tend - Set.TInitAblation);
 
 Set.cLateralCables = 0.05;
-Set.initMidEndContractility_LateralCables = ([0.5 1.4 1.4] - 0.5) * Set.cLateralCables;
-Set.initMidEndContractilityTime_LateralCables = [0 16 60]/60*(Set.tend - Set.TAblation);
+Set.Contractility_Variability_LateralCables = ([0.5 1.4 1.4] - 0.5) * Set.cLateralCables;
+Set.Contractility_TimeVariability_LateralCables = [0 16 60]/60*(Set.tend - Set.TInitAblation);

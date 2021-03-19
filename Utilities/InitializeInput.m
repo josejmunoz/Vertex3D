@@ -60,7 +60,7 @@ if isempty(Set.Contractility_Variability_PurseString) == 0
     end
 end
 
-if isempty(Set.initMidEndContractility_LateralCables) == 0
+if isempty(Set.Contractility_Variability_LateralCables) == 0
     for numTimePoint = 2:length(Set.Contractility_Variability_LateralCables)
         [Set.cLateralCables_TimeDependent{numTimePoint-1}] = functionVariableOnTime(Set.Contractility_Variability_LateralCables(numTimePoint-1), Set.Contractility_Variability_LateralCables(numTimePoint), Set.Contractility_TimeVariability_LateralCables(numTimePoint-1), Set.Contractility_TimeVariability_LateralCables(numTimePoint), Set);
     end

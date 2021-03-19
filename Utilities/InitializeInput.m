@@ -54,21 +54,21 @@ Set.z0Substrate = min(Y.DataRow(:,3))*1.2;
 
 
 %% Contractility
-if isempty(Set.initMidEndContractility_PurseString) == 0
-    for numTimePoint = 2:length(Set.initMidEndContractility_PurseString)
-        [Set.cPurseString_TimeDependent{numTimePoint-1}] = functionVariableOnTime(Set.initMidEndContractility_PurseString(numTimePoint-1), Set.initMidEndContractility_PurseString(numTimePoint), Set.initMidEndContractilityTime_PurseString(numTimePoint-1), Set.initMidEndContractilityTime_PurseString(numTimePoint), Set);
+if isempty(Set.Contractility_Variability_PurseString) == 0
+    for numTimePoint = 2:length(Set.Contractility_Variability_PurseString)
+        [Set.cPurseString_TimeDependent{numTimePoint-1}] = functionVariableOnTime(Set.Contractility_Variability_PurseString(numTimePoint-1), Set.Contractility_Variability_PurseString(numTimePoint), Set.Contractility_TimeVariability_PurseString(numTimePoint-1), Set.Contractility_TimeVariability_PurseString(numTimePoint), Set);
     end
 end
 
 if isempty(Set.initMidEndContractility_LateralCables) == 0
-    for numTimePoint = 2:length(Set.initMidEndContractility_LateralCables)
-        [Set.cLateralCables_TimeDependent{numTimePoint-1}] = functionVariableOnTime(Set.initMidEndContractility_LateralCables(numTimePoint-1), Set.initMidEndContractility_LateralCables(numTimePoint), Set.initMidEndContractilityTime_LateralCables(numTimePoint-1), Set.initMidEndContractilityTime_LateralCables(numTimePoint), Set);
+    for numTimePoint = 2:length(Set.Contractility_Variability_LateralCables)
+        [Set.cLateralCables_TimeDependent{numTimePoint-1}] = functionVariableOnTime(Set.Contractility_Variability_LateralCables(numTimePoint-1), Set.Contractility_Variability_LateralCables(numTimePoint), Set.Contractility_TimeVariability_LateralCables(numTimePoint-1), Set.Contractility_TimeVariability_LateralCables(numTimePoint), Set);
     end
 end
 
-if Set.TToCompleteAblation > 0
-    Set.lambdaV_DebrisTime = functionVariableOnTime(Set.lambdaV, Set.lambdaV_Debris, 0, Set.TToCompleteAblation, Set);
-    Set.lambdaS4_Time = functionVariableOnTime(Set.lambdaS2, Set.lambdaS4, 0, Set.TToCompleteAblation, Set);
-    Set.LambdaS1FactorDebris_Time = functionVariableOnTime(0.001, 0.001, 0.001, Set.TToCompleteAblation/10, Set);
+if Set.TEndAblation > 0
+    Set.lambdaV_DebrisTime = functionVariableOnTime(Set.lambdaV, Set.lambdaV_Debris, 0, Set.TEndAblation, Set);
+    Set.lambdaS4_Time = functionVariableOnTime(Set.lambdaS2, Set.lambdaS4, 0, Set.TEndAblation, Set);
+    Set.LambdaS1FactorDebris_Time = functionVariableOnTime(0.001, 0.001, 0.001, Set.TEndAblation/10, Set);
 end
 end 

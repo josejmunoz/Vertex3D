@@ -1,6 +1,9 @@
 function [Set]=SetDefault(Set)
 % Default settings 
+
 %% ============================= geometry =================================
+
+%% Option 1: Obtaining from a number of seeds placed on a planar surface
 % Examples of cell centres  position
 if ~isfield(Set,'e')
     Set.e=1;
@@ -35,12 +38,49 @@ end
 %                        Interior nodes are placed in the centre of cells,
 %                        while exterior nodes are placed with a distance d (hard coded d=1 in Geo\GetXFromY.m)
 %                        form the cell centre in the direction of centre of the face.
+
+%% Option 2: A 2D input image to obtain the initial topology of the cells
+% Note that topology is the same in both apical and basal
+
+% Path to the input image
+if ~isfield(Set,'InputSegmentedImage')
+    Set.InputSegmentedImage = [];
+end
+
+% Aspect ratio: 'NumberOfPlanes a cell appears' / 'CellArea' measured in your 3D images
+if ~isfield(Set,'CellAspectRatio')
+    Set.CellAspectRatio = 1;
+end
+
+% 'Voxel depth'/'Pixel width' in the images where you measure 'CellHeight'
+if ~isfield(Set,'zScale')
+    Set.zScale = 1;
+end
+
+% Real cell height 
+if ~isfield(Set,'CellHeight')
+    % Which can be interpolated from CellAspectRatio per ZScale
+    Set.CellHeight = Set.CellAspectRatio * Set.zScale;
+end
+
+% Number of cell selected from the centre of the image that will become
+% cells in our system
+if ~isfield(Set,'TotalCells')
+    Set.TotalCells = 9;
+end
+
 %% =============================  Add Substrate ===========================
+% The substrate is only applied to basal vertices (connected to the ECM)
 if ~isfield(Set,'Substrate')
     Set.Substrate=false; % true  --> There is a substrate, 
-                         % false --> no substrate   
-    Set.kSubstrate=0;    % the z-coordinate of the substrate   
+                         % false --> no substrate
 end 
+
+% How strong are the springs connected to the vertices
+if ~isfield(Set,'kSubstrate')
+    Set.kSubstrate=0;
+end
+
 %% ============================= Time =====================================
 if ~isfield(Set,'tend') % total simulation  Time 
     Set.tend=200;       
@@ -56,7 +96,8 @@ if ~isfield(Set,'lambdaV')    %  Volume-Energy Constant (bulk modulus).
     Set.lambdaV=1;
 end 
 
-if ~isfield(Set,'lambdaV_Debris')    %  Volume-Energy Constant (bulk modulus).
+%  Volume-Energy Constant (bulk modulus) of the ablated cell (now Debris)
+if ~isfield(Set,'lambdaV_Debris')    
     Set.lambdaV_Debris=0.001;
 end 
 %---------- Surface -------------------------------------------------------
@@ -304,36 +345,63 @@ if ~isfield(Set,'SaveSetting')
 end
        
 %% ============================= Ablation ===========================
+% Cells are ablated by becoming 'Debris'
+
 if ~isfield(Set,'Ablation') % Apply ablation (mechanical removal) of some cells
     Set.Ablation = false;
 end
-%Type of abaltion. =1 Only mechanical (no volume/surface/bending/dissipation potentials). =2 Fully removal, including cell-center, which becomes boundary node.
 
-if ~isfield(Set,'TAblation') % Time when ablation is applied
-    Set.TAblation = 1;
+if ~isfield(Set,'TInitAblation') % Time at which ablation is performed
+    Set.TInitAblation = 1;
 end
+
+% Time at which the ablated cell achieved the parameters of complete Debris (for instance, 'lambda_debris')
+if ~isfield(Set,'TEndAblation') 
+    Set.TEndAblation = Set.tend;
+end
+
+% Cells IDs that will be ablated at TInitAblation
 if ~isfield(Set, 'cellsToAblate')
     Set.cellsToAblate = findCentralCells(Example(Set.e), 1);
 end
 
 %% ============================= Contractility ============================
 
-if ~isfield(Set, 'cPurseString')  % Contractility coefficient of purse string
+if ~isfield(Set, 'Contractility')
+    Set.Contractility = true;
+end
+
+if ~isfield(Set, 'cPurseString')  % Contractility coefficient on the purse string
     Set.cPurseString = 0;
 end
 
-if ~isfield(Set, 'cLateralCables')
+% Contractility coefficient values on the purse string during a period of time
+% defined by 'Contractility_TimeVariability_PurseString'
+if ~isfield(Set, 'Contractility_Variability_PurseString')
+    Set.Contractility_Variability_PurseString = [];
+end
+
+% Timepoints where differeent values of 'cPurseString' appear.
+% Intermediate values of 'cPurseString' are extrapolated considering the
+% difference between each timepoint.
+if ~isfield(Set, 'Contractility_TimeVariability_PurseString')
+    Set.Contractility_TimeVariability_PurseString = [];
+end
+
+if ~isfield(Set, 'cLateralCables') % Contractility coefficient on the lateral cables
     Set.cLateralCables = 0;
 end
 
-if ~isfield(Set, 'Contractility')
-    Set.Contractility = 0; % Isotropic Contracitility
-    % Other possibilities:
-    % Set.Contractility = 1; % Vertically Aligned Contractility 
-    % Set.Contractility = 2; % Adding area of adjacent triangles
+% Contractility coefficient values on the lateral cables during a period of 
+% time defined by 'Contractility_TimeVariability_PurseString'
+if ~isfield(Set, 'Contractility_Variability_LateralCables')
+    Set.Contractility_Variability_LateralCables = [];
 end
 
-if ~isfield(Set, 'initEndContractility')
-    Set.initEndContractility = [];
+% Timepoints where differeent values of 'cLateralCables' appear.
+% Intermediate values of 'cLateralCables' are extrapolated considering the
+% difference between each timepoint.
+if ~isfield(Set, 'Contractility_TimeVariability_LateralCables')
+    Set.Contractility_TimeVariability_LateralCables = [];
 end
 end 

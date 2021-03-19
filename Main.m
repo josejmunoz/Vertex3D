@@ -147,7 +147,7 @@ while t<=Set.tend
             Energyb(numStep)=Energy.Eb;
         end
         EnergyF(numStep)=Energy.Ef;
-        if Set.Contractility
+        if Set.Contractility && (Set.cPurseString > 0 || Set.cLateralCables > 0)
             EnergyC(numStep)=Energy.Ec;
         end
         if Set.Substrate

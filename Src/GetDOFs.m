@@ -1,4 +1,4 @@
-function [Dofs, Set]=GetDOFs(Y, Cell, Faces, Set)
+function [Dofs, Set]=GetDOFs(Y, Cell, Faces, Set, contrainBorderVertices)
 % Define free and constrained vertices:
 %   1) Vertices with y-coordinates > Set.VPrescribed are those to be prescribed (pulled)
 %   2) Vertices with y-coordinates < Set.VFixed are those to be fixed

@@ -60,7 +60,7 @@ Set.ApplyBC=true;
 
 % Dofs & Boundary
 if Set.BC==1 || Set.BC==2
-    Dofs=GetDOFs(Y,Cell,Faces,Set, inputImage);
+    [Dofs, Set] = GetDOFs(Y,Cell,Faces,Set, inputImage);
 else
     error('Invalid Input in Set.BC and Set.Substrate. \n')
 end

@@ -50,7 +50,7 @@ else
 end
 
 %% Set z0Substrate
-Set.z0Substrate = min(Y.DataRow(:,3))*1.2;
+Set.z0Substrate = min(Y.DataRow(:,3))*1.01;
 
 
 %% Contractility

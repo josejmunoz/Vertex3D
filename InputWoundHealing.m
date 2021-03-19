@@ -1,14 +1,15 @@
 Set.OutputFolder = 'Result/Test' ;%'Result/Ablation_Contractility_0.01_NoRemodel_S4_0.5_3x3';
 Set.diary = true;
 Set.MaxIter = 400;
-Set.tol=1e-8;
+Set.tol=1e-10;
+Set.Parallel = true;
 
 %% geometry
 Set.InputSegmentedImage = 'InputImage_dWP3.bmp';
 Set.CellHeight = 4.5;
 Set.zScale = 19;
 Set.CellHeight = Set.CellHeight * Set.zScale;
-Set.TotalCells = 8;
+Set.TotalCells = 40;
 
 %Set.e=25;  % Example Number look in Geo\Example.m 
 Set.Method=1;
@@ -59,8 +60,8 @@ Set.BC=2; % BC=1: Stretching, BC=2: Compression, BC=nan, substrate extrussion
     Set.TStopBC=302;
     
 %% Substrate
-Set.Substrate = false;
-Set.kSubstrate = 0;
+Set.Substrate = true;
+Set.kSubstrate = 0.1;
 
 %% Remodeling
 Set.Remodelling=false;
@@ -69,26 +70,18 @@ Set.RemodelingFrequency=1;
 
 %% time
 Set.tend=300;
-Set.Nincr=600;
-    
-%% Contractility
-Set.Contractility = 0;
-Set.cContractility = 0.01;
-%Set.initEndContractility = [0.001 0.1];
-%Set.timeToReachFullContractility = 5;
-
-
+Set.Nincr=1200;
 
 %% Ablating cells
 Set.Ablation = true;
-Set.cellsToAblate = 1;
-Set.TAblation = 10;
+Set.cellsToAblate = [1 2 3 4];
+Set.TAblation = 2;
 Set.TToCompleteAblation = 100;
 
 %% Contractility
 Set.Contractility = 0;
 
-Set.cPurseString = 0.1;
+Set.cPurseString = 0.05;
 Set.initMidEndContractility_PurseString = ([1 1 2.5 2] - 1) * Set.cPurseString;
 Set.initMidEndContractilityTime_PurseString = [0 7 16 60]/60*(Set.tend - Set.TAblation);
 

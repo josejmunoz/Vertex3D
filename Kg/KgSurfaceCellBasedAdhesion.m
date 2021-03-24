@@ -3,7 +3,6 @@ function [g,K,Cell,EnergyS]=KgSurfaceCellBasedAdhesion(Cell,Y,Faces,Set,CellInpu
 % Energy based on the total cell area with differential Lambda depending on the face type  (external, cell-cell, Cell-substrate)
 %    W_s= sum_cell( sum_face (lambdaS*factor_f(Af)^2) / Ac0^2 )
 
-tic
 %% Set parameters
 ncell=Cell.n;
 
@@ -170,7 +169,6 @@ if Set.Sparse &&  nargout>1
     %K=sparse(K_SparseValues(1:sk, 1),K_SparseValues(1:sk, 2),K_SparseValues(1:sk, 3),dimg,dimg)+K;
     K=sparse(si(1:sk),sj(1:sk),sv(1:sk),dimg,dimg)+K;
 end
-toc
 end
 %%
 

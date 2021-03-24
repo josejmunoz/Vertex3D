@@ -2,8 +2,6 @@ function [g,K,Cell,EnergyB]=KgTriEnergyBarrier(Cell,Y,Set)
 % The residual g and Jacobian K of  Energy Barrier
 % Energy  WBexp = exp( Set.lambdaB*  ( 1 - Set.Beta*At/Set.BarrierTri0 )  );
 
-Set.Sparse=true;
-
 %% Set parameters
 ncell=Cell.n;
 

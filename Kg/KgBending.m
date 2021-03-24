@@ -5,8 +5,6 @@ function [g,K,Cell,Energy]=KgBending(Cell,Y,Set)
 %                       where  theta: the angle between the pair of triangles
 %                              At1 and At2 : the area of the triangles
 
-Set.Sparse=true;
-
 ncell=Cell.n;
 
 %% Initialize

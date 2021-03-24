@@ -3,8 +3,7 @@ function [g,K,Cell,EnergyS]=KgSurfaceCellBasedAdhesion(Cell,Y,Faces,Set,CellInpu
 % Energy based on the total cell area with differential Lambda depending on the face type  (external, cell-cell, Cell-substrate)
 %    W_s= sum_cell( sum_face (lambdaS*factor_f(Af)^2) / Ac0^2 )
 
-
-Set.Sparse=true;
+tic
 %% Set parameters
 ncell=Cell.n;
 
@@ -14,15 +13,14 @@ dimg=Set.NumTotalV*3;
 g=zeros(dimg,1); % Local cell residual
 if Set.Sparse && nargout>1
     sk=0;
-    si=zeros((dimg*3)^2,1); % Each vertex is shared by at least 3 cells
+    %K_SparseValues=zeros(round((dimg^2)/50),3); 
+    si=zeros(round((dimg^2)/50),1); % Each vertex is shared by at least 3 cells
     sj=si;
     sv=si;
     K=sparse(zeros(dimg)); % Also used in sparse
 elseif nargout>1
     K=zeros(dimg); % Also used in sparse
 end
-
-
 
 EnergyS=0;
 
@@ -144,6 +142,7 @@ for i=1:ncell
             if nargout>1
                 Ks=fact*Lambda*(Ks+Kss);
                 if Set.Sparse
+                    %[K_SparseValues,sk]= AssembleKSparse_Enhanced(Ks,nY,K_SparseValues,sk);
                     [si,sj,sv,sk]= AssembleKSparse(Ks,nY,si,sj,sv,sk);
                 else
                     K= AssembleK(K,Ks,nY);
@@ -163,8 +162,15 @@ for i=1:ncell
 end
 
 if Set.Sparse &&  nargout>1
+    %[si_cpu, sj_cpu, sv_cpu] = gather(si, sj, sv);
+    %K=sparse(si_cpu(1:sk),sj_cpu(1:sk),sv_cpu(1:sk),dimg,dimg)+K;
+    %si = horzcat(K_SparseValues{1:sk-1, 1});
+    %sj = horzcat(K_SparseValues{1:sk-1, 2});
+    %sv = horzcat(K_SparseValues{1:sk-1, 3});
+    %K=sparse(K_SparseValues(1:sk, 1),K_SparseValues(1:sk, 2),K_SparseValues(1:sk, 3),dimg,dimg)+K;
     K=sparse(si(1:sk),sj(1:sk),sv(1:sk),dimg,dimg)+K;
 end
+toc
 end
 %%
 

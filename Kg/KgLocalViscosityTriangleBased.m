@@ -6,8 +6,6 @@ function [g,K,Cell,EnergyS]=KgLocalViscosityTriangleBased(Cell,Y,Set)
 %                           Atn: is the Area of triangle t_(n)
 %                           dt: time step
 
-Set.Sparse=true;
-
 
 %% Set parameters
 ncell=Cell.n;

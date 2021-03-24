@@ -1,8 +1,6 @@
 function [g,K,Cell,energy] = KgSubstrate(Cell, SCn, Y, Yn, Set)
 %KGSUBSTRATE Summary of this function goes here
 %   Detailed explanation goes here
-%% Set parameters
-Set.Sparse = true;
 
 %% Initialize
 dimensionsG = Set.NumTotalV*3;

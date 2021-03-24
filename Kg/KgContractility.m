@@ -4,9 +4,6 @@ function [g,K,Cell,energy] = KgContractility(Cell,Y,Set)
 %   g: is a vector
 %   K: is a matrix
 
-%% Set parameters
-Set.Sparse = true;
-
 %% Initialize
 dimensionsG = Set.NumTotalV*3;
 g=zeros(dimensionsG,1); % Local cell residual

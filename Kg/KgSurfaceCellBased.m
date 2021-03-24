@@ -2,8 +2,6 @@ function [g,K,Cell,EnergyS]=KgSurfaceCellBased(Cell,Y,Set)
 % The residual g and Jacobian K of Surface  Energy
 % Energy based on the total cell area W_s= sum_cell ((Ac-Ac0)/Ac0)^2
 
-Set.Sparse=true;
-
 %% Set parameters
 ncell=Cell.n;
 

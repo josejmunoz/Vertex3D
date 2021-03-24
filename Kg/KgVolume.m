@@ -3,11 +3,6 @@ function [g,K,Cell,EnergyV]=KgVolume(Cell,Y,Set)
 % Energy W_s= sum_cell lambdaV ((V-V0)/V0)^2
 
 
-
-%% Input 
-Set.Sparse=true;
-
-
 %% Set parameters
 ncell=Cell.n;
 

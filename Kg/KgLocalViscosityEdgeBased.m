@@ -6,8 +6,6 @@ function [g,K,Cell,EnergyBar]=KgLocalViscosityEdgeBased(Cell,Y,Set)
 %                             Ln:is the length at t_(n)
 %                             dt: time step
 
-Set.Sparse=true;
-
 
 %% Set parameters
 ncell=Cell.n;

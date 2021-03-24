@@ -218,9 +218,11 @@ classdef CellClass
         end
         
         function [obj, featuresTable, resultingImage] = exportTableWithCellFeatures(obj, Y, timeStep)
-            resolutionOfImage = 0.03;
             featuresTable = [];
-            allVertices = [Y.DataRow; obj.FaceCentres.DataRow];
+            allVertices = [Y.DataRow(1:Y.n, :); obj.FaceCentres.DataRow(1:obj.FaceCentres.n, :)];
+            
+            resolutionOfImage = pdist2(max(allVertices(:)), min(allVertices(:))) / 200;
+            
             [xPixels,yPixels,zPixels] = meshgrid(min(allVertices(:)):resolutionOfImage:max(allVertices(:)));
             
             resultingImage = uint8(zeros(size(xPixels)));

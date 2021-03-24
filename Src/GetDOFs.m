@@ -18,7 +18,11 @@ end
 %% prescribed and constraint vertices 
 pIDY=IDY(Y.DataRow(:,2) > prescribedBoundary & Y.NotEmpty);
 cIDY=IDY(Y.DataRow(:,2) < Set.VFixd & Y.NotEmpty);
-constrainedBorderIDY=Cell.BorderVertices(Cell.BorderVertices>0)';
+if contrainBorderVertices
+    constrainedBorderIDY = Cell.BorderVertices(Cell.BorderVertices>0)';
+else
+    constrainedBorderIDY = [];
+end
 
 freeIDY=1:Y.n;
 freeIDY(ismember(freeIDY,[pIDY cIDY constrainedBorderIDY]))=[];
@@ -32,12 +36,8 @@ elseif Set.BC==2
     YdofP=3.*(kron(pIDY,1)-1)+kron(ones(1,length(pIDY)),2);
 end
 
-if contrainBorderVertices
-    % Border vertices are only constrained on x,y coordinates
-    YdofCBorder = 3.*(kron(constrainedBorderIDY,[1 1])-1)+kron(ones(1,length(constrainedBorderIDY)),[1 2]);
-else
-    YdofCBorder = [];
-end
+% Border vertices are only constrained on x,y coordinates
+YdofCBorder = 3.*(kron(constrainedBorderIDY,[1 1])-1)+kron(ones(1,length(constrainedBorderIDY)),[1 2]);
 
 Ydof=1:Y.n*3;
 Ydof([YdofC YdofP YdofCBorder])=[];
@@ -45,7 +45,11 @@ Ydof([YdofC YdofP YdofCBorder])=[];
 %% prescribed and constraint face centers
 pIDS=IDS(Cell.FaceCentres.DataRow(:,2) > prescribedBoundary & Cell.FaceCentres.NotEmpty);
 cIDS=IDS(Cell.FaceCentres.DataRow(:,2) < Set.VFixd & Cell.FaceCentres.NotEmpty);
-constrainedBorderIDS=abs(Cell.BorderVertices(Cell.BorderVertices<0))';
+if contrainBorderVertices
+    constrainedBorderIDS = abs(Cell.BorderVertices(Cell.BorderVertices<0))';
+else
+    constrainedBorderIDS = [];
+end
 
 freeIDS=1:Cell.FaceCentres.n;
 SdofD=3.*(kron(freeIDS(Faces.V3(1:Faces.n)),[1 1 1])-1)+kron(ones(1,length(freeIDS(Faces.V3(1:Faces.n)))),[1 2 3]);
@@ -57,12 +61,9 @@ elseif Set.BC==2
     SdofP=3.*(kron(pIDS,1)-1)+kron(ones(1,length(pIDS)),2);
 end
 
-if contrainBorderVertices
-    % Border vertices are only constrained on x,y coordinates
-    SdofCBorder = 3.*(kron(constrainedBorderIDS,[1 1])-1)+kron(ones(1,length(constrainedBorderIDS)),[1 2]);
-else
-    SdofCBorder = [];
-end
+% Border vertices are only constrained on x,y coordinates
+SdofCBorder = 3.*(kron(constrainedBorderIDS,[1 1])-1)+kron(ones(1,length(constrainedBorderIDS)),[1 2]);
+
 
 Sdof=1:Cell.FaceCentres.n*3;
 Sdof(unique([SdofC SdofP SdofD SdofCBorder]))=[];

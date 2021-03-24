@@ -82,7 +82,7 @@ Y=Y.Add(Yaux);
 %% Build Cells 
 xInternal=1:size(X,1);
 xInternal(XgID)=[];
-[Cv,Cell,Faces]=BuildCells(Twg,Y,X,xInternal,Set.f);
+[Cv,Cell,Faces]=BuildCells(Twg,Y,X,xInternal,Set.f, true);
 
 
 Set.NumMainV=Y.n;

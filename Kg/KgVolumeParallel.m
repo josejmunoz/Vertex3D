@@ -98,13 +98,6 @@ K=sparse(si,sj,sv,dimg,dimg)+K;
 
 end
 %%
-function Ymat=Cross(y)
-Ymat=[0 -y(3) y(2)
-    y(3) 0 -y(1)
-    -y(2) y(1) 0];
-
-end
-%%
 function [gs,Ks]=gKDet(Y1,Y2,Y3)
 % Returns residual and  Jacobian of det(Y)=y1'*cross(y2,y3)
 % gs=[der_y1 det(Y) der_y2 det(Y) der_y3 det(Y)]

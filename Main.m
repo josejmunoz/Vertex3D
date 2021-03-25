@@ -7,7 +7,7 @@ addpath(strcat(pwd,Esc,'Build'));
 addpath(strcat(pwd,Esc,'Utilities'));
 addpath(strcat(pwd,Esc,'Remodel'));
 addpath(strcat(pwd,Esc,'PostProcessing'));
-addpath(strcat(pwd,Esc,'Kg'));
+addpath(genpath(fullfile(pwd,'Kg')));
 addpath(strcat(pwd,Esc,'Src'));
 
 

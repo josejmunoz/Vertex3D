@@ -208,5 +208,13 @@ for I=1:length(nY) % loop on 3 vertices of triangle
 end
 
 end
+%%
+
+function Ymat=Cross(y)
+Ymat=[0 -y(3) y(2)
+    y(3) 0 -y(1)
+    -y(2) y(1) 0];
+
+end
 
 

@@ -87,7 +87,13 @@ if Set.Sparse && nargout>1
     K=sparse(si(1:sk),sj(1:sk),sv(1:sk),dimg,dimg)+K;
 end
 end
+%%
+function Ymat=Cross(y)
+Ymat=[0 -y(3) y(2)
+    y(3) 0 -y(1)
+    -y(2) y(1) 0];
 
+end
 %%
 function [gs,Ks]=gKDet(Y1,Y2,Y3)
 % Returns residual and  Jacobian of det(Y)=y1'*cross(y2,y3)

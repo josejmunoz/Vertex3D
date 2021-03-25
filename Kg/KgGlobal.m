@@ -1,7 +1,9 @@
 function [g,K,Cell,Energy,gs,gv,gf,gB,gb]=KgGlobal(Cell,Faces,SCn,Y,Yn,y,yn,Set,CellInput)
 % The residual g and Jacobian K of all energies
 
-%%
+%% Compute Volume
+[Cell]=ComputeCellVolume(Cell,Y);
+
 if nargout>1
     %% Compute both The residual g and Jacobian K
     % Surface Energy ----------------------------------------------------------

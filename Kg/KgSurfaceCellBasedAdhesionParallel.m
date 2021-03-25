@@ -26,8 +26,6 @@ end
 K=sparse(zeros(dimg));
 EnergyS=0;
 
-%% Compute Volume
-[Cell]=ComputeCellVolume(Cell,Y);
 CelAux.AssembleAll=Cell.AssembleAll;
 CelAux.Int=Cell.Int;
 CelAux.AssembleNodes=Cell.AssembleNodes;

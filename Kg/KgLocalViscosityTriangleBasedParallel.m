@@ -29,9 +29,6 @@ K=sparse(zeros(dimg)); % Also used in sparse
 
 EnergyS=0;
 
-%% Compute Volume
-[Cell]=ComputeCellVolume(Cell,Y);
-
 CellAux.AssembleAll=Cell.AssembleAll;
 CellAux.Int=Cell.Int;
 CellAux.AssembleNodes=Cell.AssembleNodes;

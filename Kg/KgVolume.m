@@ -22,8 +22,6 @@ end
 
 
 EnergyV=0;
-%% Compute Volume
-[Cell]=ComputeCellVolume(Cell,Y);
 
 
 %% Loop over Cells 

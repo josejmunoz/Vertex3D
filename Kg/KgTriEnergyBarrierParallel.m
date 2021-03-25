@@ -23,9 +23,6 @@ end
 
 K=sparse(zeros(dimg)); 
 EnergyB=0;
-
-%% Compute Volume
-[Cell]=ComputeCellVolume(Cell,Y);
 Beta=Set.Beta;
 lambdaB=Set.lambdaB;
 CellAssembleAll=Cell.AssembleAll;

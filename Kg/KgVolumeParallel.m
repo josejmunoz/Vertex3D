@@ -23,8 +23,6 @@ end
 K=sparse(zeros(dimg)); % Also used in sparse
 
 EnergyV=0;
-%% Compute Volume
-[Cell]=ComputeCellVolume(Cell,Y);
 
 lambdaV_Regular=Set.lambdaV;
 lambdaV_Debris = Set.lambdaV_Debris;

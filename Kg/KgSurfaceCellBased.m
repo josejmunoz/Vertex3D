@@ -6,7 +6,6 @@ function [g,K,Cell,EnergyS]=KgSurfaceCellBased(Cell,Y,Set)
 ncell=Cell.n;
 
 %% Initialize
-%% Initialize
 dimg=Set.NumTotalV*3;
 
 g=zeros(dimg,1); % Local cell residual
@@ -21,9 +20,6 @@ elseif nargout>1
 end
 
 EnergyS=0;
-
-%% Compute Volume
-[Cell]=ComputeCellVolume(Cell,Y);
 
 %% Loop over Cells
 %     % Analytical residual g and Jacobian K

@@ -21,9 +21,6 @@ end
 
 EnergyB=0;
 
-%% Compute Volume
-[Cell]=ComputeCellVolume(Cell,Y);
-
 %% Loop over Cells
 %     % Analytical residual g and Jacobian K
 for i=1:ncell

@@ -290,6 +290,10 @@ if ~isfield(Set,'Parallel')  %
     Set.Parallel=false;
 end 
 
+if ~isfield(Set,'Sparse')  % 
+    Set.Parallel=false;
+end 
+
 %% ============================= Boundary Condition and loading setting ===
 
 % ------------- Stretch test  (Input Sample)  -----------------------------

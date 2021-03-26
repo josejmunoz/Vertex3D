@@ -191,19 +191,12 @@ Ks=fact.*[Q1'*Q1               KK(1,2,3,y1,y2,y3) KK(1,3,2,y1,y2,y3);
     KK(2,1,3,y1,y2,y3)  Q2'*Q2              KK(2,3,1,y1,y2,y3);
     KK(3,1,2,y1,y2,y3)  KK(3,2,1,y1,y2,y3) Q3'*Q3            ];
 end
+
 function [KIJ]=KK(i,j,k,y1,y2,y3)
 Y=[y1;y2;y3];
 %KIJ= (Yk-Yj)*(Yi-Yk)+Cross()
 KIJ= (Cross(Y(j,:))-Cross(Y(k,:)))*(Cross(Y(i,:))-Cross(Y(k,:)))+...
     Cross(Cross(Y(j,:))*Y(i,:)')-Cross(Cross(Y(j,:))*Y(k,:)')-Cross(Cross(Y(k,:))*Y(i,:)');
-
-end
-
-
-function Ymat=Cross(y)
-Ymat=[0 -y(3) y(2)
-    y(3) 0 -y(1)
-    -y(2) y(1) 0];
 
 end
 

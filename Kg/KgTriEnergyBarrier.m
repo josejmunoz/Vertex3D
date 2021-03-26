@@ -100,14 +100,3 @@ KIJ= (Cross(Y(j,:))-Cross(Y(k,:)))*(Cross(Y(i,:))-Cross(Y(k,:)))+...
     Cross(Cross(Y(j,:))*Y(i,:)')-Cross(Cross(Y(j,:))*Y(k,:)')-Cross(Cross(Y(k,:))*Y(i,:)');
 
 end
-
-
-
-%%
-
-function Ymat=Cross(y)
-Ymat=[0 -y(3) y(2)
-    y(3) 0 -y(1)
-    -y(2) y(1) 0];
-end
-

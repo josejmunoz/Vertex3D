@@ -291,7 +291,7 @@ if ~isfield(Set,'Parallel')  %
 end 
 
 if ~isfield(Set,'Sparse')  % 
-    Set.Parallel=false;
+    Set.Sparse=false;
 end 
 
 %% ============================= Boundary Condition and loading setting ===

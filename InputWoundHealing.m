@@ -1,8 +1,9 @@
 %% geometry
 Set.InputSegmentedImage = 'InputImage_dWP3.bmp';
-Set.CellHeight = 5;
-Set.zScale = 20;
-Set.CellHeight = Set.CellHeight * Set.zScale;
+Set.CellHeight = 35; %Microns
+Set.zScale = 19.23; %MicronsXY-MicronsZ relation
+Set.AvgCellArea = 5; %Microns
+Set.CellHeight = (Set.CellHeight * Set.zScale) / Set.AvgCellArea;
 Set.TotalCells = 20;
 
 %Set.e=4;  % Example Number look in Geo\Example.m 

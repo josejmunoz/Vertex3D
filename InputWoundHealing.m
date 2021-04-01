@@ -1,8 +1,9 @@
 %% geometry
 Set.InputSegmentedImage = 'InputImage_dWP3.bmp';
-Set.CellHeight = 35;
-Set.zScale = 19.23;
-Set.AvgCellArea = 5;
+
+Set.CellHeight = 35; %Microns
+Set.zScale = 19.23; %MicronsXY-MicronsZ relation
+Set.AvgCellArea = 5; %Microns
 Set.CellHeight = (Set.CellHeight * Set.zScale) / Set.AvgCellArea;
 Set.TotalCells = 40;
 

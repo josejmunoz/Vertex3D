@@ -1,9 +1,10 @@
 %% geometry
 Set.InputSegmentedImage = 'InputImage_dWP3.bmp';
-Set.CellHeight = 5;
-Set.zScale = 20;
-Set.CellHeight = Set.CellHeight * Set.zScale;
-Set.TotalCells = 20;
+Set.CellHeight = 35;
+Set.zScale = 19.23;
+Set.AvgCellArea = 5;
+Set.CellHeight = (Set.CellHeight * Set.zScale) / Set.AvgCellArea;
+Set.TotalCells = 40;
 
 %Set.e=4;  % Example Number look in Geo\Example.m 
 Set.Method=1;
@@ -13,16 +14,16 @@ Set.f=Set.s/2;
 
 %%  Mechanics
 %---------- Volume
-Set.lambdaV=20;
+Set.lambdaV=5;
 Set.lambdaV_Debris=0.001;
 
 %---------- Surface
 % Set.SurfaceType=4 : Surface-Energy based on the whole cell area differential adhsion
 Set.SurfaceType=4;
 % external 
-Set.lambdaS1=1;
+Set.lambdaS1=0.5;
 % Cell-Cell 
-Set.lambdaS2=0.5;
+Set.lambdaS2=0.1;
 % Cell-substrate
 Set.lambdaS3=Set.lambdaS2;
 % Cell-DebrisCell
@@ -54,8 +55,8 @@ Set.BC=2; % BC=1: Stretching, BC=2: Compression, BC=nan, substrate extrussion
     Set.TStopBC=302;
     
 %% Substrate
-Set.Substrate = true;
-Set.kSubstrate = 0.01;
+Set.Substrate = false;
+Set.kSubstrate = 0;
 
 %% Remodeling
 Set.Remodelling=false;
@@ -64,13 +65,13 @@ Set.RemodelingFrequency=1;
 
 %% time
 Set.tend=300;
-Set.Nincr=10000;
+Set.Nincr=3000;
 
 %% Ablating cells
 Set.Ablation = true;
 %Set.cellsToAblate = findCentralCells(Example(Set.e), 1);
-Set.cellsToAblate = [1 2];
-Set.TInitAblation = 50;
+Set.cellsToAblate = [1 2 3];
+Set.TInitAblation = 1;
 Set.TEndAblation = 100;
 
 %% Contractility
@@ -85,7 +86,7 @@ Set.Contractility_Variability_LateralCables = ([0.5 1.4 1.4] - 0.5) * Set.cLater
 Set.Contractility_TimeVariability_LateralCables = [0 16 60]/60*(Set.tend - Set.TInitAblation);
 
 %% Execution parameters
-Set.OutputFolder = strcat('Result/cellHeigh_', num2str(Set.CellHeight),'_lambdaV_', num2str(Set.lambdaV), '_lambdaS1_', num2str(Set.lambdaS1),'_lambda_S2_', num2str(Set.lambdaS2),'_KSubstrate_', num2str(Set.kSubstrate),'_Remodelling_', num2str(Set.Remodelling),'_confinedXY_OuterVertices_NCells_', num2str(Set.TotalCells));
+Set.OutputFolder = strcat('Result/cellHeigh_', num2str(Set.CellHeight),'_lambdaV_', num2str(Set.lambdaV), '_lambdaS1_', num2str(Set.lambdaS1),'_lambda_S2_', num2str(Set.lambdaS2),'_KSubstrate_', num2str(Set.kSubstrate),'_Remodelling_', num2str(Set.Remodelling),'_confinedXYZ_OuterVertices_NCells_', num2str(Set.TotalCells));
 Set.diary = true;
 Set.MaxIter = 400;
 Set.tol=1e-10;

@@ -37,7 +37,7 @@ elseif Set.BC==2
 end
 
 % Border vertices are only constrained on x,y coordinates
-YdofCBorder = 3.*(kron(constrainedBorderIDY,[1 1])-1)+kron(ones(1,length(constrainedBorderIDY)),[1 2]);
+YdofCBorder = 3.*(kron(constrainedBorderIDY,[1 1 1])-1)+kron(ones(1,length(constrainedBorderIDY)),[1 2 3]);
 
 Ydof=1:Y.n*3;
 Ydof([YdofC YdofP YdofCBorder])=[];
@@ -62,7 +62,7 @@ elseif Set.BC==2
 end
 
 % Border vertices are only constrained on x,y coordinates
-SdofCBorder = 3.*(kron(constrainedBorderIDS,[1 1])-1)+kron(ones(1,length(constrainedBorderIDS)),[1 2]);
+SdofCBorder = 3.*(kron(constrainedBorderIDS,[1 1 1])-1)+kron(ones(1,length(constrainedBorderIDS)),[1 2 3]);
 
 
 Sdof=1:Cell.FaceCentres.n*3;

@@ -66,7 +66,7 @@ Set.RemodelingFrequency=1;
 
 %% time
 Set.tend=300;
-Set.Nincr=3000;
+Set.Nincr=6000;
 
 %% Ablating cells
 Set.Ablation = true;
@@ -87,7 +87,7 @@ Set.Contractility_Variability_LateralCables = ([0.5 1.4 1.4] - 0.5) * Set.cLater
 Set.Contractility_TimeVariability_LateralCables = [0 16 60]/60*(Set.tend - Set.TInitAblation);
 
 %% Execution parameters
-Set.OutputFolder = strcat('Result/cellHeigh_', num2str(Set.CellHeight),'_lambdaV_', num2str(Set.lambdaV), '_lambdaS1_', num2str(Set.lambdaS1),'_lambda_S2_', num2str(Set.lambdaS2),'_KSubstrate_', num2str(Set.kSubstrate),'_Remodelling_', num2str(Set.Remodelling),'_confinedXYZ_OuterVertices_NCells_', num2str(Set.TotalCells));
+Set.OutputFolder = strcat('Result/cellHeigh_', num2str(Set.CellHeight),'_cPurseString_', num2str(Set.cPurseString), '_cLateralCables_', num2str(Set.cLateralCables), '_lambdaV_', num2str(Set.lambdaV), '_lambdaS1_', num2str(Set.lambdaS1),'_lambda_S2_', num2str(Set.lambdaS2),'_KSubstrate_', num2str(Set.kSubstrate),'_Remodelling_', num2str(Set.Remodelling),'_confinedXYZ_OuterVertices_NCells_', num2str(Set.TotalCells));
 Set.diary = true;
 Set.MaxIter = 400;
 Set.tol=1e-10;

@@ -5,6 +5,7 @@ function [X]=Example(e)
 %  =3 : a cylinder
 %  =4 : 3x3 grid and one layer
 %  =5 : 3x3 grid and two layers
+%  =6 : three aligned cells
 
 if e==1
     X=0;
@@ -67,6 +68,13 @@ elseif e==5
     Y=reshape(Y,size(Y,1)*size(Y,2),1);
     X=[X Y ones(length(X),1)+rand(length(X),1)*0;
        X Y ones(length(X),1)*2];
+elseif e==6
+    X=0;
+    Y=0:1;
+    [X,Y]=meshgrid(X,Y);
+    X=reshape(X,size(X,1)*size(X,2),1);
+    Y=reshape(Y,size(Y,1)*size(Y,2),1);
+    X=[X Y zeros(length(X),1)+rand(length(X),1)*0];
    
 elseif e==16
     X=0:3;

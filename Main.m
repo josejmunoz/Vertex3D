@@ -12,9 +12,9 @@ addpath(strcat(pwd,Esc,'Src'));
 
 
 %InputCompression
-%InputStretch % Example of 2 stretched cells
+InputStretch2 % Example of 2 stretched cells
 % InputSubstrateExtrusion
-InputWoundHealing
+%InputWoundHealing
 
 [Set]=SetDefault(Set);
 InitiateOutputFolder(Set)

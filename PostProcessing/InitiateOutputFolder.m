@@ -2,73 +2,78 @@ function InitiateOutputFolder(Set)
 % Creates Output Folder and deletes old files if exsit
 
 fclose('all');
-diary off 
+diary off
 R=pwd;
 DirOutput=fullfile(R,Set.OutputFolder);
 if exist(DirOutput, 'dir')
-    input('Remove everything from output directory?')
-    
-    % clean
-    aux=fullfile(DirOutput,'LogFile.out');
-    if exist(aux, 'file'), delete(aux); end
-    
-    aux=fullfile(DirOutput,'Set.mat');
-    if exist(aux, 'file'), delete(aux); end
-    
-    if exist(fullfile(DirOutput,'ResultVTK'), 'dir')
-        aux=fullfile(DirOutput,'ResultVTK');
-        cd(aux)
-        delete *.vtk
-        cd(R)
-    end 
-    
-    if exist(fullfile(DirOutput,'ResultVTK_iter'), 'dir')
-        aux=fullfile(DirOutput,'ResultVTK_iter');
-        cd(aux)
-        delete *.vtk
-        cd(R)
-    end 
-    
-    if exist(fullfile(DirOutput,'Workspace'), 'dir')
-        aux=fullfile(DirOutput,'Workspace');
-        cd(aux)
-        delete *.mat
-        cd(R)
-    end 
-    
-    if exist(fullfile(DirOutput, 'Analysis'), 'dir')
-        aux=fullfile(DirOutput, 'Analysis');
-        cd(aux)
-        delete *.csv
-        delete *.mat
-        cd(R)
+    y=input('Remove everything from output directory?[y]');
+    if isempty(y)
+        y='y';
     end
-else 
+    if y=='y'
+        % clean
+        aux=fullfile(DirOutput,'LogFile.out');
+        if exist(aux, 'file'), delete(aux); end
+        
+        aux=fullfile(DirOutput,'Set.mat');
+        if exist(aux, 'file'), delete(aux); end
+        
+        if exist(fullfile(DirOutput,'ResultVTK'), 'dir')
+            aux=fullfile(DirOutput,'ResultVTK');
+            cd(aux)
+            delete *.vtk
+            cd(R)
+        end
+        
+        if exist(fullfile(DirOutput,'ResultVTK_iter'), 'dir')
+            aux=fullfile(DirOutput,'ResultVTK_iter');
+            cd(aux)
+            delete *.vtk
+            cd(R)
+        end
+        
+        if exist(fullfile(DirOutput,'Workspace'), 'dir')
+            aux=fullfile(DirOutput,'Workspace');
+            cd(aux)
+            delete *.mat
+            cd(R)
+        end
+        
+        if exist(fullfile(DirOutput, 'Analysis'), 'dir')
+            aux=fullfile(DirOutput, 'Analysis');
+            cd(aux)
+            delete *.csv
+            delete *.mat
+            cd(R)
+        end
+    end
+else
     mkdir(DirOutput);
 end
 
 cd(DirOutput);
-if Set.VTK
+if Set.VTK && ~exist('ResultVTK','dir')
     mkdir('ResultVTK')
-end 
+end
 if Set.VTK_iter
     mkdir('ResultVTK_iter')
-end 
+end
 if Set.SaveWorkspace
     mkdir('Workspace')
-end 
+end
 if Set.diary
     diary LogFile.out
-end 
+end
 if Set.SaveSetting
     save('Set','Set')
 end
 
-mkdir('Analysis')
+if ~exist('Analysis','dir')
+    mkdir('Analysis')
+end
 
 cd '..'
-cd '..'
-end 
+end
 
 
 

@@ -217,6 +217,7 @@ classdef CellClass
             [~, uniqueEdges] = unique(allEdges, 'rows');
         end
         
+        %%
         function [obj, featuresTable, resultingImage] = exportTableWithCellFeatures(obj, Y, timeStep)
             featuresTable = [];
             allVertices = [Y.DataRow(1:Y.n, :); obj.FaceCentres.DataRow(1:obj.FaceCentres.n, :)];
@@ -250,6 +251,7 @@ classdef CellClass
             end
         end
         
+        %%
         function [obj] = computeEdgeLocation(obj, Y)
             for numCell=1:obj.n
                 currentEdgesOfCell = obj.Cv{numCell};

@@ -12,18 +12,10 @@ ncell=Cell.n;
 dimg=Set.NumTotalV*3;
 
 g=zeros(dimg,1); % Local cell residual
-si=cell(ncell,1); %zeros((dimg*3)^2,1); % Each vertex is shared by at least 3 cells
-sj=si;
-sv=si;
-sk=si;
-for i=1:ncell
-    si{i}=zeros(size(Cell.Edges{i},1)*3*3*10,1);
-    sj{i}=si{i};
-    sv{i}=si{i};
-    sk{i}=0;
-end
+Ks_all=cell(ncell,1); %zeros((dimg*3)^2,1); % Each vertex is shared by at least 3 cells
+nY_all = Ks_all;
+ge_all = Ks_all;
 
-K=sparse(zeros(dimg));
 EnergyS=0;
 
 CelAux.AssembleAll=Cell.AssembleAll;
@@ -40,12 +32,12 @@ CelAux.DebrisCells = Cell.DebrisCells;
 FacesAux = Faces;
 %% Loop over Cells
 %     % Analytical residual g and Jacobian K
-parfor i=1:ncell
+parfor numCell=1:ncell
 %     if CelAux.DebrisCells(i)
 %         continue;
 %     end 
     if ~CelAux.AssembleAll
-        if ~ismember(CelAux.Int(i),CelAux.AssembleNodes)
+        if ~ismember(CelAux.Int(numCell),CelAux.AssembleNodes)
             continue
         end
     end
@@ -64,30 +56,30 @@ parfor i=1:ncell
     
     % first loop to commpute fact
     fact0=0;
-    for f=1:CelAux.Faces{i}.nFaces
-        if FacesInterfaceType(CelAux.Faces{i}.FaceCentresID (f))==0 %#ok<PFBNS>
+    for f=1:CelAux.Faces{numCell}.nFaces
+        if FacesInterfaceType(CelAux.Faces{numCell}.FaceCentresID (f))==0 %#ok<PFBNS>
             % External
-            Lambda=Set.lambdaS1*CellInput.LambdaS1Factor(i); %#ok<PFBNS>
-            fact0=fact0+Lambda*CelAux.SAreaFace{i}(f);
+            Lambda=Set.lambdaS1*CellInput.LambdaS1Factor(numCell); %#ok<PFBNS>
+            fact0=fact0+Lambda*CelAux.SAreaFace{numCell}(f);
             
-        elseif  FacesInterfaceType(CelAux.Faces{i}.FaceCentresID (f))==1
-            cellsOfFace = FacesAux.Nodes(CelAux.Faces{i}.FaceCentresID(f), :);
+        elseif  FacesInterfaceType(CelAux.Faces{numCell}.FaceCentresID (f))==1
+            cellsOfFace = FacesAux.Nodes(CelAux.Faces{numCell}.FaceCentresID(f), :);
             % Cell-Cell
             if any(CelAux.DebrisCells(ismember(CelAux.Int, cellsOfFace)))
                 % Lambda of Cell-DebrisCell faces
-                Lambda=Set.lambdaS4*CellInput.LambdaS4Factor(i);
+                Lambda=Set.lambdaS4*CellInput.LambdaS4Factor(numCell);
             else
                 % Lambda of Cell-Cell faces
-                Lambda=Set.lambdaS2*CellInput.LambdaS2Factor(i);
+                Lambda=Set.lambdaS2*CellInput.LambdaS2Factor(numCell);
             end
-            fact0=fact0+Lambda*CelAux.SAreaFace{i}(f);
+            fact0=fact0+Lambda*CelAux.SAreaFace{numCell}(f);
             
-        elseif FacesInterfaceType(CelAux.Faces{i}.FaceCentresID (f))==2
+        elseif FacesInterfaceType(CelAux.Faces{numCell}.FaceCentresID (f))==2
             % Cell-substrate
-            Lambda=Set.lambdaS3*CellInput.LambdaS3Factor(i);
+            Lambda=Set.lambdaS3*CellInput.LambdaS3Factor(numCell);
             if Set.Confinement
                 % ------------------------ Confinement --------------------
-                Tris=CelAux.Faces{i}.Tris{f};
+                Tris=CelAux.Faces{numCell}.Tris{f};
                 for t=1:size(Tris,1)
                     nY=Tris(t,:);
                     Y1=Y.DataRow(nY(1),:); %#ok<PFBNS>
@@ -102,40 +94,43 @@ parfor i=1:ncell
                     T=(1/2)*norm(cross(Y2-Y1,Y1-Y3));
                     if min([Y1(1) Y2(1) Y3(1)]) < Set.ConfinementX1 || max([Y1(1) Y2(1) Y3(1)]) > Set.ConfinementX2...
                             || min([Y1(2) Y2(2) Y3(2)]) < Set.ConfinementY1 || min([Y1(2) Y2(2) Y3(2)]) > Set.ConfinementY2
-                        fact0=fact0+Set.lambdaS1*CellInput.LambdaS1Factor(i)*T;
+                        fact0=fact0+Set.lambdaS1*CellInput.LambdaS1Factor(numCell)*T;
                     else
                         fact0=fact0+Lambda*T;
                     end
                 end
                 % ---------------------------------------------------------
             else
-                fact0=fact0+Lambda*CelAux.SAreaFace{i}(f);
+                fact0=fact0+Lambda*CelAux.SAreaFace{numCell}(f);
             end
         end
     end
-    fact=fact0/CelAux.SArea0(i)^2;
+    fact=fact0/CelAux.SArea0(numCell)^2;
     
     
-    for f=1:CelAux.Faces{i}.nFaces
-        if FacesInterfaceType(CelAux.Faces{i}.FaceCentresID (f))==0
+    for f=1:CelAux.Faces{numCell}.nFaces
+        if FacesInterfaceType(CelAux.Faces{numCell}.FaceCentresID (f))==0
             % External
-            Lambda=Set.lambdaS1*CellInput.LambdaS1Factor(i);
-        elseif  FacesInterfaceType(CelAux.Faces{i}.FaceCentresID (f))==1
-            cellsOfFace = FacesAux.Nodes(CelAux.Faces{i}.FaceCentresID(f), :);
+            Lambda=Set.lambdaS1*CellInput.LambdaS1Factor(numCell);
+        elseif  FacesInterfaceType(CelAux.Faces{numCell}.FaceCentresID (f))==1
+            cellsOfFace = FacesAux.Nodes(CelAux.Faces{numCell}.FaceCentresID(f), :);
             % Cell-Cell
             if any(CelAux.DebrisCells(ismember(CelAux.Int, cellsOfFace)))
                 % Lambda of Cell-DebrisCell faces
-                Lambda=Set.lambdaS4*CellInput.LambdaS4Factor(i);
+                Lambda=Set.lambdaS4*CellInput.LambdaS4Factor(numCell);
             else
                 % Cell-Cell
-                Lambda=Set.lambdaS2*CellInput.LambdaS2Factor(i);
+                Lambda=Set.lambdaS2*CellInput.LambdaS2Factor(numCell);
             end
-        elseif FacesInterfaceType(CelAux.Faces{i}.FaceCentresID (f))==2
+        elseif FacesInterfaceType(CelAux.Faces{numCell}.FaceCentresID (f))==2
             % Cell-substrate
-            Lambda=Set.lambdaS3*CellInput.LambdaS3Factor(i);
+            Lambda=Set.lambdaS3*CellInput.LambdaS3Factor(numCell);
         end
         % Loop over Cell-face-triangles
-        Tris=CelAux.Faces{i}.Tris{f};
+        Tris=CelAux.Faces{numCell}.Tris{f};
+        
+        Ks_current = cell(size(Tris,1), 1);
+        nY_current = Ks_current;
         for t=1:size(Tris,1)
             nY=Tris(t,:);
             Y1=Y.DataRow(nY(1),:);
@@ -154,53 +149,50 @@ parfor i=1:ncell
             Ks=fact*Lambda*(Ks+Kss);
             gs=Lambda*gs;
             ge=Assembleg(ge,gs,nY);
-            [si{i},sj{i},sv{i},sk{i}]= AssembleKSparse(Ks,nY,si{i},sj{i},sv{i},sk{i});
+            
+            Ks_current{t} = Ks;
+            nY_current{t} = nY;
         end
         
+        Ks_all{numCell} = Ks_current;
+        nY_all{numCell} = nY_current;
     end
     
-    g=g+ge*fact; 
-    K=K+sparse((ge)*(ge')/(CelAux.SArea0(i)^2));
-    
+    g=g+ge*fact;
+    ge_all{numCell} = ge;
     EnergyS=EnergyS+ (1/2)*fact0*fact;
-    
 end
 
-[si,sj,sv]=sReduction(si,sj,sv,sk,Cell);
-
-
-% if Set.Sparse
-K=sparse(si,sj,sv,dimg,dimg)+K;
-% end
+if nargout>1
+    if Set.Sparse
+        K=sparse(zeros(dimg));
+    else
+        K=zeros(dimg);
+        p = zeros(1000,'int8','distributed');
+    end
 end
-%%
 
-%%
-function [gs,Ks,Kss]=gKSArea(y1,y2,y3)
-% Returns residual and  Jacobian of A=||(y1-y2)x(y2-y3)||
-% notation
-% YI=Cross(yI)
-% q =(y1-y3)x(y2-y3) = Y1y2 - Y1y3 - Y3y2
-q= Cross(y2)*y1' - Cross(y2)*y3' + Cross(y1)*y3';
-% Q_I = der_yI q =  Cross(yK) -Cross(yJ)
-Q1=Cross(y2)-Cross(y3);
-Q2=Cross(y3)-Cross(y1);
-Q3=Cross(y1)-Cross(y2);
-% KK_IJ = der_yJ QI
-fact=1/(2*norm(q));
-gs=fact.*[Q1'*q; % der_Y1 (det(Y1,Y2,Y3))
-    Q2'*q;
-    Q3'*q];
-
-Kss=-(2/norm(q)).*(gs)*(gs');
-Ks=fact.*[Q1'*Q1               KK(1,2,3,y1,y2,y3) KK(1,3,2,y1,y2,y3);
-    KK(2,1,3,y1,y2,y3)  Q2'*Q2              KK(2,3,1,y1,y2,y3);
-    KK(3,1,2,y1,y2,y3)  KK(3,2,1,y1,y2,y3) Q3'*Q3            ];
+if nargout>1
+    if Set.Sparse
+        for numCell = 1:ncell
+            Ks_current = Ks_all{numCell};
+            nY_current = nY_all{numCell};
+            for numTri = 1:length(Ks_current)
+                K = AssembleK(K,Ks_current{numTri},nY_current{numTri});
+            end
+            
+            K=K+sparse((ge_all{numCell})*(ge_all{numCell}')/(CelAux.SArea0(numCell)^2));
+        end
+    else
+        for numCell = 1:ncell
+            Ks_current = Ks_all{numCell};
+            nY_current = nY_all{numCell};
+            for numTri = 1:length(Ks_current)
+                K = AssembleK(K,Ks_current{numTri},nY_current{numTri});
+            end
+            
+            K=K+(ge_all{numCell})*(ge_all{numCell}')/(CelAux.SArea0(numCell)^2);
+        end
+    end
 end
-function [KIJ]=KK(i,j,k,y1,y2,y3)
-Y=[y1;y2;y3];
-%KIJ= (Yk-Yj)*(Yi-Yk)+Cross()
-KIJ= (Cross(Y(j,:))-Cross(Y(k,:)))*(Cross(Y(i,:))-Cross(Y(k,:)))+...
-    Cross(Cross(Y(j,:))*Y(i,:)')-Cross(Cross(Y(j,:))*Y(k,:)')-Cross(Cross(Y(k,:))*Y(i,:)');
-
 end

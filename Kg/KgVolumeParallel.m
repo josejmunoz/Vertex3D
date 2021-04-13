@@ -9,18 +9,17 @@ ncell=Cell.n;
 dimg=Set.NumTotalV*3;
 
 g=zeros(dimg,1); % Local cell residual
-si=cell(ncell,1); %zeros((dimg*3)^2,1); % Each vertex is shared by at least 3 cells
-sj=si;
-sv=si;
-sk=si;
-for i=1:ncell
-    si{i}=zeros(size(Cell.Edges{i},1)*3*3*10,1);
-    sj{i}=si{i};
-    sv{i}=si{i};
-    sk{i}=0;
-end
+Ks_all=cell(ncell,1); %zeros((dimg*3)^2,1); % Each vertex is shared by at least 3 cells
+nY_all = Ks_all;
+ge_all = Ks_all;
 
-K=sparse(zeros(dimg)); % Also used in sparse
+if nargout>1
+    if Set.Sparse
+        K=sparse(zeros(dimg));
+    else
+        K=zeros(dimg);
+    end
+end
 
 EnergyV=0;
 
@@ -37,20 +36,20 @@ CellRemodelledVertices=Cell.RemodelledVertices;
 CellDebrisCells = Cell.DebrisCells;
 %% Loop over Cells
 %     % Analytical residual g and Jacobian K
-parfor i=1:ncell
+parfor numCell=1:ncell
     if ~CellAssembleAll
-        if ~ismember(CellInt(i),CellAssembleNodes)
+        if ~ismember(CellInt(numCell),CellAssembleNodes)
             continue
         end
     end
     
-    if CellDebrisCells(i)
+    if CellDebrisCells(numCell)
         lambdaV=lambdaV_Debris;
     else
         lambdaV=lambdaV_Regular;
     end
     
-    fact=lambdaV*(CellVol(i)-CellVol0(i))/CellVol0(i)^2;
+    fact=lambdaV*(CellVol(numCell)-CellVol0(numCell))/CellVol0(numCell)^2;
     ge=zeros(dimg,1); % Local cell residual
     
     %     YY=unique(CellTris{i}(:,[1 2]));
@@ -65,7 +64,9 @@ parfor i=1:ncell
     
     
     % Loop over Cell-face-triangles
-    Tris=CellTris{i};
+    Tris=CellTris{numCell};
+    Ks_current = cell(size(Tris,1), 1);
+    nY_current = Ks_current;
     for t=1:size(Tris,1)
         nY=Tris(t,:);
         Y1=Y.DataRow(nY(1),:); %#ok<PFBNS>
@@ -82,17 +83,54 @@ parfor i=1:ncell
         end
         [gs,Ks]=gKDet(Y1,Y2,Y3);
         ge=Assembleg(ge,gs,nY);
-        [si{i},sj{i},sv{i},sk{i}]= AssembleKSparse(Ks*fact/6,nY,si{i},sj{i},sv{i},sk{i});
+        
+        Ks_current{t} = Ks*fact/6;
+        nY_current{t} = nY;
     end
     
-    g=g+ge*fact/6; % Volume contribution of each triangle is det(Y1,Y2,Y3)/6
-    K=K+lambdaV*sparse((ge)*(ge'))/6/6/CellVol0(i)^2;
+    Ks_all{numCell} = Ks_current
+    nY_all{numCell} = nY_current;
     
-    EnergyV=EnergyV+ lambdaV/2 *((CellVol(i)-CellVol0(i))/CellVol0(i))^2;
+    g=g+ge*fact/6; % Volume contribution of each triangle is det(Y1,Y2,Y3)/6
+    ge_all{numCell} = ge;
+    EnergyV=EnergyV+ lambdaV/2 *((CellVol(numCell)-CellVol0(numCell))/CellVol0(numCell))^2;
 end
 
-[si,sj,sv]=sReduction(si,sj,sv,sk,Cell);
-K=sparse(si,sj,sv,dimg,dimg)+K;
+if nargout>1
+    if Set.Sparse
+        for numCell = 1:ncell
+            Ks_current = Ks_all{numCell};
+            nY_current = nY_all{numCell};
+            for numTri = 1:length(Ks_current)
+                K = AssembleK(K,Ks_current{numTri},nY_current{numTri});
+            end
+            
+            if CellDebrisCells(numCell)
+                lambdaV=lambdaV_Debris;
+            else
+                lambdaV=lambdaV_Regular;
+            end
+            
+            K=K+lambdaV*sparse((ge_all{numCell})*(ge_all{numCell}'))/6/6/CellVol0(numCell)^2;
+        end
+    else
+        for numCell = 1:ncell
+            Ks_current = Ks_all{numCell};
+            nY_current = nY_all{numCell};
+            for numTri = 1:length(Ks_current)
+                K = AssembleK(K,Ks_current{numTri},nY_current{numTri});
+            end
+            
+            if CellDebrisCells(numCell)
+                lambdaV=lambdaV_Debris;
+            else
+                lambdaV=lambdaV_Regular;
+            end
+            
+            K=K+lambdaV*(ge_all{numCell})*(ge_all{numCell}')/6/6/CellVol0(numCell)^2;
+        end
+    end
+end
 
 end
 %%

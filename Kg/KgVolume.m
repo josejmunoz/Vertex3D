@@ -96,9 +96,9 @@ dim=length(Y1);
 gs=[cross(Y2,Y3)'; % der_Y1 (det(Y1,Y2,Y3)) 
     cross(Y3,Y1)';
     cross(Y1,Y2)'];
-Ks=[ zeros(dim) -Cross(Y3)   Cross(Y2) % g associated to der wrt vertex 1
-    Cross(Y3)   zeros(dim) -Cross(Y1)
-    -Cross(Y2)   Cross(Y1)  zeros(dim)];
+Ks=[ zeros(dim) -Cross_mex(Y3)   Cross_mex(Y2) % g associated to der wrt vertex 1
+    Cross_mex(Y3)   zeros(dim) -Cross_mex(Y1)
+    -Cross_mex(Y2)   Cross_mex(Y1)  zeros(dim)];
 end
 
 

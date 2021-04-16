@@ -22,19 +22,27 @@ for numCell = 1:Cell.n
     
     if Cell.DebrisCells(numCell)
         kSubstrate = 0;
+        edgeLocation = zeros(size(Cell.EdgeLocation{numCell}));
     else
+        edgeLocation = Cell.EdgeLocation{numCell};
         kSubstrate = Set.kSubstrate;
     end
 
-    substrateForcesOfCell = zeros(length(Cell.BasalVertices), 1);
+    substrateForcesOfCell = Cell.SubstrateForce{numCell};
     numVertexElem = 1;
+    basalJunctionVertices = Cell.BasalBorderVertices{numCell};
     for numVertex = Cell.BasalVertices{numCell}'
+        if basalJunctionVertices(numVertexElem) == 0
+            continue;
+        end
         
         z0 = Set.z0Substrate;
         if numVertex < 0 %% Face centre
-            currentVertex = Cell.FaceCentres.DataRow(abs(numVertex), :);
-            %z0 = SCn.DataRow(abs(numVertex), 3);
-            vertexIndex = abs(numVertex) + Set.NumMainV;
+            continue
+%             currentVertex = Cell.FaceCentres.DataRow(abs(numVertex), :);
+%             %z0 = SCn.DataRow(abs(numVertex), 3);
+%             vertexIndex = abs(numVertex) + Set.NumMainV;
+%             kSubstrate = 0;
         else %% Regular Vertex
             currentVertex = Y.DataRow(numVertex, :);
             %z0 = Yn.DataRow(numVertex, 3);

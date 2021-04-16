@@ -100,7 +100,10 @@ classdef CellClass
         ApicalVertices
         BasalVertices
         %--------------------------------------------------------------------
-        BorderVertices
+        ApicalBorderVertices
+        BasalBorderVertices
+        %
+        BorderVertices % of the tissue
         %--------------------------------------------------------------------
         SubstrateForce
         %--------------------------------------------------------------------
@@ -141,6 +144,8 @@ classdef CellClass
                 Cell.ApicalVertices=cell(nC, 1);
                 Cell.BasalVertices=cell(nC, 1);
                 Cell.SubstrateForce=cell(nC, 1);
+                Cell.ApicalBorderVertices = cell(nC, 1);
+                Cell.BasalBorderVertices = cell(nC, 1);
                 Cell.BorderVertices = [];
             end
         end
@@ -288,7 +293,10 @@ classdef CellClass
                 bottomZMinimum = (mean(midZ) - mean(Y.DataRow(upperVerticesBorder, 3))/10);       
 
                 obj.ApicalVertices{numCell} = vertcat(uniqueCurrentVertices(Y.DataRow(uniqueCurrentVertices, 3) > upperZMinimum), - find(obj.FaceCentres.DataRow(1:obj.FaceCentres.n, 3) > upperZMinimum));
+                obj.ApicalBorderVertices{numCell} = ismember(obj.BasalVertices{numCell}, upperVerticesBorder);
+                
                 obj.BasalVertices{numCell} = vertcat(uniqueCurrentVertices(Y.DataRow(uniqueCurrentVertices, 3) < bottomZMinimum), - find(obj.FaceCentres.DataRow(1:obj.FaceCentres.n, 3) < bottomZMinimum));
+                obj.BasalBorderVertices{numCell} = ismember(obj.BasalVertices{numCell}, bottomVerticesBorder);
                 
                 obj.SubstrateForce{numCell} = zeros(length(obj.BasalVertices{numCell}), 1);
                 

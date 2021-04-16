@@ -9,7 +9,7 @@ ncell=Cell.n;
 %% Initialize
 dimg=Set.NumTotalV*3;
 
-g=zeros(dimg,1); % Local cell residual
+g=sparse(dimg,1); % Local cell residual
 if Set.Sparse && nargout>1
     sk=0;
     si=zeros((dimg*3)^2,1); % Each vertex is shared by at least 3 cells 
@@ -17,7 +17,7 @@ if Set.Sparse && nargout>1
     sv=si;
     K=sparse(zeros(dimg)); % Also used in sparse
 elseif nargout>1
-    K=zeros(dimg); % Also used in sparse
+    K=sparse(dimg, dimg); % Also used in sparse
 end
 
 
@@ -39,7 +39,7 @@ for i=1:ncell
         lambdaV=Set.lambdaV;
     end
     fact=lambdaV*(Cell.Vol(i)-Cell.Vol0(i))/Cell.Vol0(i)^2;
-    ge=zeros(dimg,1); % Local cell residual
+    ge=sparse(dimg, 1); % Local cell residual
     
     
     % Loop over Cell-face-triangles
@@ -71,11 +71,7 @@ for i=1:ncell
  
     g=g+ge*fact/6; % Volume contribution of each triangle is det(Y1,Y2,Y3)/6
     if nargout>1
-        if Set.Sparse
-            K=K+lambdaV*sparse((ge)*(ge'))/6/6/Cell.Vol0(i)^2;
-        else
-            K=K+lambdaV*(ge)*(ge')/6/6/Cell.Vol0(i)^2;
-        end
+        K=K+lambdaV*(ge)*(ge')/6/6/Cell.Vol0(i)^2;
         EnergyV=EnergyV+ lambdaV/2 *((Cell.Vol(i)-Cell.Vol0(i))/Cell.Vol0(i))^2;    
     end
 

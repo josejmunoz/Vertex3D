@@ -9,7 +9,7 @@ ncell=Cell.n;
 %% Initialize
 dimg=Set.NumTotalV*3;
 
-g=zeros(dimg,1); % Local cell residual
+g=sparse(dimg, 1); % Local cell residual
 if Set.Sparse && nargout>1
     sk=0;
     %K_SparseValues=zeros(round((dimg^2)/50),3); 
@@ -18,7 +18,7 @@ if Set.Sparse && nargout>1
     sv=si;
     K=sparse(zeros(dimg));
 elseif nargout>1
-    K=zeros(dimg);
+    K=sparse(dimg, dimg);
 end
 
 EnergyS=0;
@@ -34,7 +34,7 @@ for i=1:ncell
             continue
         end
     end
-    ge=zeros(dimg,1); % Local cell residual
+    ge=sparse(dimg, 1); % Local cell residual
     
     % First loop to commpute fact
     fact0=0;
@@ -152,11 +152,7 @@ for i=1:ncell
     end
     g=g+ge*fact; 
     if nargout>1
-        if Set.Sparse
-            K=K+sparse((ge)*(ge')/(Cell.SArea0(i)^2));
-        else
-            K=K+(ge)*(ge')/(Cell.SArea0(i)^2);
-        end
+        K=K+(ge)*(ge')/(Cell.SArea0(i)^2);
         EnergyS=EnergyS+ (1/2)*fact0*fact;
     end
 end

@@ -2,7 +2,7 @@ function [g,K,Cell, y, Y, Yt, Energy, Set, gr, dyr, dy] = newtonRaphson(Set, Cel
 %NEWTONRAPHSON Summary of this function goes here
 %   Detailed explanation goes here
 
-dy=zeros(size(y));
+dy=sparse(length(y), 1);
 dyr=norm(dy(Dofs.FreeDofs));
 gr=norm(g(Dofs.FreeDofs));
 gr0=gr;

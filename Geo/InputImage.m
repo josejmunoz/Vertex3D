@@ -16,15 +16,17 @@ totalCells = Set.TotalCells;
 ratio = 5;
 faceCentres = regionprops(labelledImg, 'centroid');
 faceCentresVertices = fliplr(vertcat(faceCentres.Centroid));
-cellIdsAsInternal = findCentralCells(faceCentresVertices, totalCells);
+cellIdsAsInternal = findCentralCells(faceCentresVertices, size(faceCentresVertices, 1));
 
-newLabelledImg = labelledImg;
-for numCell = 1:totalCells
-    newLabelledImg(ismember(labelledImg, numCell)) = cellIdsAsInternal(numCell);
+newLabelledImg = zeros(size(labelledImg));
+for numCell = 1:size(faceCentresVertices, 1)
+    %newLabelledImg(ismember(labelledImg, numCell)) = cellIdsAsInternal(numCell);
     newLabelledImg(ismember(labelledImg, cellIdsAsInternal(numCell))) = numCell;
 end
 
 labelledImg = newLabelledImg;
+
+cellIdsAsInternal = findCentralCells(faceCentresVertices, totalCells);
 
 
 cellArea = regionprops(labelledImg, 'Area');

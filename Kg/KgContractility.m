@@ -20,10 +20,6 @@ end
 
 energy = 0;
 
-%% Calculate basic information
-[Cell] = Cell.computeEdgeLengths(Y);
-[Cell] = Cell.computeEdgeLocation(Y);
-
 for numCell = 1:Cell.n
     edgeVertices = Cell.Cv{numCell};
     

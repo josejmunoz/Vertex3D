@@ -20,13 +20,13 @@ energy = 0;
 
 for numCell = 1:Cell.n
     
-    if Cell.DebrisCells(numCell)
-        kSubstrate = 0;
-        edgeLocation = zeros(size(Cell.EdgeLocation{numCell}));
-    else
-        edgeLocation = Cell.EdgeLocation{numCell};
-        kSubstrate = Set.kSubstrate;
-    end
+%     if Cell.DebrisCells(numCell)
+%         kSubstrate = 0;
+%     else
+%         kSubstrate = Set.kSubstrate;
+%     end
+    
+    kSubstrate = Set.kSubstrate;
 
     substrateForcesOfCell = Cell.SubstrateForce{numCell};
     numVertexElem = 0;

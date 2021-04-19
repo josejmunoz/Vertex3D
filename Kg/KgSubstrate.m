@@ -29,9 +29,10 @@ for numCell = 1:Cell.n
     end
 
     substrateForcesOfCell = Cell.SubstrateForce{numCell};
-    numVertexElem = 1;
+    numVertexElem = 0;
     basalJunctionVertices = Cell.BasalBorderVertices{numCell};
     for numVertex = Cell.BasalVertices{numCell}'
+        numVertexElem = numVertexElem + 1;
         if basalJunctionVertices(numVertexElem) == 0
             continue;
         end
@@ -55,7 +56,6 @@ for numCell = 1:Cell.n
         
         %% Save contractile forces (g) to output
         substrateForcesOfCell(numVertexElem, 1) = g_current(3);
-        numVertexElem = numVertexElem + 1;
         %% AssembleK
         if  nargout>1
             %% Calculate Jacobian

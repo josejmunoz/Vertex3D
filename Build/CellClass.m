@@ -293,7 +293,7 @@ classdef CellClass
                 bottomZMinimum = (mean(midZ) - mean(Y.DataRow(upperVerticesBorder, 3))/10);       
 
                 obj.ApicalVertices{numCell} = vertcat(uniqueCurrentVertices(Y.DataRow(uniqueCurrentVertices, 3) > upperZMinimum), - find(obj.FaceCentres.DataRow(1:obj.FaceCentres.n, 3) > upperZMinimum));
-                obj.ApicalBorderVertices{numCell} = ismember(obj.BasalVertices{numCell}, upperVerticesBorder);
+                obj.ApicalBorderVertices{numCell} = ismember(obj.ApicalVertices{numCell}, upperVerticesBorder);
                 
                 obj.BasalVertices{numCell} = vertcat(uniqueCurrentVertices(Y.DataRow(uniqueCurrentVertices, 3) < bottomZMinimum), - find(obj.FaceCentres.DataRow(1:obj.FaceCentres.n, 3) < bottomZMinimum));
                 obj.BasalBorderVertices{numCell} = ismember(obj.BasalVertices{numCell}, bottomVerticesBorder);

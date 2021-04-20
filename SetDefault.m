@@ -382,14 +382,14 @@ end
 % Contractility coefficient values on the purse string during a period of time
 % defined by 'Contractility_TimeVariability_PurseString'
 if ~isfield(Set, 'Contractility_Variability_PurseString')
-    Set.Contractility_Variability_PurseString = [];
+    Set.Contractility_Variability_PurseString = [1 1];
 end
 
 % Timepoints where differeent values of 'cPurseString' appear.
 % Intermediate values of 'cPurseString' are extrapolated considering the
 % difference between each timepoint.
 if ~isfield(Set, 'Contractility_TimeVariability_PurseString')
-    Set.Contractility_TimeVariability_PurseString = [];
+    Set.Contractility_TimeVariability_PurseString = [0 Set.tend];
 end
 
 if ~isfield(Set, 'cLateralCables') % Contractility coefficient on the lateral cables
@@ -399,13 +399,13 @@ end
 % Contractility coefficient values on the lateral cables during a period of 
 % time defined by 'Contractility_TimeVariability_PurseString'
 if ~isfield(Set, 'Contractility_Variability_LateralCables')
-    Set.Contractility_Variability_LateralCables = [];
+    Set.Contractility_Variability_LateralCables = [1 1];
 end
 
 % Timepoints where differeent values of 'cLateralCables' appear.
 % Intermediate values of 'cLateralCables' are extrapolated considering the
 % difference between each timepoint.
 if ~isfield(Set, 'Contractility_TimeVariability_LateralCables')
-    Set.Contractility_TimeVariability_LateralCables = [];
+    Set.Contractility_TimeVariability_LateralCables = [0 Set.tend];
 end
 end 

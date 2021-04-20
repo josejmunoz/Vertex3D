@@ -382,7 +382,7 @@ end
 % Contractility coefficient values on the purse string during a period of time
 % defined by 'Contractility_TimeVariability_PurseString'
 if ~isfield(Set, 'Contractility_Variability_PurseString')
-    Set.Contractility_Variability_PurseString = [1 1];
+    Set.Contractility_Variability_PurseString = [1 1]*Set.cPurseString;
 end
 
 % Timepoints where differeent values of 'cPurseString' appear.
@@ -399,7 +399,7 @@ end
 % Contractility coefficient values on the lateral cables during a period of 
 % time defined by 'Contractility_TimeVariability_PurseString'
 if ~isfield(Set, 'Contractility_Variability_LateralCables')
-    Set.Contractility_Variability_LateralCables = [1 1];
+    Set.Contractility_Variability_LateralCables = [1 1]*Set.cLateralCables;
 end
 
 % Timepoints where differeent values of 'cLateralCables' appear.

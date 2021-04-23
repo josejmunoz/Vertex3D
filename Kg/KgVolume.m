@@ -64,7 +64,7 @@ for i=1:ncell
             if Set.Sparse
                 [si,sj,sv,sk]= AssembleKSparse(Ks*fact/6,nY,si,sj,sv,sk);
             else
-                K= AssembleK(K,Ks*fact/6,nY);
+                K = AssembleK(K,Ks*fact/6,nY);
             end
         end
     end 

@@ -5,12 +5,8 @@ Set.CellHeight = 35; %Microns
 Set.zScale = 19.23; %MicronsXY-MicronsZ relation
 Set.AvgCellArea = 5; %Microns
 Set.CellHeight = (Set.CellHeight * Set.zScale) / Set.AvgCellArea;
-<<<<<<< Updated upstream
 %Set.TotalCells = 225; %Aim 225
 Set.TotalCells = 40;
-=======
-Set.TotalCells = 225; %Aim 225
->>>>>>> Stashed changes
 
 %Set.e=4;  % Example Number look in Geo\Example.m 
 Set.Method=1;
@@ -65,18 +61,19 @@ Set.Substrate = false;
 Set.kSubstrate = 0;
 
 %% Remodeling
-Set.Remodelling=false;
+Set.Remodelling=true;
 Set.RemodelTol=.5e-6;
 Set.RemodelingFrequency=1;
 
 %% time
-Set.tend=300;
-Set.Nincr=6000;
+Set.tend=20;
+Set.Nincr=400;
 
 %% Ablating cells
 Set.Ablation = true;
 %Set.cellsToAblate = findCentralCells(Example(Set.e), 1);
-Set.cellsToAblate = 1:15;
+% Aim: Set.cellsToAblate = 1:15;
+Set.cellsToAblate = 1:3;
 Set.TInitAblation = 1;
 Set.TEndAblation = 5;
 
@@ -85,11 +82,11 @@ Set.Contractility = false;
 
 Set.cPurseString = 0;
 Set.Contractility_Variability_PurseString = ([1 1 2.5 2] - 1) * Set.cPurseString;
-Set.Contractility_TimeVariability_PurseString = [0 7 16 60]/60*(Set.tend - Set.TInitAblation);
+Set.Contractility_TimeVariability_PurseString = [0 7 16 60]/60*(Set.TEndAblation - Set.TInitAblation);
 
 Set.cLateralCables = 0;
 Set.Contractility_Variability_LateralCables = ([0.5 1.4 1.4] - 0.5) * Set.cLateralCables;
-Set.Contractility_TimeVariability_LateralCables = [0 16 60]/60*(Set.tend - Set.TInitAblation);
+Set.Contractility_TimeVariability_LateralCables = [0 16 60]/60*(Set.TEndAblation - Set.TInitAblation);
 
 %% Execution parameters
 Set.OutputFolder = strcat('Result/cellHeight_', num2str(Set.CellHeight),'_cPurseString_', num2str(Set.cPurseString), '_cLateralCables_', num2str(Set.cLateralCables), '_lambdaV_', num2str(Set.lambdaV), '_lambdaS1_', num2str(Set.lambdaS1),'_lambda_S2_', num2str(Set.lambdaS2),'_KSubstrate_', num2str(Set.kSubstrate),'_Remodelling_', num2str(Set.Remodelling),'_confinedXYZ_OuterVertices_NCells_', num2str(Set.TotalCells), '_viscosity_', num2str(Set.nu));
@@ -97,4 +94,6 @@ Set.diary = true;
 Set.MaxIter = 400;
 Set.tol=1e-10;
 Set.Parallel = false;
-Set.Sparse = false;
+Set.Sparse = false; %0: No sparse
+                    %1: Sparse matlab
+                    %2: Sparse manual

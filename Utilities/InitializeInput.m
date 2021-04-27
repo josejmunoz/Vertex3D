@@ -67,8 +67,8 @@ if isempty(Set.Contractility_Variability_LateralCables) == 0
 end
 
 if Set.TEndAblation > 0
-    Set.lambdaV_DebrisTime = functionVariableOnTime(Set.lambdaV, Set.lambdaV_Debris, 0, Set.TEndAblation, Set);
-    Set.lambdaS4_Time = functionVariableOnTime(Set.lambdaS2, Set.lambdaS4, 0, Set.TEndAblation, Set);
-    Set.LambdaS1FactorDebris_Time = functionVariableOnTime(0.001, 0.001, 0.001, Set.TEndAblation/10, Set);
+    Set.lambdaV_DebrisTime = functionVariableOnTime(Set.lambdaV, Set.lambdaV_Debris, Set.TInitAblation, Set.TEndAblation, Set);
+    Set.lambdaS4_Time = functionVariableOnTime(Set.lambdaS2, Set.lambdaS4, Set.TInitAblation, Set.TEndAblation, Set);
+    %Set.LambdaS1FactorDebris_Time = functionVariableOnTime(0.001, 0.001, 0.001, Set.TEndAblation/10, Set);
 end
 end 

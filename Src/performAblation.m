@@ -9,11 +9,11 @@ if Set.Ablation == true && Set.TInitAblation <= t
         CellInput.LambdaS2Factor(Cell.DebrisCells) = 0.00001;
         CellInput.LambdaS3Factor(Cell.DebrisCells) = 0.00001;
         
-        %% Smaller time-steps
-        disp('Updating time-step after ablation');
-        Set.Nincr = Set.Nincr*20;
-        Set.dt0=Set.tend/Set.Nincr;
-        Set.dt=Set.dt0;
+%         %% Smaller time-steps
+%         disp('Updating time-step after ablation');
+%         Set.Nincr = Set.Nincr*20;
+%         Set.dt0=Set.tend/Set.Nincr;
+%         Set.dt=Set.dt0;
     end
 end
 end

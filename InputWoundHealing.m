@@ -5,7 +5,12 @@ Set.CellHeight = 35; %Microns
 Set.zScale = 19.23; %MicronsXY-MicronsZ relation
 Set.AvgCellArea = 5; %Microns
 Set.CellHeight = (Set.CellHeight * Set.zScale) / Set.AvgCellArea;
+<<<<<<< Updated upstream
+%Set.TotalCells = 225; %Aim 225
 Set.TotalCells = 40;
+=======
+Set.TotalCells = 225; %Aim 225
+>>>>>>> Stashed changes
 
 %Set.e=4;  % Example Number look in Geo\Example.m 
 Set.Method=1;
@@ -16,19 +21,19 @@ Set.f=Set.s/2;
 %%  Mechanics
 %---------- Volume
 Set.lambdaV=5;
-Set.lambdaV_Debris=0.001;
+Set.lambdaV_Debris=0.01;
 
 %---------- Surface
 % Set.SurfaceType=4 : Surface-Energy based on the whole cell area differential adhsion
 Set.SurfaceType=4;
 % external 
-Set.lambdaS1=0.5;
+Set.lambdaS1=0.1;
 % Cell-Cell 
 Set.lambdaS2=0.1;
 % Cell-substrate
-Set.lambdaS3=Set.lambdaS2;
+Set.lambdaS3=Set.lambdaS1;
 % Cell-DebrisCell
-Set.lambdaS4=Set.lambdaS2;
+Set.lambdaS4=Set.lambdaS2/2;
 
 %---------- EnergyBarrier
 Set.EnergyBarrier=true;
@@ -71,18 +76,18 @@ Set.Nincr=6000;
 %% Ablating cells
 Set.Ablation = true;
 %Set.cellsToAblate = findCentralCells(Example(Set.e), 1);
-Set.cellsToAblate = [1 2 3];
+Set.cellsToAblate = 1:15;
 Set.TInitAblation = 1;
-Set.TEndAblation = 100;
+Set.TEndAblation = 5;
 
 %% Contractility
-Set.Contractility = true;
+Set.Contractility = false;
 
-Set.cPurseString = 0.1;
+Set.cPurseString = 0;
 Set.Contractility_Variability_PurseString = ([1 1 2.5 2] - 1) * Set.cPurseString;
 Set.Contractility_TimeVariability_PurseString = [0 7 16 60]/60*(Set.tend - Set.TInitAblation);
 
-Set.cLateralCables = 0.1;
+Set.cLateralCables = 0;
 Set.Contractility_Variability_LateralCables = ([0.5 1.4 1.4] - 0.5) * Set.cLateralCables;
 Set.Contractility_TimeVariability_LateralCables = [0 16 60]/60*(Set.tend - Set.TInitAblation);
 

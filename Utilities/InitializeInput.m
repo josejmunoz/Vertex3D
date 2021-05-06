@@ -60,7 +60,7 @@ end
 if Set.TEndAblation > 0
     %Set.lambdaV_DebrisTime = functionVariableOnTime(Set.lambdaV, Set.lambdaV_Debris, Set.TInitAblation, Set.TEndAblation, Set);
     %Set.lambdaS4_Time = functionVariableOnTime(Set.lambdaS2, Set.lambdaS4, Set.TInitAblation, Set.TEndAblation, Set);
-    %Set.LambdaS1FactorDebris_Time = functionVariableOnTime(1, Set.LambdaSFactor_Debris, Set.TInitAblation, Set.TEndAblation/10, Set);
-    Set.LambdaS2FactorDebris_Time = functionVariableOnTime(1, Set.LambdaSFactor_Debris, Set.TInitAblation, Set.TEndAblation/10, Set);
+    %Set.LambdaS1FactorDebris_Time = functionVariableOnTime(1, Set.LambdaSFactor_Debris, Set.TInitAblation, Set.TEndAblation, Set);
+    Set.LambdaS2FactorDebris_Time = functionVariableOnTime(1, Set.LambdaSFactor_Debris, Set.TInitAblation, Set.TEndAblation, Set);
 end
 end 

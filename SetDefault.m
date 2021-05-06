@@ -369,6 +369,11 @@ if ~isfield(Set, 'cellsToAblate')
     Set.cellsToAblate = findCentralCells(Example(Set.e), 1);
 end
 
+% Cells IDs that will be ablated at TInitAblation
+if ~isfield(Set, 'LambdaSFactor_Debris')
+    Set.LambdaSFactor_Debris = 0.001;
+end
+
 %% ============================= Contractility ============================
 
 if ~isfield(Set, 'Contractility')

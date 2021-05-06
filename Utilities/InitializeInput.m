@@ -7,11 +7,9 @@ if Set.SurfaceType==4
     aux1=Set.LambdaS1CellFactor;
     aux2=Set.LambdaS2CellFactor;
     aux3=Set.LambdaS3CellFactor;
-    aux4=Set.LambdaS4CellFactor; 
     CellInput.LambdaS1Factor=ones(Cell.n,1);
     CellInput.LambdaS2Factor=ones(Cell.n,1);
     CellInput.LambdaS3Factor=ones(Cell.n,1);
-    CellInput.LambdaS4Factor=ones(Cell.n,1);
     if ~isempty(aux1)
         for i=1:size(aux1,1)
             CellInput.LambdaS1Factor(aux1(i,1))=aux1(i,2);
@@ -29,17 +27,10 @@ if Set.SurfaceType==4
             CellInput.LambdaS3Factor(aux3(i,1))=aux3(i,2);
         end
     end
-    
-    if ~isempty(aux4)
-        for i=1:size(aux4,1)
-            CellInput.LambdaS4Factor(aux4(i,1))=aux4(i,2);
-        end
-    end   
 else 
     CellInput.LambdaS1Factor=[];
     CellInput.LambdaS2Factor=[];
     CellInput.LambdaS3Factor=[];
-    CellInput.LambdaS4Factor=[];
 end 
 
 if Set.Propulsion
@@ -67,8 +58,9 @@ if isempty(Set.Contractility_Variability_LateralCables) == 0
 end
 
 if Set.TEndAblation > 0
-    Set.lambdaV_DebrisTime = functionVariableOnTime(Set.lambdaV, Set.lambdaV_Debris, Set.TInitAblation, Set.TEndAblation, Set);
-    Set.lambdaS4_Time = functionVariableOnTime(Set.lambdaS2, Set.lambdaS4, Set.TInitAblation, Set.TEndAblation, Set);
-    %Set.LambdaS1FactorDebris_Time = functionVariableOnTime(0.001, 0.001, 0.001, Set.TEndAblation/10, Set);
+    %Set.lambdaV_DebrisTime = functionVariableOnTime(Set.lambdaV, Set.lambdaV_Debris, Set.TInitAblation, Set.TEndAblation, Set);
+    %Set.lambdaS4_Time = functionVariableOnTime(Set.lambdaS2, Set.lambdaS4, Set.TInitAblation, Set.TEndAblation, Set);
+    %Set.LambdaS1FactorDebris_Time = functionVariableOnTime(1, Set.LambdaSFactor_Debris, Set.TInitAblation, Set.TEndAblation/10, Set);
+    Set.LambdaS2FactorDebris_Time = functionVariableOnTime(1, Set.LambdaSFactor_Debris, Set.TInitAblation, Set.TEndAblation/10, Set);
 end
 end 

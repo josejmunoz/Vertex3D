@@ -49,9 +49,6 @@ for i=1:ncell
             cellsOfFace = Faces.Nodes(Cell.Faces{i}.FaceCentresID(f), :);
             if all(Cell.DebrisCells(ismember(Cell.Int, cellsOfFace)))
                 Lambda = lambdaS1_debris_debris;
-            elseif any(Cell.DebrisCells(ismember(Cell.Int, cellsOfFace)))
-                % Lambda of Cell-DebrisCell faces
-                Lambda=Set.lambdaS4*CellInput.LambdaS4Factor(i);
             else
                 % Lambda of Cell-Cell faces
                 Lambda=Set.lambdaS2*CellInput.LambdaS2Factor(i);
@@ -101,13 +98,11 @@ for i=1:ncell
             cellsOfFace = Faces.Nodes(Cell.Faces{i}.FaceCentresID(f), :);
             if all(Cell.DebrisCells(ismember(Cell.Int, cellsOfFace)))
                 Lambda = lambdaS1_debris_debris;
-            elseif any(Cell.DebrisCells(ismember(Cell.Int, cellsOfFace)))
-                % Lambda of Cell-DebrisCell faces
-                Lambda=Set.lambdaS4*CellInput.LambdaS4Factor(i);
             else
                 % Cell-Cell
                 Lambda=Set.lambdaS2*CellInput.LambdaS2Factor(i);
             end
+            
         elseif Faces.InterfaceType(Cell.Faces{i}.FaceCentresID(f))==2
             % Cell-substrate
             Lambda=Set.lambdaS3*CellInput.LambdaS3Factor(i);

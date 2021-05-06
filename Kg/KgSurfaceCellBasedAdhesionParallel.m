@@ -66,9 +66,6 @@ parfor numCell=1:ncell
             cellsOfFace = FacesAux.Nodes(CelAux.Faces{numCell}.FaceCentresID(f), :);
             % Cell-Cell
             if any(CelAux.DebrisCells(ismember(CelAux.Int, cellsOfFace)))
-                % Lambda of Cell-DebrisCell faces
-                Lambda=Set.lambdaS4*CellInput.LambdaS4Factor(numCell);
-            else
                 % Lambda of Cell-Cell faces
                 Lambda=Set.lambdaS2*CellInput.LambdaS2Factor(numCell);
             end
@@ -116,9 +113,6 @@ parfor numCell=1:ncell
             cellsOfFace = FacesAux.Nodes(CelAux.Faces{numCell}.FaceCentresID(f), :);
             % Cell-Cell
             if any(CelAux.DebrisCells(ismember(CelAux.Int, cellsOfFace)))
-                % Lambda of Cell-DebrisCell faces
-                Lambda=Set.lambdaS4*CellInput.LambdaS4Factor(numCell);
-            else
                 % Cell-Cell
                 Lambda=Set.lambdaS2*CellInput.LambdaS2Factor(numCell);
             end

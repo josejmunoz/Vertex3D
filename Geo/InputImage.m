@@ -133,8 +133,8 @@ XgID = horzcat(find(nonEmptyCells == 0)', (length(faceCentresVertices)+1):size(X
 
 %% Create tetrahedra
 trianglesConnectivity = verticesInfo.connectedCells;
-[Twg_bottom] = createTetrahedra(trianglesConnectivity, neighboursNetwork, verticesInfo.edges, X, xInternal, X_bottomNodes, X_bottomFaceIds, X_bottomVerticesIds);
-[Twg_top] = createTetrahedra(trianglesConnectivity, neighboursNetwork, verticesInfo.edges, X, xInternal, X_topNodes, X_topFaceIds, X_topVerticesIds);
+[Twg_bottom] = createTetrahedra(trianglesConnectivity, neighboursNetwork, verticesInfo.edges, xInternal, X_bottomFaceIds, X_bottomVerticesIds);
+[Twg_top] = createTetrahedra(trianglesConnectivity, neighboursNetwork, verticesInfo.edges, xInternal, X_topFaceIds, X_topVerticesIds);
 
 Twg = vertcat(Twg_top, Twg_bottom);
 

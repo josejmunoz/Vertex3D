@@ -1,24 +1,19 @@
-function [g,K,Cell,energy] = KgSubstrate(Cell, SCn, Y, Yn, Set)
+function [g,K,Cell,Energy] = KgSubstrate(Cell, SCn, Y, Yn, Set)
 %KGSUBSTRATE Summary of this function goes here
 %   Detailed explanation goes here
 
 %% Initialize
-dimensionsG = Set.NumTotalV*3;
-g=zeros(dimensionsG,1); % Local cell residual
-
-if Set.Sparse
-    sk=0;
-    si=zeros((dimensionsG*3)^2,1); % Each vertex is shared by at least 3 cells 
-    sj=si;
-    sv=si;
-    K=sparse(zeros(dimensionsG)); % Also used in sparse
+if nargout > 1
+    if Set.Sparse == 2 %Manual sparse
+        [g, Energy, ncell, K, si, sj, sk, sv] = initializeKg(Cell, Set);
+    else %Matlab sparse
+        [g, Energy, ncell, K] = initializeKg(Cell, Set);
+    end
 else
-    K=zeros(dimensionsG); % Also used in sparse
+    [g, Energy, ncell] = initializeKg(Cell, Set);
 end
 
-energy = 0;
-
-for numCell = 1:Cell.n
+for numCell = 1:ncell
     
 %     if Cell.DebrisCells(numCell)
 %         kSubstrate = 0;
@@ -61,14 +56,14 @@ for numCell = 1:Cell.n
             %% Calculate Jacobian
             K_current = computeKSubstrate(kSubstrate);
 
-            if Set.Sparse
+            if Set.Sparse == 2
                 [si,sj,sv,sk] = AssembleKSparse(K_current, vertexIndex, si, sj, sv, sk);
             else
                 K = AssembleK(K, K_current, vertexIndex);
             end
 
             %% Calculate energy
-            energy = energy + computeEnergySubstrate(kSubstrate, currentVertex(:, 3), z0);
+            Energy = Energy + computeEnergySubstrate(kSubstrate, currentVertex(:, 3), z0);
         end
         
     end
@@ -76,7 +71,7 @@ for numCell = 1:Cell.n
     Cell.SubstrateForce(numCell) = {substrateForcesOfCell};
 end
 
-if Set.Sparse && nargout>1
+if Set.Sparse == 2 && nargout>1
     K = sparse(si(1:sk),sj(1:sk),sv(1:sk),dimensionsG,dimensionsG);
 end
 

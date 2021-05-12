@@ -2,24 +2,16 @@ function [g,K,Cell,EnergyS]=KgSurfaceCellBased(Cell,Y,Set)
 % The residual g and Jacobian K of Surface  Energy
 % Energy based on the total cell area W_s= sum_cell ((Ac-Ac0)/Ac0)^2
 
-%% Set parameters
-ncell=Cell.n;
-
 %% Initialize
-dimg=Set.NumTotalV*3;
-
-g=zeros(dimg,1); % Local cell residual
-if Set.Sparse && nargout>1
-    sk=0;
-    si=zeros((dimg*3)^2,1); % Each vertex is shared by at least 3 cells 
-    sj=si;
-    sv=si;
-    K=sparse(zeros(dimg)); % Also used in sparse
-elseif nargout>1
-    K=zeros(dimg); % Also used in sparse
+if nargout > 1
+    if Set.Sparse == 2 %Manual sparse
+        [g, EnergyS, ncell, K, si, sj, sk, sv] = initializeKg(Cell, Set);
+    else %Matlab sparse
+        [g, EnergyS, ncell, K] = initializeKg(Cell, Set);
+    end
+else
+    [g, EnergyS, ncell] = initializeKg(Cell, Set);
 end
-
-EnergyS=0;
 
 %% Loop over Cells
 %     % Analytical residual g and Jacobian K
@@ -56,7 +48,7 @@ for i=1:ncell
         ge=Assembleg(ge,gs,nY);
         if nargout>1
             Ks=fact*(Ks+Kss);
-            if Set.Sparse
+            if Set.Sparse == 2
                 [si,sj,sv,sk]= AssembleKSparse(Ks,nY,si,sj,sv,sk);
             else
                 K= AssembleK(K,Ks,nY);
@@ -66,7 +58,7 @@ for i=1:ncell
     
     g=g+ge*fact;
     if nargout>1
-        if Set.Sparse
+        if Set.Sparse == 2
             K=K+sparse((ge)*(ge')*lambdaS/(Cell.SArea0(i)^2));
         else
             K=K+(ge)*(ge')*lambdaS/(Cell.SArea0(i)^2); 
@@ -80,7 +72,7 @@ for i=1:ncell
     end
 end
 
-if Set.Sparse && nargout>1
+if Set.Sparse == 2 && nargout>1
     K=sparse(si(1:sk),sj(1:sk),sv(1:sk),dimg,dimg)+K;
 end
 end

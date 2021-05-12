@@ -2,27 +2,15 @@ function [g,K,Cell,EnergyV]=KgVolume(Cell,Y,Set)
 % The residual g and Jacobian K of Volume Energy 
 % Energy W_s= sum_cell lambdaV ((V-V0)/V0)^2
 
-
-%% Set parameters
-ncell=Cell.n;
-
-%% Initialize
-dimg=Set.NumTotalV*3;
-
-g=sparse(dimg,1); % Local cell residual
-if Set.Sparse && nargout>1
-    sk=0;
-    si=zeros((dimg*3)^2,1); % Each vertex is shared by at least 3 cells 
-    sj=si;
-    sv=si;
-    K=sparse(zeros(dimg)); % Also used in sparse
-elseif nargout>1
-    K=sparse(dimg, dimg); % Also used in sparse
+if nargout > 1
+    if Set.Sparse == 2 %Manual sparse
+        [g, EnergyV, ncell, K, si, sj, sk, sv] = initializeKg(Cell, Set);
+    else %Matlab sparse
+        [g, EnergyV, ncell, K] = initializeKg(Cell, Set);
+    end
+else
+    [g, EnergyV, ncell] = initializeKg(Cell, Set);
 end
-
-
-EnergyV=0;
-
 
 %% Loop over Cells 
      % Analytical residual g and Jacobian K
@@ -39,7 +27,12 @@ for i=1:ncell
         lambdaV=Set.lambdaV;
     end
     fact=lambdaV*(Cell.Vol(i)-Cell.Vol0(i))/Cell.Vol0(i)^2;
-    ge=sparse(dimg, 1); % Local cell residual
+    
+    if Set.Sparse > 0
+        ge=sparse(dimg, 1); % Local cell residual
+    else
+        ge=zeros(dimg, 1);
+    end
     
     
     % Loop over Cell-face-triangles
@@ -61,7 +54,7 @@ for i=1:ncell
         [gs,Ks]=gKDet(Y1,Y2,Y3);
         ge=Assembleg(ge,gs,nY);
         if nargout>1
-            if Set.Sparse
+            if Set.Sparse == 2
                 [si,sj,sv,sk]= AssembleKSparse(Ks*fact/6,nY,si,sj,sv,sk);
             else
                 K = AssembleK(K,Ks*fact/6,nY);
@@ -77,7 +70,7 @@ for i=1:ncell
 
 end
 
-if Set.Sparse && nargout>1
+if Set.Sparse == 2 && nargout>1
     K=sparse(si(1:sk),sj(1:sk),sv(1:sk),dimg,dimg)+K;
 end
 end

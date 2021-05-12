@@ -5,24 +5,16 @@ function [g,K,Cell,Energy]=KgBending(Cell,Y,Set)
 %                       where  theta: the angle between the pair of triangles
 %                              At1 and At2 : the area of the triangles
 
-ncell=Cell.n;
-
 %% Initialize
-dimg=Set.NumTotalV*3;
-
-g=zeros(dimg,1); % Local cell residual
-if Set.Sparse && nargout>1
-    sk=0;
-    si=zeros((dimg*3)^2,1); % Each vertex is shared by at least 3 cells
-    sj=si;
-    sv=si;
-    K=sparse(zeros(dimg)); % Also used in sparse
-elseif nargout>1
-    K=zeros(dimg); % Also used in sparse
+if nargout > 1
+    if Set.Sparse == 2 %Manual sparse
+        [g, Energy, ncell, K, si, sj, sk, sv] = initializeKg(Cell, Set);
+    else %Matlab sparse
+        [g, Energy, ncell, K] = initializeKg(Cell, Set);
+    end
+else
+    [g, Energy, ncell] = initializeKg(Cell, Set);
 end
-
-
-Energy=0;
 
 
 %% Loop over cells 
@@ -97,7 +89,7 @@ for i=1:ncell
         
         % AssembleK
         if  nargout>1
-            if Set.Sparse
+            if Set.Sparse == 2
                 [si,sj,sv,sk]= AssembleKSparse(Ke,Edges(e,:),si,sj,sv,sk);
             else
                 K= AssembleK(K,Ke,Edges(e,:));
@@ -107,7 +99,7 @@ for i=1:ncell
     end
 end
 
-if Set.Sparse && nargout>1
+if Set.Sparse == 2 && nargout>1
     K=sparse(si(1:sk),sj(1:sk),sv(1:sk),dimg,dimg);
 end
 

@@ -29,9 +29,9 @@ for i=1:ncell
     fact=lambdaV*(Cell.Vol(i)-Cell.Vol0(i))/Cell.Vol0(i)^2;
     
     if Set.Sparse > 0
-        ge=sparse(dimg, 1); % Local cell residual
+        ge=sparse(size(g, 1), 1); % Local cell residual
     else
-        ge=zeros(dimg, 1);
+        ge=zeros(size(g, 1), 1);
     end
     
     
@@ -71,7 +71,7 @@ for i=1:ncell
 end
 
 if Set.Sparse == 2 && nargout>1
-    K=sparse(si(1:sk),sj(1:sk),sv(1:sk),dimg,dimg)+K;
+    K=sparse(si(1:sk),sj(1:sk),sv(1:sk),size(K, 1),size(K, 2))+K;
 end
 end
 %%

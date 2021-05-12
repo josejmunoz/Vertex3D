@@ -31,7 +31,7 @@ for i=1:ncell
     % Loop over Cell-face-triangles
     Tris=Cell.Tris{i};
     for t=1:size(Tris,1)
-        ge=zeros(dimg,1); % Local cell residual
+        ge=zeros(size(g, 1),1); % Local cell residual
         if  Set.LocalViscosityOption==1
             fact=lambdaS *  (Cell.SAreaTri{i}(t)-Cell.SAreaTrin{i}(t)) / Cell.SAreaTrin{i}(t)^2   ;
         elseif Set.LocalViscosityOption==2
@@ -77,7 +77,7 @@ for i=1:ncell
 end
 
 if Set.Sparse == 2 && nargout>1
-    K=sparse(si(1:sk),sj(1:sk),sv(1:sk),dimg,dimg)+K;
+    K=sparse(si(1:sk),sj(1:sk),sv(1:sk),size(K, 1),size(K, 2))+K;
 end
 end
 %%

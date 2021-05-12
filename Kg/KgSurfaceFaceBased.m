@@ -23,7 +23,7 @@ for i=1:ncell
     end
     lambdaS=Set.lambdaS;
     for f=1:Cell.Surfaces{i}.nSurfaces
-        ge=zeros(dimg,1); % Local cell residual
+        ge=zeros(size(g, 1),1); % Local cell residual
         fact=lambdaS *  (Cell.SAreaFace{i}(f)-Cell.SAreaFace0{i}(f)) / Cell.SAreaFace0{i}(f)^2   ;
         % Loop over Cell-face-triangles
         Tris=Cell.Surfaces{i}.Tris{f};
@@ -57,7 +57,7 @@ for i=1:ncell
 end
 
 if Set.Sparse == 2 &&  nargout>1
-    K=sparse(si(1:sk),sj(1:sk),sv(1:sk),dimg,dimg)+K;
+    K=sparse(si(1:sk),sj(1:sk),sv(1:sk),size(K, 1),size(K, 2))+K;
 end
 end
 

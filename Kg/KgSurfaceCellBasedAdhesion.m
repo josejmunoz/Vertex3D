@@ -88,7 +88,7 @@ for i=1:ncell
         elseif  Faces.InterfaceType(Cell.Faces{i}.FaceCentresID(f))==1
             cellsOfFace = Faces.Nodes(Cell.Faces{i}.FaceCentresID(f), :);
             if all(Cell.DebrisCells(ismember(Cell.Int, cellsOfFace)))
-                Lambda = Set.lambdaS*Set.LambdaSFactor_Debris;
+                Lambda = Set.lambdaS2*Set.LambdaSFactor_Debris;
             else
                 % Cell-Cell
                 Lambda=Set.lambdaS2*CellInput.LambdaS2Factor(i);

@@ -14,8 +14,6 @@ else
     [g, EnergyS, ncell] = initializeKg(Cell, Set);
 end
 
-lambdaS1_debris_debris = 0.001;
-
 %% Loop over Cells
 % Analytical residual g and Jacobian K
 for i=1:ncell
@@ -43,7 +41,7 @@ for i=1:ncell
         elseif  Faces.InterfaceType(Cell.Faces{i}.FaceCentresID(f))==1
             cellsOfFace = Faces.Nodes(Cell.Faces{i}.FaceCentresID(f), :);
             if all(Cell.DebrisCells(ismember(Cell.Int, cellsOfFace)))
-                Lambda = lambdaS1_debris_debris;
+                Lambda = Set.lambdaS2*Set.LambdaSFactor_Debris;
             else
                 % Lambda of Cell-Cell faces
                 Lambda=Set.lambdaS2*CellInput.LambdaS2Factor(i);
@@ -90,7 +88,7 @@ for i=1:ncell
         elseif  Faces.InterfaceType(Cell.Faces{i}.FaceCentresID(f))==1
             cellsOfFace = Faces.Nodes(Cell.Faces{i}.FaceCentresID(f), :);
             if all(Cell.DebrisCells(ismember(Cell.Int, cellsOfFace)))
-                Lambda = lambdaS1_debris_debris;
+                Lambda = Set.lambdaS*Set.LambdaSFactor_Debris;
             else
                 % Cell-Cell
                 Lambda=Set.lambdaS2*CellInput.LambdaS2Factor(i);

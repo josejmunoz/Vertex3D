@@ -13,7 +13,7 @@ else
 end
 
 %% Loop over Cells 
-     % Analytical residual g and Jacobian K
+% Analytical residual g and Jacobian K
 for i=1:ncell
     if ~Cell.AssembleAll
         if ~ismember(Cell.Int(i),Cell.AssembleNodes) 

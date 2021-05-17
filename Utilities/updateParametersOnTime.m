@@ -20,12 +20,12 @@ if any(Cell.DebrisCells)
     if currentT < (Set.TInitAblation + Set.TEndAblation)
         %CellInput.LambdaS1Factor(Cell.DebrisCells) = Set.LambdaS1FactorDebris_Time(currentT);
         CellInput.LambdaS2Factor(Cell.DebrisCells) = Set.LambdaS2FactorDebris_Time(currentT);
-        Set.lambdaV_Debris = Set.lambdaV_DebrisTime(currentT);
+        %Set.lambdaV_Debris = Set.lambdaV_DebrisTime(currentT);
     end
 else
     Set.cPurseString = 0;
     Set.cLateralCables = 0;
-    Set.lambdaV_Debris = Set.lambdaV;
+    %Set.lambdaV_Debris = Set.lambdaV;
 end
 end
 

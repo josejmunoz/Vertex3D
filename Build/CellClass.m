@@ -224,7 +224,43 @@ classdef CellClass
         
         %%
         function [obj, featuresTable, resultingImage] = exportTableWithCellFeatures(obj, Y, timeStep)
+            %% Features to obtain per tissue:
+            % Avg Cell height
+            
             featuresTable = [];
+            for numCell = obj.n
+                %% Features to obtain per cell:
+                % - Cell height
+                % avg and std distance between connected apical and basal
+                % vertices
+                mean(obj.EdgeLengths{numCell}(obj.EdgeLocation{numCell} == 1))
+                std(obj.EdgeLengths{numCell}(obj.EdgeLocation{numCell} == 1))
+                % - Volume
+                obj.Vol
+
+                % - Apical area,  basal area and lateral area
+                surfaceArea = obj.SArea(numCell);
+
+                trianglesArea = obj.SAreaTri{numCell};
+                apicalFaceCentres = abs(obj.ApicalVertices{numCell}(obj.ApicalVertices{numCell} < 0));
+                apicalTriangles = all(ismember(obj.Tris{numCell}(:, 1:2), obj.ApicalVertices{numCell}), 2) & ismember(obj.Tris{numCell}(:, 3), apicalFaceCentres);
+                apicalArea = sum(trianglesArea(apicalTriangles));
+                basalFaceCentres = abs(obj.BasalVertices{numCell}(obj.BasalVertices{numCell} < 0));
+                basalTriangles = all(ismember(obj.Tris{numCell}(:, 1:2), obj.BasalVertices{numCell}), 2) & ismember(obj.Tris{numCell}(:, 3), basalFaceCentres);
+                basalArea = sum(trianglesArea(basalTriangles));
+                
+                lateralTriangles = surfaceArea - apicalArea - basalArea;
+                
+                % - Shared lateral area per neighbour (avg and std)
+                
+                % - Neighbours: 3D neighbours, apical and basal neighbours,
+                % polygon distribution
+                % - Lateral surface area
+                % - Convexity/concavity of cell
+                % - info normalized: 35microns cell height initial
+            end
+            
+            
             allVertices = [Y.DataRow(1:Y.n, :); obj.FaceCentres.DataRow(1:obj.FaceCentres.n, :)];
             
             resolutionOfImage = pdist2(max(allVertices(:)), min(allVertices(:))) / 200;

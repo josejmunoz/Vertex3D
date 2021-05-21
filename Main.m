@@ -135,9 +135,9 @@ while t<=Set.tend
         if Set.VTK, PostProcessingVTK(X,Y,T.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end
         
         %% Analise cells
-        %[~, cellFeatures{numStep}, resultingImage] = Cell.exportTableWithCellFeatures(Y, numStep);
-        %writetable(vertcat(cellFeatures{:}), strcat(Set.OutputFolder,Esc,'Analysis',Esc,'cellFeatures.csv'))
-        %save(strcat(Set.OutputFolder,Esc,'Analysis', Esc,'resultingImage_', num2str(numStep), '.mat'), 'resultingImage');
+        [~, cellFeatures{numStep}, resultingImage] = Cell.exportTableWithCellFeatures(Y, numStep);
+        writetable(vertcat(cellFeatures{:}), strcat(Set.OutputFolder,Esc,'Analysis',Esc,'cellFeatures.csv'))
+        save(strcat(Set.OutputFolder,Esc,'Analysis', Esc,'resultingImage_', num2str(numStep), '.mat'), 'resultingImage');
         
         %% Update energies
         EnergyS(numStep)=Energy.Es;

@@ -223,23 +223,26 @@ classdef CellClass
         end
         
         %%
-        function [obj, featuresTable, resultingImage] = exportTableWithCellFeatures(obj, Y, timeStep)
+        function [obj, featuresTable, resultingImage] = exportTableWithCellFeatures(obj, Y, timeStep, Faces, Set)
             %% Features to obtain per tissue:
             % Avg Cell height
             
+            
+            %% Features to obtain per cell:
+            cellCellFaces = find(Faces.InterfaceType == 1);
+            
             featuresTable = [];
-            for numCell = obj.n
-                %% Features to obtain per cell:
+            for numCell = obj.Int
                 % - Cell height
                 % avg and std distance between connected apical and basal
                 % vertices
-                mean(obj.EdgeLengths{numCell}(obj.EdgeLocation{numCell} == 1))
-                std(obj.EdgeLengths{numCell}(obj.EdgeLocation{numCell} == 1))
+                cellHeight = mean(obj.EdgeLengths{numCell}(obj.EdgeLocation{numCell} == 1));
+                cellHeightSTD = std(obj.EdgeLengths{numCell}(obj.EdgeLocation{numCell} == 1));
                 % - Volume
-                obj.Vol
+                cellVolume = obj.Vol;
 
                 % - Apical area,  basal area and lateral area
-                surfaceArea = obj.SArea(numCell);
+                cellSurfaceArea = obj.SArea(numCell);
 
                 trianglesArea = obj.SAreaTri{numCell};
                 apicalFaceCentres = abs(obj.ApicalVertices{numCell}(obj.ApicalVertices{numCell} < 0));
@@ -249,15 +252,44 @@ classdef CellClass
                 basalTriangles = all(ismember(obj.Tris{numCell}(:, 1:2), obj.BasalVertices{numCell}), 2) & ismember(obj.Tris{numCell}(:, 3), basalFaceCentres);
                 basalArea = sum(trianglesArea(basalTriangles));
                 
-                lateralTriangles = surfaceArea - apicalArea - basalArea;
+                lateralTrianglesArea = cellSurfaceArea - apicalArea - basalArea;
                 
                 % - Shared lateral area per neighbour (avg and std)
+                currentFaceIDs = obj.Faces{numCell}.FaceCentresID;
+                cellCellAreas = obj.SAreaFace{1}(ismember(currentFaceIDs, cellCellFaces));
+                lateralAreaSharedPerNeighbour_AVG = mean(cellCellAreas);
+                lateralAreaSharedPerNeighbour_STD = std(cellCellAreas);
                 
                 % - Neighbours: 3D neighbours, apical and basal neighbours,
                 % polygon distribution
-                % - Lateral surface area
+                apicalNeighbours = [];
+                basalNeighbours = [];
+                
+                basalBorderVerticesIDs = obj.BasalVertices{numCell}(obj.BasalBorderVertices{numCell});
+                apicalBorderVerticesIDs = obj.ApicalVertices{numCell}(obj.ApicalBorderVertices{numCell});
+                for neighbourCell = 1:obj.n
+                    if neighbourCell ~= numCell
+                        %Apical neighbours
+                        if any(ismember(apicalBorderVerticesIDs, obj.ApicalVertices{neighbourCell}(obj.ApicalBorderVertices{neighbourCell})))
+                            apicalNeighbours = [apicalNeighbours, neighbourCell];
+                        end
+                        
+                        %Basal neighbours
+                        if any(ismember(basalBorderVerticesIDs, obj.BasalVertices{neighbourCell}(obj.BasalBorderVertices{neighbourCell})))
+                            basalNeighbours = [basalNeighbours, neighbourCell];
+                        end
+                    end
+                end
+                
                 % - Convexity/concavity of cell
                 % - info normalized: 35microns cell height initial
+                Set.CellHeight
+                
+                featuresTable = [featuresTable; numCell, obj.Debris(numCell), cellHeight, ...
+                    cellHeightSTD, cellVolume, cellSurfaceArea, apicalArea, ...
+                    basalArea, lateralTrianglesArea, lateralAreaSharedPerNeighbour_AVG, ...
+                    lateralAreaSharedPerNeighbour_STD, apicalNeighbours, ...
+                    numel(apicalNeighbours), basalNeighbours, numel(basalNeighbours)];
             end
             
             

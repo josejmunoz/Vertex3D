@@ -23,13 +23,11 @@ Set.lambdaV_Debris=0.01;
 % Set.SurfaceType=4 : Surface-Energy based on the whole cell area differential adhsion
 Set.SurfaceType=4;
 % external 
-Set.lambdaS1=0.1;
+Set.lambdaS1=0.5;
 % Cell-Cell 
 Set.lambdaS2=0.1;
 % Cell-substrate
 Set.lambdaS3=Set.lambdaS1;
-% Cell-DebrisCell
-Set.lambdaS4=Set.lambdaS2/2;
 
 %---------- EnergyBarrier
 Set.EnergyBarrier=true;
@@ -94,6 +92,6 @@ Set.diary = true;
 Set.MaxIter = 400;
 Set.tol=1e-10;
 Set.Parallel = false;
-Set.Sparse = false; %0: No sparse
+Set.Sparse = 2; %0: No sparse
                     %1: Sparse matlab
                     %2: Sparse manual

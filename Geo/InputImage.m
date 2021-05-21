@@ -181,6 +181,7 @@ borderPairs = unique(sort(borderPairs, 2), 'rows');
 Cell.BorderVertices = find(sum(ismember(Twg, borderPairs(:, 2)), 2) >= 1);
 % Add facecentres
 Cell.BorderVertices = [Cell.BorderVertices; -find(ismember(Faces.Nodes, borderPairs, 'rows'))];
+Cell.BorderCells = ismember(Cell.Int, borderPairs(:));
 Set.NumMainV=Y.n;
 Set.NumAuxV=Cell.FaceCentres.n;
 Set.NumTotalV=Set.NumMainV+Set.NumAuxV;

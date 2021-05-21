@@ -109,6 +109,8 @@ classdef CellClass
         %--------------------------------------------------------------------
         DebrisCells            % Debris cells
         %--------------------------------------------------------------------
+        BorderCells
+        %--------------------------------------------------------------------
         ContractileForces
     end
     methods
@@ -147,6 +149,7 @@ classdef CellClass
                 Cell.ApicalBorderVertices = cell(nC, 1);
                 Cell.BasalBorderVertices = cell(nC, 1);
                 Cell.BorderVertices = [];
+                Cell.BorderCells=false(nC, 1);
             end
         end
         
@@ -223,37 +226,82 @@ classdef CellClass
         end
         
         %%
-        function [obj, featuresTable, resultingImage] = exportTableWithCellFeatures(obj, Y, timeStep)
-            featuresTable = [];
-            allVertices = [Y.DataRow(1:Y.n, :); obj.FaceCentres.DataRow(1:obj.FaceCentres.n, :)];
+        function [obj, featuresTable, resultingImage] = exportTableWithCellFeatures(obj, Y, timeStep, Faces, Set)
+            %% Features to obtain per tissue:
+            % Avg Cell height
             
-            resolutionOfImage = pdist2(max(allVertices(:)), min(allVertices(:))) / 200;
             
-            [xPixels,yPixels,zPixels] = meshgrid(min(allVertices(:)):resolutionOfImage:max(allVertices(:)));
+            %% Features to obtain per cell:
+            cellCellFaces = find(Faces.InterfaceType == 1);
             
-            resultingImage = uint8(zeros(size(xPixels)));
-            for numCell = 1:length(obj.Int)
+            featuresTable_cell = [];
+            for numCell = obj.Int
+                % - Cell height
+                % avg and std distance between connected apical and basal
+                % vertices
+                cellHeight = mean(obj.EdgeLengths{numCell}(obj.EdgeLocation{numCell} == 1));
+                cellHeightSTD = std(obj.EdgeLengths{numCell}(obj.EdgeLocation{numCell} == 1));
+                % - Volume
+                cellVolume = obj.Vol(numCell);
+
+                % - Apical area,  basal area and lateral area
+                cellSurfaceArea = obj.SArea(numCell);
+
+                trianglesArea = obj.SAreaTri{numCell};
+                apicalFaceCentres = abs(obj.ApicalVertices{numCell}(obj.ApicalVertices{numCell} < 0));
+                apicalTriangles = all(ismember(obj.Tris{numCell}(:, 1:2), obj.ApicalVertices{numCell}), 2) & ismember(obj.Tris{numCell}(:, 3), apicalFaceCentres);
+                apicalArea = sum(trianglesArea(apicalTriangles));
+                basalFaceCentres = abs(obj.BasalVertices{numCell}(obj.BasalVertices{numCell} < 0));
+                basalTriangles = all(ismember(obj.Tris{numCell}(:, 1:2), obj.BasalVertices{numCell}), 2) & ismember(obj.Tris{numCell}(:, 3), basalFaceCentres);
+                basalArea = sum(trianglesArea(basalTriangles));
                 
-                verticesConnectionsOfCell = obj.Tris{numCell};
-                verticesConnectionsOfCell(verticesConnectionsOfCell(:, 3)>=0, 3) = verticesConnectionsOfCell(verticesConnectionsOfCell(:, 3)>=0, 3) + size(Y.DataRow, 1);
-                verticesConnectionsOfCell(verticesConnectionsOfCell(:, 3)<0, 3) = abs(verticesConnectionsOfCell(verticesConnectionsOfCell(:, 3)<0, 3));
-                %triangulationsOfCell = triangulation(verticesConnectionsOfCell, allVertices);
+                lateralTrianglesArea = cellSurfaceArea - apicalArea - basalArea;
                 
-                DT = delaunayTriangulation(allVertices(unique(verticesConnectionsOfCell), :));
-                SI = pointLocation(DT,xPixels(:),yPixels(:),zPixels(:));       %index of simplex (returns NaN for all points outside the convex hull)
-                mask = ~isnan(SI); %binary
-                mask = reshape(mask,size(xPixels));
-                resultingImage(mask > 0) = mask(mask>0) .* obj.Int(numCell);
-                currentTable = regionprops3(mask, {'Volume', 'EquivDiameter', 'Extent', 'PrincipalAxisLength', 'Orientation', 'ConvexVolume', 'Solidity', 'SurfaceArea'});
+                % - Shared lateral area per neighbour (avg and std)
+                currentFaceIDs = obj.Faces{numCell}.FaceCentresID;
+                cellCellAreas = obj.SAreaFace{1}(ismember(currentFaceIDs, cellCellFaces));
+                lateralAreaSharedPerNeighbour_AVG = mean(cellCellAreas);
+                lateralAreaSharedPerNeighbour_STD = std(cellCellAreas);
                 
-                %% Get lateral faces and particular properties of ghost cells
+                % - Neighbours: 3D neighbours, apical and basal neighbours,
+                % polygon distribution
+                apicalNeighbours = [];
+                basalNeighbours = [];
                 
+                basalBorderVerticesIDs = obj.BasalVertices{numCell}(obj.BasalBorderVertices{numCell});
+                apicalBorderVerticesIDs = obj.ApicalVertices{numCell}(obj.ApicalBorderVertices{numCell});
+                for neighbourCell = 1:obj.n
+                    if neighbourCell ~= numCell
+                        %Apical neighbours
+                        if any(ismember(apicalBorderVerticesIDs, obj.ApicalVertices{neighbourCell}(obj.ApicalBorderVertices{neighbourCell})))
+                            apicalNeighbours = [apicalNeighbours, neighbourCell];
+                        end
+                        
+                        %Basal neighbours
+                        if any(ismember(basalBorderVerticesIDs, obj.BasalVertices{neighbourCell}(obj.BasalBorderVertices{neighbourCell})))
+                            basalNeighbours = [basalNeighbours, neighbourCell];
+                        end
+                    end
+                end
                 
-                %% Final touches
-                currentTable.ID = obj.Int(numCell);
-                currentTable.Time = repmat(timeStep, size(numCell));
-                featuresTable = [featuresTable; currentTable];
+                % - Convexity/concavity of cell
+                % - info normalized: 35microns cell height initial
+                Set.CellHeight;
+                
+                featuresTable_cell = [featuresTable_cell; numCell, obj.BorderCells(numCell), obj.DebrisCells(numCell), cellHeight, ...
+                    cellHeightSTD, cellVolume, cellSurfaceArea, apicalArea, ...
+                    basalArea, lateralTrianglesArea, lateralAreaSharedPerNeighbour_AVG, ...
+                    lateralAreaSharedPerNeighbour_STD, {apicalNeighbours}, ...
+                    numel(apicalNeighbours), {basalNeighbours}, numel(basalNeighbours)];
             end
+            
+            featuresTable = cell2table(featuresTable_cell, 'VariableNames', ...
+                {'ID', 'IsBorderCell', 'IsDebrisCell', 'HeightAVG', 'HeightSTD', ...
+                'Volume', 'SurfaceArea', 'ApicalArea', 'BasalArea', ...
+                'LateralArea', 'LateralAreaSharedPerNeighbourAVG', ...
+                'LateralAreaSharedPerNeighbourASTD', 'ApicalNeighbours', ...
+                'NumApicalNeighbours', 'BasalNeigbhours', 'NumBasalNeighbours'});
+            
         end
         
         %%

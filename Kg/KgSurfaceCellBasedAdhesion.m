@@ -3,30 +3,19 @@ function [g,K,Cell,EnergyS]=KgSurfaceCellBasedAdhesion(Cell,Y,Faces,Set,CellInpu
 % Energy based on the total cell area with differential Lambda depending on the face type  (external, cell-cell, Cell-substrate)
 %    W_s= sum_cell( sum_face (lambdaS*factor_f(Af)^2) / Ac0^2 )
 
-%% Set parameters
-ncell=Cell.n;
-
 %% Initialize
-dimg=Set.NumTotalV*3;
-
-g=sparse(dimg, 1); % Local cell residual
-if Set.Sparse && nargout>1
-    sk=0;
-    %K_SparseValues=zeros(round((dimg^2)/50),3); 
-    si=zeros(round((dimg^2)/50),1); % Each vertex is shared by at least 3 cells
-    sj=si;
-    sv=si;
-    K=sparse(zeros(dimg));
-elseif nargout>1
-    K=sparse(dimg, dimg);
+if nargout > 1
+    if Set.Sparse == 2 %Manual sparse
+        [g, EnergyS, ncell, K, si, sj, sk, sv] = initializeKg(Cell, Set);
+    else %Matlab sparse
+        [g, EnergyS, ncell, K] = initializeKg(Cell, Set);
+    end
+else
+    [g, EnergyS, ncell] = initializeKg(Cell, Set);
 end
 
-EnergyS=0;
-
-lambdaS1_debris_debris = 0.001;
-
 %% Loop over Cells
-%     % Analytical residual g and Jacobian K
+% Analytical residual g and Jacobian K
 for i=1:ncell
 %     if Cell.DebrisCells(i)
 %         continue;
@@ -36,7 +25,11 @@ for i=1:ncell
             continue
         end
     end
-    ge=sparse(dimg, 1); % Local cell residual
+    if Set.Sparse > 0
+        ge = sparse(size(g, 1), 1); % Local cell residual
+    else
+        ge = zeros(size(g, 1), 1); % Local cell residual
+    end
     
     % First loop to commpute fact
     fact0=0;
@@ -48,7 +41,7 @@ for i=1:ncell
         elseif  Faces.InterfaceType(Cell.Faces{i}.FaceCentresID(f))==1
             cellsOfFace = Faces.Nodes(Cell.Faces{i}.FaceCentresID(f), :);
             if all(Cell.DebrisCells(ismember(Cell.Int, cellsOfFace)))
-                Lambda = lambdaS1_debris_debris;
+                Lambda = Set.lambdaS2*Set.LambdaSFactor_Debris;
             else
                 % Lambda of Cell-Cell faces
                 Lambda=Set.lambdaS2*CellInput.LambdaS2Factor(i);
@@ -88,8 +81,6 @@ for i=1:ncell
     end
     fact=fact0/Cell.SArea0(i)^2;
     
-    
-    
     for f=1:Cell.Faces{i}.nFaces
         if Faces.InterfaceType(Cell.Faces{i}.FaceCentresID(f))==0
             % External
@@ -97,7 +88,7 @@ for i=1:ncell
         elseif  Faces.InterfaceType(Cell.Faces{i}.FaceCentresID(f))==1
             cellsOfFace = Faces.Nodes(Cell.Faces{i}.FaceCentresID(f), :);
             if all(Cell.DebrisCells(ismember(Cell.Int, cellsOfFace)))
-                Lambda = lambdaS1_debris_debris;
+                Lambda = Set.lambdaS2*Set.LambdaSFactor_Debris;
             else
                 % Cell-Cell
                 Lambda=Set.lambdaS2*CellInput.LambdaS2Factor(i);
@@ -138,11 +129,10 @@ for i=1:ncell
             ge=Assembleg(ge,gs,nY);
             if nargout>1
                 Ks=fact*Lambda*(Ks+Kss);
-                if Set.Sparse
-                    %[K_SparseValues,sk]= AssembleKSparse_Enhanced(Ks,nY,K_SparseValues,sk);
-                    [si,sj,sv,sk]= AssembleKSparse(Ks,nY,si,sj,sv,sk);
+                if Set.Sparse == 2
+                    [si,sj,sv,sk] = AssembleKSparse(Ks,nY,si,sj,sv,sk);
                 else
-                    K= AssembleK(K,Ks,nY);
+                    K = AssembleK(K,Ks,nY);
                 end
             end
         end        
@@ -154,14 +144,8 @@ for i=1:ncell
     end
 end
 
-if Set.Sparse &&  nargout>1
-    %[si_cpu, sj_cpu, sv_cpu] = gather(si, sj, sv);
-    %K=sparse(si_cpu(1:sk),sj_cpu(1:sk),sv_cpu(1:sk),dimg,dimg)+K;
-    %si = horzcat(K_SparseValues{1:sk-1, 1});
-    %sj = horzcat(K_SparseValues{1:sk-1, 2});
-    %sv = horzcat(K_SparseValues{1:sk-1, 3});
-    %K=sparse(K_SparseValues(1:sk, 1),K_SparseValues(1:sk, 2),K_SparseValues(1:sk, 3),dimg,dimg)+K;
-    K=sparse(si(1:sk),sj(1:sk),sv(1:sk),dimg,dimg)+K;
+if Set.Sparse == 2 &&  nargout>1
+    K=sparse(si(1:sk),sj(1:sk),sv(1:sk),size(K, 1),size(K, 2))+K;
 end
 end
 %%

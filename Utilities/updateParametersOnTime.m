@@ -18,15 +18,14 @@ if any(Cell.DebrisCells)
 
     %% Volume degradation & Surface Cell-Debris/Debris
     if currentT < (Set.TInitAblation + Set.TEndAblation)
-        Set.lambdaV_Debris = Set.lambdaV_DebrisTime(currentT);
-        Set.lambdaS4 = Set.lambdaS4_Time(currentT);
         %CellInput.LambdaS1Factor(Cell.DebrisCells) = Set.LambdaS1FactorDebris_Time(currentT);
+        CellInput.LambdaS2Factor(Cell.DebrisCells) = Set.LambdaS2FactorDebris_Time(currentT);
+        %Set.lambdaV_Debris = Set.lambdaV_DebrisTime(currentT);
     end
 else
     Set.cPurseString = 0;
     Set.cLateralCables = 0;
-    Set.lambdaV_Debris = Set.lambdaV;
-    Set.lambdaS4 = Set.lambdaS2;
+    %Set.lambdaV_Debris = Set.lambdaV;
 end
 end
 

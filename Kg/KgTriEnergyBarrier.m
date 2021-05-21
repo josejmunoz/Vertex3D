@@ -2,24 +2,15 @@ function [g,K,Cell,EnergyB]=KgTriEnergyBarrier(Cell,Y,Set)
 % The residual g and Jacobian K of  Energy Barrier
 % Energy  WBexp = exp( Set.lambdaB*  ( 1 - Set.Beta*At/Set.BarrierTri0 )  );
 
-%% Set parameters
-ncell=Cell.n;
-
-%% Initialize
-dimg=Set.NumTotalV*3;
-
-g=zeros(dimg,1); % Local cell residual
-if Set.Sparse && nargout>1
-    sk=0;
-    si=zeros((dimg*3)^2,1); % Each vertex is shared by at least 3 cells 
-    sj=si;
-    sv=si;
-    K=sparse(zeros(dimg)); % Also used in sparse
-elseif nargout>1
-    K=zeros(dimg); % Also used in sparse
+if nargout > 1
+    if Set.Sparse == 2 %Manual sparse
+        [g, EnergyB, ncell, K, si, sj, sk, sv] = initializeKg(Cell, Set);
+    else %Matlab sparse
+        [g, EnergyB, ncell, K] = initializeKg(Cell, Set);
+    end
+else
+    [g, EnergyB, ncell] = initializeKg(Cell, Set);
 end
-
-EnergyB=0;
 
 %% Loop over Cells
 %     % Analytical residual g and Jacobian K
@@ -55,7 +46,7 @@ for i=1:ncell
         g=Assembleg(g,gs*fact,nY);
         if nargout>1
             Ks=(gs)*(gs')*fact2+Ks*fact+Kss*fact;
-            if Set.Sparse
+            if Set.Sparse == 2
                 [si,sj,sv,sk]= AssembleKSparse(Ks,nY,si,sj,sv,sk);
             else
                 K= AssembleK(K,Ks,nY);
@@ -65,7 +56,7 @@ for i=1:ncell
     end
 end
 
-if Set.Sparse && nargout>1
-    K=sparse(si(1:sk),sj(1:sk),sv(1:sk),dimg,dimg)+K;
+if Set.Sparse == 2 && nargout>1
+    K=sparse(si(1:sk),sj(1:sk),sv(1:sk),size(K, 1),size(K, 2))+K;
 end
 end

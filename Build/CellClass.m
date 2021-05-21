@@ -109,6 +109,8 @@ classdef CellClass
         %--------------------------------------------------------------------
         DebrisCells            % Debris cells
         %--------------------------------------------------------------------
+        BorderCells
+        %--------------------------------------------------------------------
         ContractileForces
     end
     methods
@@ -147,6 +149,7 @@ classdef CellClass
                 Cell.ApicalBorderVertices = cell(nC, 1);
                 Cell.BasalBorderVertices = cell(nC, 1);
                 Cell.BorderVertices = [];
+                Cell.BorderCells=false(nC, 1);
             end
         end
         
@@ -231,7 +234,7 @@ classdef CellClass
             %% Features to obtain per cell:
             cellCellFaces = find(Faces.InterfaceType == 1);
             
-            featuresTable = [];
+            featuresTable_cell = [];
             for numCell = obj.Int
                 % - Cell height
                 % avg and std distance between connected apical and basal
@@ -239,7 +242,7 @@ classdef CellClass
                 cellHeight = mean(obj.EdgeLengths{numCell}(obj.EdgeLocation{numCell} == 1));
                 cellHeightSTD = std(obj.EdgeLengths{numCell}(obj.EdgeLocation{numCell} == 1));
                 % - Volume
-                cellVolume = obj.Vol;
+                cellVolume = obj.Vol(numCell);
 
                 % - Apical area,  basal area and lateral area
                 cellSurfaceArea = obj.SArea(numCell);
@@ -283,45 +286,22 @@ classdef CellClass
                 
                 % - Convexity/concavity of cell
                 % - info normalized: 35microns cell height initial
-                Set.CellHeight
+                Set.CellHeight;
                 
-                featuresTable = [featuresTable; numCell, obj.DebrisCells(numCell), cellHeight, ...
+                featuresTable_cell = [featuresTable_cell; numCell, obj.BorderCells(numCell), obj.DebrisCells(numCell), cellHeight, ...
                     cellHeightSTD, cellVolume, cellSurfaceArea, apicalArea, ...
                     basalArea, lateralTrianglesArea, lateralAreaSharedPerNeighbour_AVG, ...
-                    lateralAreaSharedPerNeighbour_STD, apicalNeighbours, ...
-                    numel(apicalNeighbours), basalNeighbours, numel(basalNeighbours)];
+                    lateralAreaSharedPerNeighbour_STD, {apicalNeighbours}, ...
+                    numel(apicalNeighbours), {basalNeighbours}, numel(basalNeighbours)];
             end
             
+            featuresTable = cell2table(featuresTable_cell, 'VariableNames', ...
+                {'ID', 'IsBorderCell', 'IsDebrisCell', 'HeightAVG', 'HeightSTD', ...
+                'Volume', 'SurfaceArea', 'ApicalArea', 'BasalArea', ...
+                'LateralArea', 'LateralAreaSharedPerNeighbourAVG', ...
+                'LateralAreaSharedPerNeighbourASTD', 'ApicalNeighbours', ...
+                'NumApicalNeighbours', 'BasalNeigbhours', 'NumBasalNeighbours'});
             
-            allVertices = [Y.DataRow(1:Y.n, :); obj.FaceCentres.DataRow(1:obj.FaceCentres.n, :)];
-            
-            resolutionOfImage = pdist2(max(allVertices(:)), min(allVertices(:))) / 200;
-            
-            [xPixels,yPixels,zPixels] = meshgrid(min(allVertices(:)):resolutionOfImage:max(allVertices(:)));
-            
-            resultingImage = uint8(zeros(size(xPixels)));
-            for numCell = 1:length(obj.Int)
-                
-                verticesConnectionsOfCell = obj.Tris{numCell};
-                verticesConnectionsOfCell(verticesConnectionsOfCell(:, 3)>=0, 3) = verticesConnectionsOfCell(verticesConnectionsOfCell(:, 3)>=0, 3) + size(Y.DataRow, 1);
-                verticesConnectionsOfCell(verticesConnectionsOfCell(:, 3)<0, 3) = abs(verticesConnectionsOfCell(verticesConnectionsOfCell(:, 3)<0, 3));
-                %triangulationsOfCell = triangulation(verticesConnectionsOfCell, allVertices);
-                
-                DT = delaunayTriangulation(allVertices(unique(verticesConnectionsOfCell), :));
-                SI = pointLocation(DT,xPixels(:),yPixels(:),zPixels(:));       %index of simplex (returns NaN for all points outside the convex hull)
-                mask = ~isnan(SI); %binary
-                mask = reshape(mask,size(xPixels));
-                resultingImage(mask > 0) = mask(mask>0) .* obj.Int(numCell);
-                currentTable = regionprops3(mask, {'Volume', 'EquivDiameter', 'Extent', 'PrincipalAxisLength', 'Orientation', 'ConvexVolume', 'Solidity', 'SurfaceArea'});
-                
-                %% Get lateral faces and particular properties of ghost cells
-                
-                
-                %% Final touches
-                currentTable.ID = obj.Int(numCell);
-                currentTable.Time = repmat(timeStep, size(numCell));
-                featuresTable = [featuresTable; currentTable];
-            end
         end
         
         %%

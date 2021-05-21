@@ -29,7 +29,7 @@ if nargout>1
     end
     
     if Set.InPlaneElasticity
-        [gt, Kt, Cell, Energy] = KgBulk(Cell, X, X0, Set);
+        [gt, Kt, Cell, Energy.EBulk] = KgBulk(Cell, X, X0, Set);
     end
     
     % Viscous Forces ----------------------------------------------------------

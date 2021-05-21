@@ -29,6 +29,11 @@ Set.lambdaS2=0.1;
 % Cell-substrate
 Set.lambdaS3=Set.lambdaS1;
 
+%---------- In plane elasticity
+Set.InPlaneElasticity = 1;
+Set.mu_bulk = 1;
+Set.lambda_bulk = 0.001;
+
 %---------- EnergyBarrier
 Set.EnergyBarrier=true;
 Set.lambdaB=5;

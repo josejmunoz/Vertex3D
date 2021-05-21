@@ -89,16 +89,16 @@ while t<=Set.tend
         Set.Nincr = Set.tend * 10000;
         Set.dt0=Set.tend/Set.Nincr;
         Set.dt=Set.dt0;
-        for numCycle = 1:20
+        for numCycle = 1:10
             [Cell, Y, Dofs, Yt, Ytn, y, yn] = applyBoundaryCondition(t, Y, Set, Cell, Dofs, SCn, Yn);
             [g,K,Cell,Energy]=KgGlobal(Cell, Faces, SCn, X, X0, Y, Yn, y, yn, Set, CellInput);
             % Run a very small step to achieve a bit of force equilibrium
-            [g,K,Cell, y, Y, Yt, Energy, Set, gr, dyr]  = newtonRaphson(Set, Cell, Faces, SCn, X, X0, y, yn, K, g, Dofs, Y, Yn, CellInput, 0, t);
+            [g,K,Cell, y, Y, Yt, Energy, Set, gr, dyr] = newtonRaphson(Set, Cell, Faces, SCn, X, X0, y, yn, K, g, Dofs, Y, Yn, CellInput, 0, t);
             %Update Nodes (X) from Vertices (Y)
             [X]=GetXFromY(Cell,Faces,X,T,Y,XgID,Set);
-            X0 = X
-            Yn=Y;
-            SCn=Cell.FaceCentres;
+            X0 = X;
+            Yn = Y;
+            SCn = Cell.FaceCentres;
         end
         Set.Nincr = Nincr_inital;
         Set.dt0=Set.tend/Set.Nincr;

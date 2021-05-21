@@ -58,7 +58,7 @@ for ig=1:ng
     E=0.5*(F'*F-eye(3));
     trE=sum(diag(E));
     detJ=det(dXdxi)*det(F); % | dx/dxi
-    
+
     if detJ<0
         error('Tetrahedral Element orientation need to be swapped')
     end

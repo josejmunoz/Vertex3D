@@ -28,11 +28,17 @@ if nargout>1
         [gv,Kv,Cell,Energy.Ev]=KgVolume(Cell,Y,Set);
     end
     
-    [gt, Kt, Cell, Energy] = KgBulk(Cell, X, X0, Set);
+    if Set.InPlaneElasticity
+        [gt, Kt, Cell, Energy] = KgBulk(Cell, X, X0, Set);
+    end
     
     % Viscous Forces ----------------------------------------------------------
     Kf=(Set.nu/Set.dt).*sparse(eye(size(Kv)));
     gf=(Set.nu/Set.dt).*(y-yn);
+    x=reshape(X',numel(X),1);
+    x0=reshape(X0',numel(X0),1);
+    %% add this or simply zeros
+    gf = vertcat(gf, (Set.nu/Set.dt).*(x-x0));
     Energy.Ef=(1/2)*(gf')*gf/Set.nu;
     K=Kv+Ks+Kf;
     g=gv+gs+gf;
@@ -110,6 +116,10 @@ else
     
     % Viscous Forces ----------------------------------------------------------
     gf=(Set.nu/Set.dt).*(y-yn);
+    x=reshape(X',numel(X),1);
+    x0=reshape(X0',numel(X0),1);
+    %% add this or simply zeros
+    gf = vertcat(gf, (Set.nu/Set.dt).*(x-x0));
     g=gv+gs+gf;
     
     

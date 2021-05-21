@@ -39,32 +39,16 @@ for numCell = 1:ncell
         currentTet = currentCellTets(numTetrahedron, :);
         [gB, KB] = KgBulkElem(X(currentTet, :), X0(currentTet, :), Set.mu_bulk, Set.lambda_bulk);
         
-        ge=Assembleg(ge,gB,currentTet);
+        % Update currentTet
+        currentTetGlobalIDs = currentTet + Set.NumTotalV;
+        ge=Assembleg(ge,gB,currentTetGlobalIDs);
         if nargout>1
             if Set.Sparse == 2
-                [si,sj,sv,sk]= AssembleKSparse(KB,currentTet,si,sj,sv,sk);
+                [si,sj,sv,sk]= AssembleKSparse(KB,currentTetGlobalIDs,si,sj,sv,sk);
             else
-                K = AssembleK(K,KB,currentTet);
+                K = AssembleK(K,KB,currentTetGlobalIDs);
             end
         end
     end
-end
-
-
-%% Jose intial
-nele=size(T,1);
-[nnod,dim]=size(X);
-dof=nnod*dim;
-nnode=size(T,2);
-g=zeros(dof,1);
-K=zeros(dof);
-for e=1:nele
-    Te=T(e,:);
-    edof=kron(ones(nnode,1),(1:dim)')+kron((Te-1)'*dim,ones(dim,1));
-    Xe=X(Te,:);
-    Xe0=X0(Te,:);
-    [ge,Ke]=gKBulkElem(Xe,Xe0,mu,lambda);
-    g(edof)=g(edof)+ge;
-    K(edof,edof)=K(edof,edof)+Ke;
 end
 end

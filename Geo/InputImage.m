@@ -185,14 +185,15 @@ Cell.BorderCells = ismember(Cell.Int, borderPairs(:));
 Set.NumMainV=Y.n;
 Set.NumAuxV=Cell.FaceCentres.n;
 Set.NumTotalV=Set.NumMainV+Set.NumAuxV;
+Set.NumXs = size(X, 1);
 Cn=BuildCn(Twg);
 
 Faces=Faces.ComputeAreaTri(Y.DataRow,Cell.FaceCentres.DataRow);
 Faces=Faces.CheckInteriorFaces(XgID);
 
 X0 = X;
-Yn=Y;
-SCn=Cell.FaceCentres;
+Yn = Y;
+SCn = Cell.FaceCentres;
 Yt=[Y.DataOrdered ;Cell.FaceCentres.DataOrdered];
 
 T=DynamicArray(ceil(size(Twg,1)*1.5),size(Twg,2));

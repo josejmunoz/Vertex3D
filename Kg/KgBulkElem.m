@@ -1,4 +1,4 @@
-function [g, K]=KgBulkElem(x, x0, mu, lambda)
+function [g, K] = KgBulkElem(x, x0, mu, lambda)
 %KGBULKELEM Computes elemental residual and Jacobian for bulk viscoelastic domain
 %   Assumes St. Venant-Kirchoff elastic poential:
 %   W(E)=lambda tr(E)^2 + 2*mu tr(E^2)

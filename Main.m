@@ -22,10 +22,10 @@ InitiateOutputFolder(Set)
 %% Mesh generation
 if isempty(Set.InputSegmentedImage)
     [X]=Example(Set.e);
-    [X,Y,Yt,T,XgID,Cell,Faces,Cn,~,Yn,SCn,Set]=InitializeGeometry3DVertex(X,Set);
+    [X, X0, Y,Yt,T,XgID,Cell,Faces,Cn,~,Yn,SCn,Set]=InitializeGeometry3DVertex(X,Set);
     inputImage = 0;
 else
-    [X,Y,Yt,T,XgID,Cell,Faces,Cn,~,Yn,SCn,Set] = InputImage(Set);
+    [X, X0, Y,Yt,T,XgID,Cell,Faces,Cn,~,Yn,SCn,Set] = InputImage(Set);
     inputImage = 1;
 end
 
@@ -91,11 +91,12 @@ while t<=Set.tend
         Set.dt=Set.dt0;
         for numCycle = 1:20
             [Cell, Y, Dofs, Yt, Ytn, y, yn] = applyBoundaryCondition(t, Y, Set, Cell, Dofs, SCn, Yn);
-            [g,K,Cell,Energy]=KgGlobal(Cell,Faces,SCn,Y,Yn,y,yn,Set,CellInput);
+            [g,K,Cell,Energy]=KgGlobal(Cell, Faces, SCn, X, X0, Y, Yn, y, yn, Set, CellInput);
             % Run a very small step to achieve a bit of force equilibrium
-            [g,K,Cell, y, Y, Yt, Energy, Set, gr, dyr]  = newtonRaphson(Set, Cell, Faces, SCn, y, yn, K, g, Dofs, Y, Yn, CellInput, 0, t);
+            [g,K,Cell, y, Y, Yt, Energy, Set, gr, dyr]  = newtonRaphson(Set, Cell, Faces, SCn, X, X0, y, yn, K, g, Dofs, Y, Yn, CellInput, 0, t);
             %Update Nodes (X) from Vertices (Y)
             [X]=GetXFromY(Cell,Faces,X,T,Y,XgID,Set);
+            X0 = X
             Yn=Y;
             SCn=Cell.FaceCentres;
         end

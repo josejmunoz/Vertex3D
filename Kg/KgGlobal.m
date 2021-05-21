@@ -1,4 +1,4 @@
-function [g,K,Cell,Energy,gs,gv,gf,gB,gb]=KgGlobal(Cell,Faces,SCn,Y,Yn,y,yn,Set,CellInput)
+function [g,K,Cell,Energy,gs,gv,gf,gB,gb]=KgGlobal(Cell,Faces,SCn,X, X0, Y,Yn,y,yn,Set,CellInput)
 % The residual g and Jacobian K of all energies
 
 %% Calculate basic information
@@ -27,6 +27,8 @@ if nargout>1
     else
         [gv,Kv,Cell,Energy.Ev]=KgVolume(Cell,Y,Set);
     end
+    
+    [gt, Kt, Cell, Energy] = KgBulk(Cell, X, X0, Set);
     
     % Viscous Forces ----------------------------------------------------------
     Kf=(Set.nu/Set.dt).*sparse(eye(size(Kv)));

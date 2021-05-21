@@ -1,4 +1,4 @@
-function [X,Y,Yt,T,XgID,Cell,Faces,Cn,Cv,Yn,SCn,Set]=InitializeGeometry3DVertex(X,Set)
+function [X,X0,Y,Yt,T,XgID,Cell,Faces,Cn,Cv,Yn,SCn,Set]=InitializeGeometry3DVertex(X,Set)
 %% This function creates the initial geometry of cells and the initial data structure
 % SeedingMethod 1 :  The free boundary is obtained using bounding box 
 % SeedingMethod 2 :  The free boundary is obtained by computing distance function          
@@ -67,8 +67,7 @@ end
 X=newX(1:aux2-1,:);
 XgID=newXgID(1:aux3-1);
 Twg=newTwg;
-
-
+X0 = X;
 
 %% Obtain Vertex-Position
 % [N]=GetN(Twg);
@@ -76,8 +75,6 @@ Set.nodes=size(X,1);
 Yaux=GetYFromX(X,XgID,Twg,Set.f);
 Y=DynamicArray(ceil(size(Yaux,1)*1.5),size(Yaux,2));
 Y=Y.Add(Yaux);
-
-
 
 %% Build Cells 
 xInternal=1:size(X,1);

@@ -1,4 +1,4 @@
-function [X,Y,Yt,T,XgID,Cell,Faces,Cn,Cv,Yn,SCn,Set] = InputImage(Set)
+function [X,X0,Y,Yt,T,XgID,Cell,Faces,Cn,Cv,Yn,SCn,Set] = InputImage(Set)
 %INPUTIMAGE Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -190,6 +190,7 @@ Cn=BuildCn(Twg);
 Faces=Faces.ComputeAreaTri(Y.DataRow,Cell.FaceCentres.DataRow);
 Faces=Faces.CheckInteriorFaces(XgID);
 
+X0 = X;
 Yn=Y;
 SCn=Cell.FaceCentres;
 Yt=[Y.DataOrdered ;Cell.FaceCentres.DataOrdered];

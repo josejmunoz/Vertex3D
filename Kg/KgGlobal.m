@@ -28,10 +28,6 @@ if nargout>1
         [gv,Kv,Cell,Energy.Ev]=KgVolume(Cell,Y,Set);
     end
     
-    if Set.InPlaneElasticity
-        [gt, Kt, Cell, Energy.EBulk] = KgBulk(Cell, X, X0, Set);
-    end
-    
     % Viscous Forces ----------------------------------------------------------
     Kf=(Set.nu/Set.dt).*sparse(eye(size(Kv)));
     gf=(Set.nu/Set.dt).*(y-yn);
@@ -60,8 +56,15 @@ if nargout>1
     end
     
     
+    %% In plane elasticity (tetrahedra)
+    if Set.InPlaneElasticity
+        [gt, Kt, Cell, Energy.EBulk] = KgBulk(Cell, X, X0, Set);
+        K = K + Kt;
+        g = g + gt;
+    end
     
-    % Bending Energy ----------------------------------------------------------
+    
+    %% Bending Energy
     if Set.Bending && Set.Parallel
         [gb,Kb,Cell,Energy.Bend]=KgBendingParallel(Cell,Y,Set);
         K=K+Kb; g=g+gb;
@@ -70,7 +73,7 @@ if nargout>1
         K=K+Kb; g=g+gb;
     end
     
-    % Energy Barrier for small triangles --------------------------------------
+    %% Energy Barrier for small triangles
     if Set.EnergyBarrier && Set.Parallel
         [gB,KB,Cell,Energy.EB]=KgTriEnergyBarrierParallel(Cell,Y,Set);
         K=K+KB; g=g+gB;
@@ -80,20 +83,20 @@ if nargout>1
     end
     
     
-    % Propulsion Forces -------------------------------------------------------
+    %% Propulsion Forces
     if Set.Propulsion
         [gp]=gPropulsion(Cell,Y,Set,CellInput);
         g=g-gp;
     end
     
     
-    % ----------------- Contractility -------------------------------------    
+    %%  Contractility     
     if Set.Contractility && (Set.cPurseString > 0 || Set.cLateralCables > 0)
         [gC,KC,Cell,Energy.Ec]=KgContractility(Cell,Y,Set);
          K=K+KC; g=g+gC;
     end
     
-    % ----------------- Substrate -----------------------------------------
+    %%  Substrate 
     if Set.Substrate && Set.kSubstrate > 0
         [gSub,KSub,Cell,Energy.Esub]=KgSubstrate(Cell, SCn, Y, Yn, Set);
         K=K+KSub; g=g+gSub;
@@ -103,7 +106,7 @@ if nargout>1
 else
     %% Compute the residual g solo (For LineSearch)
 
-    % Surface Energy ----------------------------------------------------------
+    %% Surface Energy 
     if      Set.SurfaceType==1
         [gs]=KgSurfaceCellBased(Cell,Y,Set);
     elseif  Set.SurfaceType==2
@@ -111,10 +114,11 @@ else
     elseif  Set.SurfaceType==4
         [gs]=KgSurfaceCellBasedAdhesion(Cell,Y,Faces,Set,CellInput);
     end
-    % Volume Energy ----------------------------------------------------------
+    
+    %% Volume Energy 
     [gv]=KgVolume(Cell,Y,Set);
     
-    % Viscous Forces ----------------------------------------------------------
+    %% Viscous Forces 
     gf=(Set.nu/Set.dt).*(y-yn);
     x=reshape(X',numel(X),1);
     x0=reshape(X0',numel(X0),1);
@@ -133,31 +137,37 @@ else
         g=g+gft;
     end
     
-    % Bending Energy ----------------------------------------------------------
+    %% In plane elasticity (tetrahedra)
+    if Set.InPlaneElasticity
+        [gt] = KgBulk(Cell, X, X0, Set);
+        g = g + gt;
+    end
+    
+    %% Bending Energy 
     if Set.Bending
         [gb]=KgBending(Cell,Y,Set);
         g=g+gb;
     end
     
-    % Energy Barrier for small triangles --------------------------------------
+    %% Energy Barrier for small triangles
     if Set.EnergyBarrier
         [gB]=KgTriEnergyBarrier(Cell,Y,Set);
         g=g+gB;
     end
     
-    % Propulsion Forces -------------------------------------------------------
+    %% Propulsion Forces
     if Set.Propulsion
         [gp]=gPropulsion(Cell,Y,Set,CellInput);
         g=g-gp;
     end
     
-    % ----------------- Contractility -------------------------------------
+    %%  Contractility 
     if Set.Contractility && (Set.cPurseString > 0 || Set.cLateralCables > 0)
         [gc]=KgContractility(Cell,Y,Set);
         g=g+gc;
     end
     
-    % ----------------- Substrate -----------------------------------------
+    %%  Substrate 
     if Set.Substrate && Set.kSubstrate > 0
         [gSub]=KgSubstrate(Cell, SCn, Y, Yn, Set);
         g=g+gSub;

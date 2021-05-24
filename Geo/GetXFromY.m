@@ -1,4 +1,4 @@
-function [X]=GetXFromY(Cell,Faces,X,T,Y,XgID,Set)
+function [X, Cell]=GetXFromY(Cell,Faces,X,T,Y,XgID,Set)
 % Obtain X (nodal position) from given vertex (Y) Position
 
 
@@ -138,6 +138,10 @@ elseif Set.ObtainX==3
         end
         
     end
+end
+
+for numCell = Cell.Int
+    [Cell.cTet{numCell}] = CheckTetrahedronOrder(Cell.cTet{numCell}, X);
 end
 
 end

@@ -9,7 +9,6 @@ function [Cv,Cell,SharedFaces]=BuildCells(T,Y,X,xInternal,H, extrapolateFaceCent
 
 nC=length(xInternal);
 Cell = CellClass(nC,xInternal);
-
 % -------
 TetIDs=1:size(T,1);
 %% Initiate global database

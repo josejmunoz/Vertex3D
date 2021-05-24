@@ -147,6 +147,9 @@ X(:,1)=X(:,1)-mean(X(:,1));
 X(:,2)=X(:,2)-mean(X(:,2));
 X(:,3)=X(:,3)-mean(X(:,3));
 
+%% Check order of tetrahedrons
+[Twg] = CheckTetrahedronOrder(Twg, X);
+
 %% Create vertices Y
 Y=DynamicArray(size(verticesInfo.location, 1)*3, 3);
 

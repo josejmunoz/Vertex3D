@@ -95,7 +95,7 @@ while t<=Set.tend
             % Run a very small step to achieve a bit of force equilibrium
             [g,K,Cell, y, Y, Yt, Energy, Set, gr, dyr] = newtonRaphson(Set, Cell, Faces, SCn, X, X0, y, yn, K, g, Dofs, Y, Yn, CellInput, 0, t);
             %Update Nodes (X) from Vertices (Y)
-            [X]=GetXFromY(Cell,Faces,X,T,Y,XgID,Set);
+            [X, Cell]=GetXFromY(Cell,Faces,X,T,Y,XgID,Set);
             X0 = X;
             Yn = Y;
             SCn = Cell.FaceCentres;
@@ -130,7 +130,7 @@ while t<=Set.tend
         fprintf('STEP %i has converged ...\n',Set.iIncr)
         
         %Update Nodes (X) from Vertices (Y)
-        [X]=GetXFromY(Cell,Faces,X,T,Y,XgID,Set);
+        [X, Cell]=GetXFromY(Cell,Faces,X,T,Y,XgID,Set);
         
         %% Post processing
         if Set.VTK, PostProcessingVTK(X,Y,T.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end

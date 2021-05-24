@@ -144,6 +144,7 @@ end
 Cell.FaceCentres(numFaceCentresFaces:end,:)=[];
 Cv(numVertexBarElem:end,:)=[];
 Cell.nTotalTris=numTotalSurfsTris;
+Cell.cTet0 = Cell.cTet;
 
 
 

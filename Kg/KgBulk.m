@@ -34,10 +34,12 @@ for numCell = 1:ncell
     end
     
     currentCellTets = Cell.cTet{numCell};
+    currentCellTets0 = Cell.cTet0{numCell};
     
     for numTetrahedron = 1:length(currentCellTets)
         currentTet = currentCellTets(numTetrahedron, :);
-        [gB, KB] = KgBulkElem(X(currentTet, :), X0(currentTet, :), Set.mu_bulk, Set.lambda_bulk);
+        currentTet0 = currentCellTets0(numTetrahedron, :);
+        [gB, KB] = KgBulkElem(X(currentTet, :), X0(currentTet0, :), Set.mu_bulk, Set.lambda_bulk);
         
         % Update currentTet
         currentTetGlobalIDs = currentTet + Set.NumTotalV;

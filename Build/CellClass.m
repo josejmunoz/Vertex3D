@@ -15,6 +15,8 @@ classdef CellClass
         cTet                  % -Connected tetrahedrons (Type=cell-structure ,  Size={NumCells 1}):
         %     Each cell (Cell.cTet{i}) is an array of size [ntet 4] with nodal tetrahedrons connected to the node of Cell i.
         %--------------------------------------------------------------------
+        cTet0 % Initial cTet
+        %--------------------------------------------------------------------
         cTetID                %% -Connected tetrahedrons IDs (Type=cell-structure ,  Size={NumCells 1}):
         %     Each cell (Cell.cTetID{i}) is an array of size [1 ntet] with IDs of nodal tetrahedrons connected to the node of Cell i.
         %    (IDs-> their index in T).

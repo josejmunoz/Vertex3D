@@ -97,6 +97,7 @@ while t<=Set.tend
             %Update Nodes (X) from Vertices (Y)
             [X, Cell]=GetXFromY(Cell,Faces,X,T,Y,XgID,Set);
             X0 = X;
+            Cell.cTet0 = Cell.cTet;
             Yn = Y;
             SCn = Cell.FaceCentres;
         end
@@ -118,12 +119,12 @@ while t<=Set.tend
     %% ----------- Compute K, g ---------------------------------------
     [Set, CellInput] = updateParametersOnTime(t, Set, Cell, CellInput);
     fprintf('Step: %i - LambdaV_Debris: %d, LambdaS1_Debris: %d, cPurseString: %d, cLateralCables: %d\n', numStep, Set.lambdaV_Debris, Set.lambdaS1 * CellInput.LambdaS1Factor(Cell.DebrisCells), Set.cPurseString, Set.cLateralCables);
-    [g,K,Cell,Energy]=KgGlobal(Cell,Faces,SCn,Y,Yn,y,yn,Set,CellInput);
+    [g,K,Cell,Energy]=KgGlobal(Cell,Faces,SCn,X, X0, Y,Yn,y,yn,Set,CellInput);
     
     if Set.VTK, PostProcessingVTK(X,Y,T.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end    
     
     %% Newton-raphson iterations 
-    [g,K,Cell, y, Y, Yt, Energy, Set, gr, dyr, dy] = newtonRaphson(Set, Cell, Faces, SCn, y, yn, K, g, Dofs, Y, Yn, CellInput, numStep, t);
+    [g,K,Cell, y, Y, Yt, Energy, Set, gr, dyr, dy] = newtonRaphson(Set, Cell, Faces, SCn, X, X0, y, yn, K, g, Dofs, Y, Yn, CellInput, numStep, t);
     
     %%
     if gr<Set.tol && dyr<Set.tol && all(isnan(g(Dofs.FreeDofs)) == 0) && all(isnan(dy(Dofs.FreeDofs)) == 0)

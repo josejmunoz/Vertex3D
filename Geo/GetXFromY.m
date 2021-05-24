@@ -140,8 +140,10 @@ elseif Set.ObtainX==3
     end
 end
 
-for numCell = Cell.Int
-    [Cell.cTet{numCell}] = CheckTetrahedronOrder(Cell.cTet{numCell}, X);
+if nargout > 1
+    for numCell = Cell.Int
+        [Cell.cTet{numCell}] = CheckTetrahedronOrder(Cell.cTet{numCell}, X);
+    end
 end
 
 end

@@ -1,4 +1,4 @@
-function [g, K] = KgBulkElem(x, x0, mu, lambda)
+function [g, K] = KgBulkElem(x, x0, mu, lambda, Neo)
 %KGBULKELEM Computes elemental residual and Jacobian for bulk viscoelastic domain
 %   Assumes St. Venant-Kirchoff elastic poential:
 %   W(E)=lambda tr(E)^2 + 2*mu tr(E^2)
@@ -15,6 +15,11 @@ function [g, K] = KgBulkElem(x, x0, mu, lambda)
 %   S=2nf Piola-Kirchhof stress tensor on last GP
 %
 %   Designed by Jose J. Muñoz
+
+NeoH=true;
+if exist('Neo','var')
+    NeoH=Neo;
+end
 
 if ~exist('lambda','var')
     lambda=0;
@@ -52,34 +57,54 @@ g=zeros(nnod*dim,1);
 K=zeros(nnod*dim);
 
 for ig=1:ng
-    dxdxi=x'*DN'; % 3x3 Jacobain dx_i/dxi_j
+    % Unnecessary: dxdxi=x'*DN'; % 3x3 Jacobain dx_i/dxi_j
     dXdxi=x0'*DN'; % 3x3     Jacobain dX_i/dxi_j
-    F=dxdxi/dXdxi;
+    gradXN=(dXdxi')\DN; % each column: gradient of each shape function
+    F=x'*gradXN';
+    gradxN=(F')\gradXN; % each column: gradient of each shape function
+    J=det(F);
     E=0.5*(F'*F-eye(3));
     trE=sum(diag(E));
-    detJ=det(dXdxi)*det(F); % | dx/dxi
-
-    if detJ<0
+    Je=det(dXdxi);
+    lJ=log(J);
+    
+    if Je<0
         error('Tetrahedral Element orientation need to be swapped')
     end
     
-    W=0.5*lambda*trE^2+mu*sum(diag(E*E));
-    gradXN=(dXdxi')\DN; % each column: gradient of each shape function
+    %if NeoH
+    %    W=0.5*lambda*lJ^2+mu*(trE-lJ);
+    %else
+    %    W=0.5*lambda*trE^2+mu*sum(diag(E*E));
+    %end
     for a=1:nnod
         gradXNa=gradXN(:,a);
+        gradxNa=gradxN(:,a);
         idof=(a-1)*dim+1:a*dim;
-        g(idof)=g(idof)+wg(ig)*(W*eye(3)+lambda*trE*F+2*mu*F*E)*gradXNa*detJ;
+        if NeoH
+            K1=(lambda*lJ-mu)*gradxNa+mu*F*gradXNa;
+        else
+            K1=(lambda*trE*F+2*mu*F*E)*gradXNa;
+        end
+        g(idof)=g(idof)+wg(ig)*K1*Je;
         for b=1:nnod
             gradXNb=gradXN(:,b);
+            gradxNb=gradxN(:,b);
             jdof=(b-1)*dim+1:b*dim;
-            K1=(trE*lambda*(gradXNa'*gradXNb)+2*mu*(gradXNb'*E*gradXNa))*eye(3);
-            K2=lambda*F*gradXNa*(F*gradXNb)'+mu*(F*gradXNb*(F*gradXNa)');
-            K3=mu*F*(F')*(gradXNa'*gradXNb);
-            K4=(lambda*trE*F+2*mu*F*E+W*eye(3))*(gradXNa*gradXNb');
-            K5=(gradXNa*gradXNb')*(lambda*trE*F'+2*mu*E*F');
-            K(idof,jdof)=K(idof,jdof)+wg(ig)*detJ*(K1+K2+K3+K4+K5);
+            NxaNxb=gradxNa*gradxNb';
+            if NeoH
+                K1=mu*(gradXNa'*gradXNb)*eye(3);
+                K2=lambda*NxaNxb;
+                K3=-(lambda*lJ-mu)*NxaNxb';
+                Kab=K1+K2+K3;
+            else
+                K1=(trE*lambda*(gradXNa'*gradXNb)+2*mu*(gradXNb'*E*gradXNa))*eye(3);
+                K2=lambda*F*gradXNa*(F*gradXNb)'+mu*(F*gradXNb*(F*gradXNa)');
+                K3=mu*F*(F')*(gradXNa'*gradXNb);
+                Kab=K1+K2+K3;
+            end
+            K(idof,jdof)=K(idof,jdof)+wg(ig)*Je*Kab;
         end
     end
-% Stresses: S=lambda*trE*eye(3)+2*mu*E;
 end
 end

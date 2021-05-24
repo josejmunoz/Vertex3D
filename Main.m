@@ -131,7 +131,8 @@ while t<=Set.tend
         fprintf('STEP %i has converged ...\n',Set.iIncr)
         
         %Update Nodes (X) from Vertices (Y)
-        [X, Cell]=GetXFromY(Cell,Faces,X,T,Y,XgID,Set);
+        %[X, Cell]=GetXFromY(Cell,Faces,X,T,Y,XgID,Set);
+        [X]=GetXFromY(Cell,Faces,X,T,Y,XgID,Set);
         
         %% Post processing
         if Set.VTK, PostProcessingVTK(X,Y,T.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end

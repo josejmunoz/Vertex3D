@@ -123,6 +123,19 @@ if ~isfield(Set,'SurfaceType')
     Set.SurfaceType=1;
     Set.A0eq0=true; 
 end 
+if ~isfield(Set,'LambdaS1') % Cell-external
+    Set.lambdaS1=0.5;
+end 
+if ~isfield(Set,'LambdaS2') % Cell-Cell
+    Set.lambdaS2=0.1;
+end 
+if ~isfield(Set,'LambdaS3') % Cell-substrate
+    Set.lambdaS3=Set.LambdaS2;
+end 
+if ~isfield(Set,'LambdaS4') % Cell-Debris
+    Set.lambdaS4=Set.LambdaS2;
+end 
+
 if ~isfield(Set,'LambdaS1CellFactor')
     Set.LambdaS1CellFactor=[];
 end 
@@ -135,6 +148,7 @@ end
 if ~isfield(Set,'LambdaS4CellFactor')
     Set.LambdaS4CellFactor=[];
 end 
+
 
 %---------- EnergyBarrier -------------------------------------------------
 % Energy Barrier for small Triangles 

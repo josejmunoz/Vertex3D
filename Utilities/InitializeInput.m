@@ -1,11 +1,12 @@
-function [CellInput]=InitializeInput(Cell,Set)
+function [CellInput, Set]=InitializeInput(Cell, Set, Y)
 % Initialize Lmabda-reduction-factor for each cell-inerface (check KgSurfaceCellBasedAdhesionParallel.m)
 % Initialize propulsion force for each cell (check gPropulsion.m)
+% Initialize contractility in time
 
 if Set.SurfaceType==4
     aux1=Set.LambdaS1CellFactor;
     aux2=Set.LambdaS2CellFactor;
-    aux3=Set.LambdaS3CellFactor; 
+    aux3=Set.LambdaS3CellFactor;
     CellInput.LambdaS1Factor=ones(Cell.n,1);
     CellInput.LambdaS2Factor=ones(Cell.n,1);
     CellInput.LambdaS3Factor=ones(Cell.n,1);
@@ -25,21 +26,40 @@ if Set.SurfaceType==4
         for i=1:size(aux3,1)
             CellInput.LambdaS3Factor(aux3(i,1))=aux3(i,2);
         end
-    end   
+    end
 else 
     CellInput.LambdaS1Factor=[];
     CellInput.LambdaS2Factor=[];
     CellInput.LambdaS3Factor=[];
 end 
 
-
-
 if Set.Propulsion
     CellInput.Propulsion=zeros(Cell.n,3);
     CellInput.Propulsion(:,1:2)=(rand(Cell.n,2)-0.5)./50;
 else 
     CellInput.Propulsion=[];
-end 
+end
+
+%% Set z0Substrate
+Set.z0Substrate = min(Y.DataRow(:,3))*1.01;
 
 
+%% Contractility
+if isempty(Set.Contractility_Variability_PurseString) == 0
+    for numTimePoint = 2:length(Set.Contractility_Variability_PurseString)
+        [Set.cPurseString_TimeDependent{numTimePoint-1}] = functionVariableOnTime(Set.Contractility_Variability_PurseString(numTimePoint-1), Set.Contractility_Variability_PurseString(numTimePoint), Set.Contractility_TimeVariability_PurseString(numTimePoint-1), Set.Contractility_TimeVariability_PurseString(numTimePoint), Set);
+    end
+end
+
+if isempty(Set.Contractility_Variability_LateralCables) == 0
+    for numTimePoint = 2:length(Set.Contractility_Variability_LateralCables)
+        [Set.cLateralCables_TimeDependent{numTimePoint-1}] = functionVariableOnTime(Set.Contractility_Variability_LateralCables(numTimePoint-1), Set.Contractility_Variability_LateralCables(numTimePoint), Set.Contractility_TimeVariability_LateralCables(numTimePoint-1), Set.Contractility_TimeVariability_LateralCables(numTimePoint), Set);
+    end
+end
+
+if Set.TEndAblation > 0
+    %Set.lambdaV_DebrisTime = functionVariableOnTime(Set.lambdaV, Set.lambdaV_Debris, Set.TInitAblation, Set.TEndAblation, Set);
+    Set.LambdaS2FactorDebris_Time = functionVariableOnTime(1, Set.LambdaSFactor_Debris, Set.TInitAblation, Set.TEndAblation, Set);
+    %Set.LambdaS1FactorDebris_Time = functionVariableOnTime(1, Set.LambdaSFactor_Debris, Set.TInitAblation, Set.TEndAblation, Set);
+end
 end 

@@ -11,14 +11,11 @@ Set.dt=Set.dt0;
 
 % Dofs & Boundary 
 
-if Set.BC==1 && ~Set.Substrate
+if Set.BC==1
     [Dofs]=GetDOFs(Y,Cell,Faces,Set);
-elseif Set.BC==2 && ~Set.Substrate
+elseif Set.BC==2
     Set.WallPosition=max(Y.DataRow(:,2))+0.2;
     [Dofs]=GetWallBoundaryCondition(Set,Y,Cell,Faces);
-elseif Set.Substrate
-    [Dofs]=GetDOFsSubsrtate(Y,Cell,Set,Faces);
-else 
     error('Invalid Input ... \n')
 end
 

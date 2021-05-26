@@ -6,27 +6,16 @@ function [g,K,Cell,EnergyBar]=KgLocalViscosityEdgeBased(Cell,Y,Set)
 %                             Ln:is the length at t_(n)
 %                             dt: time step
 
-Set.Sparse=true;
 
-
-%% Set parameters
-ncell=Cell.n;
-
-%% Initialize
-dimg=Set.NumTotalV*3;
-
-g=zeros(dimg,1); % Local cell residual
-if Set.Sparse && nargout>1
-    sk=0;
-    si=zeros((dimg*3)^2,1); % Each vertex is shared by at least 3 cells
-    sj=si;
-    sv=si;
-    K=sparse(zeros(dimg)); % Also used in sparse
-elseif nargout>1
-    K=zeros(dimg); % Also used in sparse
+if nargout > 1
+    if Set.Sparse == 2 %Manual sparse
+        [g, EnergyBar, ncell, K, si, sj, sk, sv] = initializeKg(Cell, Set);
+    else %Matlab sparse
+        [g, EnergyBar, ncell, K] = initializeKg(Cell, Set);
+    end
+else
+    [g, EnergyBar, ncell] = initializeKg(Cell, Set);
 end
-
-EnergyBar=0;
 
 
 %% Loop over Cells
@@ -76,7 +65,7 @@ for i=1:ncell
             end
             Ke=[ Kij -Kij;
                 -Kij  Kij];
-            if Set.Sparse
+            if Set.Sparse == 2
                 [si,sj,sv,sk]= AssembleKSparse(Ke,nY,si,sj,sv,sk);
             else
                 K= AssembleK(K,Ke,nY);
@@ -86,7 +75,7 @@ for i=1:ncell
     end
 end
 
-if Set.Sparse && nargout>1
-    K=sparse(si(1:sk),sj(1:sk),sv(1:sk),dimg,dimg)+K;
+if Set.Sparse == 2 && nargout>1
+    K=sparse(si(1:sk),sj(1:sk),sv(1:sk),size(K, 1),size(K, 2))+K;
 end
 end

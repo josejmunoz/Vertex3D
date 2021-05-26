@@ -1,40 +1,44 @@
-function [g,K,Cell,energy] = KgSubstrate(Cell, SCn, Y, Yn, Set)
+function [g,K,Cell,Energy] = KgSubstrate(Cell, SCn, Y, Yn, Set)
 %KGSUBSTRATE Summary of this function goes here
 %   Detailed explanation goes here
 
 %% Initialize
-dimensionsG = Set.NumTotalV*3;
-g=zeros(dimensionsG,1); % Local cell residual
-
-if Set.Sparse
-    sk=0;
-    si=zeros((dimensionsG*3)^2,1); % Each vertex is shared by at least 3 cells 
-    sj=si;
-    sv=si;
-    K=sparse(zeros(dimensionsG)); % Also used in sparse
+if nargout > 1
+    if Set.Sparse == 2 %Manual sparse
+        [g, Energy, ncell, K, si, sj, sk, sv] = initializeKg(Cell, Set);
+    else %Matlab sparse
+        [g, Energy, ncell, K] = initializeKg(Cell, Set);
+    end
 else
-    K=zeros(dimensionsG); % Also used in sparse
+    [g, Energy, ncell] = initializeKg(Cell, Set);
 end
 
-energy = 0;
-
-for numCell = 1:Cell.n
+for numCell = 1:ncell
     
-    if Cell.DebrisCells(numCell)
-        kSubstrate = 0;
-    else
-        kSubstrate = Set.kSubstrate;
-    end
+%     if Cell.DebrisCells(numCell)
+%         kSubstrate = 0;
+%     else
+%         kSubstrate = Set.kSubstrate;
+%     end
+    
+    kSubstrate = Set.kSubstrate;
 
-    substrateForcesOfCell = zeros(length(Cell.BasalVertices), 1);
-    numVertexElem = 1;
+    substrateForcesOfCell = Cell.SubstrateForce{numCell};
+    numVertexElem = 0;
+    basalJunctionVertices = Cell.BasalBorderVertices{numCell};
     for numVertex = Cell.BasalVertices{numCell}'
+        numVertexElem = numVertexElem + 1;
+        if basalJunctionVertices(numVertexElem) == 0
+            continue;
+        end
         
         z0 = Set.z0Substrate;
         if numVertex < 0 %% Face centre
-            currentVertex = Cell.FaceCentres.DataRow(abs(numVertex), :);
-            %z0 = SCn.DataRow(abs(numVertex), 3);
-            vertexIndex = abs(numVertex) + Set.NumMainV;
+            continue
+%             currentVertex = Cell.FaceCentres.DataRow(abs(numVertex), :);
+%             %z0 = SCn.DataRow(abs(numVertex), 3);
+%             vertexIndex = abs(numVertex) + Set.NumMainV;
+%             kSubstrate = 0;
         else %% Regular Vertex
             currentVertex = Y.DataRow(numVertex, :);
             %z0 = Yn.DataRow(numVertex, 3);
@@ -47,20 +51,19 @@ for numCell = 1:Cell.n
         
         %% Save contractile forces (g) to output
         substrateForcesOfCell(numVertexElem, 1) = g_current(3);
-        numVertexElem = numVertexElem + 1;
         %% AssembleK
         if  nargout>1
             %% Calculate Jacobian
             K_current = computeKSubstrate(kSubstrate);
 
-            if Set.Sparse
+            if Set.Sparse == 2
                 [si,sj,sv,sk] = AssembleKSparse(K_current, vertexIndex, si, sj, sv, sk);
             else
                 K = AssembleK(K, K_current, vertexIndex);
             end
 
             %% Calculate energy
-            energy = energy + computeEnergySubstrate(kSubstrate, currentVertex(:, 3), z0);
+            Energy = Energy + computeEnergySubstrate(kSubstrate, currentVertex(:, 3), z0);
         end
         
     end
@@ -68,7 +71,7 @@ for numCell = 1:Cell.n
     Cell.SubstrateForce(numCell) = {substrateForcesOfCell};
 end
 
-if Set.Sparse && nargout>1
+if Set.Sparse == 2 && nargout>1
     K = sparse(si(1:sk),sj(1:sk),sv(1:sk),dimensionsG,dimensionsG);
 end
 

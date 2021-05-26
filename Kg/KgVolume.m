@@ -2,30 +2,18 @@ function [g,K,Cell,EnergyV]=KgVolume(Cell,Y,Set)
 % The residual g and Jacobian K of Volume Energy 
 % Energy W_s= sum_cell lambdaV ((V-V0)/V0)^2
 
-
-%% Set parameters
-ncell=Cell.n;
-
-%% Initialize
-dimg=Set.NumTotalV*3;
-
-g=zeros(dimg,1); % Local cell residual
-if Set.Sparse && nargout>1
-    sk=0;
-    si=zeros((dimg*3)^2,1); % Each vertex is shared by at least 3 cells 
-    sj=si;
-    sv=si;
-    K=sparse(zeros(dimg)); % Also used in sparse
-elseif nargout>1
-    K=zeros(dimg); % Also used in sparse
+if nargout > 1
+    if Set.Sparse == 2 %Manual sparse
+        [g, EnergyV, ncell, K, si, sj, sk, sv] = initializeKg(Cell, Set);
+    else %Matlab sparse
+        [g, EnergyV, ncell, K] = initializeKg(Cell, Set);
+    end
+else
+    [g, EnergyV, ncell] = initializeKg(Cell, Set);
 end
 
-
-EnergyV=0;
-
-
 %% Loop over Cells 
-     % Analytical residual g and Jacobian K
+% Analytical residual g and Jacobian K
 for i=1:ncell
     if ~Cell.AssembleAll
         if ~ismember(Cell.Int(i),Cell.AssembleNodes) 
@@ -39,7 +27,12 @@ for i=1:ncell
         lambdaV=Set.lambdaV;
     end
     fact=lambdaV*(Cell.Vol(i)-Cell.Vol0(i))/Cell.Vol0(i)^2;
-    ge=zeros(dimg,1); % Local cell residual
+    
+    if Set.Sparse > 0
+        ge=sparse(size(g, 1), 1); % Local cell residual
+    else
+        ge=zeros(size(g, 1), 1);
+    end
     
     
     % Loop over Cell-face-triangles
@@ -61,28 +54,24 @@ for i=1:ncell
         [gs,Ks]=gKDet(Y1,Y2,Y3);
         ge=Assembleg(ge,gs,nY);
         if nargout>1
-            if Set.Sparse
+            if Set.Sparse == 2
                 [si,sj,sv,sk]= AssembleKSparse(Ks*fact/6,nY,si,sj,sv,sk);
             else
-                K= AssembleK(K,Ks*fact/6,nY);
+                K = AssembleK(K,Ks*fact/6,nY);
             end
         end
     end 
  
     g=g+ge*fact/6; % Volume contribution of each triangle is det(Y1,Y2,Y3)/6
     if nargout>1
-        if Set.Sparse
-            K=K+lambdaV*sparse((ge)*(ge'))/6/6/Cell.Vol0(i)^2;
-        else
-            K=K+lambdaV*(ge)*(ge')/6/6/Cell.Vol0(i)^2;
-        end
+        K=K+lambdaV*(ge)*(ge')/6/6/Cell.Vol0(i)^2;
         EnergyV=EnergyV+ lambdaV/2 *((Cell.Vol(i)-Cell.Vol0(i))/Cell.Vol0(i))^2;    
     end
 
 end
 
-if Set.Sparse && nargout>1
-    K=sparse(si(1:sk),sj(1:sk),sv(1:sk),dimg,dimg)+K;
+if Set.Sparse == 2 && nargout>1
+    K=sparse(si(1:sk),sj(1:sk),sv(1:sk),size(K, 1),size(K, 2))+K;
 end
 end
 %%
@@ -96,9 +85,9 @@ dim=length(Y1);
 gs=[cross(Y2,Y3)'; % der_Y1 (det(Y1,Y2,Y3)) 
     cross(Y3,Y1)';
     cross(Y1,Y2)'];
-Ks=[ zeros(dim) -Cross(Y3)   Cross(Y2) % g associated to der wrt vertex 1
-    Cross(Y3)   zeros(dim) -Cross(Y1)
-    -Cross(Y2)   Cross(Y1)  zeros(dim)];
+Ks=[ zeros(dim) -Cross_mex(Y3)   Cross_mex(Y2) % g associated to der wrt vertex 1
+    Cross_mex(Y3)   zeros(dim) -Cross_mex(Y1)
+    -Cross_mex(Y2)   Cross_mex(Y1)  zeros(dim)];
 end
 
 

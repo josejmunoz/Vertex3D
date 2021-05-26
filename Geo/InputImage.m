@@ -16,15 +16,17 @@ totalCells = Set.TotalCells;
 ratio = 5;
 faceCentres = regionprops(labelledImg, 'centroid');
 faceCentresVertices = fliplr(vertcat(faceCentres.Centroid));
-cellIdsAsInternal = findCentralCells(faceCentresVertices, totalCells);
+cellIdsAsInternal = findCentralCells(faceCentresVertices, size(faceCentresVertices, 1));
 
-newLabelledImg = labelledImg;
-for numCell = 1:totalCells
-    newLabelledImg(ismember(labelledImg, numCell)) = cellIdsAsInternal(numCell);
+newLabelledImg = zeros(size(labelledImg));
+for numCell = 1:size(faceCentresVertices, 1)
+    %newLabelledImg(ismember(labelledImg, numCell)) = cellIdsAsInternal(numCell);
     newLabelledImg(ismember(labelledImg, cellIdsAsInternal(numCell))) = numCell;
 end
 
 labelledImg = newLabelledImg;
+
+cellIdsAsInternal = findCentralCells(faceCentresVertices, totalCells);
 
 
 cellArea = regionprops(labelledImg, 'Area');
@@ -131,8 +133,8 @@ XgID = horzcat(find(nonEmptyCells == 0)', (length(faceCentresVertices)+1):size(X
 
 %% Create tetrahedra
 trianglesConnectivity = verticesInfo.connectedCells;
-[Twg_bottom] = createTetrahedra(trianglesConnectivity, neighboursNetwork, verticesInfo.edges, X, xInternal, X_bottomNodes, X_bottomFaceIds, X_bottomVerticesIds);
-[Twg_top] = createTetrahedra(trianglesConnectivity, neighboursNetwork, verticesInfo.edges, X, xInternal, X_topNodes, X_topFaceIds, X_topVerticesIds);
+[Twg_bottom] = createTetrahedra(trianglesConnectivity, neighboursNetwork, verticesInfo.edges, xInternal, X_bottomFaceIds, X_bottomVerticesIds);
+[Twg_top] = createTetrahedra(trianglesConnectivity, neighboursNetwork, verticesInfo.edges, xInternal, X_topFaceIds, X_topVerticesIds);
 
 Twg = vertcat(Twg_top, Twg_bottom);
 
@@ -179,6 +181,7 @@ borderPairs = unique(sort(borderPairs, 2), 'rows');
 Cell.BorderVertices = find(sum(ismember(Twg, borderPairs(:, 2)), 2) >= 1);
 % Add facecentres
 Cell.BorderVertices = [Cell.BorderVertices; -find(ismember(Faces.Nodes, borderPairs, 'rows'))];
+Cell.BorderCells = ismember(Cell.Int, borderPairs(:));
 Set.NumMainV=Y.n;
 Set.NumAuxV=Cell.FaceCentres.n;
 Set.NumTotalV=Set.NumMainV+Set.NumAuxV;

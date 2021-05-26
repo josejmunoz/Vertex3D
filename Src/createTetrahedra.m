@@ -1,18 +1,19 @@
-function [Twg] = createTetrahedra(trianglesConnectivity, neighboursNetwork, edgesOfVertices, X, xInternal, X_Nodes, X_FaceIds, X_VerticesIds)
+function [Twg] = createTetrahedra(trianglesConnectivity, neighboursNetwork, edgesOfVertices, xInternal, X_FaceIds, X_VerticesIds)
 %CREATETETRAHEDRA Add connections between real nodes and ghost cells
 %   Detailed explanation goes here
 
 X_Ids = [X_FaceIds, X_VerticesIds];
 Twg = [];
 
-% Relationships: 1 ghost node, three cell nodes
+%% Relationships: 1 ghost node, three cell nodes
 Twg_vertices = horzcat(trianglesConnectivity, X_VerticesIds');
 
 Twg_faces = [];
 
 Twg = vertcat(Twg_vertices, Twg_faces);
 
-% Relationships: 2 ghost nodes, two cell nodes
+
+%% Relationships: 2 ghost nodes, two cell nodes
 % two of the previous ones go with 
 Twg_sorted = sort(Twg(any(ismember(Twg, X_Ids), 2), :), 2);
 internalNeighbourNetwork = neighboursNetwork(any(ismember(neighboursNetwork, xInternal), 2), :);
@@ -30,7 +31,7 @@ end
 Twg = [Twg; newAdditions];
 %Twg = newAdditions;
 
-% Relationships: 1 cell node and 3 ghost nodes
+%% Relationships: 1 cell node and 3 ghost nodes
 % These are the ones are with the face ghost cell on top and bottom
 % 1 cell node: 1 face centre of and 2 vertices ghost nodes.
 
@@ -40,7 +41,7 @@ newAdditions = [];
 for numCell = xInternal'
      faceId = X_FaceIds(numCell);
      verticesToConnect = edgesOfVertices{numCell};
-     
+
      newAdditions = [newAdditions; repmat([numCell, faceId], size(verticesToConnect, 1), 1), X_VerticesIds(verticesToConnect)];
 end
 

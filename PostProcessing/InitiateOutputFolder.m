@@ -73,6 +73,10 @@ if ~exist('Analysis','dir')
 end
 
 cd '..'
+
+for numDirs = 1:length(regexpi(Set.OutputFolder, '[\/]'))
+    cd '..'
+end
 end
 
 

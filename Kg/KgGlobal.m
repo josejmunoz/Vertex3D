@@ -1,4 +1,4 @@
-function [g,K,Cell,Energy,gs,gv,gf,gB,gb]=KgGlobal(Cell,Faces,SCn,X, X0, Y,Yn,y,yn,Set,CellInput)
+function [g,K,Cell,Energy,gs,gv,gf,gB,gb]=KgGlobal(Cell,Faces,SCn, Y0, Y,Yn,y,yn,Set,CellInput)
 % The residual g and Jacobian K of all energies
 
 %% Calculate basic information
@@ -58,7 +58,7 @@ if nargout>1
     
     %% In plane elasticity (tetrahedra)
     if Set.InPlaneElasticity
-        [gt, Kt, Cell, Energy.EBulk] = KgBulk(Cell, X, X0, Set);
+        [gt, Kt, Cell, Energy.EBulk] = KgBulk(Cell, Y, Y0, Set);
         K = K + Kt;
         g = g + gt;
     end

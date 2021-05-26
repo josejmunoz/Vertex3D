@@ -1,4 +1,4 @@
-function [g, K, Cell, Energy]=KgBulk(Cell, X, X0, Set) % (X, X0, T, mu, lambda)
+function [g, K, Cell, Energy]=KgBulk(Cell, Y, Y0, Set) % (X, X0, T, mu, lambda)
 %KGBULK Summary of this function goes here
 %   Detailed explanation goes here
 %   g: is a vector
@@ -33,22 +33,36 @@ for numCell = 1:ncell
         ge=zeros(size(g, 1), 1);
     end
     
-    currentCellTets = Cell.cTet{numCell};
-    currentCellTets0 = Cell.cTet0{numCell};
+    cellNuclei = Cell.centroid{numCell};
     
-    for numTetrahedron = 1:length(currentCellTets)
-        currentTet = currentCellTets(numTetrahedron, :);
-        currentTet0 = currentCellTets0(numTetrahedron, :);
-        [gB, KB,Energye] = KgBulkElem(X(currentTet, :), X0(currentTet0, :), Set.mu_bulk, Set.lambda_bulk);
+    % Loop over Cell-face-triangles
+    Tris=Cell.Tris{numCell};
+    for t=1:size(Tris,1)
+        nY=Tris(t,:);
+        Y1=Y.DataRow(nY(1),:);
+        Y2=Y.DataRow(nY(2),:);
+        if nY(3)<0
+            nY(3)=abs(nY(3));
+            Y3=Y.DataRow(nY(3),:);
+        else 
+            Y3=Cell.FaceCentres.DataRow(nY(3),:);
+            nY(3)=nY(3)+Set.NumMainV;
+        end 
+        if ~Cell.AssembleAll && ~any(ismember(nY,Cell.RemodelledVertices)) 
+            continue
+        end 
+        
+        currentTet = [Y1 Y2 Y3 cellNuclei];
+        
+        [gB, KB, Energye] = KgBulkElem(Y(currentTet, :), Y0(currentTet, :), Set.mu_bulk, Set.lambda_bulk);
         
         Energy=Energy+Energye;
         
         % Update currentTet
-        currentTetGlobalIDs = currentTet + Set.NumTotalV;
         ge=Assembleg(ge,gB,currentTetGlobalIDs);
         if nargout>1
             if Set.Sparse == 2
-                [si,sj,sv,sk]= AssembleKSparse(KB,currentTetGlobalIDs,si,sj,sv,sk);
+                [si,sj,sv,sk]= AssembleKSparse(KB,currentTet,si,sj,sv,sk);
             else
                 K = AssembleK(K,KB,currentTetGlobalIDs);
             end

@@ -1,4 +1,4 @@
-function [X,X0,Y,Yt,T,XgID,Cell,Faces,Cn,Cv,Yn,SCn,Set] = InputImage(Set)
+function [Y0,Y,Yt,T,XgID,Cell,Faces,Cn,Cv,Yn,SCn,Set] = InputImage(Set)
 %INPUTIMAGE Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -187,14 +187,14 @@ Cell.BorderVertices = [Cell.BorderVertices; -find(ismember(Faces.Nodes, borderPa
 Cell.BorderCells = ismember(Cell.Int, borderPairs(:));
 Set.NumMainV=Y.n;
 Set.NumAuxV=Cell.FaceCentres.n;
-Set.NumTotalV=Set.NumMainV+Set.NumAuxV;
+Set.NumCellCentroid = totalCells;
+Set.NumTotalV=Set.NumMainV+Set.NumAuxV + Set.NumCellCentroid;
 Set.NumXs = size(X, 1);
 Cn=BuildCn(Twg);
 
 Faces=Faces.ComputeAreaTri(Y.DataRow,Cell.FaceCentres.DataRow);
 Faces=Faces.CheckInteriorFaces(XgID);
 
-X0 = X;
 Yn = Y;
 SCn = Cell.FaceCentres;
 Yt=[Y.DataOrdered ;Cell.FaceCentres.DataOrdered];

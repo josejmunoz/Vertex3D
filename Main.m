@@ -42,6 +42,7 @@ EnergyF=zeros(Set.Nincr,1);  Energy.Ef=0;
 Energyb=zeros(Set.Nincr,1);  Energy.Eb=0;
 EnergyB=zeros(Set.Nincr,1);  Energy.EB=0;
 EnergyC=zeros(Set.Nincr,1);  Energy.Ec=0;
+EnergyI=zeros(Set.Nincr,1);  Energy.Ei=0;
 EnergySub=zeros(Set.Nincr,1);  Energy.Esub=0;
 StepSize=zeros(Set.Nincr,1);
 

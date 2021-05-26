@@ -1,7 +1,9 @@
-function [g,K,Cell, y, Y, Yt, Energy, Set, gr, dyr, dy] = newtonRaphson(Set, Cell, Faces, SCn, X, X0, y, yn, K, g, Dofs, Y, Yn, CellInput, numStep, t)
+function [g,K,Cell, Y, Energy, Set, gr, dyr, dy] = newtonRaphson(Set, Cell, Faces, SCn, X, X0, K, g, Dofs, Y, Yn, CellInput, numStep, t)
 %NEWTONRAPHSON Summary of this function goes here
 %   Detailed explanation goes here
 
+y=reshape(Y',Set.NumTotalV*3,1);
+yn=reshape(Yn',Set.NumTotalV*3,1);
 dy=sparse(length(y), 1);
 dyr=norm(dy(Dofs.FreeDofs));
 gr=norm(g(Dofs.FreeDofs));

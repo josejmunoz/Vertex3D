@@ -1,4 +1,4 @@
-function [Cell, Y, Dofs, Yt, Ytn, y, yn] = applyBoundaryCondition(t, Y, Set, Cell, Dofs, SCn, Yn)
+function [Cell, Y, Dofs] = applyBoundaryCondition(t, Y, Set, Cell, Dofs)
 %APPLYBOUNDARYCONDITION Summary of this function goes here
 %   Detailed explanation goes here
     if Set.BC==1 && t<=Set.TStopBC && t>=Set.TStartBC && Set.ApplyBC
@@ -21,10 +21,5 @@ function [Cell, Y, Dofs, Yt, Ytn, y, yn] = applyBoundaryCondition(t, Y, Set, Cel
     if isempty(Set.InputSegmentedImage) == 0 %% Constraining border cells
         Dofs.FreeDofs(ismember(Dofs.FreeDofs, Dofs.dofC)) = [];
     end
-    
-    Ytn=[Yn.DataOrdered ;SCn.DataOrdered];
-    Yt=[Y.DataOrdered ;Cell.FaceCentres.DataOrdered];
-    y=reshape(Yt',Set.NumTotalV*3,1);
-    yn=reshape(Ytn',Set.NumTotalV*3,1);
 end
 

@@ -1,4 +1,4 @@
-function [g, K] = KgBulkElem(x, x0, mu, lambda, Neo)
+function [g, K, Energy] = KgBulkElem(x, x0, mu, lambda, Neo)
 %KGBULKELEM Computes elemental residual and Jacobian for bulk viscoelastic domain
 %   Assumes St. Venant-Kirchoff elastic poential:
 %   W(E)=lambda tr(E)^2 + 2*mu tr(E^2)
@@ -55,6 +55,7 @@ DN=[1 0 0 -1  % dN/dxi
 
 g=zeros(nnod*dim,1);
 K=zeros(nnod*dim);
+Energy=0;
 
 for ig=1:ng
     % Unnecessary: dxdxi=x'*DN'; % 3x3 Jacobain dx_i/dxi_j
@@ -72,11 +73,11 @@ for ig=1:ng
         error('Tetrahedral Element orientation need to be swapped')
     end
     
-    %if NeoH
-    %    W=0.5*lambda*lJ^2+mu*(trE-lJ);
-    %else
-    %    W=0.5*lambda*trE^2+mu*sum(diag(E*E));
-    %end
+    if NeoH
+        Energy=Energy+0.5*lambda*lJ^2+mu*(trE-lJ)*Je*wg(ig);
+    else
+        Energy=Energy+0.5*lambda*trE^2+mu*sum(diag(E*E))*Je*wg(ig);
+    end
     for a=1:nnod
         gradXNa=gradXN(:,a);
         gradxNa=gradxN(:,a);

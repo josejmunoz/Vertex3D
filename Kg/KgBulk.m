@@ -39,7 +39,9 @@ for numCell = 1:ncell
     for numTetrahedron = 1:length(currentCellTets)
         currentTet = currentCellTets(numTetrahedron, :);
         currentTet0 = currentCellTets0(numTetrahedron, :);
-        [gB, KB] = KgBulkElem(X(currentTet, :), X0(currentTet0, :), Set.mu_bulk, Set.lambda_bulk);
+        [gB, KB,Energye] = KgBulkElem(X(currentTet, :), X0(currentTet0, :), Set.mu_bulk, Set.lambda_bulk);
+        
+        Energy=Energy+Energye;
         
         % Update currentTet
         currentTetGlobalIDs = currentTet + Set.NumTotalV;

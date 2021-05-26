@@ -15,6 +15,8 @@ classdef CellClass
         cTet                  % -Connected tetrahedrons (Type=cell-structure ,  Size={NumCells 1}):
         %     Each cell (Cell.cTet{i}) is an array of size [ntet 4] with nodal tetrahedrons connected to the node of Cell i.
         %--------------------------------------------------------------------
+        cTet0 % Initial cTet
+        %--------------------------------------------------------------------
         cTetID                %% -Connected tetrahedrons IDs (Type=cell-structure ,  Size={NumCells 1}):
         %     Each cell (Cell.cTetID{i}) is an array of size [1 ntet] with IDs of nodal tetrahedrons connected to the node of Cell i.
         %    (IDs-> their index in T).
@@ -38,7 +40,7 @@ classdef CellClass
         EdgeLengthsn              % -The length of Edges at the previous time-step  (Type=cell-structure ,  Size={NumCells 1}):
         %                            Each cell (Cell.EdgeLengthn{i})is an array of size [nEdges 1] with the length of the edges between each two vertices.
         %--------------------------------------------------------------------
-        EdgeLengths0         % -The Initial\reference length of Edges at the  (Type=cell-structure ,  Size={NumCells 1}):
+        EdgeLengths0_average         % -The Initial\reference length of Edges at the  (Type=cell-structure ,  Size={NumCells 1}):
         %                            Each cell (Cell.EdgeLengths0{i})is an array of size [nEdges 1] with the length of the edges between each two vertices.
         
         %--------------------------------------------------------------------
@@ -94,7 +96,24 @@ classdef CellClass
         %      (j) besides the two vertices of the triangles that share edge (j))
         %     Remark:- v1,v2,v3 and v4 <=Y.n  correspond to a vertex         (its position can be found as Y.DataRow(v1,:))
         %            - v1,v2,v3 and v4 >Y.n   correspond to a face-centre    (its position can be found as Cell.FaceCentres.DataRow(v1-T.n,:))
-        
+        %--------------------------------------------------------------------
+        EdgeLocation
+        %--------------------------------------------------------------------
+        ApicalVertices
+        BasalVertices
+        %--------------------------------------------------------------------
+        ApicalBorderVertices
+        BasalBorderVertices
+        %
+        BorderVertices % of the tissue
+        %--------------------------------------------------------------------
+        SubstrateForce
+        %--------------------------------------------------------------------
+        DebrisCells            % Debris cells
+        %--------------------------------------------------------------------
+        BorderCells
+        %--------------------------------------------------------------------
+        ContractileForces
     end
     methods
         function Cell = CellClass(nC,xInternal)
@@ -121,8 +140,18 @@ classdef CellClass
                 Cell.RemodelledVertices=[];
                 Cell.Edges=cell(nC,1);
                 Cell.EdgeLengths=cell(nC,1);
-                Cell.EdgeLengths0=cell(nC,1);
+                Cell.EdgeLengths0_average=-1;
                 Cell.EdgeLengthsn=cell(nC,1);
+                Cell.DebrisCells=false(nC, 1);
+                Cell.ContractileForces=cell(nC, 1);
+                Cell.EdgeLocation=cell(nC,1);
+                Cell.ApicalVertices=cell(nC, 1);
+                Cell.BasalVertices=cell(nC, 1);
+                Cell.SubstrateForce=cell(nC, 1);
+                Cell.ApicalBorderVertices = cell(nC, 1);
+                Cell.BasalBorderVertices = cell(nC, 1);
+                Cell.BorderVertices = [];
+                Cell.BorderCells=false(nC, 1);
             end
         end
         
@@ -131,6 +160,11 @@ classdef CellClass
         % the IDs from the middle.
         % TODO: Check if Cell.Int need to be in order in consecutive numbers
         function Cell = AblateCells(obj, cellsToRemove)
+            obj.DebrisCells(ismember(obj.Int, cellsToRemove)) = true;
+            Cell = obj;
+        end 
+        
+        function Cell = removeCells(obj, cellsToRemove)
             obj.Int(cellsToRemove) = [];
             
             %Consequences:
@@ -155,39 +189,186 @@ classdef CellClass
             obj.SAreaFace0(cellsToRemove) = [];
             obj.Faces(cellsToRemove) = [];
             obj.Edges(cellsToRemove) = [];
-            obj.Edges(cellsToRemove) = [];
             obj.EdgeLengths(cellsToRemove) = [];
             obj.EdgeLengthsn(cellsToRemove) = [];
-            obj.EdgeLengths0(cellsToRemove) = [];
-
+            obj.ContractileForces(cellsToRemove) = [];
+            obj.DebrisCells(cellsToRemove) = [];
             
-            
-            obj.n = obj.n - length(cellsToRemove);
+            obj.n = obj.n - sum(cellsToRemove);
             obj.nTotalTris = sum(cellfun(@(X) size(X,1), obj.Tris));
             
-            %Return
             Cell = obj;
         end
         
         %% Compute the length of the segments between vertices Xs
-        function obj = computeEdgeLengths(obj, Y)
+        function [obj, uniqueEdges] = computeEdgeLengths(obj, Y)
             % loop on cells
-            for numCele=1:obj.n
-                obj.EdgeLengths{numCele}=zeros(size(obj.Cv{numCele},1),1);
+            allEdges = [];
+            for numCell=1:obj.n
+                obj.EdgeLengths{numCell}=zeros(size(obj.Cv{numCell},1),1);
                 % loop on edges
-                for e=1:size(obj.Cv{numCele},1)
+                for e=1:size(obj.Cv{numCell},1)
                     %                Cv(1,:) ---- >always vertex
-                    Y1=Y.DataRow(obj.Cv{numCele}(e,1),:);
-                    if  obj.Cv{numCele}(e,2) > 0
+                    Y1=Y.DataRow(obj.Cv{numCell}(e,1),:);
+                    if  obj.Cv{numCell}(e,2) > 0
                         %                    Cv(2,:)>0 ---- > is vertex
-                        Y2=Y.DataRow(obj.Cv{numCele}(e,2),:);
+                        Y2=Y.DataRow(obj.Cv{numCell}(e,2),:);
                     else
                         %                    Cv(2,:)<0 ---- > is face center
-                        Y2=obj.FaceCentres.DataRow(abs(obj.Cv{numCele}(e,2)),:);
+                        Y2=obj.FaceCentres.DataRow(abs(obj.Cv{numCell}(e,2)),:);
                     end
                     % Compute Length
-                    obj.EdgeLengths{numCele}(e)=norm(Y1-Y2);
+                    allEdges = vertcat(allEdges, sort([obj.Cv{numCell}(e,1) obj.Cv{numCell}(e,2)]));
+                    obj.EdgeLengths{numCell}(e)=norm(Y1-Y2);
                 end
+                
+                obj.ContractileForces{numCell} = zeros(size(obj.Cv{numCell}, 1), 1);
+            end
+            [~, uniqueEdges] = unique(allEdges, 'rows');
+        end
+        
+        %%
+        function [obj, featuresTable, resultingImage] = exportTableWithCellFeatures(obj, Y, timeStep, Faces, Set)
+            %% Features to obtain per tissue:
+            % Avg Cell height
+            
+            
+            %% Features to obtain per cell:
+            cellCellFaces = find(Faces.InterfaceType == 1);
+            
+            featuresTable_cell = [];
+            for numCell = obj.Int
+                % - Cell height
+                % avg and std distance between connected apical and basal
+                % vertices
+                cellHeight = mean(obj.EdgeLengths{numCell}(obj.EdgeLocation{numCell} == 1));
+                cellHeightSTD = std(obj.EdgeLengths{numCell}(obj.EdgeLocation{numCell} == 1));
+                % - Volume
+                cellVolume = obj.Vol(numCell);
+
+                % - Apical area,  basal area and lateral area
+                cellSurfaceArea = obj.SArea(numCell);
+
+                trianglesArea = obj.SAreaTri{numCell};
+                apicalFaceCentres = abs(obj.ApicalVertices{numCell}(obj.ApicalVertices{numCell} < 0));
+                apicalTriangles = all(ismember(obj.Tris{numCell}(:, 1:2), obj.ApicalVertices{numCell}), 2) & ismember(obj.Tris{numCell}(:, 3), apicalFaceCentres);
+                apicalArea = sum(trianglesArea(apicalTriangles));
+                basalFaceCentres = abs(obj.BasalVertices{numCell}(obj.BasalVertices{numCell} < 0));
+                basalTriangles = all(ismember(obj.Tris{numCell}(:, 1:2), obj.BasalVertices{numCell}), 2) & ismember(obj.Tris{numCell}(:, 3), basalFaceCentres);
+                basalArea = sum(trianglesArea(basalTriangles));
+                
+                lateralTrianglesArea = cellSurfaceArea - apicalArea - basalArea;
+                
+                % - Shared lateral area per neighbour (avg and std)
+                currentFaceIDs = obj.Faces{numCell}.FaceCentresID;
+                cellCellAreas = obj.SAreaFace{1}(ismember(currentFaceIDs, cellCellFaces));
+                lateralAreaSharedPerNeighbour_AVG = mean(cellCellAreas);
+                lateralAreaSharedPerNeighbour_STD = std(cellCellAreas);
+                
+                % - Neighbours: 3D neighbours, apical and basal neighbours,
+                % polygon distribution
+                apicalNeighbours = [];
+                basalNeighbours = [];
+                
+                basalBorderVerticesIDs = obj.BasalVertices{numCell}(obj.BasalBorderVertices{numCell});
+                apicalBorderVerticesIDs = obj.ApicalVertices{numCell}(obj.ApicalBorderVertices{numCell});
+                for neighbourCell = 1:obj.n
+                    if neighbourCell ~= numCell
+                        %Apical neighbours
+                        if any(ismember(apicalBorderVerticesIDs, obj.ApicalVertices{neighbourCell}(obj.ApicalBorderVertices{neighbourCell})))
+                            apicalNeighbours = [apicalNeighbours, neighbourCell];
+                        end
+                        
+                        %Basal neighbours
+                        if any(ismember(basalBorderVerticesIDs, obj.BasalVertices{neighbourCell}(obj.BasalBorderVertices{neighbourCell})))
+                            basalNeighbours = [basalNeighbours, neighbourCell];
+                        end
+                    end
+                end
+                
+                % - Convexity/concavity of cell
+                % - info normalized: 35microns cell height initial
+                Set.CellHeight;
+                
+                featuresTable_cell = [featuresTable_cell; numCell, obj.BorderCells(numCell), obj.DebrisCells(numCell), cellHeight, ...
+                    cellHeightSTD, cellVolume, cellSurfaceArea, apicalArea, ...
+                    basalArea, lateralTrianglesArea, lateralAreaSharedPerNeighbour_AVG, ...
+                    lateralAreaSharedPerNeighbour_STD, {apicalNeighbours}, ...
+                    numel(apicalNeighbours), {basalNeighbours}, numel(basalNeighbours)];
+            end
+            
+            featuresTable = cell2table(featuresTable_cell, 'VariableNames', ...
+                {'ID', 'IsBorderCell', 'IsDebrisCell', 'HeightAVG', 'HeightSTD', ...
+                'Volume', 'SurfaceArea', 'ApicalArea', 'BasalArea', ...
+                'LateralArea', 'LateralAreaSharedPerNeighbourAVG', ...
+                'LateralAreaSharedPerNeighbourASTD', 'ApicalNeighbours', ...
+                'NumApicalNeighbours', 'BasalNeigbhours', 'NumBasalNeighbours'});
+            
+        end
+        
+        %%
+        function [obj] = computeEdgeLocation(obj, Y)
+            for numCell=1:obj.n
+                currentEdgesOfCell = obj.Cv{numCell};
+                uniqueCurrentVertices = unique(currentEdgesOfCell(currentEdgesOfCell > 0));
+                if obj.DebrisCells(numCell)
+                    remainingEdges = vertcat(obj.Cv{setdiff(find(obj.DebrisCells == 0), numCell)});
+                else
+                    remainingEdges = vertcat(obj.Cv{setdiff(1:obj.n, numCell)});
+                end
+                uniqueRemainingEdges = unique(remainingEdges(remainingEdges > 0));
+
+                sharedVertices = uniqueCurrentVertices(ismember(uniqueCurrentVertices, uniqueRemainingEdges));
+                
+                edgesToFaces = ismember(currentEdgesOfCell(:, 1), sharedVertices) & currentEdgesOfCell(:, 2) < 0;
+                [numElements, elements] = hist(currentEdgesOfCell(edgesToFaces, 2), unique(currentEdgesOfCell(edgesToFaces, 2)));
+                cellCellFaceCentres = elements(numElements > 3);
+                midZ = obj.FaceCentres.DataRow(abs(cellCellFaceCentres),3);
+                
+                if length(midZ) <= 3
+                    %It may be a border cell
+                end
+                
+                apicoBasalVertices = Y.DataRow(sharedVertices,:);
+                upperVerticesBorder = sharedVertices(apicoBasalVertices(:, 3) > mean(midZ));
+                bottomVerticesBorder = sharedVertices(apicoBasalVertices(:, 3) < mean(midZ));
+                
+                apicalEdges = all(ismember(currentEdgesOfCell, upperVerticesBorder), 2);
+                basalEdges = all(ismember(currentEdgesOfCell, bottomVerticesBorder), 2);
+                lateralEdges = any(ismember(currentEdgesOfCell, upperVerticesBorder), 2) + any(ismember(currentEdgesOfCell, bottomVerticesBorder), 2) == 2;
+                
+                
+                %% Get all apical and basal vertices
+                upperZMinimum = (mean(midZ) + mean(Y.DataRow(upperVerticesBorder, 3))/10);
+                bottomZMinimum = (mean(midZ) - mean(Y.DataRow(upperVerticesBorder, 3))/10);       
+
+                obj.ApicalVertices{numCell} = vertcat(uniqueCurrentVertices(Y.DataRow(uniqueCurrentVertices, 3) > upperZMinimum), - find(obj.FaceCentres.DataRow(1:obj.FaceCentres.n, 3) > upperZMinimum));
+                obj.ApicalBorderVertices{numCell} = ismember(obj.ApicalVertices{numCell}, upperVerticesBorder);
+                
+                obj.BasalVertices{numCell} = vertcat(uniqueCurrentVertices(Y.DataRow(uniqueCurrentVertices, 3) < bottomZMinimum), - find(obj.FaceCentres.DataRow(1:obj.FaceCentres.n, 3) < bottomZMinimum));
+                obj.BasalBorderVertices{numCell} = ismember(obj.BasalVertices{numCell}, bottomVerticesBorder);
+                
+                obj.SubstrateForce{numCell} = zeros(length(obj.BasalVertices{numCell}), 1);
+                
+                %% Get apical and basal border vertices
+                if sum(apicalEdges) > size(upperVerticesBorder, 1)
+                    apicalVerticesIds = currentEdgesOfCell(apicalEdges, :);
+                    [numElements, elements] = hist(apicalVerticesIds(:), unique(currentEdgesOfCell(apicalEdges, :)));
+                    edgesToRemove = apicalVerticesIds(all(ismember(apicalVerticesIds, elements(numElements>2)), 2), :);
+                    apicalEdges(ismember(currentEdgesOfCell, edgesToRemove, 'row')) = 0;
+%                     apicalPixels = apicoBasalVertices(apicoBasalVertices(:, 3) > mean(midZ), :);
+%                     %[newEdges] = boundaryOfCell(apicalPixels(:, 1:2));
+%                     [newEdges] = boundaryOfCell(cmdscale(pdist(apicalPixels), 2));
+%                     apicalEdges = ismember(sort(currentEdgesOfCell, 2), sort(apicalVertices(newEdges), 2), 'rows');
+%                     
+%                     if sum(apicalEdges) ~= size(apicalVertices, 1)
+%                         error('CellClass:boundary issue');
+%                     end
+                end
+                
+                % 2:Basal 3:Apical 1:Lateral
+                obj.EdgeLocation{numCell} = lateralEdges + 3*apicalEdges + 2*basalEdges;
+                
             end
         end
     end

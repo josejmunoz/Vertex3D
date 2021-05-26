@@ -1,7 +1,7 @@
-function CreateVtkVol(Y,Cell,X,NameFile,TimeStep)
+function CreateVtkVol(Y,Cell,X,outputDir, suffix,TimeStep)
 %% ------- Initiate ---------------------------------------------------
 % str0='VTKResults';
-str0=NameFile;                          % First Name of the file 
+str0=outputDir;                          % First Name of the file 
 str2='.vtk';                            % extension
 str1=num2str(TimeStep);
 R=pwd;
@@ -11,7 +11,7 @@ if ~exist(newSubFolder, 'dir')
 end
 cd(newSubFolder);        % go to the new folder 
 % Write non-ablated rod elements
-nameout=strcat('Cells',str1,str2);   % full name of the file 
+nameout=strcat('Cells', suffix, '_',str1,str2);   % full name of the file 
 file=fopen(nameout,'w');
 fprintf(file,'%s\n','# vtk DataFile Version 3.98');
 fprintf(file,'%s\n','Delaunay_vtk');
@@ -48,7 +48,6 @@ for iCell=1:ncell
                                       nn=nn+1;
 
     end 
-    %---------------------------------Malik Added (end) ---------------
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -65,7 +64,7 @@ fprintf(file,'%s \n','LOOKUP_TABLE default');
 %
 color=rand(ncell,1)*10;
 for i=1:ncell
-    ntri=ones(size(Cell.Tris{i},1),1);     %%% Malik Added
+    ntri=ones(size(Cell.Tris{i},1),1);
 %     Cell.Vol(i)=Cell.Vol(i)+color(i);
 
     fprintf(file,'%f\n', (Cell.Vol(i)-Cell.Vol0(i))/Cell.Vol0(i)*ntri);
@@ -74,32 +73,46 @@ end
 
 
 
-% ADD RELATIVE VOLUME CHANGE
+% ADD RELATIVE Area CHANGE
 %fprintf(file,'%s %d \n','CELL_DATA',nTries);
 fprintf(file,'%s \n','SCALARS RelAreaChange double');
 fprintf(file,'%s \n','LOOKUP_TABLE default');
 %
 for i=1:ncell
-    ntri=ones(size(Cell.Tris{i},1),1);     %%% Malik Added
+    ntri=ones(size(Cell.Tris{i},1),1);
 %     Cell.Vol(i)=Cell.Vol(i)+color(i);
 
     fprintf(file,'%f\n', (Cell.SArea(i)-Cell.SArea0(i))/Cell.SArea0(i)*ntri);
 end
 
     
-% ADD RELATIVE VOLUME CHANGE
+% ADD RELATIVE Tri Area CHANGE
 %fprintf(file,'%s %d \n','CELL_DATA',nTries);
 fprintf(file,'%s \n','SCALARS TriAreaChange double');
 fprintf(file,'%s \n','LOOKUP_TABLE default');
 
 for i=1:ncell
     for t=1:length(Cell.SAreaTri{i})
-%     ntri=ones(size(Cell.Tris{i},1),1);     %%% Malik Added
+%     ntri=ones(size(Cell.Tris{i},1),1);
 %     Cell.Vol(i)=Cell.Vol(i)+color(i);
 
          fprintf(file,'%f\n', (Cell.SAreaTri{i}(t)-Cell.SAreaTrin{i}(t))/Cell.SAreaTrin{i}(t));
     end 
 end
+
+% % Add ablated cells
+% fprintf(file,'%s %d\n','LOOKUP_TABLE ghostCells', nTries);
+% %
+% for i=1:ncell
+%     for t=1:length(Cell.SAreaTri{i})
+%         if Cell.GhostCells(i)
+%             fprintf(file,'%f %f %f %f\n', 1, 1, 1, 0.3);
+%         else
+%             fprintf(file,'%f %f %f %f\n', 1, 1, 1, 1.0);
+%         end
+%     end
+% end
+
 
 fclose(file);
 cd(R)

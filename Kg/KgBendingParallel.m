@@ -27,8 +27,6 @@ K=sparse(zeros(dimg)); % Also used in sparse
 
 
 Energy=0;
-%% Compute Volume
-% [Cell]=ComputeCellVolume(Cell,Y);
 L=Set.lambdaBend;
 CellAssembleAll=Cell.AssembleAll;
 CellInt=Cell.Int;
@@ -36,7 +34,11 @@ CellAssembleNodes=Cell.AssembleNodes;
 CellEdges=Cell.Edges;
 CellFaceCentres=Cell.FaceCentres;
 CellRemodelledVertices=Cell.RemodelledVertices;
+CellDebrisCells = Cell.DebrisCells;
 parfor i=1:ncell
+    if CellDebrisCells(i)
+        continue;
+    end 
     if ~CellAssembleAll
         if ~ismember(CellInt(i),CellAssembleNodes)
             continue
@@ -202,14 +204,6 @@ for I=1:length(nY) % loop on 3 vertices of triangle
         end
     end
 end
-
-end
-%%
-
-function Ymat=Cross(y)
-Ymat=[0 -y(3) y(2)
-    y(3) 0 -y(1)
-    -y(2) y(1) 0];
 
 end
 

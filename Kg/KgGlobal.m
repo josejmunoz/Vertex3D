@@ -1,16 +1,19 @@
-function [g,K,Cell,Energy,gs,gv,gf,gB,gb]=KgGlobal(Cell,Faces,Y,y,yn,Set,CellInput,XgSub)
+function [g,K,Cell,Energy,gs,gv,gf,gB,gb]=KgGlobal(Cell,Faces,SCn,X, X0, Y,Yn,y,yn,Set,CellInput)
 % The residual g and Jacobian K of all energies
 
-
+%% Calculate basic information
+[Cell] = ComputeCellVolume(Cell,Y);
+[Cell] = Cell.computeEdgeLengths(Y);
+[Cell] = Cell.computeEdgeLocation(Y);
 
 if nargout>1
     %% Compute both The residual g and Jacobian K
     % Surface Energy ----------------------------------------------------------
-    if      Set.SurfaceType==1
+    if Set.SurfaceType==1
         [gs,Ks,Cell,Energy.Es]=KgSurfaceCellBased(Cell,Y,Set);
-    elseif  Set.SurfaceType==2
+    elseif Set.SurfaceType==2
         [gs,Ks,Cell,Energy.Es]=KgSurfaceFaceBased(Cell,Y,Set);
-    elseif  Set.SurfaceType==4
+    elseif Set.SurfaceType==4
         if Set.Parallel
             [gs,Ks,Cell,Energy.Es]=KgSurfaceCellBasedAdhesionParallel(Cell,Y,Faces,Set,CellInput);
         else
@@ -28,6 +31,10 @@ if nargout>1
     % Viscous Forces ----------------------------------------------------------
     Kf=(Set.nu/Set.dt).*sparse(eye(size(Kv)));
     gf=(Set.nu/Set.dt).*(y-yn);
+    x=reshape(X',numel(X),1);
+    x0=reshape(X0',numel(X0),1);
+    %% add this or simply zeros
+    gf = vertcat(gf, (Set.nu/Set.dt).*(x-x0));
     Energy.Ef=(1/2)*(gf')*gf/Set.nu;
     K=Kv+Ks+Kf;
     g=gv+gs+gf;
@@ -49,8 +56,15 @@ if nargout>1
     end
     
     
+    %% In plane elasticity (tetrahedra)
+    if Set.InPlaneElasticity
+        [gt, Kt, Cell, Energy.EBulk] = KgBulk(Cell, X, X0, Set);
+        K = K + Kt;
+        g = g + gt;
+    end
     
-    % Bending Energy ----------------------------------------------------------
+    
+    %% Bending Energy
     if Set.Bending && Set.Parallel
         [gb,Kb,Cell,Energy.Bend]=KgBendingParallel(Cell,Y,Set);
         K=K+Kb; g=g+gb;
@@ -59,7 +73,7 @@ if nargout>1
         K=K+Kb; g=g+gb;
     end
     
-    % Energy Barrier for small triangles --------------------------------------
+    %% Energy Barrier for small triangles
     if Set.EnergyBarrier && Set.Parallel
         [gB,KB,Cell,Energy.EB]=KgTriEnergyBarrierParallel(Cell,Y,Set);
         K=K+KB; g=g+gB;
@@ -69,24 +83,30 @@ if nargout>1
     end
     
     
-    % Propulsion Forces -------------------------------------------------------
+    %% Propulsion Forces
     if Set.Propulsion
-        [gp]=gPropulsion(Cell,Y,Set,CellInput,XgSub);
+        [gp]=gPropulsion(Cell,Y,Set,CellInput);
         g=g-gp;
     end
     
     
-    % ----------------- Contractility -------------------------------------
-    if Set.Contractility
+    %%  Contractility     
+    if Set.Contractility && (Set.cPurseString > 0 || Set.cLateralCables > 0)
         [gC,KC,Cell,Energy.Ec]=KgContractility(Cell,Y,Set);
-         K=KC+KB; g=g+gC;
+         K=K+KC; g=g+gC;
+    end
+    
+    %%  Substrate 
+    if Set.Substrate && Set.kSubstrate > 0
+        [gSub,KSub,Cell,Energy.Esub]=KgSubstrate(Cell, SCn, Y, Yn, Set);
+        K=K+KSub; g=g+gSub;
     end
     
     
 else
     %% Compute the residual g solo (For LineSearch)
 
-    % Surface Energy ----------------------------------------------------------
+    %% Surface Energy 
     if      Set.SurfaceType==1
         [gs]=KgSurfaceCellBased(Cell,Y,Set);
     elseif  Set.SurfaceType==2
@@ -94,11 +114,16 @@ else
     elseif  Set.SurfaceType==4
         [gs]=KgSurfaceCellBasedAdhesion(Cell,Y,Faces,Set,CellInput);
     end
-    % Volume Energy ----------------------------------------------------------
+    
+    %% Volume Energy 
     [gv]=KgVolume(Cell,Y,Set);
     
-    % Viscous Forces ----------------------------------------------------------
+    %% Viscous Forces 
     gf=(Set.nu/Set.dt).*(y-yn);
+    x=reshape(X',numel(X),1);
+    x0=reshape(X0',numel(X0),1);
+    %% add this or simply zeros
+    gf = vertcat(gf, (Set.nu/Set.dt).*(x-x0));
     g=gv+gs+gf;
     
     
@@ -112,28 +137,40 @@ else
         g=g+gft;
     end
     
-    % Bending Energy ----------------------------------------------------------
+    %% In plane elasticity (tetrahedra)
+    if Set.InPlaneElasticity
+        [gt] = KgBulk(Cell, X, X0, Set);
+        g = g + gt;
+    end
+    
+    %% Bending Energy 
     if Set.Bending
         [gb]=KgBending(Cell,Y,Set);
         g=g+gb;
     end
     
-    % Energy Barrier for small triangles --------------------------------------
+    %% Energy Barrier for small triangles
     if Set.EnergyBarrier
         [gB]=KgTriEnergyBarrier(Cell,Y,Set);
         g=g+gB;
     end
     
-    % Propulsion Forces -------------------------------------------------------
+    %% Propulsion Forces
     if Set.Propulsion
-        [gp]=gPropulsion(Cell,Y,Set,CellInput,XgSub);
+        [gp]=gPropulsion(Cell,Y,Set,CellInput);
         g=g-gp;
     end
     
-    % ----------------- Contractility -------------------------------------
-    if Set.Contractility
+    %%  Contractility 
+    if Set.Contractility && (Set.cPurseString > 0 || Set.cLateralCables > 0)
         [gc]=KgContractility(Cell,Y,Set);
-        g=g-gc;
+        g=g+gc;
+    end
+    
+    %%  Substrate 
+    if Set.Substrate && Set.kSubstrate > 0
+        [gSub]=KgSubstrate(Cell, SCn, Y, Yn, Set);
+        g=g+gSub;
     end
     
 end

@@ -1,6 +1,9 @@
 function [Set]=SetDefault(Set)
 % Default settings 
+
 %% ============================= geometry =================================
+
+%% Option 1: Obtaining from a number of seeds placed on a planar surface
 % Examples of cell centres  position
 if ~isfield(Set,'e')
     Set.e=1;
@@ -35,12 +38,49 @@ end
 %                        Interior nodes are placed in the centre of cells,
 %                        while exterior nodes are placed with a distance d (hard coded d=1 in Geo\GetXFromY.m)
 %                        form the cell centre in the direction of centre of the face.
+
+%% Option 2: A 2D input image to obtain the initial topology of the cells
+% Note that topology is the same in both apical and basal
+
+% Path to the input image
+if ~isfield(Set,'InputSegmentedImage')
+    Set.InputSegmentedImage = [];
+end
+
+% Aspect ratio: 'NumberOfPlanes a cell appears' / 'CellArea' measured in your 3D images
+if ~isfield(Set,'CellAspectRatio')
+    Set.CellAspectRatio = 1;
+end
+
+% 'Voxel depth'/'Pixel width' in the images where you measure 'CellHeight'
+if ~isfield(Set,'zScale')
+    Set.zScale = 1;
+end
+
+% Real cell height 
+if ~isfield(Set,'CellHeight')
+    % Which can be interpolated from CellAspectRatio per ZScale
+    Set.CellHeight = Set.CellAspectRatio * Set.zScale;
+end
+
+% Number of cell selected from the centre of the image that will become
+% cells in our system
+if ~isfield(Set,'TotalCells')
+    Set.TotalCells = 9;
+end
+
 %% =============================  Add Substrate ===========================
+% The substrate is only applied to basal vertices (connected to the ECM)
 if ~isfield(Set,'Substrate')
     Set.Substrate=false; % true  --> There is a substrate, 
-                         % false --> no substrate   
-    Set.SubstrateZ=0;    % the z-coordinate of the substrate   
+                         % false --> no substrate
 end 
+
+% How strong are the springs connected to the vertices
+if ~isfield(Set,'kSubstrate')
+    Set.kSubstrate=0;
+end
+
 %% ============================= Time =====================================
 if ~isfield(Set,'tend') % total simulation  Time 
     Set.tend=200;       
@@ -54,6 +94,11 @@ end
 %  Energy -----> W_s= sum_cell lambdaV ((V-V0)/V0)^2
 if ~isfield(Set,'lambdaV')    %  Volume-Energy Constant (bulk modulus).
     Set.lambdaV=1;
+end 
+
+%  Volume-Energy Constant (bulk modulus) of the ablated cell (now Debris)
+if ~isfield(Set,'lambdaV_Debris')    
+    Set.lambdaV_Debris=0.001;
 end 
 %---------- Surface -------------------------------------------------------
 % Set.SurfaceType=1 : Surface-Energy based on the whole Cell-area
@@ -86,6 +131,9 @@ if ~isfield(Set,'LambdaS2CellFactor')
 end 
 if ~isfield(Set,'LambdaS3CellFactor')
     Set.LambdaS3CellFactor=[];
+end 
+if ~isfield(Set,'LambdaS4CellFactor')
+    Set.LambdaS4CellFactor=[];
 end 
 
 %---------- EnergyBarrier -------------------------------------------------
@@ -186,7 +234,6 @@ if ~isfield(Set,'LocalViscosityOption')
      Set.LocalViscosityOption=2;
 end 
 
-
 %% ============================= Remodelling ================================
 if ~isfield(Set,'Remodelling')  % Off/On
     Set.Remodelling=true;
@@ -243,6 +290,10 @@ if ~isfield(Set,'Parallel')  %
     Set.Parallel=false;
 end 
 
+if ~isfield(Set,'Sparse')  % 
+    Set.Sparse=false;
+end 
+
 %% ============================= Boundary Condition and loading setting ===
 
 % ------------- Stretch test  (Input Sample)  -----------------------------
@@ -250,30 +301,27 @@ end
 %     -Set.VFixd=-1.5;         % Vertices with y-coordinates > Set.VPrescribed are those to be prescribed (pulled)
 %     -Set.VPrescribed=1.5;    % Vertices with y-coordinates < Set.VFixed are those to be fixed
 %     -Set.dx=1;               % Total displacement of prescribed vertices 
-%     -Set.TStratBC=20;        % The time at which boundary conditions start to be applied    
+%     -Set.TStartBC=20;        % The time at which boundary conditions start to be applied    
 %     -Set.TStopBC=100;        % The time at which boundary conditions are removed    
 
 % ------------- Compression test  (Input Sample)  -------------------------
 % Set.BC=2;  %  Compression
 %        -Set.VFixd=-1;         % Vertices with y-coordinates > Set.VPrescribed are those to be prescribed (pulled)
 %        -Set.dx=1;             % Total displacement  
-%        -Set.TStratBC=20;      % The time at which boundary conditions start to be applied    
+%        -Set.TStartBC=20;      % The time at which boundary conditions start to be applied    
 %       -Set.TStopBC=100;       % The time at which boundary conditions are removed 
 
 % Set.BC =~ 1,2;  % Substrate
 
 % ------ Default setting ---------------------------------------------------
-if ~isfield(Set,'BC') && ~Set.Substrate
+if ~isfield(Set,'BC')
     Set.BC=1; % BC=1: Stretching, BC=2: Compression, BC=nan, substrate extrussion
     Set.VFixd=-1.5;
     Set.VPrescribed=1.5;
     Set.dx=2;
     Set.TStartBC=20;  %30  
     Set.TStopBC=100;
-elseif  Set.Substrate
-    Set.BC=nan;
 end 
-
 
 %% ============================= PostProcessing ===========================
 
@@ -284,7 +332,7 @@ end
 if ~isfield(Set,'VTK') % Vtk files for each time step
     Set.VTK=true;
 end 
-if ~isfield(Set,'gVTK') % Vtk files of forces  (arrows) 
+if ~isfield(Set,'gVTK') % NOT YET! Vtk files of forces  (arrows) 
     Set.gVTK=false;
 end 
 if ~isfield(Set,'VTK_iter') % vtk file for each iteration
@@ -298,24 +346,71 @@ if ~isfield(Set,'SaveWorkspace') % Save Workspace at each time step
 end
 if ~isfield(Set,'SaveSetting')
     Set.SaveSetting=false;
-end 
-
+end
+       
 %% ============================= Ablation ===========================
+% Cells are ablated by becoming 'Debris'
+
 if ~isfield(Set,'Ablation') % Apply ablation (mechanical removal) of some cells
     Set.Ablation = false;
 end
-%Type of abaltion. =1 Only mechanical (no volume/surface/bending/dissipation potentials). =2 Fully removal, including cell-center, which becomes boundary node.
 
-if ~isfield(Set,'TAblation') % Time when ablation is applied
-    Set.TAblation = 1;
+if ~isfield(Set,'TInitAblation') % Time at which ablation is performed
+    Set.TInitAblation = 1;
 end
-if ~isfield(Set,'cellsToAblate') % Cell numbers to be ablated. Can be an array if mre than one.
-    Set.cellsToAblate = 5;
+
+% Time at which the ablated cell achieved the parameters of complete Debris (for instance, 'lambda_debris')
+if ~isfield(Set,'TEndAblation') 
+    Set.TEndAblation = Set.tend;
 end
-if ~isfield(Set,'Contractility') % =0. No contractility applied. =1 Isotropic Contracitility. =2 Vertically Aligned Contractility 
-    Set.Contractility=0;
+
+% Cells IDs that will be ablated at TInitAblation
+if ~isfield(Set, 'cellsToAblate')
+    Set.cellsToAblate = findCentralCells(Example(Set.e), 1);
 end
-if ~isfield(Set,'cContractility') % Contractility coefficient
-    Set.cContractility=0.0;
+
+% Cells IDs that will be ablated at TInitAblation
+if ~isfield(Set, 'LambdaSFactor_Debris')
+    Set.LambdaSFactor_Debris = 0.001;
+end
+
+%% ============================= Contractility ============================
+
+if ~isfield(Set, 'Contractility')
+    Set.Contractility = true;
+end
+
+if ~isfield(Set, 'cPurseString')  % Contractility coefficient on the purse string
+    Set.cPurseString = 0;
+end
+
+% Contractility coefficient values on the purse string during a period of time
+% defined by 'Contractility_TimeVariability_PurseString'
+if ~isfield(Set, 'Contractility_Variability_PurseString')
+    Set.Contractility_Variability_PurseString = [1 1]*Set.cPurseString;
+end
+
+% Timepoints where differeent values of 'cPurseString' appear.
+% Intermediate values of 'cPurseString' are extrapolated considering the
+% difference between each timepoint.
+if ~isfield(Set, 'Contractility_TimeVariability_PurseString')
+    Set.Contractility_TimeVariability_PurseString = [0 Set.tend];
+end
+
+if ~isfield(Set, 'cLateralCables') % Contractility coefficient on the lateral cables
+    Set.cLateralCables = 0;
+end
+
+% Contractility coefficient values on the lateral cables during a period of 
+% time defined by 'Contractility_TimeVariability_PurseString'
+if ~isfield(Set, 'Contractility_Variability_LateralCables')
+    Set.Contractility_Variability_LateralCables = [1 1]*Set.cLateralCables;
+end
+
+% Timepoints where differeent values of 'cLateralCables' appear.
+% Intermediate values of 'cLateralCables' are extrapolated considering the
+% difference between each timepoint.
+if ~isfield(Set, 'Contractility_TimeVariability_LateralCables')
+    Set.Contractility_TimeVariability_LateralCables = [0 Set.tend];
 end
 end 

@@ -227,7 +227,9 @@ end
 %         continue
 %     end
 % end
+[Twg_ordered] = CheckTetrahedronOrder(Twg, X)
 [Cell]=BuildEdges(Cell,Y);
+
 
 % Total number
 

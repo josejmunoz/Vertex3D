@@ -1,4 +1,4 @@
-function [X]=GetXFromY(Cell,Faces,X,T,Y,XgID,XgSub,Set)
+function [X, Cell]=GetXFromY(Cell,Faces,X,T,Y,XgID,Set)
 % Obtain X (nodal position) from given vertex (Y) Position
 
 
@@ -117,9 +117,6 @@ elseif Set.ObtainX==3
     for i=1:length(XgID)
         nf=0; % number of cells/nodes connected to XgID(i)
         XX=zeros(3,1);
-        if ismember(XgID(i),XgSub)
-            continue
-        end
         for f=1:Faces.n
             aux=ismember(XgID(i),Faces.Nodes(f,:));
             if ~Faces.NotEmpty(f) || aux==0
@@ -141,9 +138,11 @@ elseif Set.ObtainX==3
         end
         
     end
-    
-    if ~isempty(XgSub)
-        X(XgSub,[1 2])=[sum(X(:,1))./size(X,1) sum(X(:,2))./size(X,1)];
+end
+
+if nargout > 1
+    for numCell = Cell.Int
+        [Cell.cTet{numCell}] = CheckTetrahedronOrder(Cell.cTet{numCell}, X);
     end
 end
 

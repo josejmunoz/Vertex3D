@@ -30,13 +30,14 @@ Set.Bending=false;
 %------- Viscosity
 Set.nu=0.05;   % this is eta 
 
-%% Remodeling 
+%% Remodeling
+Set.Remodelling=false;
 Set.RemodelTol=.5e-6;
 Set.RemodelingFrequency=2;
 
 %% time
-tend=20;
-Set.Nincr=10;
+Set.tend=300;
+Set.Nincr=300;
 
 %%  Boundary Displacement 
 Set.BC=2;  %  Compression
@@ -46,7 +47,7 @@ Set.BC=2;  %  Compression
     Set.TStopBC=200;
     
 %% Contractility
-Set.Contractility = true;
+Set.Contractility = false;
 Set.cContractility = 0.3;
 
 

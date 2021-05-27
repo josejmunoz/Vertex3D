@@ -145,7 +145,7 @@ else
     
     %% In plane elasticity (tetrahedra)
     if Set.InPlaneElasticity
-        [gt] = KgBulk(Cell, X, X0, Set);
+        [gt] = KgBulk(Cell, Y, Y0, Set);
         g = g + gt;
     end
     

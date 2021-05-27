@@ -39,7 +39,7 @@ for numCell = 1:ncell
     % Loop over Cell-face-triangles
     Tris=Cell.Tris{numCell};
     for ntriangle=1:size(Tris,1)
-        currentTet_ids=Tris(ntriangle,:);
+        currentTet_ids=[Tris(ntriangle,:) numCell+Set.NumMainV+Set.NumAuxV];
         
         Y1=Y.DataRow(currentTet_ids(1),:);
         Y0_1 = Y0.DataRow(currentTet_ids(1),:);
@@ -67,12 +67,12 @@ for numCell = 1:ncell
         Energy=Energy+Energye;
         
         % Update currentTet
-        ge=Assembleg(ge,gB,currentTetGlobalIDs);
+        ge=Assembleg(ge,gB,currentTet_ids);
         if nargout>1
             if Set.Sparse == 2
-                [si,sj,sv,sk]= AssembleKSparse(KB,currentTet,si,sj,sv,sk);
+                [si,sj,sv,sk]= AssembleKSparse(KB,currentTet_ids,si,sj,sv,sk);
             else
-                K = AssembleK(K,KB,currentTetGlobalIDs);
+                K = AssembleK(K,KB,currentTet_ids);
             end
         end
     end

@@ -130,10 +130,10 @@ if ~isfield(Set,'LambdaS2') % Cell-Cell
     Set.lambdaS2=0.1;
 end 
 if ~isfield(Set,'LambdaS3') % Cell-substrate
-    Set.lambdaS3=Set.LambdaS2;
+    Set.lambdaS3=Set.lambdaS2;
 end 
 if ~isfield(Set,'LambdaS4') % Cell-Debris
-    Set.lambdaS4=Set.LambdaS2;
+    Set.lambdaS4=Set.kambdaS2;
 end 
 
 if ~isfield(Set,'LambdaS1CellFactor')

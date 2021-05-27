@@ -1,4 +1,4 @@
-function [Y0,Y,Yt,T,XgID,Cell,Faces,Cn,Cv,Yn,SCn,Set] = InputImage(Set)
+function [X, Y0, Y,T,XgID,Cell,Faces,Cn,Cv,Yn,SCn,Set] = InputImage(Set)
 %INPUTIMAGE Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -151,8 +151,6 @@ X(:,3)=X(:,3)-mean(X(:,3));
 [Twg] = CheckTetrahedronOrder(Twg, X);
 
 %% Create vertices Y
-Y=DynamicArray(size(verticesInfo.location, 1)*3, 3);
-
 %Y_new=GetYFromX(X,XgID,Twg,cellHeight/2);
 Y_new = zeros(size(Twg, 1), 3);
 for numTetrahedron = 1:size(Twg, 1)
@@ -187,7 +185,7 @@ Cell.BorderVertices = [Cell.BorderVertices; -find(ismember(Faces.Nodes, borderPa
 Cell.BorderCells = ismember(Cell.Int, borderPairs(:));
 Set.NumMainV=Y.n;
 Set.NumAuxV=Cell.FaceCentres.n;
-Set.NumCellCentroid = totalCells;
+Set.NumCellCentroid = 0; %totalCells;
 Set.NumTotalV=Set.NumMainV+Set.NumAuxV + Set.NumCellCentroid;
 Set.NumXs = size(X, 1);
 Cn=BuildCn(Twg);
@@ -196,8 +194,8 @@ Faces=Faces.ComputeAreaTri(Y.DataRow,Cell.FaceCentres.DataRow);
 Faces=Faces.CheckInteriorFaces(XgID);
 
 Yn = Y;
+Y0 = Y;
 SCn = Cell.FaceCentres;
-Yt=[Y.DataOrdered ;Cell.FaceCentres.DataOrdered];
 
 T=DynamicArray(ceil(size(Twg,1)*1.5),size(Twg,2));
 T=T.Add(Twg);

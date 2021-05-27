@@ -1,17 +1,18 @@
-function [alpha]=LineSearch(Cell,Faces, SCn, y0, y,yn,dy,gc,dof,Set,Y,Yn, CellInput)
+function [alpha]=LineSearch(Cell, Faces, SCn, dy, gc, dof, Set, Y, Y0, Yn, CellInput)
+%LINESEARCH
+%
 
-y0=y;
+%% Update nodes
+dy_reshaped = reshape(dy, 3, Set.NumTotalV)';
 
-alpha=1;
-y=y0 + alpha*dy; % update nodes
+% Update Ys (vertices)
+Y=Y.Modify(Y.DataOrdered + dy_reshaped(1:Set.NumMainV,:));
 
-Yt=reshape(y,3,Set.NumTotalV)';
-Y=Y.Modify(Yt(1:Set.NumMainV,:));
-Cell.FaceCentres=Cell.FaceCentres.Modify(Yt(Set.NumMainV+1:Set.NumTotalV,:));
+% Update Face centres
+Cell.FaceCentres=Cell.FaceCentres.Modify(Cell.FaceCentres.DataOrdered + dy_reshaped(Set.NumMainV+1:Set.NumTotalV,:));
 
-
-
-[g]=KgGlobal(Cell,Faces,SCn, Y0, Y,Yn,y,yn,Set,CellInput);
+    
+[g]=KgGlobal(Cell, Faces, SCn, Y0, Y, Yn, Set, CellInput);
 gr0=norm(gc(dof));   
 gr=norm(g(dof));   
 

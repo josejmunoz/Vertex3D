@@ -185,8 +185,8 @@ Cell.BorderVertices = [Cell.BorderVertices; -find(ismember(Faces.Nodes, borderPa
 Cell.BorderCells = ismember(Cell.Int, borderPairs(:));
 Set.NumMainV=Y.n;
 Set.NumAuxV=Cell.FaceCentres.n;
-Set.NumCellCentroid = 0; %totalCells;
-Set.NumTotalV=Set.NumMainV+Set.NumAuxV + Set.NumCellCentroid;
+Set.NumCellCentroid = Cell.n;
+Set.NumTotalV=Set.NumMainV + Set.NumAuxV + Set.NumCellCentroid;
 Set.NumXs = size(X, 1);
 Cn=BuildCn(Twg);
 

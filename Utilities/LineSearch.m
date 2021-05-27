@@ -2,15 +2,17 @@ function [alpha]=LineSearch(Cell, Faces, SCn, dy, gc, dof, Set, Y, Y0, Yn, CellI
 %LINESEARCH
 %
 
-%% Update nodes
+%% Update mechanical nodes
 dy_reshaped = reshape(dy, 3, Set.NumTotalV)';
 
 % Update Ys (vertices)
 Y=Y.Modify(Y.DataOrdered + dy_reshaped(1:Set.NumMainV,:));
 
 % Update Face centres
-Cell.FaceCentres=Cell.FaceCentres.Modify(Cell.FaceCentres.DataOrdered + dy_reshaped(Set.NumMainV+1:Set.NumTotalV,:));
+Cell.FaceCentres=Cell.FaceCentres.Modify(Cell.FaceCentres.DataOrdered + dy_reshaped(Set.NumMainV+1:(Set.NumMainV+Set.NumAuxV),:));
 
+% Update Cell Centre
+Cell.Centre = Cell.Centre + dy_reshaped((Set.NumMainV+Set.NumAuxV+1):Set.NumTotalV, :);
     
 [g]=KgGlobal(Cell, Faces, SCn, Y0, Y, Yn, Set, CellInput);
 gr0=norm(gc(dof));   

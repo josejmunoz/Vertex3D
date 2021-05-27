@@ -1,4 +1,4 @@
-function [g, K, Cell, Energy]=KgBulk(Cell, Y, Y0, Set) % (X, X0, T, mu, lambda)
+function [g, K, Cell, Energy]=KgBulk(Cell, Y, Y0, Set)
 %KGBULK Summary of this function goes here
 %   Detailed explanation goes here
 %   g: is a vector
@@ -33,28 +33,36 @@ for numCell = 1:ncell
         ge=zeros(size(g, 1), 1);
     end
     
-    cellNuclei = Cell.centroid{numCell};
+    cellNuclei = Cell.Centre(numCell, :);
+    cellNuclei0 = Cell.Centre0(numCell, :);
     
     % Loop over Cell-face-triangles
     Tris=Cell.Tris{numCell};
-    for t=1:size(Tris,1)
-        nY=Tris(t,:);
-        Y1=Y.DataRow(nY(1),:);
-        Y2=Y.DataRow(nY(2),:);
-        if nY(3)<0
-            nY(3)=abs(nY(3));
-            Y3=Y.DataRow(nY(3),:);
+    for ntriangle=1:size(Tris,1)
+        currentTet_ids=Tris(ntriangle,:);
+        
+        Y1=Y.DataRow(currentTet_ids(1),:);
+        Y0_1 = Y0.DataRow(currentTet_ids(1),:);
+        Y2=Y.DataRow(currentTet_ids(2),:);
+        Y0_2 = Y0.DataRow(currentTet_ids(2),:);
+        if currentTet_ids(3)<0
+            currentTet_ids(3)=abs(currentTet_ids(3));
+            Y3=Y.DataRow(currentTet_ids(3),:);
+            Y0_3 = Y0.DataRow(currentTet_ids(3),:);
         else 
-            Y3=Cell.FaceCentres.DataRow(nY(3),:);
-            nY(3)=nY(3)+Set.NumMainV;
+            Y3 = Cell.FaceCentres.DataRow(currentTet_ids(3),:);
+            Y0_3 = Cell.FaceCentres0.DataRow(currentTet_ids(3),:);
+            currentTet_ids(3)=currentTet_ids(3)+Set.NumMainV;
         end 
-        if ~Cell.AssembleAll && ~any(ismember(nY,Cell.RemodelledVertices)) 
+        if ~Cell.AssembleAll && ~any(ismember(currentTet_ids,Cell.RemodelledVertices)) 
             continue
         end 
         
-        currentTet = [Y1 Y2 Y3 cellNuclei];
+        currentTet = [Y1; Y2; Y3; cellNuclei];
         
-        [gB, KB, Energye] = KgBulkElem(Y(currentTet, :), Y0(currentTet, :), Set.mu_bulk, Set.lambda_bulk);
+        currentTet0 = [Y0_1; Y0_2; Y0_3; cellNuclei0];
+        
+        [gB, KB, Energye] = KgBulkElem(currentTet, currentTet0, Set.mu_bulk, Set.lambda_bulk);
         
         Energy=Energy+Energye;
         

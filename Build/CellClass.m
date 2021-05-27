@@ -15,8 +15,6 @@ classdef CellClass
         cTet                  % -Connected tetrahedrons (Type=cell-structure ,  Size={NumCells 1}):
         %     Each cell (Cell.cTet{i}) is an array of size [ntet 4] with nodal tetrahedrons connected to the node of Cell i.
         %--------------------------------------------------------------------
-        cTet0 % Initial cTet
-        %--------------------------------------------------------------------
         cTetID                %% -Connected tetrahedrons IDs (Type=cell-structure ,  Size={NumCells 1}):
         %     Each cell (Cell.cTetID{i}) is an array of size [1 ntet] with IDs of nodal tetrahedrons connected to the node of Cell i.
         %    (IDs-> their index in T).
@@ -46,6 +44,11 @@ classdef CellClass
         %--------------------------------------------------------------------
         FaceCentres          %% -Face centres  (Type=array-structure ,  Size={1 NumFaces}):
         % the x-y-z coordinates of face centres
+        %
+        FaceCentres0
+        %--------------------------------------------------------------------
+        Centre
+        Centre0
         %--------------------------------------------------------------------
         nTotalTris           %% - Total number of triangles (Type=scalar)
         %--------------------------------------------------------------------
@@ -152,6 +155,8 @@ classdef CellClass
                 Cell.BasalBorderVertices = cell(nC, 1);
                 Cell.BorderVertices = [];
                 Cell.BorderCells=false(nC, 1);
+                Cell.Centre = zeros(nC, 3);
+                Cell.Centre0 = zeros(nC, 3);
             end
         end
         

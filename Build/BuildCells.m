@@ -23,6 +23,7 @@ Includedx=false(size(Cell.Int, 2),1);
 %% Build Interior Cells
 for i=1:length(Cell.Int) % loop over  Interior cells
     Includedx(i)=true;
+    Cell.Centre(i, :) = X(i, :);
     % i Should be Cell.Int(i) when boundary nodes are included
     
     %% Build Tetrahedra of the nodes
@@ -144,9 +145,7 @@ end
 Cell.FaceCentres(numFaceCentresFaces:end,:)=[];
 Cv(numVertexBarElem:end,:)=[];
 Cell.nTotalTris=numTotalSurfsTris;
-Cell.cTet0 = Cell.cTet;
-
-
+Cell.Centre0 = Cell.Centre;
 
 %% change type of data structure (should be done in the beginning)
 
@@ -154,6 +153,9 @@ faceCentrePos=Cell.FaceCentres;
 Cell.FaceCentres=DynamicArray(size(X,1)*8,3);
 Cell.FaceCentres=Cell.FaceCentres.Add(faceCentrePos);
 [Cell]=BuildEdges(Cell,Y);
+
+Cell.FaceCentres0 = Cell.FaceCentres;
+
 %% Compute Cells volume
 [Cell]=ComputeCellVolume(Cell,Y);
 Cell.Vol0=Cell.Vol;

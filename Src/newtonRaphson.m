@@ -2,7 +2,7 @@ function [g,K,Cell, Y, Energy, Set, gr, dyr, dy] = newtonRaphson(Set, Cell, Face
 %NEWTONRAPHSON Summary of this function goes here
 %   Detailed explanation goes here
 
-dy=sparse(Set.NumTotalV*3, 1);
+dy=zeros(Set.NumTotalV*3, 1);
 dyr=norm(dy(Dofs.FreeDofs));
 gr=norm(g(Dofs.FreeDofs));
 gr0=gr;
@@ -16,14 +16,17 @@ while (gr>Set.tol || dyr>Set.tol) && Set.iter<Set.MaxIter
     dy(Dofs.FreeDofs)=-K(Dofs.FreeDofs,Dofs.FreeDofs)\g(Dofs.FreeDofs);
     [alpha]=LineSearch(Cell,Faces,SCn,dy,g,Dofs.FreeDofs,Set,Y,Y0,Yn,CellInput);
 
-    %% Update nodes
-    dy_reshaped = alpha * reshape(dy, 3, Set.NumTotalV)';
+    %% Update mechanical nodes
+    dy_reshaped = reshape(dy, 3, Set.NumTotalV)';
 
     % Update Ys (vertices)
     Y=Y.Modify(Y.DataOrdered + dy_reshaped(1:Set.NumMainV,:));
 
     % Update Face centres
-    Cell.FaceCentres=Cell.FaceCentres.Modify(Cell.FaceCentres.DataOrdered + dy_reshaped(Set.NumMainV+1:Set.NumTotalV,:));
+    Cell.FaceCentres=Cell.FaceCentres.Modify(Cell.FaceCentres.DataOrdered + dy_reshaped(Set.NumMainV+1:(Set.NumMainV+Set.NumAuxV),:));
+
+    % Update Cell Centre
+    Cell.Centre = Cell.Centre + dy_reshaped((Set.NumMainV+Set.NumAuxV+1):Set.NumTotalV, :);
 
     if Set.nu > Set.nu0 &&  gr<1e-8
         Set.nu = max(Set.nu/2,Set.nu0);

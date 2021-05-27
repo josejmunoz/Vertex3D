@@ -6,6 +6,9 @@ function [g,K,Cell,Energy,gs,gv,gf,gB,gb]=KgGlobal(Cell,Faces,SCn, Y0, Y,Yn,y,yn
 [Cell] = Cell.computeEdgeLengths(Y);
 [Cell] = Cell.computeEdgeLocation(Y);
 
+y=reshape([Y.DataOrdered; SCn.DataOrdered]',Set.NumTotalV*3,1);
+yn=reshape([Yn.DataOrdered; Cell.FaceCentres.DataOrdered]',Set.NumTotalV*3,1);
+
 if nargout>1
     %% Compute both The residual g and Jacobian K
     % Surface Energy ----------------------------------------------------------
@@ -29,12 +32,15 @@ if nargout>1
     end
     
     % Viscous Forces ----------------------------------------------------------
-    Kf=(Set.nu/Set.dt).*sparse(eye(size(Kv)));
-    gf=(Set.nu/Set.dt).*(y-yn);
-    x=reshape(X',numel(X),1);
-    x0=reshape(X0',numel(X0),1);
-    %% add this or simply zeros
-    gf = vertcat(gf, (Set.nu/Set.dt).*(x-x0));
+
+    
+    if Set.Sparse > 0
+        Kf=(Set.nu/Set.dt).*sparse(eye(size(Kv)));
+        gf=(Set.nu/Set.dt).*sparse(y-yn);
+    else
+        Kf=(Set.nu/Set.dt).*eye(size(Kv));
+        gf=(Set.nu/Set.dt).*(y-yn);
+    end
     Energy.Ef=(1/2)*(gf')*gf/Set.nu;
     K=Kv+Ks+Kf;
     g=gv+gs+gf;
@@ -119,11 +125,11 @@ else
     [gv]=KgVolume(Cell,Y,Set);
     
     %% Viscous Forces 
-    gf=(Set.nu/Set.dt).*(y-yn);
-    x=reshape(X',numel(X),1);
-    x0=reshape(X0',numel(X0),1);
-    %% add this or simply zeros
-    gf = vertcat(gf, (Set.nu/Set.dt).*(x-x0));
+    if Set.Sparse > 0
+        gf=(Set.nu/Set.dt).*sparse(y-yn);
+    else
+        gf=(Set.nu/Set.dt).*(y-yn);
+    end
     g=gv+gs+gf;
     
     

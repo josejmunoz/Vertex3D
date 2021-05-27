@@ -30,7 +30,7 @@ Set.lambdaS2=0.1;
 Set.lambdaS3=Set.lambdaS1;
 
 %---------- In plane elasticity
-Set.InPlaneElasticity = 1;
+Set.InPlaneElasticity = false;
 Set.mu_bulk = 1;
 Set.lambda_bulk = 0.001;
 

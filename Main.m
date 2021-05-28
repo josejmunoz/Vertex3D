@@ -100,6 +100,7 @@ while t<=Set.tend
             [X]=GetXFromY(Cell,Faces,X,tetrahedra,Y,XgID,Set);
             Yn = Y;
             SCn = Cell.FaceCentres;
+            Cell.Centre_n = Cell.Centre;
         end
         Set.Nincr = Nincr_inital;
         Set.dt0=Set.tend/Set.Nincr;
@@ -163,6 +164,7 @@ while t<=Set.tend
         
         Yn=Y;
         SCn=Cell.FaceCentres;
+        Cell.Centre_n = Cell.Centre;
         Set.MaxIter=Set.MaxIter0;
         Set.ReModel=true;
         Set.ApplyBC=true;

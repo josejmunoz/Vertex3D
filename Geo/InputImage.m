@@ -196,6 +196,7 @@ Faces=Faces.CheckInteriorFaces(XgID);
 Yn = Y;
 Y0 = Y;
 SCn = Cell.FaceCentres;
+Cell.Centre_n = Cell.Centre;
 
 T=DynamicArray(ceil(size(Twg,1)*1.5),size(Twg,2));
 T=T.Add(Twg);

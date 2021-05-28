@@ -7,7 +7,7 @@ function [g,K,Cell,Energy,gs,gv,gf,gB,gb]=KgGlobal(Cell, Faces, SCn, Y0, Y, Yn, 
 [Cell] = Cell.computeEdgeLocation(Y);
 
 y=reshape([Y.DataOrdered; Cell.FaceCentres.DataOrdered; Cell.Centre]',Set.NumTotalV*3,1);
-yn=reshape([Yn.DataOrdered; SCn.DataOrdered; Cell.Centre]',Set.NumTotalV*3,1);
+yn=reshape([Yn.DataOrdered; SCn.DataOrdered; Cell.Centre_n]',Set.NumTotalV*3,1);
 
 if nargout>1
     %% Compute both The residual g and Jacobian K

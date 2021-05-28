@@ -30,9 +30,9 @@ Set.lambdaS2=0.1;
 Set.lambdaS3=Set.lambdaS1;
 
 %---------- In plane elasticity
-Set.InPlaneElasticity = false;
-Set.mu_bulk = 1;
-Set.lambda_bulk = 0.001;
+Set.InPlaneElasticity = true;
+Set.mu_bulk = 0.5;
+Set.lambda_bulk = Set.mu_bulk/10;
 
 %---------- EnergyBarrier
 Set.EnergyBarrier=true;
@@ -97,6 +97,6 @@ Set.diary = true;
 Set.MaxIter = 400;
 Set.tol=1e-10;
 Set.Parallel = false;
-Set.Sparse = 2; %0: No sparse
+Set.Sparse = 1; %0: No sparse
                     %1: Sparse matlab
                     %2: Sparse manual

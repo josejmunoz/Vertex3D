@@ -69,6 +69,10 @@ for ig=1:ng
     Je=det(dXdxi);
     lJ=log(J);
     
+    if J<0
+        warning('Inverted Tetrahedral Element');
+    end
+    
     if Je<0
         error('Tetrahedral Element orientation need to be swapped')
     end

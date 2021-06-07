@@ -17,7 +17,7 @@ while (gr>Set.tol || dyr>Set.tol) && Set.iter<Set.MaxIter
     [alpha]=LineSearch(Cell,Faces,SCn,dy,g,Dofs.FreeDofs,Set,Y,Y0,Yn,CellInput);
 
     %% Update mechanical nodes
-    dy_reshaped = reshape(dy, 3, Set.NumTotalV)';
+    dy_reshaped = reshape(dy * alpha, 3, Set.NumTotalV)';
 
     % Update Ys (vertices)
     Y=Y.Modify(Y.DataOrdered + dy_reshaped(1:Set.NumMainV,:));

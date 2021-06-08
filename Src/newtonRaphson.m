@@ -32,7 +32,15 @@ while (gr>Set.tol || dyr>Set.tol) && Set.iter<Set.MaxIter
         Set.nu = max(Set.nu/2,Set.nu0);
     end
     %% ----------- Compute K, g ---------------------------------------
-    [g,K,Cell,Energy]=KgGlobal(Cell, Faces, SCn, Y0, Y, Yn, Set, CellInput);
+    try
+        [g,K,Cell,Energy]=KgGlobal(Cell, Faces, SCn, Y0, Y, Yn, Set, CellInput);
+    catch ME
+        if (strcmp(ME.identifier,'KgBulkElem:invertedTetrahedralElement'))
+            disp('check inverted tets');
+        else
+            throw(ME)
+        end
+    end
     dyr=norm(dy(Dofs.FreeDofs));
     gr=norm(g(Dofs.FreeDofs));
     fprintf('Step: % i,Iter: %i, Time: %g ||gr||= %.3e ||dyr||= %.3e alpha= %.3e  nu/nu0=%.3g \n',numStep,Set.iter,t,gr,dyr,alpha,Set.nu/Set.nu0);

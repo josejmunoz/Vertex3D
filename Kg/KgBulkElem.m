@@ -70,7 +70,10 @@ for ig=1:ng
     lJ=log(J);
     
     if J<0
-        warning('Inverted Tetrahedral Element');
+        %warning('Inverted Tetrahedral Element');
+        ME = MException('KgBulkElem:invertedTetrahedralElement', ...
+        'Inverted Tetrahedral Element');
+        throw(ME)
     end
     
     if Je<0

@@ -13,8 +13,17 @@ Cell.FaceCentres=Cell.FaceCentres.Modify(Cell.FaceCentres.DataOrdered + dy_resha
 
 % Update Cell Centre
 Cell.Centre = Cell.Centre + dy_reshaped((Set.NumMainV+Set.NumAuxV+1):Set.NumTotalV, :);
-    
-[g]=KgGlobal(Cell, Faces, SCn, Y0, Y, Yn, Set, CellInput);
+
+try
+    [g]=KgGlobal(Cell, Faces, SCn, Y0, Y, Yn, Set, CellInput);
+catch ME
+    if (strcmp(ME.identifier,'KgBulkElem:invertedTetrahedralElement'))
+        disp('check inverted tets');
+    else
+        throw(ME)
+    end
+end
+
 gr0=norm(gc(dof));   
 gr=norm(g(dof));   
 

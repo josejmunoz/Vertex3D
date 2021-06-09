@@ -155,6 +155,7 @@ Cell.FaceCentres=Cell.FaceCentres.Add(faceCentrePos);
 [Cell]=BuildEdges(Cell,Y);
 
 Cell.FaceCentres0 = Cell.FaceCentres;
+Cell.Tris0 = Cell.Tris;
 
 %% Compute Cells volume
 [Cell]=ComputeCellVolume(Cell,Y);

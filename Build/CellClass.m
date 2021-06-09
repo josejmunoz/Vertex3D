@@ -4,6 +4,7 @@ classdef CellClass
         Int           % - Cell nodes (array-structure ,  Size={1 NumCells}):
         %       IDs of internal nodes (Cell centres)
         %---------------------------------------------------------------------
+        Tris0
         Tris                  % -Cell-surface Triangulation (Type=cell-structure ,  Size={NumCells 1})
         %     Each cell is an array of size [ntris 3] with triangles defining cell surfaces.
         %     e.g. Cell.Tris{1}(2,:)=[v1 v2 v3] -> such that v1, v2 and v3 are the vertices which

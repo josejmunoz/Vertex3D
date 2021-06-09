@@ -31,6 +31,10 @@ if nargout>1
         [gv,Kv,Cell,Energy.Ev]=KgVolume(Cell,Y,Set);
     end
     
+    if issymmetric(Kv) == 0
+        warning('Jacobian matrix (K) of Volume is not symmetric');
+    end
+    
     % Viscous Forces ----------------------------------------------------------
 
     
@@ -65,6 +69,7 @@ if nargout>1
     %% In plane elasticity (tetrahedra)
     if Set.InPlaneElasticity
         [gt, Kt, Cell, Energy.EBulk] = KgBulk(Cell, Y, Y0, Set);
+        
         K = K + Kt;
         g = g + gt;
     end

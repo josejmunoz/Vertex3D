@@ -28,7 +28,7 @@ while (gr>Set.tol || dyr>Set.tol) && Set.iter<Set.MaxIter
     try
         [g,K,Cell,Energy]=KgGlobal(Cell, Faces, SCn, Y0, Y, Yn, Set, CellInput);
     catch ME
-        if (strcmp(ME.identifier,'KgBulkElem:invertedTetrahedralElement'))
+        if (strcmp(ME.identifier,'KgBulk:invertedTetrahedralElement'))
             %% Correct inverted Tets
             [Y, Cell] = correctInvertedMechTets(ME, dy, Y, Cell, Set);
             

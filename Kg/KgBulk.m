@@ -90,6 +90,7 @@ for numCell = 1:ncell
 end
 
 if isempty(errorInverted) == 0
+    warning('Inverted Tetrahedral Element [%s]', sprintf('%d;', errorInverted'));
     ME = MException('KgBulk:invertedTetrahedralElement', ...
         'Inverted Tetrahedral Elements [%s]', sprintf('%d;', errorInverted'));
     throw(ME)

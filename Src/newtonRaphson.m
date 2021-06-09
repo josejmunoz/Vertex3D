@@ -19,14 +19,7 @@ while (gr>Set.tol || dyr>Set.tol) && Set.iter<Set.MaxIter
     %% Update mechanical nodes
     dy_reshaped = reshape(dy * alpha, 3, Set.NumTotalV)';
 
-    % Update Ys (vertices)
-    Y=Y.Modify(Y.DataOrdered + dy_reshaped(1:Set.NumMainV,:));
-
-    % Update Face centres
-    Cell.FaceCentres=Cell.FaceCentres.Modify(Cell.FaceCentres.DataOrdered + dy_reshaped(Set.NumMainV+1:(Set.NumMainV+Set.NumAuxV),:));
-
-    % Update Cell Centre
-    Cell.Centre = Cell.Centre + dy_reshaped((Set.NumMainV+Set.NumAuxV+1):Set.NumTotalV, :);
+    [Y, Cell] = updateVertices(Y, Cell, dy_reshaped, Set);
 
     if Set.nu > Set.nu0 &&  gr<1e-8
         Set.nu = max(Set.nu/2,Set.nu0);
@@ -36,7 +29,11 @@ while (gr>Set.tol || dyr>Set.tol) && Set.iter<Set.MaxIter
         [g,K,Cell,Energy]=KgGlobal(Cell, Faces, SCn, Y0, Y, Yn, Set, CellInput);
     catch ME
         if (strcmp(ME.identifier,'KgBulkElem:invertedTetrahedralElement'))
-            disp('check inverted tets');
+            %% Correct inverted Tets
+            [Y, Cell] = correctInvertedMechTets(ME, dy, Y, Cell, Set);
+            
+            % Run again
+            [g,K,Cell,Energy]=KgGlobal(Cell, Faces, SCn, Y0, Y, Yn, Set, CellInput);
         else
             throw(ME)
         end

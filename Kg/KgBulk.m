@@ -8,12 +8,14 @@ function [g, K, Cell, Energy]=KgBulk(Cell, Y, Y0, Set)
 if nargout > 1
     if Set.Sparse == 2 %Manual sparse
         [g, Energy, ncell, K, si, sj, sk, sv] = initializeKg(Cell, Set);
-    else %Matlab sparse
+    else
         [g, Energy, ncell, K] = initializeKg(Cell, Set);
     end
 else
     [g, Energy, ncell] = initializeKg(Cell, Set);
 end
+
+errorInverted = [];
 
 %% K and g calculation per Cell
 for numCell = 1:ncell
@@ -62,19 +64,35 @@ for numCell = 1:ncell
         
         currentTet0 = [Y0_1; Y0_2; Y0_3; cellNuclei0];
         
-        [gB, KB, Energye] = KgBulkElem(currentTet, currentTet0, Set.mu_bulk, Set.lambda_bulk);
-        
-        Energy=Energy+Energye;
-        
-        % Update currentTet
-        ge=Assembleg(ge,gB,currentTet_ids);
-        if nargout>1
-            if Set.Sparse == 2
-                [si,sj,sv,sk]= AssembleKSparse(KB,currentTet_ids,si,sj,sv,sk);
+        try
+            [gB, KB, Energye] = KgBulkElem(currentTet, currentTet0, Set.mu_bulk, Set.lambda_bulk);
+
+            Energy=Energy+Energye;
+
+            % Update currentTet
+            ge=Assembleg(ge,gB,currentTet_ids);
+            if nargout>1
+                if Set.Sparse == 2
+                    [si,sj,sv,sk]= AssembleKSparse(KB,currentTet_ids,si,sj,sv,sk);
+                else
+                    K = AssembleK(K,KB,currentTet_ids);
+                end
+            end
+        catch ME
+            if (strcmp(ME.identifier,'KgBulkElem:invertedTetrahedralElement'))
+                
+                errorInverted = [errorInverted; currentTet_ids];
             else
-                K = AssembleK(K,KB,currentTet_ids);
+                ME.rethrow();
             end
         end
     end
 end
+
+if isempty(errorInverted) == 0
+    ME = MException('KgBulk:invertedTetrahedralElement', ...
+        'Inverted Tetrahedral Elements [%s]', sprintf('%d;', errorInverted'));
+    throw(ME)
+end
+
 end

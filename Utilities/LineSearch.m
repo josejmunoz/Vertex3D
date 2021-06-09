@@ -2,25 +2,28 @@ function [alpha]=LineSearch(Cell, Faces, SCn, dy, gc, dof, Set, Y, Y0, Yn, CellI
 %LINESEARCH
 %
 
+Yp = Y;
+Cellp = Cell;
+
 %% Update mechanical nodes
 dy_reshaped = reshape(dy, 3, Set.NumTotalV)';
 
-% Update Ys (vertices)
-Y=Y.Modify(Y.DataOrdered + dy_reshaped(1:Set.NumMainV,:));
-
-% Update Face centres
-Cell.FaceCentres=Cell.FaceCentres.Modify(Cell.FaceCentres.DataOrdered + dy_reshaped(Set.NumMainV+1:(Set.NumMainV+Set.NumAuxV),:));
-
-% Update Cell Centre
-Cell.Centre = Cell.Centre + dy_reshaped((Set.NumMainV+Set.NumAuxV+1):Set.NumTotalV, :);
+[Y, Cell] = updateVertices(Y, Cell, dy_reshaped, Set);
 
 try
     [g]=KgGlobal(Cell, Faces, SCn, Y0, Y, Yn, Set, CellInput);
 catch ME
-    if (strcmp(ME.identifier,'KgBulkElem:invertedTetrahedralElement'))
-        disp('check inverted tets');
+    if (strcmp(ME.identifier,'KgBulk:invertedTetrahedralElement'))
+        %% Correct inverted Tets
+        [Y, Cell] = correctInvertedMechTets(ME, dy, Y, Cell, Set);
+        
+        % Run again
+        [g]=KgGlobal(Cell, Faces, SCn, Y0, Y, Yn, Set, CellInput);
+        
+        % This works perfectly
+        %[g]=KgGlobal(Cellp, Faces, SCn, Y0, Yp, Yn, Set, CellInput);
     else
-        throw(ME)
+        ME.rethrow();
     end
 end
 

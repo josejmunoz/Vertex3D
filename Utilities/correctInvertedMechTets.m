@@ -1,29 +1,25 @@
-function [] = correctInvertedMechTets(Cell, Y)
+function [Y, Cell] = correctInvertedMechTets(exceptionMessage, dy, Y, Cell, Set)
 %CORRECTINVERTEDMECHTETS Corrects inverted 'mechanical' tetrahedra (don't
 %confused with 'geometrical' tetrahedra T)
 %   Detailed explanation goes here
 
+disp('Correcting inverted mechanical tetrahedra...')
 
-%% K and g calculation per Cell
-for numCell = 1:ncell
-    cellNuclei = Cell.Centre(numCell, :);
-    % Loop over Cell-face-triangles
-    Tris=Cell.Tris{numCell};
-    for ntriangle=1:size(Tris,1)
-        currentTet_ids=Tris(ntriangle,:);
-
-        Y1=Y.DataRow(currentTet_ids(1),:);
-        Y2=Y.DataRow(currentTet_ids(2),:);
-        if currentTet_ids(3)<0
-            currentTet_ids(3)=abs(currentTet_ids(3));
-            Y3=Y.DataRow(currentTet_ids(3),:);
-        else
-            Y3 = Cell.FaceCentres.DataRow(currentTet_ids(3),:);
-        end
+indicesToUpdate = str2num(exceptionMessage.message(31:end));
         
-        currentTet = [Y1; Y2; Y3; cellNuclei];
-        %is currentTet correct??
-    end
+% Assemble numbers
+dim = 3;
+idofg = zeros(length(indicesToUpdate)*dim, 1);
+
+for I=1:length(indicesToUpdate) % loop on number of vertices of triangle
+    idofg((I-1)*dim+1:I*dim) = (indicesToUpdate(I)-1)*dim+1:indicesToUpdate(I)*dim;% global dof
 end
+
+dy_reajusted = zeros(size(dy));
+dy_reajusted(idofg) = - dy(idofg);
+
+dy_reshaped = reshape(dy_reajusted, 3, Set.NumTotalV)';
+
+[Y, Cell] = updateVertices(Y, Cell, dy_reshaped, Set);
 end
 

@@ -19,9 +19,6 @@ catch ME
         
         % Run again
         [g]=KgGlobal(Cell, Faces, SCn, Y0, Y, Yn, Set, CellInput);
-        
-        % This works perfectly
-        %[g]=KgGlobal(Cellp, Faces, SCn, Y0, Yp, Yn, Set, CellInput);
     else
         ME.rethrow();
     end

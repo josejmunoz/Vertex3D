@@ -1,8 +1,15 @@
 function [g, K, Energy] = KgBulkElem(x, x0, mu, lambda, Neo)
 %KGBULKELEM Computes elemental residual and Jacobian for bulk viscoelastic domain
-%   Assumes St. Venant-Kirchoff elastic poential:
+%   Can use:
+%   Neo=0: St. Venant-Kirchoff elastic poential:
 %   W(E)=lambda tr(E)^2 + 2*mu tr(E^2)
-%   If no lmbda is given, assumed to be zero (no volumetric stiffness)
+%
+%   Neo=1: Neo-Hookean elastic poential:
+%   W(E)=lambda ln(J)^2 + mu (tr(E)-ln(J))
+%
+%   Neo=0: Modififed Neo-Hookean for handling negative volumes (may happen in iterative process)
+%   W(E)=lambda ln(J^2)^2 + mu (tr(E)-ln(J^2))
+%   If no lambda is given, assumed to be zero (no volumetric stiffness)
 %   
 %   INPUT:
 %   x(i,:)=coordinates of node i (assumed 4 nodes) on deformed element
@@ -10,13 +17,13 @@ function [g, K, Energy] = KgBulkElem(x, x0, mu, lambda, Neo)
 %   mu,lambda = material shear stiffness
 % 
 %   OUTPUT:
-%   g=eleemntal residual
+%   g=elemental residual
 %   K=elemental Jacobian
 %   S=2nf Piola-Kirchhof stress tensor on last GP
 %
 %   Designed by Jose J. Muñoz
 
-NeoH=true;
+NeoH=2;
 if exist('Neo','var')
     NeoH=Neo;
 end
@@ -68,6 +75,7 @@ for ig=1:ng
     trE=sum(diag(E));
     Je=det(dXdxi);
     lJ=log(J);
+    lJ2=log(J^2);
     
     if J<0
         ME = MException('KgBulkElem:invertedTetrahedralElement', ...
@@ -79,17 +87,21 @@ for ig=1:ng
         error('Tetrahedral Element orientation need to be swapped')
     end
     
-    if NeoH
+    if NeoH==1
         Energy=Energy+0.5*lambda*lJ^2+mu*(trE-lJ)*Je*wg(ig);
-    else
+    elseif NeoH==2
+        Energy=Energy+0.5*lambda*lJ2^2+mu*(trE-lJ2)*Je*wg(ig);
+    else % St Venant
         Energy=Energy+0.5*lambda*trE^2+mu*sum(diag(E*E))*Je*wg(ig);
     end
     for a=1:nnod
         gradXNa=gradXN(:,a);
         gradxNa=gradxN(:,a);
         idof=(a-1)*dim+1:a*dim;
-        if NeoH
+        if NeoH==1
             K1=(lambda*lJ-mu)*gradxNa+mu*F*gradXNa;
+        elseif NeoH==2
+            K1=2*(lambda*lJ2-mu)*gradxNa+mu*F*gradXNa;
         else
             K1=(lambda*trE*F+2*mu*F*E)*gradXNa;
         end
@@ -99,10 +111,15 @@ for ig=1:ng
             gradxNb=gradxN(:,b);
             jdof=(b-1)*dim+1:b*dim;
             NxaNxb=gradxNa*gradxNb';
-            if NeoH
+            if NeoH==1
                 K1=mu*(gradXNa'*gradXNb)*eye(3);
                 K2=lambda*NxaNxb;
                 K3=-(lambda*lJ-mu)*NxaNxb';
+                Kab=K1+K2+K3;
+            elseif NeoH==2
+                K1=mu*(gradXNa'*gradXNb)*eye(3);
+                K2=4*lambda*NxaNxb;
+                K3=-2*(lambda*lJ2-mu)*NxaNxb';
                 Kab=K1+K2+K3;
             else
                 K1=(trE*lambda*(gradXNa'*gradXNb)+2*mu*(gradXNb'*E*gradXNa))*eye(3);

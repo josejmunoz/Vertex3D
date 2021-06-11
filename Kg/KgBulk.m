@@ -71,6 +71,7 @@ for numCell = 1:ncell
 
             % Update currentTet
             ge=Assembleg(ge,gB,currentTet_ids);
+            g=g+ge;
             if nargout>1
                 if Set.Sparse == 2
                     [si,sj,sv,sk]= AssembleKSparse(KB,currentTet_ids,si,sj,sv,sk);

@@ -6,6 +6,7 @@ function [Dofs, Set]=GetDOFs(Y, Cell, Faces, Set, contrainBorderVertices)
 
 IDY=1:Y.n;
 IDS=1:Cell.FaceCentres.n;
+IDC=1:Cell.n;
 
 if Set.BC==1
     prescribedBoundary = Set.VPrescribed;
@@ -69,12 +70,36 @@ Sdof=1:Cell.FaceCentres.n*3;
 Sdof(unique([SdofC SdofP SdofD SdofCBorder]))=[];
 freeIDS(ismember(freeIDS,[pIDS cIDS SdofCBorder]))=[];
 
+%% 'Mechanical' cell centres
+pIDC=IDC(Cell.Centre > prescribedBoundary);
+cIDC=IDC(Cell.Centre < Set.VFixd);
 
+freeIDC=1:Cell.n;
+freeIDC(ismember(freeIDC,[pIDC cIDC]))=[];
+
+% Here, all the coordinates got constrained/prescribed (x,y,z)
+CdofC=3.*(kron(cIDC,[1 1 1])-1)+kron(ones(1,length(cIDC)),[1 2 3]);
+
+if Set.BC==1
+    CdofP=3.*(kron(pIDC,[1 1 1])-1)+kron(ones(1,length(pIDC)),[1 2 3]);
+elseif Set.BC==2
+    % Only 'y' coordinate is prescribed
+    CdofP=3.*(kron(pIDC,1)-1)+kron(ones(1,length(pIDC)),2);
+end
+
+% Border vertices are only constrained on x,y coordinates
+CdofCBorder = [];
+
+Cdof=1:Cell.n*3;
+Cdof([CdofC CdofP CdofCBorder])=[];
+
+%% Final
 Dofs.PrescribedY=pIDY;
 Dofs.PrescribedS=pIDS;
-Dofs.FreeDofs=[Ydof Sdof+Y.n*3];
-Dofs.dofC=[YdofC SdofC+Y.n*3];
-Dofs.dofP=[YdofP SdofP+Y.n*3];
+Dofs.PrescribedC=pIDC;
+Dofs.FreeDofs=[Ydof Sdof+Y.n*3 Cdof+Y.n*3+Cell.FaceCentres.n*3];
+Dofs.dofC=[YdofC SdofC+Y.n*3 CdofC+Y.n*3+Cell.FaceCentres.n*3];
+Dofs.dofP=[YdofP SdofP+Y.n*3 CdofP+Y.n*3+Cell.FaceCentres.n*3];
 Dofs.dofCBorder=[YdofCBorder SdofCBorder+Y.n*3];
 %% Not used
 Dofs.FreeY=freeIDY;

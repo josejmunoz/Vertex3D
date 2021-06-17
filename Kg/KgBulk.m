@@ -66,17 +66,21 @@ for numCell = 1:ncell
         
         try
             [gB, KB, Energye] = KgBulkElem(currentTet, currentTet0, Set.mu_bulk, Set.lambda_bulk);
-
+            
             Energy=Energy+Energye;
 
             % Update currentTet
             ge=Assembleg(ge,gB,currentTet_ids);
-            g=g+ge;
+            
             if nargout>1
                 if Set.Sparse == 2
                     [si,sj,sv,sk]= AssembleKSparse(KB,currentTet_ids,si,sj,sv,sk);
                 else
                     K = AssembleK(K,KB,currentTet_ids);
+                end
+                
+                if issymmetric(K) == 0
+                    error('K is not symmetric');
                 end
             end
         catch ME
@@ -88,13 +92,15 @@ for numCell = 1:ncell
             end
         end
     end
+    
+    g=g+ge;
 end
 
 if isempty(errorInverted) == 0
     warning('Inverted Tetrahedral Element [%s]', sprintf('%d;', errorInverted'));
-    ME = MException('KgBulk:invertedTetrahedralElement', ...
-        'Inverted Tetrahedral Elements [%s]', sprintf('%d;', errorInverted'));
-    throw(ME)
+%     ME = MException('KgBulk:invertedTetrahedralElement', ...
+%         'Inverted Tetrahedral Elements [%s]', sprintf('%d;', errorInverted'));
+%     throw(ME)
 end
 
 end

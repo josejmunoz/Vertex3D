@@ -2,7 +2,8 @@ function [Cell, Set, CellInput] = performAblation(Cell, Set, CellInput, t)
 %PERFORMABLATION Summary of this function goes here
 %   Detailed explanation goes here
 if Set.Ablation == true && Set.TInitAblation <= t
-    if isempty(Set.cellsToAblate)==0
+    if isempty(Set.cellsToAblate) == 0
+        disp('Performing ablation');
         Cell = Cell.AblateCells(Set.cellsToAblate);
         Set.cellsToAblate = [];
         CellInput.LambdaS1Factor(Cell.DebrisCells) = Set.LambdaSFactor_Debris;

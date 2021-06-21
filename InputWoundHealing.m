@@ -16,14 +16,14 @@ Set.f=Set.s/2;
 
 %%  Mechanics
 %---------- Volume
-Set.lambdaV=5;
+Set.lambdaV=1;
 Set.lambdaV_Debris=0.01;
 
 %---------- Surface
 % Set.SurfaceType=4 : Surface-Energy based on the whole cell area differential adhsion
 Set.SurfaceType=4;
 % external 
-Set.lambdaS1=0.5;
+Set.lambdaS1=1;
 % Cell-Cell 
 Set.lambdaS2=0.1;
 % Cell-substrate
@@ -31,7 +31,7 @@ Set.lambdaS3=Set.lambdaS1;
 
 %---------- In plane elasticity
 Set.InPlaneElasticity = true;
-Set.mu_bulk = 0.5;
+Set.mu_bulk = 15;
 Set.lambda_bulk = Set.mu_bulk/10;
 
 %---------- EnergyBarrier

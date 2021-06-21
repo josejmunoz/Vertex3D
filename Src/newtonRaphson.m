@@ -8,6 +8,8 @@ gr=norm(g(Dofs.FreeDofs));
 gr0=gr;
 fprintf('Step: %i,Iter: %i ||gr||= %e ||dyr||= %e dt/dt0=%.3g\n',numStep,0,gr,dyr,Set.dt/Set.dt0);
 
+Energy = 0;
+
 Set.iter=1;
 auxgr=zeros(3,1);
 auxgr(1)=gr;

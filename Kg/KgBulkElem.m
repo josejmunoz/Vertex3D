@@ -78,6 +78,7 @@ for ig=1:ng
     lJ2=log(J^2);
     
     if J<0
+%         warning('Inverted tetrahedra');
 %         ME = MException('KgBulkElem:invertedTetrahedralElement', ...
 %             'Inverted Tetrahedral Element');
 %         throw(ME)

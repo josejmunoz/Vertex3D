@@ -102,7 +102,7 @@ if nargout>1
     
     
     %%  Contractility     
-    if Set.Contractility && (Set.cPurseString > 0 || Set.cLateralCables > 0)
+    if Set.Contractility && (Set.cPurseString > 0 || Set.cLateralCables > 0) && any(Cell.DebrisCells)
         [gC,KC,Cell,Energy.Ec]=KgContractility(Cell,Y,Set);
          K=K+KC; g=g+gC;
     end

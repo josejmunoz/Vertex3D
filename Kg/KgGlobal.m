@@ -107,6 +107,11 @@ if nargout>1
          K=K+KC; g=g+gC;
     end
     
+    if Set.cLateralCables > 0 && any(Cell.DebrisCells)
+        [gSC,KSC,Cell,Energy.Es2] = KgSurfaceCellBasedContractility(Cell,Y,Faces,Set,CellInput);
+         K=K+KSC; g=g+gSC;
+    end
+    
     %%  Substrate 
     if Set.Substrate && Set.kSubstrate > 0
         [gSub,KSub,Cell,Energy.Esub]=KgSubstrate(Cell, SCn, Y, Yn, Set);
@@ -176,6 +181,12 @@ else
     if Set.Contractility && (Set.cPurseString > 0 || Set.cLateralCables > 0)
         [gc]=KgContractility(Cell,Y,Set);
         g=g+gc;
+    end
+    
+        
+    if Set.cLateralCables > 0 && any(Cell.DebrisCells)
+        [gSC] = KgSurfaceCellBasedContractility(Cell,Y,Faces,Set,CellInput);
+        g=g+gSC;
     end
     
     %%  Substrate 

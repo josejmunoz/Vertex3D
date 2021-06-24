@@ -139,7 +139,7 @@ while t<=Set.tend
         
         %% Analise cells
         [~, cellFeatures{numStep}] = Cell.exportTableWithCellFeatures(Y, numStep, Faces, Set);
-        writetable(vertcat(cellFeatures{:}), strcat(Set.OutputFolder,Esc,'Analysis',Esc,'cellFeatures.csv'))
+        writetable(vertcat(cellFeatures{:}), strcat(Set.OutputFolder,Esc,'Analysis',Esc,'cellFeatures_', num2str(Set.iIncr),'_', num2str(t) ,'_.csv'))
         
         %% Update energies
         EnergyS(numStep)=Energy.Es;

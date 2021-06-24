@@ -42,7 +42,8 @@ for numCell = 1:ncell
         if edgeLocation(numEdge) == 3 % Apical purseString
             C = Set.cPurseString;
         elseif edgeLocation(numEdge) == 1 %lateralCables
-            C = Set.cLateralCables;
+            %C = Set.cLateralCables;
+            C = 0;
         else
             C = 0;
         end

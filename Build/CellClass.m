@@ -377,6 +377,23 @@ classdef CellClass
                 obj.EdgeLocation{numCell} = lateralEdges + 3*apicalEdges + 2*basalEdges;
                 
             end
+            
+            % Contractility only applied to edges shared by 1 debris cell
+            % and 2 regular cells
+            for numCell = 1:obj.n
+                if obj.DebrisCells(numCell)
+                    currentEdges = obj.Cv{numCell}(obj.EdgeLocation{numCell} == 1, :);
+                    currentEdges_sorted = sort(currentEdges, 2);
+                    repatedEdges = zeros(size(currentEdges, 1), 1);
+                    for numCellAdjacent = 1:obj.n
+                        if obj.DebrisCells(numCellAdjacent) == 0
+                            currentEdgesAdjacent = sort(obj.Cv{numCellAdjacent}(obj.EdgeLocation{numCellAdjacent} == 1, :), 2);
+                            repatedEdges = double(ismember(currentEdges_sorted, currentEdgesAdjacent, 'rows')) + repatedEdges;
+                        end
+                    end
+                    obj.EdgeLocation{numCell}(obj.EdgeLocation{numCell} == 1 & ismember(obj.Cv{numCell}, currentEdges(repatedEdges == 1, :), 'rows')) = 0;
+                end
+            end
         end
     end
 end

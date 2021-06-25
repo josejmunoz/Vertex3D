@@ -148,7 +148,7 @@ X(:,2)=X(:,2)-mean(X(:,2));
 X(:,3)=X(:,3)-mean(X(:,3));
 
 %% Check order of tetrahedrons
-[Twg] = CheckTetrahedronOrder(Twg, X);
+%[Twg] = CheckTetrahedronOrder(Twg, X);
 
 %% Create vertices Y
 %Y_new=GetYFromX(X,XgID,Twg,cellHeight/2);

@@ -29,6 +29,12 @@ for numCell = 1:ncell
     
     contractileForcesOfCell = zeros(size(edgeVertices, 1), 1);
     
+    if Set.Sparse > 0
+        ge=sparse(size(g, 1), 1); % Local cell residual
+    else
+        ge=zeros(size(g, 1), 1);
+    end
+    
     for numEdge = 1:length(edgeLengths)
         y_1 = Y.DataRow(edgeVertices(numEdge, 1), :);
         
@@ -53,7 +59,31 @@ for numCell = 1:ncell
         
         %% Calculate residual g
         g_current = computeGContractility(l_i0, l_i, y_1, y_2, C, Set);
-        g = Assembleg(g, g_current, edgeVertices(numEdge, :));
+        ge = Assembleg(ge, g_current, edgeVertices(numEdge, :));
+ 
+%         K_current = computeKContractility(l_i0, l_i, y_1, y_2, C, Set);
+%         delta=1e-6;
+%         dim = 3;
+%         for i=1:2
+%             for j=1:dim
+%                 if i == 1
+%                     y_1(j) = y_1(j) + delta;
+%                 else
+%                     y_2(j) = y_2(j) + delta;
+%                 end
+%                 gB = computeGContractility(l_i0, l_i, y_1, y_2, C, Set);
+%                 col=(i-1)*dim+j;
+%                 KB(:,col)=(gB-g_current)/delta;
+%                 
+%                 
+%                 if i == 1
+%                     y_1(j) = y_1(j) - delta;
+%                 else
+%                     y_2(j) = y_2(j) - delta;
+%                 end
+%             end
+%         end
+%         norm(KB - K_current)
         
         %% Save contractile forces (g) to output
         contractileForcesOfCell(numEdge, 1) = norm(g_current(1:3));
@@ -69,10 +99,13 @@ for numCell = 1:ncell
                 K = AssembleK(K, K_current, edgeVertices(numEdge, :));
             end
 
-            %% Calculate energy
-            Energy = Energy + computeEnergyContractility(l_i0, l_i, C, Set);
         end
     end
+    
+    g = g + ge;
+
+    %% Calculate energy
+    Energy = Energy + computeEnergyContractility(l_i0, l_i, C, Set);
     
     Cell.ContractileForces{numCell} = contractileForcesOfCell;
 end

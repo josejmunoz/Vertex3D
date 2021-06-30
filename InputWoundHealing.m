@@ -23,7 +23,7 @@ Set.lambdaV_Debris=0.01;
 % Set.SurfaceType=4 : Surface-Energy based on the whole cell area differential adhsion
 Set.SurfaceType=4;
 % external 
-Set.lambdaS1=1;
+Set.lambdaS1=2;
 % Cell-Cell 
 Set.lambdaS2=0.1;
 % Cell-substrate
@@ -31,8 +31,8 @@ Set.lambdaS3=Set.lambdaS1;
 
 %---------- In plane elasticity
 Set.InPlaneElasticity = true;
-Set.mu_bulk = 15;
-Set.lambda_bulk = Set.mu_bulk/10;
+Set.mu_bulk = 100; % Deformation restriction
+Set.lambda_bulk = 200; %Volume restriction
 
 %---------- EnergyBarrier
 Set.EnergyBarrier=true;
@@ -81,7 +81,10 @@ Set.TInitAblation = 1;
 Set.TEndAblation = 5;
 
 %% Contractility
-Set.Contractility = false;
+% 0: No contractility
+% 1: Lateral cables end-to-end
+% 2: Lateral surface contractility
+Set.Contractility = 0; 
 
 Set.cPurseString = 0;
 Set.Contractility_Variability_PurseString = ([1 1 2.5 2] - 1) * Set.cPurseString;
@@ -92,7 +95,7 @@ Set.Contractility_Variability_LateralCables = ([0.5 1.4 1.4] - 0.5) * Set.cLater
 Set.Contractility_TimeVariability_LateralCables = [0 16 60]/60*(Set.TEndAblation - Set.TInitAblation);
 
 %% Execution parameters
-Set.OutputFolder = strcat('Result/cellHeight_', num2str(Set.CellHeight),'_cPurseString_', num2str(Set.cPurseString), '_cLateralCables_', num2str(Set.cLateralCables), '_lambdaV_', num2str(Set.lambdaV), '_lambdaS1_', num2str(Set.lambdaS1),'_lambda_S2_', num2str(Set.lambdaS2), '_KSubstrate_', num2str(Set.kSubstrate),'_Remodelling_', num2str(Set.Remodelling),'_confinedXYZ_OuterVertices_NCells_', num2str(Set.TotalCells), '_viscosity_', num2str(Set.nu), '_elasticity_mu_', num2str(Set.mu_bulk), '_elasticity_lambda_', num2str(Set.lambda_bulk));
+Set.OutputFolder = strcat('Result/cellHeight_', num2str(Set.CellHeight),'_typeOfContractility_', num2str(Set.Contractility),'_cPurseString_', num2str(Set.cPurseString), '_cLateralCables_', num2str(Set.cLateralCables), '_lambdaV_', num2str(Set.lambdaV), '_lambdaS1_', num2str(Set.lambdaS1),'_lambda_S2_', num2str(Set.lambdaS2), '_KSubstrate_', num2str(Set.kSubstrate),'_Remodelling_', num2str(Set.Remodelling),'_confinedXYZ_OuterVertices_NCells_', num2str(Set.TotalCells), '_viscosity_', num2str(Set.nu), '_elasticity_mu_', num2str(Set.mu_bulk), '_elasticity_lambda_', num2str(Set.lambda_bulk));
 Set.diary = true;
 Set.MaxIter = 400;
 Set.tol=1e-10;

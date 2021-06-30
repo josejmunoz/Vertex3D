@@ -90,7 +90,7 @@ while t<=Set.tend
         Set.Nincr = Set.tend * 10000;
         Set.dt0=Set.tend/Set.Nincr;
         Set.dt=Set.dt0;
-        for numCycle = 1:10
+        for numCycle = 1:2
             [Cell, Y, Dofs] = applyBoundaryCondition(t, Y, Set, Cell, Dofs);
             [g,K,Cell,Energy]=KgGlobal(Cell, Faces, SCn, Y0, Y, Yn, Set, CellInput);
             % Run a very small step to achieve a bit of force equilibrium
@@ -215,6 +215,3 @@ end
 %%
 fprintf('Done!!\n')
 diary off
-
-
-

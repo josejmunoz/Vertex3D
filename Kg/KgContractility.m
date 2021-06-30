@@ -107,7 +107,7 @@ for numCell = 1:ncell
     g = g + ge;
 
     %% Calculate energy
-    Energy = Energy + computeEnergyContractility(l_i0, C);
+    Energy = Energy + computeEnergyContractility(l_i0, norm(y_1 - y_2), C);
     
     Cell.ContractileForces{numCell} = contractileForcesOfCell;
 end
@@ -144,9 +144,8 @@ gContractility(4:6, 1) = -gContractility(1:3);
 
 end
 
-function [energyConctratility] = computeEnergyContractility(l_i0, C)
+function [energyConctratility] = computeEnergyContractility(l_i0, l_i, C)
 
-l_i = norm(y_1 - y_2);
 energyConctratility = (C / l_i0) * l_i;
 
 end

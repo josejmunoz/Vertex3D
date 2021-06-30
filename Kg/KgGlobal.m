@@ -101,15 +101,29 @@ if nargout>1
     end
     
     
-    %%  Contractility     
-    if Set.Contractility && (Set.cPurseString > 0 || Set.cLateralCables > 0) && any(Cell.DebrisCells)
-        [gC,KC,Cell,Energy.Ec]=KgContractility(Cell,Y,Set);
-         K=K+KC; g=g+gC;
-    end
-    
-    if Set.cLateralCables > 0 && any(Cell.DebrisCells)
-        [gSC,KSC,Cell,Energy.Es2] = KgSurfaceCellBasedContractility(Cell,Y,Faces,Set,CellInput);
-         K=K+KSC; g=g+gSC;
+    %%  Contractility
+    if Set.Contractility > 0 && any(Cell.DebrisCells)
+        if Set.Contractility == 1
+            if Set.cPurseString > 0 || Set.cLateralCables > 0
+                [gC,KC,Cell,Energy.Ec]=KgContractility(Cell,Y,Set);
+                K=K+KC; g=g+gC;
+            end
+        else % Surface contractility
+            if Set.cPurseString > 0
+                cLateralCables = Set.cLateralCables;
+                Set.cLateralCables = 0;
+                
+                [gC,KC,Cell,Energy.Ec]=KgContractility(Cell,Y,Set);
+                K=K+KC; g=g+gC;
+                
+                Set.cLateralCables = cLateralCables;
+            end
+            
+            if Set.cLateralCables > 0
+                [gSC,KSC,Cell,Energy.Ec] = KgSurfaceCellBasedContractility(Cell,Y,Faces,Set,CellInput);
+                K=K+KSC; g=g+gSC;
+            end
+        end
     end
     
     %%  Substrate 
@@ -177,17 +191,29 @@ else
         g=g-gp;
     end
     
-    %%  Contractility 
-    if Set.Contractility && (Set.cPurseString > 0 || Set.cLateralCables > 0)
-        [gc]=KgContractility(Cell,Y,Set);
-        g=g+gc;
-    end
-    
-        
-    if Set.cLateralCables > 0 && any(Cell.DebrisCells)
-        [gSC] = KgSurfaceCellBasedContractility(Cell,Y,Faces,Set,CellInput);
-        g=g+gSC;
-    end
+    %%  Contractility
+    if Set.Contractility > 0 && any(Cell.DebrisCells)
+        if Set.Contractility == 1
+            if Set.cPurseString > 0 || Set.cLateralCables > 0
+                [gc]=KgContractility(Cell,Y,Set);
+                g=g+gc;
+            end
+        else % Surface contractility
+            if Set.cPurseString > 0
+                cLateralCables = Set.cLateralCables;
+                Set.cLateralCables = 0;
+                [gc]=KgContractility(Cell,Y,Set);
+                g=g+gc;
+                
+                Set.cLateralCables = cLateralCables;
+            end
+            
+            if Set.cLateralCables > 0
+                [gSC] = KgSurfaceCellBasedContractility(Cell,Y,Faces,Set,CellInput);
+                g=g+gSC;
+            end
+        end
+    end    
     
     %%  Substrate 
     if Set.Substrate && Set.kSubstrate > 0

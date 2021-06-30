@@ -48,8 +48,7 @@ for numCell = 1:ncell
         if edgeLocation(numEdge) == 3 % Apical purseString
             C = Set.cPurseString;
         elseif edgeLocation(numEdge) == 1 %lateralCables
-            %C = Set.cLateralCables;
-            C = 0;
+            C = Set.cLateralCables;
         else
             C = 0;
         end
@@ -71,6 +70,7 @@ for numCell = 1:ncell
 %                 else
 %                     y_2(j) = y_2(j) + delta;
 %                 end
+%                 
 %                 gB = computeGContractility(l_i0, l_i, y_1, y_2, C, Set);
 %                 col=(i-1)*dim+j;
 %                 KB(:,col)=(gB-g_current)/delta;
@@ -83,8 +83,10 @@ for numCell = 1:ncell
 %                 end
 %             end
 %         end
-%         norm(KB - K_current)
-        
+%         if C > -0
+%             norm(KB - K_current)
+%         end
+%         K_current = KB;
         %% Save contractile forces (g) to output
         contractileForcesOfCell(numEdge, 1) = norm(g_current(1:3));
         
@@ -122,7 +124,9 @@ function [kContractility] = computeKContractility(l_i0, l_i, y_1, y_2, C, Set)
 
 dim = 3;
 
-kContractility(1:3, 1:3) = -(C / l_i0) *  ((1 / l_i^2) * (y_1 - y_2)) .* ((1/l_i) * (y_1 - y_2)') + ((C / l_i0) * eye(dim));
+l_i = norm(y_1 - y_2);
+
+kContractility(1:3, 1:3) = -(C / l_i0) *  (1 / l_i^3 * (y_1 - y_2)' * (y_1 - y_2)) + ((C / l_i0) * eye(dim))/l_i;
 kContractility(1:3, 4:6) = -kContractility(1:3, 1:3);
 kContractility(4:6, 1:3) = -kContractility(1:3, 1:3);
 kContractility(4:6, 4:6) = kContractility(1:3, 1:3);
@@ -132,6 +136,8 @@ end
 function [gContractility] = computeGContractility(l_i0, l_i, y_1, y_2, C, Set)
 %COMPUTEGCONTRACTILITY Summary of this function goes here
 %   Detailed explanation goes here
+
+l_i = norm(y_1 - y_2);
 
 gContractility(1:3, 1) = (C / l_i0) * (y_1 - y_2) / l_i;
 gContractility(4:6, 1) = -gContractility(1:3);

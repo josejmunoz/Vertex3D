@@ -16,6 +16,8 @@ forceToDisplay_All = vertcat(Cell.ContractileForces{:});
 
 CreateVtkBar(vertices, edgeConnections_All, forceToDisplay_All, folder, 'AllEdges_','contractility',TimeStep)
 
+CreateVtkPoint(Cell.Centre_n, 1:Cell.n, pdist2(Cell.Centre_n, Cell.Centre0), folder, '_MechanicalNuclei_',TimeStep, 'DistanceFromOrigin');
+
 if Set.Substrate
     [uniqueVerticesIds, indicesOfOldArray] = unique(vertcat(Cell.BasalVertices{:}));
     allVerticesValues = vertcat(Cell.SubstrateForce{:});
@@ -23,7 +25,7 @@ if Set.Substrate
     
     uniqueVerticesIds(uniqueVerticesIds<0) = abs(uniqueVerticesIds(uniqueVerticesIds<0)) + size(Y.DataRow, 1);
     
-    CreateVtkPoint(vertices, uniqueVerticesIds, uniqueVerticesValues, folder, '_Basal',TimeStep);
+    CreateVtkPoint(vertices, uniqueVerticesIds, uniqueVerticesValues, folder, '_Basal',TimeStep, 'SubstrateSpring');
 end
 
 

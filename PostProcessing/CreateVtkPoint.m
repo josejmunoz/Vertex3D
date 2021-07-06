@@ -1,4 +1,4 @@
-function CreateVtkPoint(allVertices, uniqueVerticesIds, uniqueVerticesValues, NameFile, AdditionalInfo, Index)
+function CreateVtkPoint(allVertices, uniqueVerticesIds, uniqueVerticesValues, NameFile, AdditionalInfo, Index, InfoDisplayed)
 % Prints output for owunded and unwounded cells
 % INPUT:
 % step = step number
@@ -47,7 +47,7 @@ for numPoint = 1:length(uniqueVerticesIds)
 end
 
 fprintf(file,'%s %d \n','CELL_DATA', length(uniqueVerticesIds));
-fprintf(file,'%s \n',strcat('SCALARS SubstrateSpring double '));
+fprintf(file,'%s \n',strcat('SCALARS ', ,' double '));
 fprintf(file,'%s \n','LOOKUP_TABLE default');
 for i=uniqueVerticesValues'
     fprintf(file,'%f\n',i);

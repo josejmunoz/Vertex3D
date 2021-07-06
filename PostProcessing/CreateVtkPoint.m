@@ -47,7 +47,7 @@ for numPoint = 1:length(uniqueVerticesIds)
 end
 
 fprintf(file,'%s %d \n','CELL_DATA', length(uniqueVerticesIds));
-fprintf(file,'%s \n',strcat('SCALARS ', InfoDisplayed,' double '));
+fprintf(file,'SCALARS  %s double\n', InfoDisplayed);
 fprintf(file,'%s \n','LOOKUP_TABLE default');
 for i=uniqueVerticesValues'
     fprintf(file,'%f\n',i);

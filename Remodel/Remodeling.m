@@ -20,10 +20,10 @@ Vnew=DynamicArray(Y.n,1);
 %% Update
 Set.NumMainV=Y.n;
 Set.NumAuxV=Cell.FaceCentres.n;
-Set.NumTotalV=Set.NumMainV+Set.NumAuxV;
+Set.NumCellCentroid = Cell.n;
+Set.NumTotalV=Set.NumMainV + Set.NumAuxV + Set.NumCellCentroid;
 Cell.AssembleAll=true;
-[Cell]=ComputeCellVolume(Cell,Y);
-Cell = Cell.computeEdgeLengths(Y);
+
 for ii=1:Cell.n
     Cell.SAreaTrin{ii}=Cell.SAreaTri{ii};
     Cell.EdgeLengthsn{ii}=Cell.EdgeLengths{ii};

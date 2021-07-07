@@ -24,7 +24,6 @@ Faces=Faces.ComputeEnergy(Set);
 %% Update
 Set.NumMainV=Y.n;
 Set.NumAuxV=Cell.FaceCentres.n;
-Set.NumCellCentroid = Cell.n;
 Set.NumTotalV=Set.NumMainV + Set.NumAuxV + Set.NumCellCentroid;
 Cell.AssembleAll=true;
 

@@ -16,7 +16,7 @@ if ~flag
     Faces=Faces.CheckInteriorFaces(XgID);
     Set.NumMainV=Y.n;
     Set.NumAuxV=Cell.FaceCentres.n;
-    Set.NumTotalV=Set.NumMainV+Set.NumAuxV;
+    Set.NumTotalV=Set.NumMainV+Set.NumAuxV+Set.NumCellCentroid;
     [Cell]=ComputeCellVolume(Cell,Y);
     Cell = Cell.computeEdgeLengths(Y);
     for jj=1:Cell.n

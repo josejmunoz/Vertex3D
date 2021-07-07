@@ -84,7 +84,7 @@ for ig=1:ng
 %         throw(ME)
     end
     
-    if Je<0
+    if NeoH ~= 2 && Je<0
         error('Tetrahedral Element orientation need to be swapped')
     end
     

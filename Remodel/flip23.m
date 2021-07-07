@@ -1,4 +1,4 @@
-function [Cell,Y,Yn,SCn,T,X,Faces,Dofs,Set, Vnew] = flip23(Cell,Faces,Y,Yn,SCn,T,X,Set,Dofs,XgID,CellInput, Vnew)
+function [Cell,Y,Yn,SCn,T,X,Faces,Dofs,Set, Vnew] = flip23(Cell,Faces,Y0, Y,Yn,SCn,T,X,Set,Dofs,XgID,CellInput, Vnew)
 %FLIP23 Summary of this function goes here
 %   Detailed explanation goes here
 %% loop over the rest of faces (Flip23)
@@ -10,18 +10,16 @@ i=FacesList(ii);
 ListIsNotEmpty=true;
 DidNotConverge=false;
 while ListIsNotEmpty 
-    Faces=Faces.ComputeAreaTri(Y.DataRow,Cell.FaceCentres.DataRow);
-    Faces=Faces.ComputeEnergy(Set);
     % Check if the face need to be remodel
-        % Discard New triangles by setting Energy=0
-        EnergyTri=Faces.EnergyTri{i};
-        for iii=1:length(EnergyTri)
-            if ismember(Faces.Vertices{i}(iii),Vnew.Data) && iii==1
-                EnergyTri([1 end])=0;
-            elseif ismember(Faces.Vertices{i}(iii),Vnew.Data)  
-                EnergyTri([iii-1 iii])=0;
-            end 
+    % Discard New triangles by setting Energy=0
+    EnergyTri=Faces.EnergyTri{i};
+    for iii=1:length(EnergyTri)
+        if ismember(Faces.Vertices{i}(iii),Vnew.Data) && iii==1
+            EnergyTri([1 end])=0;
+        elseif ismember(Faces.Vertices{i}(iii),Vnew.Data)  
+            EnergyTri([iii-1 iii])=0;
         end 
+    end 
  
     if ~Faces.NotEmpty(i)|| any(ismember(Faces.Vertices{i},Dofs.PrescribedY))...
             ||  max(EnergyTri)<Set.RemodelTol || Faces.V3(i)
@@ -188,7 +186,7 @@ while ListIsNotEmpty
         if ~flag
             [Dofs]=UpdateDofs(Dofs,oV,nV,[],nC,Y,V3);
             Cell.RemodelledVertices=nV;
-            [Cell,Faces,Y,Yn,SCn,X,Dofs,Set,~,DidNotConverge]=SolveRemodelingStep(Cell,Faces,Y,X,Dofs,Set,Yn,SCn,CellInput);  
+            [Cell,Faces,Y,Yn,SCn,X,Dofs,Set,~,DidNotConverge]=SolveRemodelingStep(Cell,Faces,Y0,Y,X,Dofs,Set,Yn,SCn,CellInput);  
         else
             fprintf('=>> Flip23 is is not compatible rejected !! \n');
         end

@@ -1,4 +1,4 @@
-function [Cell,Faces,Y,Yn,SCn,X,Dofs,Set,Energy,DidNotConverge]=SolveRemodelingStep(Cell,Faces,Y,X,Dofs,Set,Yn,SCn,CellInput)
+function [Cell,Faces,Y,Yn,SCn,X,Dofs,Set,Energy,DidNotConverge]=SolveRemodelingStep(Cell,Faces,Y0, Y,X,Dofs,Set,Yn,SCn,CellInput)
 
 % This function solves local problem to obtain the position of the newly
 % remodeled vertices with prescribed settings (Set.***_LP), e.g.
@@ -79,7 +79,7 @@ while(1)
     y=reshape(Yt',Set.NumTotalV*3,1);
     yn=reshape(Ytn',Set.NumTotalV*3,1);
 
-    [g,K,Cell,Energy]=KgGlobal(Cell,Faces,SCn,Y, Yn,y,yn,Set,CellInput);
+    [g,K,Cell,Energy] = KgGlobal(Cell, Faces, SCn, Y0, Y, Yn, Set, CellInput);
     
     dy=zeros(size(y));
     dyr=norm(dy(Dofs.Remodel));
@@ -108,7 +108,7 @@ while(1)
             Set.nu = max(Set.nu/2,Set.nu0);
         end
         
-        [g,K,Cell,Energy]=KgGlobal(Cell,Faces,SCn,Y,Yn, y,yn,Set,CellInput);        
+        [g,K,Cell,Energy] = KgGlobal(Cell, Faces, SCn, Y0, Y, Yn, Set, CellInput);       
         
         dyr=norm(dy(Dofs.Remodel));
         gr=norm(g(Dofs.Remodel));

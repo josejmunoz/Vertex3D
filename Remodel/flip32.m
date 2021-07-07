@@ -1,4 +1,4 @@
-function [Cell,Y,Yn,SCn,T,X,Faces,Dofs,Set, Vnew] = flip32(Cell,Faces,Y,Yn,SCn,T,X,Set,Dofs,XgID,CellInput, Vnew)
+function [Cell,Y,Yn,SCn,T,X,Faces,Dofs,Set, Vnew] = flip32(Cell,Faces,Y0, Y,Yn,SCn,T,X,Set,Dofs,XgID,CellInput, Vnew)
 %FLIP32 Summary of this function goes here
 %   Detailed explanation goes here
 %% loop over 3-vertices-faces (Flip32)
@@ -6,8 +6,6 @@ function [Cell,Y,Yn,SCn,T,X,Faces,Dofs,Set, Vnew] = flip32(Cell,Faces,Y,Yn,SCn,T
 DidNotConverge = false;
 
 for i=1:Faces.n
-    Faces=Faces.ComputeAreaTri(Y.DataRow,Cell.FaceCentres.DataRow);
-    Faces=Faces.ComputeEnergy(Set);
     if ~Faces.NotEmpty(i) || any(ismember(Faces.Vertices{i},Vnew.Data))...
             || any(ismember(Faces.Vertices{i},Dofs.PrescribedY)) || ~Faces.V3(i)...
             ||  max(Faces.EnergyTri{i})<Set.RemodelTol
@@ -53,7 +51,7 @@ for i=1:Faces.n
         
         [Dofs]=UpdateDofs(Dofs,oV,nV,i,[],Y,V3);
         Cell.RemodelledVertices=nV;
-        [Cell,Faces,Y,Yn,SCn,X,Dofs,Set,~,DidNotConverge]=SolveRemodelingStep(Cell,Faces,Y,X,Dofs,Set,Yn,SCn,CellInput);
+        [Cell,Faces,Y,Yn,SCn,X,Dofs,Set,~,DidNotConverge]=SolveRemodelingStep(Cell,Faces,Y0,Y,X,Dofs,Set,Yn,SCn,CellInput);
         Yn.DataRow(nV,:)=Y.DataRow(nV,:);
     else
         error('check Flip32 flag');

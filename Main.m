@@ -80,7 +80,7 @@ while t<=Set.tend
 
     %% ----------- Remodel--------------------------------------------------
     if Set.Remodelling && Set.ReModel && abs(t-tr)>=Set.RemodelingFrequency
-        [Cell,Y,Yn,SCn,tetrahedra,X,Faces,Dofs,Cn,Set]=Remodeling(Cell,Faces,Y,Yn,SCn,tetrahedra,X,Set,Dofs,Energy,XgID,CellInput);
+        [Cell,Y,Yn,SCn,tetrahedra,X,Faces,Dofs,Cn,Set]=Remodeling(Cell,Faces,Y,Yn,SCn,tetrahedra,X,Set,Dofs,Y0,XgID,CellInput);
         Set.ReModel=false;
         tr=t;
     end

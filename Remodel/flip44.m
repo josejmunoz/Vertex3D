@@ -1,11 +1,9 @@
-function [Cell,Y,Yn,SCn,T,X,Faces,Dofs,Set, Vnew] = flip44(Cell,Faces,Y,Yn,SCn,T,X,Set,Dofs,XgID,CellInput, Vnew)
+function [Cell,Y,Yn,SCn,T,X,Faces,Dofs,Set, Vnew] = flip44(Cell,Faces,Y0, Y,Yn,SCn,T,X,Set,Dofs,XgID,CellInput, Vnew)
 %flip44 Summary of this function goes here
 %   Detailed explanation goes here
 %% loop over 4-vertices-faces (Flip44)
 DidNotConverge=false;
 for i=1:Faces.n
-    Faces=Faces.ComputeAreaTri(Y.DataRow,Cell.FaceCentres.DataRow);
-    Faces=Faces.ComputeEnergy(Set);
     if ~Faces.NotEmpty(i) || any(ismember(Faces.Vertices{i},Vnew.Data))...
             || any(ismember(Faces.Vertices{i},Dofs.PrescribedY)) || ~Faces.V4(i)...
             ||  (min(Faces.EnergyTri{i})<Set.RemodelTol*1e-4 ||  max(Faces.EnergyTri{i})<Set.RemodelTol)
@@ -62,7 +60,7 @@ for i=1:Faces.n
         [Dofs]=UpdateDofs(Dofs,oV,nV,i,nC,Y,V3);
 
         Cell.RemodelledVertices=[nV;nC+Y.n];
-        [Cell,Faces,Y,Yn,SCn,X,Dofs,Set,~,DidNotConverge]=SolveRemodelingStep(Cell,Faces,Y,X,Dofs,Set,Yn,SCn,CellInput);
+        [Cell,Faces,Y,Yn,SCn,X,Dofs,Set,~,DidNotConverge]=SolveRemodelingStep(Cell,Faces,Y0,Y,X,Dofs,Set,Yn,SCn,CellInput);
         Yn.DataRow(nV,:)=Y.DataRow(nV,:);
     else
         error('check Flip44 flag');

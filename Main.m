@@ -29,7 +29,7 @@ else
     inputImage = 1;
 end
 
-if Set.VTK, PostProcessingVTK(X,Y,tetrahedra.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),0,Set); end
+if Set.VTK, PostProcessingVTK(X,Y,tetrahedra.Data,Cn,Cell, Faces,strcat(Set.OutputFolder,Esc,'ResultVTK'),0,Set); end
 fprintf('Model Initialized... \n');
 
 %% Initialize Data
@@ -122,7 +122,7 @@ while t<=Set.tend
     fprintf('Step: %i - cPurseString: %d, cLateralCables: %d\n', numStep, Set.cPurseString, Set.cLateralCables);
     [g,K,Cell,Energy]=KgGlobal(Cell, Faces, SCn, Y0, Y, Yn, Set, CellInput);
     
-    if Set.VTK, PostProcessingVTK(X,Y,tetrahedra.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end    
+    if Set.VTK, PostProcessingVTK(X,Y,tetrahedra.Data,Cn,Cell, Faces,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end    
     
     %% Newton-raphson iterations 
     [g,K,Cell, Y, Energy, Set, gr, dyr, dy] = newtonRaphson(Set, Cell, Faces, SCn, K, g, Dofs, Y, Y0, Yn, CellInput, numStep, t);
@@ -135,7 +135,7 @@ while t<=Set.tend
         [X]=GetXFromY(Cell,Faces,X,tetrahedra,Y,XgID,Set);
         
         %% Post processing
-        if Set.VTK, PostProcessingVTK(X,Y,tetrahedra.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end
+        if Set.VTK, PostProcessingVTK(X,Y,tetrahedra.Data,Cn,Cell, Faces,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end
         
         %% Analise cells
         [~, cellFeatures{numStep}] = Cell.exportTableWithCellFeatures(Y, numStep, Faces, Set);

@@ -94,9 +94,9 @@ fprintf(file,'%s \n','LOOKUP_TABLE default');
 %          fprintf(file,'%f\n', (Cell.SAreaTri{i}(t)-Cell.SAreaTrin{i}(t))/Cell.SAreaTrin{i}(t));
 %     end 
 % end
-for numFace = 1:Faces.n
-    for t=1:length(Faces.EnergyTri{numFace})
-        fprintf(file,'%f\n', Faces.EnergyTri{numFace}(t));
+for i=1:ncell
+    for f=1:Cell.Faces{i}.nFaces
+        fprintf(file,'%3.35f\n', Faces.EnergyTri{Cell.Faces{i}.FaceCentresID(f)});
     end
 end
 

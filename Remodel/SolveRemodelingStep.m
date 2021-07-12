@@ -42,14 +42,6 @@ Set.nu=Set.nu_LP_Inital;
 % Set.Bending0=Set.Bending;
 % Set.lambdaBend0=Set.lambdaBend;
 % Set.BendingAreaDependent0=Set.BendingAreaDependent;
-% 
-% 
-% % Set.lambdaV=0.5;
-% Set.nu=1;
-% 
-% Set.Bending=false;
-% Set.lambdaBend=.05;
-% Set.BendingAreaDependent=false;
 
 Set.MaxIter=Set.MaxIter0/2;
 

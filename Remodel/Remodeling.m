@@ -12,7 +12,6 @@ function [Cell,Y,Yn,SCn,T,X,Faces,Dofs,Cn,Set]=Remodeling(Cell,Faces,Y,Yn,SCn,T,
 Vnew=DynamicArray(Y.n,1);
 
 Faces=Faces.ComputeAreaTri(Y.DataRow,Cell.FaceCentres.DataRow);
-Faces=Faces.ComputePerimTri(Y.DataRow,Cell.FaceCentres.DataRow);
 Faces=Faces.ComputeEnergy(Set);
 
 [Cell,Y,Yn,SCn,T,X,Faces,Dofs,Set, Vnew] = flip44(Cell,Faces,Y0, Y,Yn,SCn,T,X,Set,Dofs,XgID,CellInput, Vnew);

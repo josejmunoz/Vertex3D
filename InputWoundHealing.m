@@ -34,7 +34,7 @@ Set.cLineTension = 1;
 
 %---------- In plane elasticity
 Set.InPlaneElasticity = true;
-Set.mu_bulk = 2000; % Deformation restriction
+Set.mu_bulk = 3000; % Deformation restriction
 Set.lambda_bulk = 2000; %Volume restriction
 
 %--------- Bending 
@@ -66,8 +66,8 @@ Set.Nincr=1000;
 
 
 %% Remodeling
-Set.Remodelling=true;
-Set.RemodelTol=.5e-6;
+Set.Remodelling=false;
+Set.RemodelTol=.5e-2;
 Set.RemodelingFrequency=Set.tend/Set.Nincr;
 
 %---------- EnergyBarrier
@@ -95,7 +95,7 @@ Set.cPurseString = 3;
 Set.Contractility_Variability_PurseString = ([1 1 2.5 2] - 1) * Set.cPurseString;
 Set.Contractility_TimeVariability_PurseString = [0 7 16 60]/60*(Set.TEndAblation - Set.TInitAblation);
 
-Set.cLateralCables = 0.5;
+Set.cLateralCables = 1.5;
 Set.Contractility_Variability_LateralCables = ([0.5 1.4 1.4] - 0.5) * Set.cLateralCables;
 Set.Contractility_TimeVariability_LateralCables = [0 16 60]/60*(Set.TEndAblation - Set.TInitAblation);
 

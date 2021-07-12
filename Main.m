@@ -85,28 +85,28 @@ while t<=Set.tend
         tr=t;
     end
     
-    if t == 0 && inputImage
-        Nincr_inital = Set.Nincr;
-        Set.Nincr = Set.tend * 10000;
-        Set.dt0=Set.tend/Set.Nincr;
-        Set.dt=Set.dt0;
-        for numCycle = 1:2
-            [Cell, Y, Dofs] = applyBoundaryCondition(t, Y, Set, Cell, Dofs);
-            [g,K,Cell,Energy]=KgGlobal(Cell, Faces, SCn, Y0, Y, Yn, Set, CellInput);
-            % Run a very small step to achieve a bit of force equilibrium
-            [g,K,Cell, Y, Energy, Set, gr, dyr] = newtonRaphson(Set, Cell, Faces, SCn, K, g, Dofs, Y, Y0, Yn, CellInput, 0, t);
-            
-            %Update Nodes (X) from Vertices (Y)
-            [X]=GetXFromY(Cell,Faces,X,tetrahedra,Y,XgID,Set);
-            Yn = Y;
-            SCn = Cell.FaceCentres;
-            Cell.Centre_n = Cell.Centre;
-        end
-        Set.Nincr = Nincr_inital;
-        Set.dt0=Set.tend/Set.Nincr;
-        Set.dt=Set.dt0;
-        inputImage = 0;
-    end
+%     if t == 0 && inputImage
+%         Nincr_inital = Set.Nincr;
+%         Set.Nincr = Set.tend * 10000;
+%         Set.dt0=Set.tend/Set.Nincr;
+%         Set.dt=Set.dt0;
+%         for numCycle = 1:2
+%             [Cell, Y, Dofs] = applyBoundaryCondition(t, Y, Set, Cell, Dofs);
+%             [g,K,Cell,Energy]=KgGlobal(Cell, Faces, SCn, Y0, Y, Yn, Set, CellInput);
+%             % Run a very small step to achieve a bit of force equilibrium
+%             [g,K,Cell, Y, Energy, Set, gr, dyr] = newtonRaphson(Set, Cell, Faces, SCn, K, g, Dofs, Y, Y0, Yn, CellInput, 0, t);
+%             
+%             %Update Nodes (X) from Vertices (Y)
+%             [X]=GetXFromY(Cell,Faces,X,tetrahedra,Y,XgID,Set);
+%             Yn = Y;
+%             SCn = Cell.FaceCentres;
+%             Cell.Centre_n = Cell.Centre;
+%         end
+%         Set.Nincr = Nincr_inital;
+%         Set.dt0=Set.tend/Set.Nincr;
+%         Set.dt=Set.dt0;
+%         inputImage = 0;
+%     end
     
     %   Copy configuration in case the current step does not converge  and need
     %   to be repeated
@@ -144,7 +144,7 @@ while t<=Set.tend
         %% Update energies
         EnergyS(numStep)=Energy.Es;
         EnergyV(numStep)=Energy.Ev;
-        EnergyB(numStep)=Energy.EB;
+        %EnergyB(numStep)=Energy.EB;
         if Set.Bending 
             Energyb(numStep)=Energy.Eb;
         end

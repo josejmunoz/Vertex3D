@@ -21,11 +21,8 @@ for numCell = 1:ncell
     edgeLengths = Cell.EdgeLengths{numCell};
     edgeLengths0_average = Cell.EdgeLengths0_average;
     
-    if Cell.DebrisCells(numCell)
-        edgeLocation = Cell.EdgeLocation{numCell};
-    else
-        edgeLocation = zeros(size(Cell.EdgeLocation{numCell}));
-    end
+    
+    edgeLocation = Cell.EdgeLocation{numCell};
     
     contractileForcesOfCell = zeros(size(edgeVertices, 1), 1);
     
@@ -45,9 +42,15 @@ for numCell = 1:ncell
             edgeVertices(numEdge, 2) = abs(edgeVertices(numEdge, 2)) + Set.NumMainV;
         end
         
-        if edgeLocation(numEdge) == 3 % Apical purseString
-            C = Set.cPurseString;
-        elseif edgeLocation(numEdge) == 1 %lateralCables
+        if edgeLocation(numEdge) == 3
+            if Cell.DebrisCells(numCell)
+                C = Set.cLineTension + Set.cPurseString;
+            else
+                C = Set.cLineTension;
+            end
+        elseif edgeLocation(numEdge) == 2
+            C = Set.cLineTension;
+        elseif edgeLocation(numEdge) == 1 && Cell.DebrisCells(numCell) %lateralCables
             C = Set.cLateralCables;
         else
             C = 0;

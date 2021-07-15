@@ -1,4 +1,4 @@
-function [g,K,Cell,Energy,gs,gv,gf,gB,gb]=KgGlobal(Cell, Faces, SCn, Y0, Y, Yn, Set, CellInput)
+function [g,K,Cell,Energy,gs,gv,gf,gB,gb]=KgGlobal(Cell, SCn, Y0, Y, Yn, Set, CellInput)
 % The residual g and Jacobian K of all energies
 
 %% Calculate basic information
@@ -18,9 +18,9 @@ if nargout>1
         [gs,Ks,Cell,Energy.Es]=KgSurfaceFaceBased(Cell,Y,Set);
     elseif Set.SurfaceType==4
         if Set.Parallel
-            [gs,Ks,Cell,Energy.Es]=KgSurfaceCellBasedAdhesionParallel(Cell,Y,Faces,Set,CellInput);
+            [gs,Ks,Cell,Energy.Es]=KgSurfaceCellBasedAdhesionParallel(Cell,Y,Set,CellInput);
         else
-            [gs,Ks,Cell,Energy.Es]=KgSurfaceCellBasedAdhesion(Cell,Y,Faces,Set,CellInput);
+            [gs,Ks,Cell,Energy.Es]=KgSurfaceCellBasedAdhesion(Cell,Y,Set,CellInput);
         end
     end
     
@@ -120,7 +120,7 @@ if nargout>1
             end
             
             if Set.cLateralCables > 0
-                [gSC,KSC,Cell,Energy.Ec] = KgSurfaceCellBasedContractility(Cell,Y,Faces,Set,CellInput);
+                [gSC,KSC,Cell,Energy.Ec] = KgSurfaceCellBasedContractility(Cell,Y,Set,CellInput);
                 K=K+KSC; g=g+gSC;
             end
         end
@@ -142,7 +142,7 @@ else
     elseif  Set.SurfaceType==2
         [gs]=KgSurfaceFaceBased(Cell,Y,Set);
     elseif  Set.SurfaceType==4
-        [gs]=KgSurfaceCellBasedAdhesion(Cell,Y,Faces,Set,CellInput);
+        [gs]=KgSurfaceCellBasedAdhesion(Cell,Y,Set,CellInput);
     end
     
     %% Volume Energy 
@@ -209,7 +209,7 @@ else
             end
             
             if Set.cLateralCables > 0
-                [gSC] = KgSurfaceCellBasedContractility(Cell,Y,Faces,Set,CellInput);
+                [gSC] = KgSurfaceCellBasedContractility(Cell,Y,Set,CellInput);
                 g=g+gSC;
             end
         end

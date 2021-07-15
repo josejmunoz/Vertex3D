@@ -1,4 +1,4 @@
-function [Dofs, Set]=GetDOFs(Y, Cell, Faces, Set, contrainBorderVertices)
+function [Dofs, Set]=GetDOFs(Y, Cell, Set, contrainBorderVertices)
 % Define free and constrained vertices:
 %   1) Vertices with y-coordinates > Set.VPrescribed are those to be prescribed (pulled)
 %   2) Vertices with y-coordinates < Set.VFixed are those to be fixed
@@ -53,7 +53,7 @@ else
 end
 
 freeIDS=1:Cell.FaceCentres.n;
-SdofD=3.*(kron(freeIDS(Faces.V3(1:Faces.n)),[1 1 1])-1)+kron(ones(1,length(freeIDS(Faces.V3(1:Faces.n)))),[1 2 3]);
+SdofD=3.*(kron(freeIDS(Cell.AllFaces.V3(1:Cell.AllFaces.n)),[1 1 1])-1)+kron(ones(1,length(freeIDS(Cell.AllFaces.V3(1:Cell.AllFaces.n)))),[1 2 3]);
 SdofC=3.*(kron(cIDS,[1 1 1])-1)+kron(ones(1,length(cIDS)),[1 2 3]);
 if Set.BC==1
     SdofP=3.*(kron(pIDS,[1 1 1])-1)+kron(ones(1,length(pIDS)),[1 2 3]);

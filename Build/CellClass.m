@@ -64,6 +64,8 @@ classdef CellClass
         %--------------------------------------------------------------------
         SArea0               %% - Initial\reference area of Cells   (Type=array-structure ,  Size=[NumCells1 ]):
         %--------------------------------------------------------------------
+        AllFaces
+        
         Faces                %% - Cell Faces (Type=cell-structure ,  Size={NumCells 1}):
         %     - Cell.Faces{i}.nFaces          -> number of faces of Cell i            (Type=scalar)
         %     - Cell.Faces{i}.FaceCentresID   -> The IDs of faces of Cell i           (Type=array-structure, Size=[Cell{i}.nFaces 1])
@@ -139,7 +141,7 @@ classdef CellClass
                 Cell.SAreaTrin=cell(Cell.n,1);
                 Cell.SAreaFace=cell(Cell.n,1);
                 Cell.SAreaFace0=cell(Cell.n,1);
-                Cell.Faces=cell(nC,1);
+                Cell.Faces=cell(nC, 1);
                 Cell.AssembleAll=true;
                 Cell.AssembleNodes=[];
                 Cell.RemodelledVertices=[];
@@ -159,6 +161,7 @@ classdef CellClass
                 Cell.BorderCells=false(nC, 1);
                 Cell.Centre = zeros(nC, 3);
                 Cell.Centre0 = zeros(nC, 3);
+                Cell.AllFaces = []; 
             end
         end
         
@@ -169,7 +172,32 @@ classdef CellClass
         function Cell = AblateCells(obj, cellsToRemove)
             obj.DebrisCells(ismember(obj.Int, cellsToRemove)) = true;
             Cell = obj;
-        end 
+        end
+        
+        function [obj, CellInput, XgID,nC,SCn,flag32, Dofs] = removeCell(obj, CellInput, XgID, T, Y, X, SCn, cellsToRemove, Set)
+            %REMOVECELLDEPENDINGVOL Summary of this function goes here
+            %   Detailed explanation goes here
+            
+            idsToRemove = obj.Int(cellsToRemove);
+            obj = obj.removeCells(cellsToRemove);
+            CellInput.LambdaS1Factor(cellsToRemove) = [];
+            CellInput.LambdaS2Factor(cellsToRemove) = [];
+            CellInput.LambdaS3Factor(cellsToRemove) = [];
+            CellInput.LambdaS4Factor(cellsToRemove) = [];
+            XgID = [XgID; idsToRemove];
+            
+            %Remove edges between debris cell and external nodes. Therefore,
+            %also, remove faces between ghost cell and external nodes and
+            %associated vertices
+            
+            %Here it should change interior faces to exterior face from the smaller one
+            obj.AllFaces=obj.AllFaces.CheckInteriorFaces(XgID);
+            obj.AssembleNodes = obj.Int;
+            [obj,nC,SCn,flag32] = ReBuildCells(obj,T,Y,X,SCn);
+            
+            % Check consequences of this one:
+            Dofs=GetDOFs(Y,obj,Set);
+        end
         
         function Cell = removeCells(obj, cellsToRemove)
             obj.Int(cellsToRemove) = [];
@@ -235,13 +263,13 @@ classdef CellClass
         end
         
         %%
-        function [obj, featuresTable, resultingImage] = exportTableWithCellFeatures(obj, Y, timeStep, Faces, Set)
+        function [obj, featuresTable] = exportTableWithCellFeatures(obj, Y, timeStep, Set)
             %% Features to obtain per tissue:
             % Avg Cell height
             
             
             %% Features to obtain per cell:
-            cellCellFaces = find(Faces.InterfaceType == 1);
+            cellCellFaces = find(obj.AllFaces.InterfaceType == 1);
             
             featuresTable_cell = [];
             for numCell = obj.Int

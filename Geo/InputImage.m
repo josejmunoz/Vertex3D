@@ -1,4 +1,4 @@
-function [X, Y0, Y,T,XgID,Cell,Faces,Cn,Cv,Yn,SCn,Set] = InputImage(Set)
+function [X, Y0, Y,T,XgID,Cell,Cn,Cv,Yn,SCn,Set] = InputImage(Set)
 %INPUTIMAGE Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -175,13 +175,13 @@ Y=Y.Add(Y_new);
 
 %% Create cells
 xInternal = xInternal';
-[Cv,Cell,Faces]=BuildCells(Twg,Y,X,xInternal, cellHeight, false);
+[Cv,Cell]=BuildCells(Twg,Y,X,xInternal, cellHeight, false);
 
 borderPairs = neighboursNetwork(sum(ismember(neighboursNetwork, xInternal), 2) == 1, :);
 borderPairs = unique(sort(borderPairs, 2), 'rows');
 Cell.BorderVertices = find(sum(ismember(Twg, borderPairs(:, 2)), 2) >= 1);
 % Add facecentres
-Cell.BorderVertices = [Cell.BorderVertices; -find(ismember(Faces.Nodes, borderPairs, 'rows'))];
+Cell.BorderVertices = [Cell.BorderVertices; -find(ismember(Cell.AllFaces.Nodes, borderPairs, 'rows'))];
 Cell.BorderCells = ismember(Cell.Int, borderPairs(:));
 Set.NumMainV=Y.n;
 Set.NumAuxV=Cell.FaceCentres.n;
@@ -190,8 +190,8 @@ Set.NumTotalV=Set.NumMainV + Set.NumAuxV + Set.NumCellCentroid;
 Set.NumXs = size(X, 1);
 Cn=BuildCn(Twg);
 
-Faces=Faces.ComputeAreaTri(Y.DataRow,Cell.FaceCentres.DataRow);
-Faces=Faces.CheckInteriorFaces(XgID);
+Cell.AllFaces=Cell.AllFaces.ComputeAreaTri(Y.DataRow,Cell.FaceCentres.DataRow);
+Cell.AllFaces=Cell.AllFaces.CheckInteriorFaces(XgID);
 
 Yn = Y;
 Y0 = Y;
@@ -207,7 +207,7 @@ for i=1:Cell.n
 end
 Set.BarrierTri0=Set.BarrierTri0/10;
 
-[Cell,Faces,Y]=CheckOrderingOfTriangulaiton(Cell,Faces,Y,Set);
+[Cell,Y]=CheckOrderingOfTriangulaiton(Cell,Y,Set);
 
 end
 

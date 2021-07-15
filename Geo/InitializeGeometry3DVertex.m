@@ -79,7 +79,7 @@ Y=Y.Add(Yaux);
 %% Build Cells 
 xInternal=1:size(X,1);
 xInternal(XgID)=[];
-[Cv,Cell,Faces]=BuildCells(Twg,Y,X,xInternal,Set.f, true);
+[Cv,Cell]=BuildCells(Twg,Y,X,xInternal,Set.f, true);
 
 
 Set.NumMainV=Y.n;
@@ -87,8 +87,8 @@ Set.NumAuxV=Cell.FaceCentres.n;
 Set.NumTotalV=Set.NumMainV+Set.NumAuxV;
 Cn=BuildCn(Twg);
 
-Faces=Faces.ComputeAreaTri(Y.DataRow,Cell.FaceCentres.DataRow);
-Faces=Faces.CheckInteriorFaces(XgID);
+Cell.AllFaces=Cell.AllFaces.ComputeAreaTri(Y.DataRow,Cell.FaceCentres.DataRow);
+Cell.AllFaces=Cell.AllFaces.CheckInteriorFaces(XgID);
 
 Yn=Y;
 SCn=Cell.FaceCentres;
@@ -97,11 +97,6 @@ Yt=[Y.DataOrdered ;Cell.FaceCentres.DataOrdered];
 T=DynamicArray(ceil(size(Twg,1)*1.5),size(Twg,2));
 T=T.Add(Twg);
 
-
-% Regularize small Triangles (Uncomment this line if there are very small triangles in the initial mesh)
-% [Y,Cell,Faces,Yn,SCn]=RegularizeMesh(Y,Cell,Faces,Set,Yn,SCn);
-
-
 Set.BarrierTri0=realmax; 
 for i=1:Cell.n
     Set.BarrierTri0=min([Cell.SAreaTri{i}; Set.BarrierTri0]);
@@ -109,7 +104,7 @@ end
 Set.BarrierTri0=Set.BarrierTri0/10;
 
 
-[Cell,Faces,Y]=CheckOrderingOfTriangulaiton(Cell,Faces,Y,Set);
+[Cell,Y]=CheckOrderingOfTriangulaiton(Cell,Y,Set);
 
 end 
 

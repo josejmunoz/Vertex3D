@@ -9,7 +9,7 @@ function [Cell, Y, Dofs] = applyBoundaryCondition(t, Y, Set, Cell, Dofs)
         
     elseif Set.BC==2 && t<=Set.TStopBC && t>=Set.TStartBC && Set.ApplyBC
         Set.WallPosition=max([Y.DataRow(:,2); Cell.FaceCentres.DataRow(:,2)]);
-        [Dofs,Set]=GetWallBoundaryCondition(Set,Y,Cell,Faces);
+        [Dofs,Set]=GetWallBoundaryCondition(Set,Y,Cell);
         Y.DataRow(Dofs.PrescribedY,2)=Set.WallPosition;
         Cell.FaceCentres.DataRow(Dofs.PrescribedS,2)=Set.WallPosition;
         Dofs.FreeDofs(ismember(Dofs.FreeDofs,Dofs.dofP))=[];

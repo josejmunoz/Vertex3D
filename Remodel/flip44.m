@@ -1,18 +1,18 @@
-function [Cell,Y,Yn,SCn,T,X,Faces,Dofs,Set, Vnew] = flip44(Cell,Faces,Y0, Y,Yn,SCn,T,X,Set,Dofs,XgID,CellInput, Vnew)
+function [Cell,Y,Yn,SCn,T,X,Dofs,Set, Vnew] = flip44(Cell,Y0, Y,Yn,SCn,T,X,Set,Dofs,XgID,CellInput, Vnew)
 %flip44 Summary of this function goes here
 %   Detailed explanation goes here
 %% loop over 4-vertices-faces (Flip44)
 DidNotConverge=false;
-for i=1:Faces.n
-    if ~Faces.NotEmpty(i) || any(ismember(Faces.Vertices{i},Vnew.Data))...
-            || any(ismember(Faces.Vertices{i},Dofs.PrescribedY)) || ~Faces.V4(i)...
-            ||  (min(Faces.EnergyTri{i})<Set.RemodelTol*1e-4 ||  max(Faces.EnergyTri{i})<Set.RemodelTol)
+for i=1:Cell.AllFaces.n
+    if ~Cell.AllFaces.NotEmpty(i) || any(ismember(Cell.AllFaces.Vertices{i},Vnew.Data))...
+            || any(ismember(Cell.AllFaces.Vertices{i},Dofs.PrescribedY)) || ~Cell.AllFaces.V4(i)...
+            ||  (min(Cell.AllFaces.EnergyTri{i})<Set.RemodelTol*1e-4 ||  max(Cell.AllFaces.EnergyTri{i})<Set.RemodelTol)
         continue 
     end
     % copy data
-    Cellp=Cell; Yp=Y; Ynp=Yn;  SCnp=SCn; Tp=T; Xp=X; Facesp=Faces;  Dofsp=Dofs; Setp=Set; Vnewp=Vnew;
+    Cellp=Cell; Yp=Y; Ynp=Yn;  SCnp=SCn; Tp=T; Xp=X; Dofsp=Dofs; Setp=Set; Vnewp=Vnew;
     fprintf('=>> 44 Flip.\n');
-    oV=Faces.Vertices{i};
+    oV=Cell.AllFaces.Vertices{i};
     
     side=[1 2;
         2 3;
@@ -31,7 +31,7 @@ for i=1:Faces.n
     cVJ3=intersect(T.DataRow(VJ(1),:),T.DataRow(VJ(2),:));
     N=unique(T.DataRow(VJ,:)); % all nodes
     NZ=N(~ismember(N,cVJ3));
-    NX=Faces.Nodes(i,:);
+    NX=Cell.AllFaces.Nodes(i,:);
     Tnew1=T.DataRow(oV(1),:);       Tnew1(ismember(Tnew1,NX(1)))=NZ(~ismember(NZ,Tnew1));
     Tnew2=T.DataRow(oV(2),:);       Tnew2(ismember(Tnew2,NX(2)))=NZ(~ismember(NZ,Tnew2));
     Tnew3=T.DataRow(oV(3),:);       Tnew3(ismember(Tnew3,NX(1)))=NZ(~ismember(NZ,Tnew3));
@@ -49,10 +49,10 @@ for i=1:Faces.n
     Ynew=Flip44(Y.DataRow(oV,:),Tnew,L,X);
     
     % Remove the face
-    [T, Y, Yn, Faces, SCn, Cell] = removeFaceInRemodelling(T, Y, Yn, Faces, SCn, Cell, oV, i);
+    [T, Y, Yn, SCn, Cell] = removeFaceInRemodelling(T, Y, Yn, SCn, Cell, oV, i);
     
     % add new vertices 
-    [T, Y, Yn, Cell, nV, Vnew, nC, SCn, Faces, Set, V3, flag] = addNewVerticesInRemodelling(T, Tnew, Y, Ynew, Yn, Cell, Vnew, X, Faces, SCn, XgID, Set);
+    [T, Y, Yn, Cell, nV, Vnew, nC, SCn, Set, V3, flag] = addNewVerticesInRemodelling(T, Tnew, Y, Ynew, Yn, Cell, Vnew, X, SCn, XgID, Set);
     
     if ~flag
         fprintf('Vertices number %i %i %i %i -> were replaced by -> %i %i %i %i.\n',oV(1),oV(2),oV(3),oV(4),nV(1),nV(2),nV(3),nV(4));
@@ -60,14 +60,14 @@ for i=1:Faces.n
         [Dofs]=UpdateDofs(Dofs,oV,nV,i,nC,Y,V3);
 
         Cell.RemodelledVertices=[nV;nC+Y.n];
-        [Cell,Faces,Y,Yn,SCn,X,Dofs,Set,~,DidNotConverge]=SolveRemodelingStep(Cell,Faces,Y0,Y,X,Dofs,Set,Yn,SCn,CellInput);
+        [Cell,Y,Yn,SCn,X,Dofs,Set,~,DidNotConverge]=SolveRemodelingStep(Cell,Y0,Y,X,Dofs,Set,Yn,SCn,CellInput);
         Yn.DataRow(nV,:)=Y.DataRow(nV,:);
     else
         error('check Flip44 flag');
     end
     
     if  DidNotConverge || flag %|| NotConvexCell(Cell,Y)
-        [Cell, Y, Yn, SCn, T, X, Faces, Dofs, Set, Vnew] = backToPreviousStep(Cellp, Yp, Ynp, SCnp, Tp, Xp, Facesp, Dofsp, Setp, Vnewp);
+        [Cell, Y, Yn, SCn, T, X, Dofs, Set, Vnew] = backToPreviousStep(Cellp, Yp, Ynp, SCnp, Tp, Xp, Dofsp, Setp, Vnewp);
         fprintf('=>> Local problem did not converge -> 44 Flip rejected !! \n');
         Set.N_Rejected_Transfromation=Set.N_Rejected_Transfromation+1;
     else

@@ -1,4 +1,4 @@
-function [g,K,Cell,EnergyS]=KgSurfaceCellBasedContractility(Cell,Y,Faces,Set,CellInput)
+function [g,K,Cell,EnergyS]=KgSurfaceCellBasedContractility(Cell,Y,Set,CellInput)
 % The residual g and Jacobian K of Surface Energy
 % Energy based on the total cell area with differential Lambda depending on the face type  (external, cell-cell, Cell-substrate)
 %    W_s= sum_cell( sum_face (lambdaS*factor_f(Af)^2) / Ac0^2 )
@@ -35,8 +35,8 @@ for i=1:ncell
     fact0=0;
     for f=1:Cell.Faces{i}.nFaces
         Lambda=0;
-        if  Faces.InterfaceType(Cell.Faces{i}.FaceCentresID(f))==1
-            cellsOfFace = Faces.Nodes(Cell.Faces{i}.FaceCentresID(f), :);
+        if  Cell.AllFaces.InterfaceType(Cell.Faces{i}.FaceCentresID(f))==1
+            cellsOfFace = Cell.AllFaces.Nodes(Cell.Faces{i}.FaceCentresID(f), :);
             if sum(Cell.DebrisCells(ismember(Cell.Int, cellsOfFace))) == 1 
                 % Addition of lateral cables when cell-debris faces
                 Lambda = Set.cLateralCables;
@@ -48,8 +48,8 @@ for i=1:ncell
     
     for f=1:Cell.Faces{i}.nFaces
         Lambda = 0;
-        if  Faces.InterfaceType(Cell.Faces{i}.FaceCentresID(f))==1
-            cellsOfFace = Faces.Nodes(Cell.Faces{i}.FaceCentresID(f), :);
+        if  Cell.AllFaces.InterfaceType(Cell.Faces{i}.FaceCentresID(f))==1
+            cellsOfFace = Cell.AllFaces.Nodes(Cell.Faces{i}.FaceCentresID(f), :);
             if sum(Cell.DebrisCells(ismember(Cell.Int, cellsOfFace))) == 1 
                 % Addition of lateral cables when cell-debris faces
                 Lambda = Set.cLateralCables;
@@ -72,7 +72,7 @@ for i=1:ncell
                 continue
             end
             % ------------------------ Confinement ------------------------
-            if Set.Confinement && Faces.InterfaceType(Cell.Faces{i}.FaceCentresID(f))==2
+            if Set.Confinement && Cell.AllFaces.InterfaceType(Cell.Faces{i}.FaceCentresID(f))==2
                 if min([Y1(1) Y2(1) Y3(1)]) < Set.ConfinementX1 || max([Y1(1) Y2(1) Y3(1)]) > Set.ConfinementX2...
                         || min([Y1(2) Y2(2) Y3(2)]) < Set.ConfinementY1 || min([Y1(2) Y2(2) Y3(2)]) > Set.ConfinementY2
                     Lambda=Set.lambdaS1*CellInput.LambdaS1Factor(i);

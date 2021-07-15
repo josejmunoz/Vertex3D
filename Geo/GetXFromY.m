@@ -1,4 +1,4 @@
-function [X]=GetXFromY(Cell,Faces,X,T,Y,XgID,Set)
+function [X]=GetXFromY(Cell,X,T,Y,XgID,Set)
 % Obtain X (nodal position) from given vertex (Y) Position
 
 
@@ -117,14 +117,14 @@ elseif Set.ObtainX==3
     for i=1:length(XgID)
         nf=0; % number of cells/nodes connected to XgID(i)
         XX=zeros(3,1);
-        for f=1:Faces.n
-            aux=ismember(XgID(i),Faces.Nodes(f,:));
-            if ~Faces.NotEmpty(f) || aux==0
+        for f=1:Cell.AllFaces.n
+            aux=ismember(XgID(i),Cell.AllFaces.Nodes(f,:));
+            if ~Cell.AllFaces.NotEmpty(f) || aux==0
                 continue
             end
             nf=nf+1;
             xi=Cell.FaceCentres.DataRow(f,:)';     
-            pi=X(Faces.Nodes(f,Faces.Nodes(f,:)~=XgID(i)),:)';
+            pi=X(Cell.AllFaces.Nodes(f,Cell.AllFaces.Nodes(f,:)~=XgID(i)),:)';
             v=(xi-pi)/norm(xi-pi);
             XX=XX+d*v+pi;
         end

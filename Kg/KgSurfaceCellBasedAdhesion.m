@@ -1,4 +1,4 @@
-function [g,K,Cell,EnergyS]=KgSurfaceCellBasedAdhesion(Cell,Y,Faces,Set,CellInput)
+function [g,K,Cell,EnergyS]=KgSurfaceCellBasedAdhesion(Cell,Y,Set,CellInput)
 % The residual g and Jacobian K of Surface Energy
 % Energy based on the total cell area with differential Lambda depending on the face type  (external, cell-cell, Cell-substrate)
 %    W_s= sum_cell( sum_face (lambdaS*factor_f(Af)^2) / Ac0^2 )
@@ -34,12 +34,12 @@ for i=1:ncell
     % First loop to commpute fact
     fact0=0;
     for f=1:Cell.Faces{i}.nFaces
-        if Faces.InterfaceType(Cell.Faces{i}.FaceCentresID(f))==0
+        if Cell.AllFaces.InterfaceType(Cell.Faces{i}.FaceCentresID(f))==0
             % Lambda of External faces
             Lambda=Set.lambdaS1*CellInput.LambdaS1Factor(i);
             fact0=fact0+Lambda*Cell.SAreaFace{i}(f);
-        elseif  Faces.InterfaceType(Cell.Faces{i}.FaceCentresID(f))==1
-            cellsOfFace = Faces.Nodes(Cell.Faces{i}.FaceCentresID(f), :);
+        elseif  Cell.AllFaces.InterfaceType(Cell.Faces{i}.FaceCentresID(f))==1
+            cellsOfFace = Cell.AllFaces.Nodes(Cell.Faces{i}.FaceCentresID(f), :);
             if all(Cell.DebrisCells(ismember(Cell.Int, cellsOfFace)))
                 % Walls Debris-Debris cells faces
                 Lambda = Set.lambdaS2*Set.LambdaSFactor_Debris;
@@ -54,7 +54,7 @@ for i=1:ncell
             
             fact0=fact0+Lambda*Cell.SAreaFace{i}(f);
             
-        elseif Faces.InterfaceType(Cell.Faces{i}.FaceCentresID(f))==2
+        elseif Cell.AllFaces.InterfaceType(Cell.Faces{i}.FaceCentresID(f))==2
             % Lambda of Cell-substrate faces
             Lambda=Set.lambdaS3*CellInput.LambdaS3Factor(i);
             if Set.Confinement
@@ -87,11 +87,11 @@ for i=1:ncell
     fact=fact0/Cell.SArea0(i)^2;
     
     for f=1:Cell.Faces{i}.nFaces
-        if Faces.InterfaceType(Cell.Faces{i}.FaceCentresID(f))==0
+        if Cell.AllFaces.InterfaceType(Cell.Faces{i}.FaceCentresID(f))==0
             % External
             Lambda=Set.lambdaS1*CellInput.LambdaS1Factor(i);
-        elseif  Faces.InterfaceType(Cell.Faces{i}.FaceCentresID(f))==1
-            cellsOfFace = Faces.Nodes(Cell.Faces{i}.FaceCentresID(f), :);
+        elseif  Cell.AllFaces.InterfaceType(Cell.Faces{i}.FaceCentresID(f))==1
+            cellsOfFace = Cell.AllFaces.Nodes(Cell.Faces{i}.FaceCentresID(f), :);
             if all(Cell.DebrisCells(ismember(Cell.Int, cellsOfFace)))
                 Lambda = Set.lambdaS2 * Set.LambdaSFactor_Debris;
             elseif sum(Cell.DebrisCells(ismember(Cell.Int, cellsOfFace))) == 1 
@@ -103,7 +103,7 @@ for i=1:ncell
                 Lambda=Set.lambdaS2*CellInput.LambdaS2Factor(i);
             end
             
-        elseif Faces.InterfaceType(Cell.Faces{i}.FaceCentresID(f))==2
+        elseif Cell.AllFaces.InterfaceType(Cell.Faces{i}.FaceCentresID(f))==2
             % Cell-substrate
             Lambda=Set.lambdaS3*CellInput.LambdaS3Factor(i);
         end
@@ -124,7 +124,7 @@ for i=1:ncell
                 continue
             end
             % ------------------------ Confinement ------------------------
-            if Set.Confinement && Faces.InterfaceType(Cell.Faces{i}.FaceCentresID(f))==2
+            if Set.Confinement && Cell.AllFaces.InterfaceType(Cell.Faces{i}.FaceCentresID(f))==2
                 if min([Y1(1) Y2(1) Y3(1)]) < Set.ConfinementX1 || max([Y1(1) Y2(1) Y3(1)]) > Set.ConfinementX2...
                         || min([Y1(2) Y2(2) Y3(2)]) < Set.ConfinementY1 || min([Y1(2) Y2(2) Y3(2)]) > Set.ConfinementY2
                     Lambda=Set.lambdaS1*CellInput.LambdaS1Factor(i);

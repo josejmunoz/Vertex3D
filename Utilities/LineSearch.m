@@ -1,4 +1,4 @@
-function [alpha]=LineSearch(Cell, Faces, SCn, dy, gc, dof, Set, Y, Y0, Yn, CellInput)
+function [alpha]=LineSearch(Cell, SCn, dy, gc, dof, Set, Y, Y0, Yn, CellInput)
 %LINESEARCH
 %
 
@@ -11,14 +11,14 @@ dy_reshaped = reshape(dy, 3, Set.NumTotalV)';
 [Y, Cell] = updateVertices(Y, Cell, dy_reshaped, Set);
 
 try
-    [g]=KgGlobal(Cell, Faces, SCn, Y0, Y, Yn, Set, CellInput);
+    [g]=KgGlobal(Cell, SCn, Y0, Y, Yn, Set, CellInput);
 catch ME
     if (strcmp(ME.identifier,'KgBulk:invertedTetrahedralElement'))
         %% Correct inverted Tets
         [Y, Cell] = correctInvertedMechTets(ME, dy, Y, Cell, Set);
         
         % Run again
-        [g]=KgGlobal(Cell, Faces, SCn, Y0, Y, Yn, Set, CellInput);
+        [g]=KgGlobal(Cell, SCn, Y0, Y, Yn, Set, CellInput);
     else
         ME.rethrow();
     end

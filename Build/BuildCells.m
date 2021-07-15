@@ -1,4 +1,4 @@
-function [Cv,Cell,SharedFaces]=BuildCells(T,Y,X,xInternal,H, extrapolateFaceCentre)
+function [Cv,Cell]=BuildCells(T,Y,X,xInternal,H, extrapolateFaceCentre)
 % Basically in this function  the cells are built by doing the following loops
 % Loop i over cell
 %   Loop j over the segment connecting the node (cell centre) i with neighbouring nodes (cells) j,  in the same time each segment (ij) correspond to a face shared by cell i and j.
@@ -15,7 +15,7 @@ TetIDs=1:size(T,1);
 Cv=zeros(Cell.n*16*8,2);
 numVertexBarElem=1; % counter for the number of vertex-bar Elements
 Cell.FaceCentres=zeros(size(X,1)*4,3); % the position of Cell-surface centres
-SharedFaces = FacesClass(size(X,1)*4);
+Cell.AllFaces = FacesClass(size(X,1)*4);
 numFaceCentresFaces=1; % counter for the number of FaceCentres / faces;
 numTotalSurfsTris=0; % counter for total number of SurfsTris
 
@@ -92,7 +92,7 @@ for i=1:length(Cell.Int) % loop over  Interior cells
             Cell.FaceCentres(numFaceCentresFaces,:)=faceCentrePos;
             Cell.Faces{i}.FaceCentresID(j)=numFaceCentresFaces;
             % Save Face-data base
-            SharedFaces = SharedFaces.Add(SurfAxes,SurfVertices,Y.DataOrdered,Cell.FaceCentres);
+            Cell.AllFaces = Cell.AllFaces.Add(SurfAxes,SurfVertices,Y.DataOrdered,Cell.FaceCentres);
             numFaceCentresFaces=numFaceCentresFaces+1;
         end
         
@@ -165,7 +165,7 @@ for i=1:Cell.n
     Cell.SAreaTrin{i}=Cell.SAreaTri{i};
 end
 Cell.SAreaFace0=Cell.SAreaFace;
-SharedFaces=SharedFaces.ComputeAreaTri(Y.DataRow,Cell.FaceCentres.DataRow);
+Cell.AllFaces=Cell.AllFaces.ComputeAreaTri(Y.DataRow,Cell.FaceCentres.DataRow);
 
 %% Apico-basal distinction
 [Cell] = Cell.computeEdgeLocation(Y);

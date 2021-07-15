@@ -1,4 +1,4 @@
-function [T, Y, Yn, Cell, nV, Vnew, nC, SCn, Faces, Set, V3, flag] = addNewVerticesInRemodelling(T, Tnew, Y, Ynew, Yn, Cell, Vnew, X, Faces, SCn, XgID, Set)
+function [T, Y, Yn, Cell, nV, Vnew, nC, SCn, Set, V3, flag] = addNewVerticesInRemodelling(T, Tnew, Y, Ynew, Yn, Cell, Vnew, X, SCn, XgID, Set)
 %ADDNEWVERTICESINREMODELLING Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -10,10 +10,10 @@ Yn=Yn.Add(Ynew);
 
 Cell.AssembleNodes=unique(Tnew);
 Vnew=Vnew.Add(nV);
-[Cell,Faces,nC,SCn, flag]=ReBuildCells(Cell,T,Y,X,Faces,SCn);
+[Cell,nC,SCn, flag]=ReBuildCells(Cell,T,Y,X,SCn);
 
 if ~flag
-    Faces=Faces.CheckInteriorFaces(XgID);
+    Cell.AllFaces=Cell.AllFaces.CheckInteriorFaces(XgID);
     Set.NumMainV=Y.n;
     Set.NumAuxV=Cell.FaceCentres.n;
     Set.NumTotalV=Set.NumMainV+Set.NumAuxV+Set.NumCellCentroid;
@@ -23,8 +23,8 @@ if ~flag
         Cell.SAreaTrin{jj}=Cell.SAreaTri{jj};
         Cell.EdgeLengthsn{jj}=Cell.EdgeLengths{jj};
     end
-    V3=1:Faces.n;
-    V3=V3(Faces.V3(V3));
+    V3=1:Cell.AllFaces.n;
+    V3=V3(Cell.AllFaces.V3(V3));
 end
 end
 

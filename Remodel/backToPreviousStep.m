@@ -1,4 +1,4 @@
-function [Cell, Y, Yn, SCn, T, X, Faces, Dofs, Set, Vnew] = backToPreviousStep(Cellp, Yp, Ynp, SCnp, Tp, Xp, Facesp, Dofsp, Setp, Vnewp)
+function [Cell, Y, Yn, SCn, T, X, Dofs, Set, Vnew] = backToPreviousStep(Cellp, Yp, Ynp, SCnp, Tp, Xp, Dofsp, Setp, Vnewp)
 %BACKTOPREVIOUSSTEP Summary of this function goes here
 %   Detailed explanation goes here
 Cell=Cellp;
@@ -7,7 +7,6 @@ Yn=Ynp;
 SCn=SCnp;
 T=Tp;
 X=Xp;
-Faces=Facesp;
 Dofs=Dofsp;
 Set=Setp;
 Vnew=Vnewp;

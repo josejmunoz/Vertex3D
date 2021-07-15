@@ -1,10 +1,10 @@
-function [Cell,Y,Yn,SCn,T,X,Faces,Dofs,Set, Vnew] = flip23(Cell,Faces,Y0, Y,Yn,SCn,T,X,Set,Dofs,XgID,CellInput, Vnew)
+function [Cell,Y,Yn,SCn,T,X,Dofs,Set, Vnew] = flip23(Cell,Y0, Y,Yn,SCn,T,X,Set,Dofs,XgID,CellInput, Vnew)
 %FLIP23 Summary of this function goes here
 %   Detailed explanation goes here
 %% loop over the rest of faces (Flip23)
-FacesList=zeros(Faces.n*2,1);
-FacesList(1:Faces.n)=1:Faces.n;
-aux=Faces.n;
+FacesList=zeros(Cell.AllFaces.n*2,1);
+FacesList(1:Cell.AllFaces.n)=1:Cell.AllFaces.n;
+aux=Cell.AllFaces.n;
 ii=1;
 i=FacesList(ii);
 ListIsNotEmpty=true;
@@ -12,17 +12,17 @@ DidNotConverge=false;
 while ListIsNotEmpty 
     % Check if the face need to be remodel
     % Discard New triangles by setting Energy=0
-    EnergyTri=Faces.EnergyTri{i};
+    EnergyTri=Cell.AllFaces.EnergyTri{i};
     for iii=1:length(EnergyTri)
-        if ismember(Faces.Vertices{i}(iii),Vnew.Data) && iii==1
+        if ismember(Cell.AllFaces.Vertices{i}(iii),Vnew.Data) && iii==1
             EnergyTri([1 end])=0;
-        elseif ismember(Faces.Vertices{i}(iii),Vnew.Data)  
+        elseif ismember(Cell.AllFaces.Vertices{i}(iii),Vnew.Data)  
             EnergyTri([iii-1 iii])=0;
         end 
     end 
  
-    if ~Faces.NotEmpty(i)|| any(ismember(Faces.Vertices{i},Dofs.PrescribedY))...
-            ||  max(EnergyTri)<Set.RemodelTol || Faces.V3(i)
+    if ~Cell.AllFaces.NotEmpty(i)|| any(ismember(Cell.AllFaces.Vertices{i},Dofs.PrescribedY))...
+            ||  max(EnergyTri)<Set.RemodelTol || Cell.AllFaces.V3(i)
             ii=ii+1;
             i=FacesList(ii);
             if i==0
@@ -31,12 +31,12 @@ while ListIsNotEmpty
         continue 
     end
     % copy data
-    Cellp=Cell; Yp=Y; Ynp=Yn;  SCnp=SCn; Tp=T; Xp=X; Facesp=Faces; Dofsp=Dofs; Setp=Set; Vnewp=Vnew;
+    Cellp=Cell; Yp=Y; Ynp=Yn;  SCnp=SCn; Tp=T; Xp=X; Dofsp=Dofs; Setp=Set; Vnewp=Vnew;
     [~,v]=max(EnergyTri);
-    if v==length(Faces.Vertices{i})
-        oV=[Faces.Vertices{i}(v) ;Faces.Vertices{i}(1)];
+    if v==length(Cell.AllFaces.Vertices{i})
+        oV=[Cell.AllFaces.Vertices{i}(v) ;Cell.AllFaces.Vertices{i}(1)];
     else
-        oV=[Faces.Vertices{i}(v) ;Faces.Vertices{i}(v+1)];
+        oV=[Cell.AllFaces.Vertices{i}(v) ;Cell.AllFaces.Vertices{i}(v+1)];
     end
     
     % The common three nodes within the doublet
@@ -70,103 +70,12 @@ while ListIsNotEmpty
     [IsNotConvex,itet]=CheckConvexityCondition(Tnew,T);
     if IsNotConvex
         fprintf('=>> Flip23 is is not compatible rejected !! \n');
-
-%          fprintf('=>> Flip23 is is not compatible rejected !! Do Flip32.\n');
-        % Do 32flip
-%         oV=[oV; itet];  %#ok<AGROW>
-%         % The common two nodes within the trio
-%         n=intersect(intersect(T.DataRow(oV(1),:),T.DataRow(oV(2),:)),T.DataRow(oV(3),:));
-%         
-%         % The other three nodes
-%         N=unique(T.DataRow(oV,:)); % all nodes
-%         N=N(~ismember(N,n));
-%         
-%         % The new connectivity
-%         N3=N(~ismember(N,T.DataRow(oV(1),:)));
-%         Tnew1=T.DataRow(oV(1),:); Tnew2=Tnew1;
-%         Tnew1(ismember(T.DataRow(oV(1),:),n(1)))=N3;
-%         Tnew2(ismember(T.DataRow(oV(1),:),n(2)))=N3;
-%         Tnew=[Tnew1;
-%               Tnew2];
-%         
-%         
-%         Ynew=Flip322(Y.DataRow(oV,:),X(n,:));
-%         
-%         % Remove the face
-%         T=T.Remove(oV);
-%         Y=Y.Remove(oV);
-%         Yn=Yn.Remove(oV);
-%           sometime there  is V3 face left, need to be found and removed
-
-%          if Faces.V3(i) %%%%%%%%%%%%%%%%%%%%%%%%%%% -------------> this is  not the solution 
-%             Faces=Faces.Remove(i);
-%             SCn=SCn.Remove(i);
-%             Cell.FaceCentres=Cell.FaceCentres.Remove(i);
-%         end
-
-%         % add new vertices
-%         [T,nV]=T.Add(Tnew);
-%         Y=Y.Add(Ynew);
-
-%         if Set.Substrate
-%           if any(ismember(Tnew(1,:),XgSub)), Ynew(1,3)=Set.SubstrateZ; end
-%           if any(ismember(Tnew(2,:),XgSub)), Ynew(2,3)=Set.SubstrateZ; end
-%         end 
-
-%         Yn=Yn.Add(Ynew);
-%         fprintf('%i %i %i =>> %i %i.\n',oV(1),oV(2),oV(3),nV(1),nV(2));
-% 
-%         Cell.AssembleNodes=unique(Tnew);
-%         Vnew=Vnew.Add(nV);
-%         [Cell,Faces,~,SCn]=ReBuildCells(Cell,T,Y,X,Faces,SCn);
-%          if Set.Substrate
-%             Faces=Faces.CheckInteriorFaces(XgID,XgSub);
-%         else 
-%             Faces=Faces.CheckInteriorFaces(XgID);
-%         end 
-%         Set.NumMainV=Y.n;
-%         Set.NumAuxV=Cell.FaceCentres.n;
-%         Set.NumTotalV=Set.NumMainV+Set.NumAuxV;
-%         [Cell]=ComputeCellVolume(Cell,Y);
-%         [Cell]=ComputeLengths(Cell,Y);
-%         for jj=1:Cell.n
-%             Cell.SAreaTrin{jj}=Cell.SAreaTri{jj};
-%             Cell.Ln{jj}=Cell.L{jj};
-%         end
-%         V3=1:Faces.n;
-%         V3=V3(Faces.V3(V3));
-%         [Dofs]=UpdateDofs(Dofs,oV,nV,[],[],Y,V3);
-%             if Set.Substrat
-%               [Dofs]=UpdateDofsSub(Y,Faces,Cell,Set,nV,[]);
-%             else 
-%               [Dofs]=UpdateDofs(Dofs,oV,nV,[],[],Y,V3);
-%             end 
-%         Cell.RemodelledVertices=nV;
-%         [Cell,Faces,Y,Yn,SCn,X,Dofs,Set,~,DidNotConverge]=SolveRemodelingStep(Cell,Faces,Y,X,Dofs,Set,Yn,SCn,CellInput,XgSub);
-%         Yn.DataRow(nV,:)=Y.DataRow(nV,:);
-%         if  DidNotConverge %|| NotConvexCell(Cell,Y)
-%             Cell=Cellp;
-%             Y=Yp;
-%             Yn=Ynp;
-%             SCn=SCnp;
-%             T=Tp;
-%             X=Xp;
-%             Faces=Facesp;
-%             Dofs=Dofsp;
-%             Set=Setp;
-%             fprintf('=>> 32  Flip rejected .\n');
-%             Set.N_Rejected_Transfromation=Set.N_Rejected_Transfromation+1;
-%         else
-%             Set.N_Accepted_Transfromation=Set.N_Accepted_Transfromation+1;
-%         end
-%         aux=aux+1;
-%         FacesList(aux)=i;
     else
         %%% it is convex do
         fprintf('=>> 23 Flip.\n');
         Ynew=Flip23(Y.DataRow(oV,:),Tnew,X,n3);
         
-        [T, Y, Yn, Faces, SCn, Cell] = removeFaceInRemodelling(T, Y, Yn, Faces, SCn, Cell, oV, []); %% last param? should be 'i'? or just empty []? Face should be removed?
+        [T, Y, Yn, SCn, Cell] = removeFaceInRemodelling(T, Y, Yn, SCn, Cell, oV, []); %% last param? should be 'i'? or just empty []? Face should be removed?
         
         % filter ghost tets
         filter=ismember(Tnew,XgID);
@@ -174,7 +83,7 @@ while ListIsNotEmpty
         if any(filter), Tnew(filter,:)=[]; Ynew(filter,:)=[]; end 
         
         
-        [T, Y, Yn, Cell, nV, Vnew, nC, SCn, Faces, Set, V3, flag] = addNewVerticesInRemodelling(T, Tnew, Y, Ynew, Yn, Cell, Vnew, X, Faces, SCn, XgID, Set);
+        [T, Y, Yn, Cell, nV, Vnew, nC, SCn, Set, V3, flag] = addNewVerticesInRemodelling(T, Tnew, Y, Ynew, Yn, Cell, Vnew, X, SCn, XgID, Set);
         
         if length(nV) ==3
             fprintf('Vertices number %i %i -> were replaced by -> %i %i %i.\n',oV(1),oV(2),nV(1),nV(2),nV(3));
@@ -186,14 +95,14 @@ while ListIsNotEmpty
         if ~flag
             [Dofs]=UpdateDofs(Dofs,oV,nV,[],nC,Y,V3);
             Cell.RemodelledVertices=nV;
-            [Cell,Faces,Y,Yn,SCn,X,Dofs,Set,~,DidNotConverge]=SolveRemodelingStep(Cell,Faces,Y0,Y,X,Dofs,Set,Yn,SCn,CellInput);  
+            [Cell,Y,Yn,SCn,X,Dofs,Set,~,DidNotConverge]=SolveRemodelingStep(Cell,Y0,Y,X,Dofs,Set,Yn,SCn,CellInput);  
         else
             fprintf('=>> Flip23 is is not compatible rejected !! \n');
         end
 
         
         if  DidNotConverge || flag
-            [Cell, Y, Yn, SCn, T, X, Faces, Dofs, Set, Vnew] = backToPreviousStep(Cellp, Yp, Ynp, SCnp, Tp, Xp, Facesp, Dofsp, Setp, Vnewp);
+            [Cell, Y, Yn, SCn, T, X, Dofs, Set, Vnew] = backToPreviousStep(Cellp, Yp, Ynp, SCnp, Tp, Xp, Facesp, Dofsp, Setp, Vnewp);
             fprintf('=>> Local problem did not converge -> 23 Flip rejected !! \n');
             break
         else

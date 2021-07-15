@@ -1,4 +1,4 @@
-function CreateVtkVol(Y,Cell, Faces,outputDir, suffix,TimeStep)
+function CreateVtkVol(Y,Cell,outputDir, suffix,TimeStep)
 %% ------- Initiate ---------------------------------------------------
 % str0='VTKResults';
 str0=outputDir;                          % First Name of the file 
@@ -96,7 +96,7 @@ fprintf(file,'%s \n','LOOKUP_TABLE default');
 % end
 for i=1:ncell
     for f=1:Cell.Faces{i}.nFaces
-        fprintf(file,'%3.35f\n', Faces.EnergyTri{Cell.Faces{i}.FaceCentresID(f)});
+        fprintf(file,'%3.35f\n', Cell.AllFaces.EnergyTri{Cell.Faces{i}.FaceCentresID(f)});
     end
 end
 

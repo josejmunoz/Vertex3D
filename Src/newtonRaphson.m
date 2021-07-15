@@ -1,4 +1,4 @@
-function [g,K,Cell, Y, Energy, Set, gr, dyr, dy] = newtonRaphson(Set, Cell, Faces, SCn, K, g, Dofs, Y, Y0, Yn, CellInput, numStep, t)
+function [g,K,Cell, Y, Energy, Set, gr, dyr, dy] = newtonRaphson(Set, Cell, SCn, K, g, Dofs, Y, Y0, Yn, CellInput, numStep, t)
 %NEWTONRAPHSON Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -18,7 +18,7 @@ auxgr(1)=gr;
 ig=1;
 while (gr>Set.tol || dyr>Set.tol) && Set.iter<Set.MaxIter
     dy(Dofs.FreeDofs)=-K(Dofs.FreeDofs,Dofs.FreeDofs)\g(Dofs.FreeDofs);
-    [alpha]=LineSearch(Cell,Faces,SCn,dy,g,Dofs.FreeDofs,Set,Y,Y0,Yn,CellInput);
+    [alpha]=LineSearch(Cell,SCn,dy,g,Dofs.FreeDofs,Set,Y,Y0,Yn,CellInput);
 
     %% Update mechanical nodes
     dy_reshaped = reshape(dy * alpha, 3, Set.NumTotalV)';
@@ -30,14 +30,14 @@ while (gr>Set.tol || dyr>Set.tol) && Set.iter<Set.MaxIter
     end
     %% ----------- Compute K, g ---------------------------------------
     try
-        [g,K,Cell,Energy]=KgGlobal(Cell, Faces, SCn, Y0, Y, Yn, Set, CellInput);
+        [g,K,Cell,Energy]=KgGlobal(Cell, SCn, Y0, Y, Yn, Set, CellInput);
     catch ME
         if (strcmp(ME.identifier,'KgBulk:invertedTetrahedralElement'))
             %% Correct inverted Tets
             [Y, Cell] = correctInvertedMechTets(ME, dy, Y, Cell, Set);
             
             % Run again
-            [g,K,Cell,Energy]=KgGlobal(Cell, Faces, SCn, Y0, Y, Yn, Set, CellInput);
+            [g,K,Cell,Energy]=KgGlobal(Cell, SCn, Y0, Y, Yn, Set, CellInput);
         else
             throw(ME)
         end

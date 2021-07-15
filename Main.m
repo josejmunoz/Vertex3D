@@ -22,14 +22,14 @@ InitiateOutputFolder(Set)
 %% Mesh generation
 if isempty(Set.InputSegmentedImage)
     [X]=Example(Set.e);
-    [X, Y0, Y,tetrahedra,XgID,Cell,Faces,Cn,~,Yn,SCn,Set] = InitializeGeometry3DVertex(X,Set);
+    [X, Y0, Y,tetrahedra,XgID,Cell,Cn,~,Yn,SCn,Set] = InitializeGeometry3DVertex(X,Set);
     inputImage = 0;
 else
-    [X, Y0, Y,tetrahedra,XgID,Cell,Faces,Cn,~,Yn,SCn,Set] = InputImage(Set);
+    [X, Y0, Y,tetrahedra,XgID,Cell,Cn,~,Yn,SCn,Set] = InputImage(Set);
     inputImage = 1;
 end
 
-if Set.VTK, PostProcessingVTK(X,Y,tetrahedra.Data,Cn,Cell, Faces,strcat(Set.OutputFolder,Esc,'ResultVTK'),0,Set); end
+if Set.VTK, PostProcessingVTK(X,Y,tetrahedra.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),0,Set); end
 fprintf('Model Initialized... \n');
 
 %% Initialize Data
@@ -61,7 +61,7 @@ Set.ApplyBC=true;
 
 % Dofs & Boundary
 if Set.BC==1 || Set.BC==2
-    [Dofs, Set] = GetDOFs(Y,Cell,Faces,Set, inputImage);
+    [Dofs, Set] = GetDOFs(Y,Cell,Set, inputImage);
 else
     error('Invalid Input in Set.BC and Set.Substrate. \n')
 end
@@ -80,33 +80,10 @@ while t<=Set.tend
 
     %% ----------- Remodel--------------------------------------------------
     if Set.Remodelling && Set.ReModel && abs(t-tr)>=Set.RemodelingFrequency
-        [Cell,Y,Yn,SCn,tetrahedra,X,Faces,Dofs,Cn,Set]=Remodeling(Cell,Faces,Y,Yn,SCn,tetrahedra,X,Set,Dofs,Y0,XgID,CellInput);
+        [Cell,Y,Yn,SCn,tetrahedra,X,Dofs,Cn,Set]=Remodeling(Cell,Y,Yn,SCn,tetrahedra,X,Set,Dofs,Y0,XgID,CellInput);
         Set.ReModel=false;
         tr=t;
     end
-    
-%     if t == 0 && inputImage
-%         Nincr_inital = Set.Nincr;
-%         Set.Nincr = Set.tend * 10000;
-%         Set.dt0=Set.tend/Set.Nincr;
-%         Set.dt=Set.dt0;
-%         for numCycle = 1:2
-%             [Cell, Y, Dofs] = applyBoundaryCondition(t, Y, Set, Cell, Dofs);
-%             [g,K,Cell,Energy]=KgGlobal(Cell, Faces, SCn, Y0, Y, Yn, Set, CellInput);
-%             % Run a very small step to achieve a bit of force equilibrium
-%             [g,K,Cell, Y, Energy, Set, gr, dyr] = newtonRaphson(Set, Cell, Faces, SCn, K, g, Dofs, Y, Y0, Yn, CellInput, 0, t);
-%             
-%             %Update Nodes (X) from Vertices (Y)
-%             [X]=GetXFromY(Cell,Faces,X,tetrahedra,Y,XgID,Set);
-%             Yn = Y;
-%             SCn = Cell.FaceCentres;
-%             Cell.Centre_n = Cell.Centre;
-%         end
-%         Set.Nincr = Nincr_inital;
-%         Set.dt0=Set.tend/Set.Nincr;
-%         Set.dt=Set.dt0;
-%         inputImage = 0;
-%     end
     
     %   Copy configuration in case the current step does not converge  and need
     %   to be repeated
@@ -120,12 +97,12 @@ while t<=Set.tend
     %% ----------- Compute K, g ---------------------------------------
     [Set, CellInput] = updateParametersOnTime(t, Set, Cell, CellInput);
     fprintf('Step: %i - cPurseString: %d, cLateralCables: %d\n', numStep, Set.cPurseString, Set.cLateralCables);
-    [g,K,Cell,Energy]=KgGlobal(Cell, Faces, SCn, Y0, Y, Yn, Set, CellInput);
+    [g,K,Cell,Energy]=KgGlobal(Cell, SCn, Y0, Y, Yn, Set, CellInput);
     
-    if Set.VTK, PostProcessingVTK(X,Y,tetrahedra.Data,Cn,Cell, Faces,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end    
+    if Set.VTK, PostProcessingVTK(X,Y,tetrahedra.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end    
     
     %% Newton-raphson iterations 
-    [g,K,Cell, Y, Energy, Set, gr, dyr, dy] = newtonRaphson(Set, Cell, Faces, SCn, K, g, Dofs, Y, Y0, Yn, CellInput, numStep, t);
+    [g,K,Cell, Y, Energy, Set, gr, dyr, dy] = newtonRaphson(Set, Cell, SCn, K, g, Dofs, Y, Y0, Yn, CellInput, numStep, t);
             
     %%
     if gr<Set.tol && dyr<Set.tol && all(isnan(g(Dofs.FreeDofs)) == 0) && all(isnan(dy(Dofs.FreeDofs)) == 0)
@@ -135,10 +112,10 @@ while t<=Set.tend
         [X]=GetXFromY(Cell,Faces,X,tetrahedra,Y,XgID,Set);
         
         %% Post processing
-        if Set.VTK, PostProcessingVTK(X,Y,tetrahedra.Data,Cn,Cell, Faces,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end
+        if Set.VTK, PostProcessingVTK(X,Y,tetrahedra.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end
         
         %% Analise cells
-        [~, cellFeatures{numStep}] = Cell.exportTableWithCellFeatures(Y, numStep, Faces, Set);
+        [~, cellFeatures{numStep}] = Cell.exportTableWithCellFeatures(Y, numStep, Set);
         writetable(vertcat(cellFeatures{:}), strcat(Set.OutputFolder,Esc,'Analysis',Esc,'cellFeatures_', num2str(Set.iIncr),'_', num2str(t) ,'_.csv'))
         
         %% Update energies
@@ -174,7 +151,7 @@ while t<=Set.tend
         
         tooSmallCells = Cell.Vol < (Cell.Vol0/1000);
         if any(tooSmallCells) % Remove cell in the case is too small
-            [Cell, CellInput, XgID, Faces,nC,SCn,flag32, Dofs] = removeCell(Cell, CellInput, XgID, Faces, tetrahedra, Y, X, SCn, tooSmallCells, Set);
+            [Cell, CellInput, XgID,nC,SCn,flag32, Dofs] = removeCell(Cell, CellInput, XgID, tetrahedra, Y, X, SCn, tooSmallCells, Set);
         end
         
         %% Update time

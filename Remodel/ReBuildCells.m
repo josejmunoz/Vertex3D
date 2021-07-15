@@ -1,13 +1,9 @@
-function [Cell,Faces,nC,SCn,flag]=ReBuildCells(Cell,T,Y,X,Faces,SCn)
-
+function [Cell,nC,SCn,flag]=ReBuildCells(Cell,T,Y,X,SCn)
 %% This function rebuilds Cells and Faces after doing local transformation (e.g 23flip.... )
-
 % Loop i over cell
 %   Loop j over the segment connecting the node (cell centre) i with neighbouring nodes (cells) j,  in the same time each segment (ij) correspond to a face shared by cell i and j.
 %       Loop k over the vertices of face ij, which they correspond to the nodal tetrahedrons that go around the segment ij.
 %        Then, face centres (Cell.FaceCentres) are obviously placed in the centre of faces, except faces with three vertices which they do not have centres, since they are already triangles.
-
-
 
 
 TetIDs=1:size(T.DataRow,1);
@@ -89,9 +85,9 @@ for i=1:length(Cell.Int)
         if isempty(aux2) && ~isempty(nC)
             % if it is not found check if it is already added by another cell
             for nf=1:length(nC)
-                if all(ismember(SurfAxes,Faces.Nodes(nC(nf),:)))
+                if all(ismember(SurfAxes,Cell.AllFaces.Nodes(nC(nf),:)))
                     aux2=nC(nf);
-                    aux3=Faces.Vertices{aux2};
+                    aux3=Cell.AllFaces.Vertices{aux2};
                 end
             end
         elseif ~isempty(aux2)
@@ -143,23 +139,23 @@ for i=1:length(Cell.Int)
         
         % save face-data
         if ~isempty(aux2)
-            Faces.Vertices{aux2}=SurfVertices;
+            Cell.AllFaces.Vertices{aux2}=SurfVertices;
             if length(SurfVertices)==3
-                Faces.V3(aux2)=true;
-                Faces.V4(aux2)=false;
+                Cell.AllFaces.V3(aux2)=true;
+                Cell.AllFaces.V4(aux2)=false;
             elseif length(SurfVertices)==4
-                Faces.V3(aux2)=false;
-                Faces.V4(aux2)=true;
+                Cell.AllFaces.V3(aux2)=false;
+                Cell.AllFaces.V4(aux2)=true;
             else
-                Faces.V3(aux2)=false;
-                Faces.V4(aux2)=false;
+                Cell.AllFaces.V3(aux2)=false;
+                Cell.AllFaces.V4(aux2)=false;
             end
             Cell.FaceCentres.DataRow(aux2,:)=aux;
         else
             [Cell.FaceCentres,nCC]=Cell.FaceCentres.Add(aux);
             nC=[nC nCC]; %#ok<AGROW>
             SCn=SCn.Add(aux);
-            [Faces,aux2]=Faces.Add(SurfAxes,SurfVertices,Y.DataRow,Cell.FaceCentres.DataRow);
+            [Cell.AllFaces,aux2]=Cell.AllFaces.Add(SurfAxes,SurfVertices,Y.DataRow,Cell.FaceCentres.DataRow);
         end
         
         % Save surface vertices

@@ -102,7 +102,7 @@ while ListIsNotEmpty
 
         
         if  DidNotConverge || flag
-            [Cell, Y, Yn, SCn, T, X, Dofs, Set, Vnew] = backToPreviousStep(Cellp, Yp, Ynp, SCnp, Tp, Xp, Facesp, Dofsp, Setp, Vnewp);
+            [Cell, Y, Yn, SCn, T, X, Dofs, Set, Vnew] = backToPreviousStep(Cellp, Yp, Ynp, SCnp, Tp, Xp, Dofsp, Setp, Vnewp);
             fprintf('=>> Local problem did not converge -> 23 Flip rejected !! \n');
             break
         else

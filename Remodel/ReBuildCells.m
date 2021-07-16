@@ -3,45 +3,39 @@ function [Cell,nC,SCn,flag]=ReBuildCells(Cell,T,Y,X,SCn)
 % Loop i over cell
 %   Loop j over the segment connecting the node (cell centre) i with neighbouring nodes (cells) j,  in the same time each segment (ij) correspond to a face shared by cell i and j.
 %       Loop k over the vertices of face ij, which they correspond to the nodal tetrahedrons that go around the segment ij.
-%        Then, face centres (Cell.FaceCentres) are obviously placed in the centre of faces, except faces with three vertices which they do not have centres, since they are already triangles.
+%        Then, face centres (Cell.FaceCentres) are placed in the centre of faces, except faces with three vertices which they do not have centres, since they are already triangles.
 
 
 TetIDs=1:size(T.DataRow,1);
 nC=[];
 flag=false;
-for i=1:length(Cell.Int)
-    %% loop over  Interior cells
-    
-    if ~ismember(Cell.Int(i),Cell.AssembleNodes) % check if the cell has been remodelled
-        continue
-    end
-    % Copy the old thing
-    Copy_cNodes=Cell.cNodes{i};
-    Copy_Surface=Cell.Faces{i};
-    Cell.nTotalTris=Cell.nTotalTris-size(Cell.Tris{i},1);
+for numCell = Cell.Int(ismember(Cell.Int,Cell.AssembleNodes))
+    Copy_cNodes=Cell.cNodes{numCell};
+    Copy_Surface=Cell.Faces{numCell};
+    Cell.nTotalTris=Cell.nTotalTris-size(Cell.Tris{numCell},1);
     
     % ----- Build Tet
-    Cell.cTet{i}=T.DataRow(any(ismember(T.DataRow,Cell.Int(i)),2),:);        % should be improved
-    Cell.cTetID{i}=TetIDs(any(ismember(T.DataRow,Cell.Int(i)),2));   % should be improved
-    Cell.cNodes{i}=unique(Cell.cTet{i});
-    Cell.cNodes{i}(Cell.cNodes{i}==Cell.Int(i))=[];
+    Cell.cTet{numCell}=T.DataRow(any(ismember(T.DataRow,Cell.Int(numCell)),2),:);        % should be improved
+    Cell.cTetID{numCell}=TetIDs(any(ismember(T.DataRow,Cell.Int(numCell)),2));   % should be improved
+    Cell.cNodes{numCell}=unique(Cell.cTet{numCell});
+    Cell.cNodes{numCell}(Cell.cNodes{numCell}==Cell.Int(numCell))=[];
     
     %-- Initiate cellular database
-    nS=length(Cell.cNodes{i});
-    Cell.Faces{i}.nFaces=nS;
-    Cell.Faces{i}.FaceCentresID=zeros(nS,1);
-    Cell.Faces{i}.Vertices=cell(nS,1);
-    Cell.Faces{i}.Tris=cell(nS,1);
-    Cell.Tris{i}=zeros(120,3);
+    nS=length(Cell.cNodes{numCell});
+    Cell.Faces{numCell}.nFaces=nS;
+    Cell.Faces{numCell}.FaceCentresID=zeros(nS,1);
+    Cell.Faces{numCell}.Vertices=cell(nS,1);
+    Cell.Faces{numCell}.Tris=cell(nS,1);
+    Cell.Tris{numCell}=zeros(120,3);
     count3=1;  % counter for cellular-number of SurfsTris
-    Cell.Cv{i}=zeros(16*8,2);
+    Cell.Cv{numCell}=zeros(16*8,2);
     count4=1;  % counter for cellular-number of vertex-bars
     
-    for j=1:length(Cell.cNodes{i}) % loop over cell-Faces
+    for numNode = 1:length(Cell.cNodes{numCell}) % loop over cell-Faces
         
-        SurfAxes=[Cell.Int(i) Cell.cNodes{i}(j)];                               % line crossing the surface
-        SurfTet=Cell.cTet{i}(sum(ismember(Cell.cTet{i},SurfAxes),2)==2,:);
-        SurfTetID=Cell.cTetID{i}(sum(ismember(Cell.cTet{i},SurfAxes),2)==2);
+        SurfAxes=[Cell.Int(numCell) Cell.cNodes{numCell}(numNode)];                               % line crossing the surface
+        SurfTet=Cell.cTet{numCell}(sum(ismember(Cell.cTet{numCell},SurfAxes),2)==2,:);
+        SurfTetID=Cell.cTetID{numCell}(sum(ismember(Cell.cTet{numCell},SurfAxes),2)==2);
         
         %------Order Surface Vertices\Tets as loop
         SurfVertices=zeros(length(SurfTetID),1);
@@ -122,11 +116,11 @@ for i=1:length(Cell.Int)
             if iii==length(SurfVertices)
                 v1=Y.DataRow(SurfVertices(iii),:)-aux4;
                 v2=Y.DataRow(SurfVertices(1),:)-aux4;
-                Order=Order+dot(cross(v1,v2),aux4-X(Cell.Int(i),:))/length(SurfVertices);
+                Order=Order+dot(cross(v1,v2),aux4-X(Cell.Int(numCell),:))/length(SurfVertices);
             else
                 v1=Y.DataRow(SurfVertices(iii),:)-aux4;
                 v2=Y.DataRow(SurfVertices(iii+1),:)-aux4;
-                Order=Order+dot(cross(v1,v2),aux4-X(Cell.Int(i),:))/length(SurfVertices);
+                Order=Order+dot(cross(v1,v2),aux4-X(Cell.Int(numCell),:))/length(SurfVertices);
             end
         end
         if Order<0
@@ -159,56 +153,56 @@ for i=1:length(Cell.Int)
         end
         
         % Save surface vertices
-        Cell.Faces{i}.Vertices{j}=SurfVertices;
+        Cell.Faces{numCell}.Vertices{numNode}=SurfVertices;
         if length(SurfVertices)==3
-            Cell.Tris{i}(count3,:)=[SurfVertices(1) SurfVertices(2) -SurfVertices(3)];
-            Cell.Faces{i}.Tris{j}=[SurfVertices(1) SurfVertices(2) -SurfVertices(3)];
+            Cell.Tris{numCell}(count3,:)=[SurfVertices(1) SurfVertices(2) -SurfVertices(3)];
+            Cell.Faces{numCell}.Tris{numNode}=[SurfVertices(1) SurfVertices(2) -SurfVertices(3)];
             auxCv=[SurfVertices(1) SurfVertices(2);
                 SurfVertices(2) SurfVertices(3);
                 SurfVertices(3) SurfVertices(1)];
             count3=count3+1;
             
-            auxCv(ismember(auxCv,Cell.Cv{i},'rows') | ismember(flip(auxCv,2),Cell.Cv{i},'rows'),:)=[];
-            Cell.Cv{i}(count4:count4+size(auxCv,1)-1,:)=auxCv;
+            auxCv(ismember(auxCv,Cell.Cv{numCell},'rows') | ismember(flip(auxCv,2),Cell.Cv{numCell},'rows'),:)=[];
+            Cell.Cv{numCell}(count4:count4+size(auxCv,1)-1,:)=auxCv;
             count4=count4+size(auxCv,1);
             
             % save Surface-center
-            Cell.Faces{i}.FaceCentresID(j)=aux2;
+            Cell.Faces{numCell}.FaceCentresID(numNode)=aux2;
         else
             % Build Tringles and CellCv
             auxCv=zeros(length(SurfVertices),2);
-            Cell.Faces{i}.Tris{j}=zeros(length(SurfVertices),3);
+            Cell.Faces{numCell}.Tris{numNode}=zeros(length(SurfVertices),3);
             for h=2:length(SurfVertices)
-                Cell.Tris{i}(count3,:)=[SurfVertices(h-1) SurfVertices(h) aux2];
-                Cell.Faces{i}.Tris{j}(h-1,:)=[SurfVertices(h-1) SurfVertices(h) aux2];
+                Cell.Tris{numCell}(count3,:)=[SurfVertices(h-1) SurfVertices(h) aux2];
+                Cell.Faces{numCell}.Tris{numNode}(h-1,:)=[SurfVertices(h-1) SurfVertices(h) aux2];
                 auxCv(2*(h-1)-1,:)=[SurfVertices(h-1) SurfVertices(h)];
                 auxCv(2*(h-1),:)=[SurfVertices(h-1) -aux2];
                 %             Cell.Cv{i}(count4)=
                 count3=count3+1;
             end
-            Cell.Tris{i}(count3,:)=[SurfVertices(end) SurfVertices(1) aux2];
-            Cell.Faces{i}.Tris{j}(h,:)=[SurfVertices(end) SurfVertices(1) aux2];
+            Cell.Tris{numCell}(count3,:)=[SurfVertices(end) SurfVertices(1) aux2];
+            Cell.Faces{numCell}.Tris{numNode}(h,:)=[SurfVertices(end) SurfVertices(1) aux2];
             
             auxCv(2*h-1,:)=[SurfVertices(end) SurfVertices(1)];
             auxCv(2*h,:)=[SurfVertices(end) -aux2];
             % remove do duplicated bars
-            auxCv(ismember(auxCv,Cell.Cv{i},'rows') | ismember(flip(auxCv,2),Cell.Cv{i},'rows'),:)=[];
-            Cell.Cv{i}(count4:count4+size(auxCv,1)-1,:)=auxCv;
+            auxCv(ismember(auxCv,Cell.Cv{numCell},'rows') | ismember(flip(auxCv,2),Cell.Cv{numCell},'rows'),:)=[];
+            Cell.Cv{numCell}(count4:count4+size(auxCv,1)-1,:)=auxCv;
             %          count2=count2+1;
             count3=count3+1;
             count4=count4+size(auxCv,1);
             
             
             % save Surface-center
-            Cell.Faces{i}.FaceCentresID(j)=aux2;
+            Cell.Faces{numCell}.FaceCentresID(numNode)=aux2;
             
         end
         
         
     end
-    Cell.Tris{i}(count3:end,:)=[];
-    Cell.Cv{i}(count4:end,:)=[];
-    Cell.nTotalTris=Cell.nTotalTris+size(Cell.Tris{i},1);
+    Cell.Tris{numCell}(count3:end,:)=[];
+    Cell.Cv{numCell}(count4:end,:)=[];
+    Cell.nTotalTris=Cell.nTotalTris+size(Cell.Tris{numCell},1);
     
     % This bit need to be corrected
     %     Cell.CvID{i}=count0:count0+size(Cell.Cv{i},1)-1;

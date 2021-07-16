@@ -1,6 +1,8 @@
 function [Cell,Y,Yn,SCn,Tetrahedra,X,Dofs,Set, Vnew] = flip23(Cell,Y0, Y,Yn,SCn,Tetrahedra,X,Set,Dofs,XgID,CellInput, Vnew)
-%FLIP23 Summary of this function goes here
-%   Detailed explanation goes here
+%FLIP23 Perform flip 2-3 operation, when the edge is short
+%   Involves replacing the edge pq as it shorten to zero length by the new 
+%   triangle ghf that is shared between cell A and B (A has been displaced 
+%   upward to reveal the new interface ghf).
 %% loop over the rest of faces (Flip23)
 facesList=1:Cell.AllFaces.n;
 didNotConverge=false;

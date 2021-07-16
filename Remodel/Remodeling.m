@@ -9,7 +9,7 @@ function [Cell,Y,Yn,SCn,Tetrahedra,X,Dofs,Cn,Set]=Remodeling(Cell,Y,Yn,SCn,Tetra
 % Vnew should be split to Vnew Vchecked
 
 
-Vnew=DynamicArray(Y.n,1);
+Vnew=DynamicArray(100,1);
 
 Cell.AllFaces=Cell.AllFaces.ComputeAreaTri(Y.DataRow,Cell.FaceCentres.DataRow);
 Cell.AllFaces=Cell.AllFaces.ComputeEnergy(Set);

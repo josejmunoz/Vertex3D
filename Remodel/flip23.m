@@ -74,7 +74,8 @@ for idFace = facesList
         % filter ghost tets
         filter=ismember(Tnew,XgID);
         filter=all(filter,2);
-        if any(filter), Tnew(filter,:)=[]; Ynew(filter,:)=[]; end 
+        Tnew(filter,:)=[]; 
+        Ynew(filter,:)=[];
         
         [Tetrahedra, Y, Yn, Cell, nV, Vnew, nC, SCn, Set, V3, flag] = addNewVerticesInRemodelling(Tetrahedra, Tnew, Y, Ynew, Yn, Cell, Vnew, X, SCn, XgID, Set);
         

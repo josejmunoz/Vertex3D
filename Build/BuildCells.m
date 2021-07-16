@@ -170,7 +170,7 @@ Cell.AllFaces=Cell.AllFaces.ComputeAreaTri(Y.DataRow,Cell.FaceCentres.DataRow);
 %% Apico-basal distinction
 [Cell] = Cell.computeEdgeLocation(Y);
 
-%% Contractility L_0
+%% Contractility L_0: Only when builiding the cells to avoid issues in remodelling
 [Cell, uniqueEdges] = Cell.computeEdgeLengths(Y);
 allEdges = vertcat(Cell.EdgeLengths{:});
 Cell.EdgeLengths0_average = mean(allEdges(uniqueEdges));

@@ -151,7 +151,7 @@ while t<=Set.tend
         
         tooSmallCells = Cell.Vol < (Cell.Vol0/1000);
         if any(tooSmallCells) % Remove cell in the case is too small
-            [Cell, CellInput, XgID,nC,SCn,flag32, Dofs] = removeCell(Cell, CellInput, XgID, tetrahedra, Y, X, SCn, tooSmallCells, Set);
+            [Cell, CellInput, XgID,nC,SCn,flag32, Dofs] = Cell.removeCell(CellInput, XgID, tetrahedra, Y, X, SCn, tooSmallCells, Set);
         end
         
         %% Update time

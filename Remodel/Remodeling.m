@@ -1,4 +1,4 @@
-function [Cell,Y,Yn,SCn,T,X,Dofs,Cn,Set]=Remodeling(Cell,Y,Yn,SCn,T,X,Set,Dofs,Y0,XgID,CellInput)
+function [Cell,Y,Yn,SCn,Tetrahedra,X,Dofs,Cn,Set]=Remodeling(Cell,Y,Yn,SCn,Tetrahedra,X,Set,Dofs,Y0,XgID,CellInput)
 % This function Remodels cell junctions using three types of local
 % transfromation (23flip , 32flip and 44flip)
 % It executes three types of loops
@@ -14,11 +14,11 @@ Vnew=DynamicArray(Y.n,1);
 Cell.AllFaces=Cell.AllFaces.ComputeAreaTri(Y.DataRow,Cell.FaceCentres.DataRow);
 Cell.AllFaces=Cell.AllFaces.ComputeEnergy(Set);
 
-[Cell,Y,Yn,SCn,T,X,Dofs,Set, Vnew] = flip44(Cell,Y0, Y,Yn,SCn,T,X,Set,Dofs,XgID,CellInput, Vnew);
+%[Cell,Y,Yn,SCn,T,X,Dofs,Set, Vnew] = flip44(Cell,Y0, Y,Yn,SCn,T,X,Set,Dofs,XgID,CellInput, Vnew);
 
-[Cell,Y,Yn,SCn,T,X,Dofs,Set, Vnew] = flip32(Cell,Y0, Y,Yn,SCn,T,X,Set,Dofs,XgID,CellInput, Vnew);
+%[Cell,Y,Yn,SCn,T,X,Dofs,Set, Vnew] = flip32(Cell,Y0, Y,Yn,SCn,T,X,Set,Dofs,XgID,CellInput, Vnew);
 
-[Cell,Y,Yn,SCn,T,X,Dofs,Set, Vnew] = flip23(Cell,Y0, Y,Yn,SCn,T,X,Set,Dofs,XgID,CellInput, Vnew);
+[Cell,Y,Yn,SCn,Tetrahedra,X,Dofs,Set, Vnew] = flip23(Cell,Y0, Y,Yn,SCn,Tetrahedra,X,Set,Dofs,XgID,CellInput, Vnew);
 
 %% Update
 Set.NumMainV=Y.n;
@@ -31,7 +31,7 @@ for ii=1:Cell.n
     Cell.EdgeLengthsn{ii}=Cell.EdgeLengths{ii};
 end
 
-[Cn]=BuildCn(T.Data);
+[Cn]=BuildCn(Tetrahedra.Data);
 [Cell,Y]=CheckOrderingOfTriangulaiton(Cell,Y,Set);
 
 

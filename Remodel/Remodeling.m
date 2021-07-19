@@ -14,9 +14,9 @@ Vnew=DynamicArray(100,1);
 Cell.AllFaces=Cell.AllFaces.ComputeAreaTri(Y.DataRow,Cell.FaceCentres.DataRow);
 Cell.AllFaces=Cell.AllFaces.ComputeEnergy(Set);
 
-[Cell,Y,Yn,SCn,T,X,Dofs,Set, Vnew] = flip44(Cell,Y0, Y,Yn,SCn,T,X,Set,Dofs,XgID,CellInput, Vnew);
+[Cell,Y,Yn,SCn,Tetrahedra,X,Dofs,Set, Vnew] = flip44(Cell,Y0, Y,Yn,SCn,Tetrahedra,X,Set,Dofs,XgID,CellInput, Vnew);
 
-[Cell,Y,Yn,SCn,T,X,Dofs,Set, Vnew] = flip32(Cell,Y0, Y,Yn,SCn,T,X,Set,Dofs,XgID,CellInput, Vnew);
+[Cell,Y,Yn,SCn,Tetrahedra,X,Dofs,Set, Vnew] = flip32(Cell,Y0, Y,Yn,SCn,Tetrahedra,X,Set,Dofs,XgID,CellInput, Vnew);
 
 [Cell,Y,Yn,SCn,Tetrahedra,X,Dofs,Set, Vnew] = flip23(Cell,Y0, Y,Yn,SCn,Tetrahedra,X,Set,Dofs,XgID,CellInput, Vnew);
 

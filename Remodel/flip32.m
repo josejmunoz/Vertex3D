@@ -14,26 +14,26 @@ for i=1:Cell.AllFaces.n
     % copy data
     Cellp=Cell; Yp=Y; Ynp=Yn;  SCnp=SCn; Tp=T; Xp=X; Dofsp=Dofs; Setp=Set; Vnewp=Vnew;
     fprintf('=>> 32 Flip.\n');
-    oV=Cell.AllFaces.Vertices{i};
+    oldVertices=Cell.AllFaces.Vertices{i};
 
     % The common two nodes within the trio
-    n=intersect(intersect(T.DataRow(oV(1),:),T.DataRow(oV(2),:)),T.DataRow(oV(3),:));
+    n=intersect(intersect(T.DataRow(oldVertices(1),:),T.DataRow(oldVertices(2),:)),T.DataRow(oldVertices(3),:));
     
     % The other three nodes
-    N=unique(T.DataRow(oV,:)); % all nodes
+    N=unique(T.DataRow(oldVertices,:)); % all nodes
     N=N(~ismember(N,n));
     
     
     % The new connectivity
-    N3=N(~ismember(N,T.DataRow(oV(1),:)));
-    Tnew1=T.DataRow(oV(1),:); Tnew2=Tnew1;
-    Tnew1(ismember(T.DataRow(oV(1),:),n(2)))=N3;
-    Tnew2(ismember(T.DataRow(oV(1),:),n(1)))=N3;
+    N3=N(~ismember(N,T.DataRow(oldVertices(1),:)));
+    Tnew1=T.DataRow(oldVertices(1),:); Tnew2=Tnew1;
+    Tnew1(ismember(T.DataRow(oldVertices(1),:),n(2)))=N3;
+    Tnew2(ismember(T.DataRow(oldVertices(1),:),n(1)))=N3;
     Tnew=[Tnew1;
           Tnew2];
     
     % The new vertices 
-    Ynew=Flip32(Y.DataRow(oV,:),X(n,:));
+    Ynew=Flip32(Y.DataRow(oldVertices,:),X(n,:));
     
     if CheckConvexityCondition(Tnew,T)
         fprintf('=>> 32-Flip is not compatible rejected.\n');
@@ -41,15 +41,17 @@ for i=1:Cell.AllFaces.n
     end
     
     % Remove the face
-    [T, Y, Yn, SCn, Cell] = removeFaceInRemodelling(T, Y, Yn, SCn, Cell, oV, i);
+    [T, Y, Yn, SCn, Cell] = removeFaceInRemodelling(T, Y, Yn, SCn, Cell, oldVertices, i);
     
     % add new vertices 
-    [T, Y, Yn, Cell, nV, Vnew, nC, SCn, Set, V3, flag] = addNewVerticesInRemodelling(T, Tnew, Y, Ynew, Yn, Cell, Vnew, X, SCn, XgID, Set);
+    [T, Y, Yn, Cell, nV, Vnew, nC, SCn, Set, flag] = addNewVerticesInRemodelling(T, Tnew, Y, Ynew, Yn, Cell, Vnew, X, SCn, XgID, Set);
     
     if ~flag
-        fprintf('Vertices number %i %i %i -> were replaced by -> %i %i.\n',oV(1),oV(2),oV(3),nV(1),nV(2));
+        fprintf('Vertices number %i %i %i -> were replaced by -> %i %i.\n',oldVertices(1),oldVertices(2),oldVertices(3),nV(1),nV(2));
         
         [Dofs] = GetDOFs(Y,Cell,Set, isempty(Set.InputSegmentedImage) == 0);
+        [Dofs] = updateRemodelingDOFs(Dofs, nV, nC);
+        
         Cell.RemodelledVertices=nV;
         [Cell,Y,Yn,SCn,X,Dofs,Set,~,DidNotConverge]=SolveRemodelingStep(Cell,Y0,Y,X,Dofs,Set,Yn,SCn,CellInput);
         Yn.DataRow(nV,:)=Y.DataRow(nV,:);

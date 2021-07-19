@@ -86,7 +86,7 @@ for idFace = facesList
         Tnew(filter,:)=[]; 
         Ynew(filter,:)=[];
         
-        [Tetrahedra, Y, Yn, Cell, nV, Vnew, SCn, Set, flag] = addNewVerticesInRemodelling(Tetrahedra, Tnew, Y, Ynew, Yn, Cell, Vnew, X, SCn, XgID, Set);
+        [Tetrahedra, Y, Yn, Cell, nV, Vnew, nC, SCn, Set, flag] = addNewVerticesInRemodelling(Tetrahedra, Tnew, Y, Ynew, Yn, Cell, Vnew, X, SCn, XgID, Set);
         
         if length(nV) ==3
             fprintf('Vertices number %i %i -> were replaced by -> %i %i %i.\n',edgeToChange(1),edgeToChange(2),nV(1),nV(2),nV(3));
@@ -94,9 +94,22 @@ for idFace = facesList
             fprintf('Vertices number %i %i -> were replaced by -> %i %i.\n',edgeToChange(1),edgeToChange(2),nV(1),nV(2));
         end 
         
- 
         if ~flag
             [Dofs] = GetDOFs(Y,Cell,Set, isempty(Set.InputSegmentedImage) == 0);
+            if ~isempty(nV)
+                nV=reshape(nV,1,length(nV));
+                %Create remodeling DOFs
+                YDofs=3.*(kron(nV,[1 1 1])-1)+kron(ones(1,length(nV)),[1 2 3]); 
+                if ~isempty(nC)
+                    faceDofs=3.*(kron(nC,[1 1 1])-1)+kron(ones(1,length(nC)),[1 2 3]);
+                else 
+                    faceDofs=[];
+                end 
+                Dofs.Remodel=[YDofs faceDofs+Y.n*3];
+            else
+                Dofs.Remodel = [];
+            end
+            
             Cell.RemodelledVertices = nV;
             [Cell,Y,Yn,SCn,X,Dofs,Set,~,didNotConverge]=SolveRemodelingStep(Cell,Y0,Y,X,Dofs,Set,Yn,SCn,CellInput);  
         else

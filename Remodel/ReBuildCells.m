@@ -1,4 +1,4 @@
-function [Cell,SCn,flag]=ReBuildCells(Cell,T,Y,X,SCn)
+function [Cell,nC, SCn, flag]=ReBuildCells(Cell,T,Y,X,SCn)
 %% This function rebuilds Cells and Faces after doing local transformation (e.g 23flip.... )
 % Loop i over cell
 %   Loop j over the segment connecting the node (cell centre) i with neighbouring nodes (cells) j,  in the same time each segment (ij) correspond to a face shared by cell i and j.

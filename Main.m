@@ -47,7 +47,6 @@ StepSize=zeros(Set.Nincr,1);
 cellFeatures=cell(Set.Nincr, 1);
 
 Set.N_Rejected_Transfromation=0; Set.N_Accepted_Transfromation=0;
-Set.N_Remodeling_Iterations=0;   Set.N_Global_Iterations=0;
 
 % Time
 t=0;

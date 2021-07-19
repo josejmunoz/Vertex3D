@@ -26,7 +26,7 @@ while (gr>Set.tol || dyr>Set.tol) && Set.iter<Set.MaxIter
     [Y, Cell] = updateVertices(Y, Cell, dy_reshaped, Set);
 
     if Set.nu > Set.nu0 &&  gr<1e-8
-        Set.nu = max(Set.nu/2,Set.nu0);
+        Set.nu = max(Set.nu/2, Set.nu0);
     end
     %% ----------- Compute K, g ---------------------------------------
     try
@@ -51,7 +51,6 @@ while (gr>Set.tol || dyr>Set.tol) && Set.iter<Set.MaxIter
     %if Set.VTK_iter, PostProcessingVTK(X,Y,T.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK_iter'),Set.iter,Set); end
     
     Set.iter=Set.iter+1;
-    Set.N_Global_Iterations=Set.N_Global_Iterations+1;
     auxgr(ig+1)=gr;
     
     if ig ==2

@@ -248,28 +248,6 @@ if ~isfield(Set,'RemodelingFrequency')  % (The time between remodelling events. 
 end 
 
 % ---- Some settings to tune the mechanics of the Local-Problem (after topological transformation, a local mechanical problem is solved) 
-
-if ~isfield(Set,'lambdaV_LP')  % volume energy coefficient (Local-Problem )
-    Set.lambdaV_LP=Set.lambdaV;
-end
-if ~isfield(Set,'EnergyBarrier_LP') % Energy Barrier Off\On (Local-Problem )
-    Set.EnergyBarrier_LP=Set.EnergyBarrier;
-end
-if ~isfield(Set,'lambdaB_LP') % Energy Barrier coefficient (Local-Problem )
-    Set.lambdaB_LP=Set.lambdaB;
-end
-if ~isfield(Set,'Beta_LP')   % Energy Barrier coefficient (Local-Problem )
-    Set.Beta_LP=Set.Beta;
-end
-if ~isfield(Set,'Bending_LP')  % Bending Energy Off\On (Local-Problem )
-    Set.Bending_LP=Set.Bending;
-end
-if ~isfield(Set,'BendingAreaDependent_LP')  % Bending Energy Setting  (Local-Problem )
-    Set.BendingAreaDependent_LP=Set.BendingAreaDependent;
-end
-if ~isfield(Set,'lambdaBend_LP')   % Bending Energy coefficient  (Local-Problem )
-    Set.lambdaBend_LP=Set.lambdaBend;
-end
 if ~isfield(Set,'nu_LP_Inital')  % Initial Viscosity coefficient (Local-Problem )
     Set.nu_LP_Inital=50*Set.nu;
 end 

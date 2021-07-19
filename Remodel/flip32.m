@@ -50,7 +50,7 @@ for i=1:Cell.AllFaces.n
         fprintf('Vertices number %i %i %i -> were replaced by -> %i %i.\n',oldVertices(1),oldVertices(2),oldVertices(3),nV(1),nV(2));
         
         [Dofs] = GetDOFs(Y,Cell,Set, isempty(Set.InputSegmentedImage) == 0);
-        [Dofs] = updateRemodelingDOFs(Dofs, nV, nC);
+        [Dofs] = updateRemodelingDOFs(Dofs, nV, nC, Y);
         
         Cell.RemodelledVertices=nV;
         [Cell,Y,Yn,SCn,X,Dofs,Set,~,DidNotConverge]=SolveRemodelingStep(Cell,Y0,Y,X,Dofs,Set,Yn,SCn,CellInput);

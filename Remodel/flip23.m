@@ -96,7 +96,7 @@ for idFace = facesList
         
         if ~flag
             [Dofs] = GetDOFs(Y,Cell,Set, isempty(Set.InputSegmentedImage) == 0);
-            [Dofs] = updateRemodelingDOFs(Dofs, nV, nC);
+            [Dofs] = updateRemodelingDOFs(Dofs, nV, nC, Y);
             
             Cell.RemodelledVertices = nV;
             [Cell,Y,Yn,SCn,X,Dofs,Set,~,didNotConverge]=SolveRemodelingStep(Cell,Y0,Y,X,Dofs,Set,Yn,SCn,CellInput);  

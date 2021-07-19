@@ -1,4 +1,4 @@
-function [Dofs] = updateRemodelingDOFs(Dofs, nV, nC)
+function [Dofs] = updateRemodelingDOFs(Dofs, nV, nC, Y)
 %UPDATEREMODELINGDOFS Summary of this function goes here
 %   Detailed explanation goes here
     if ~isempty(nV)

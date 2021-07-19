@@ -23,10 +23,8 @@ InitiateOutputFolder(Set)
 if isempty(Set.InputSegmentedImage)
     [X]=Example(Set.e);
     [X, Y0, Y,tetrahedra,XgID,Cell,Cn,~,Yn,SCn,Set] = InitializeGeometry3DVertex(X,Set);
-    inputImage = 0;
 else
     [X, Y0, Y,tetrahedra,XgID,Cell,Cn,~,Yn,SCn,Set] = InputImage(Set);
-    inputImage = 1;
 end
 
 if Set.VTK, PostProcessingVTK(X,Y,tetrahedra.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),0,Set); end
@@ -68,7 +66,7 @@ if Set.BC==1 || Set.BC==2
         Set.WallPosition=Set.WallPosition-Set.dx/((Set.TStopBC-Set.TStartBC)/Set.dt);
         Set.prescribedBoundary = Set.WallPosition;
     end
-    [Dofs, Set] = GetDOFs(Y,Cell,Set, inputImage);
+    [Dofs] = GetDOFs(Y,Cell,Set, isempty(Set.InputSegmentedImage) == 0);
 else
     error('Invalid Input in Set.BC and Set.Substrate. \n')
 end

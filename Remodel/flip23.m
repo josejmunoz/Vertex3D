@@ -94,10 +94,10 @@ for idFace = facesList
             fprintf('Vertices number %i %i -> were replaced by -> %i %i.\n',edgeToChange(1),edgeToChange(2),nV(1),nV(2));
         end 
         
-        
+ 
         if ~flag
-            [Dofs] = GetDOFs(Y,Cell,Set, inputImage);
-            Cell.RemodelledVertices=nV;
+            [Dofs] = GetDOFs(Y,Cell,Set, isempty(Set.InputSegmentedImage) == 0);
+            Cell.RemodelledVertices = nV;
             [Cell,Y,Yn,SCn,X,Dofs,Set,~,didNotConverge]=SolveRemodelingStep(Cell,Y0,Y,X,Dofs,Set,Yn,SCn,CellInput);  
         else
             fprintf('=>> Flip23 is is not compatible rejected !! \n');

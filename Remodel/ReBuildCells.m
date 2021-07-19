@@ -1,4 +1,4 @@
-function [Cell,nC,SCn,flag]=ReBuildCells(Cell,T,Y,X,SCn)
+function [Cell,SCn,flag]=ReBuildCells(Cell,T,Y,X,SCn)
 %% This function rebuilds Cells and Faces after doing local transformation (e.g 23flip.... )
 % Loop i over cell
 %   Loop j over the segment connecting the node (cell centre) i with neighbouring nodes (cells) j,  in the same time each segment (ij) correspond to a face shared by cell i and j.
@@ -14,28 +14,32 @@ for numCell = Cell.Int(ismember(Cell.Int,Cell.AssembleNodes))
     Copy_Surface=Cell.Faces{numCell};
     Cell.nTotalTris=Cell.nTotalTris-size(Cell.Tris{numCell},1);
     
-    % ----- Build Tet
-    Cell.cTet{numCell}=T.DataRow(any(ismember(T.DataRow,Cell.Int(numCell)),2),:);        % should be improved
-    Cell.cTetID{numCell}=TetIDs(any(ismember(T.DataRow,Cell.Int(numCell)),2));   % should be improved
-    Cell.cNodes{numCell}=unique(Cell.cTet{numCell});
-    Cell.cNodes{numCell}(Cell.cNodes{numCell}==Cell.Int(numCell))=[];
+    %% Build Tet
+    currentTets = any(ismember(T.DataRow,numCell),2);
+    Cell.cTet{numCell}=T.DataRow(currentTets,:);
+    Cell.cTetID{numCell} = TetIDs(currentTets);
+    % Fill connected nodes
+    Cell.cNodes{numCell} = unique(Cell.cTet{numCell});
+    % Remove itself from the connections
+    Cell.cNodes{numCell}(Cell.cNodes{numCell} == numCell) = [];
     
-    %-- Initiate cellular database
-    nS=length(Cell.cNodes{numCell});
-    Cell.Faces{numCell}.nFaces=nS;
-    Cell.Faces{numCell}.FaceCentresID=zeros(nS,1);
-    Cell.Faces{numCell}.Vertices=cell(nS,1);
-    Cell.Faces{numCell}.Tris=cell(nS,1);
-    Cell.Tris{numCell}=zeros(120,3);
-    count3=1;  % counter for cellular-number of SurfsTris
-    Cell.Cv{numCell}=zeros(16*8,2);
-    count4=1;  % counter for cellular-number of vertex-bars
+    %% Initiate cellular database
+    nFaces=length(Cell.cNodes{numCell});
+    Cell.Faces{numCell}.nFaces=nFaces;
+    Cell.Faces{numCell}.FaceCentresID=zeros(nFaces,1);
+    Cell.Faces{numCell}.Vertices=cell(nFaces,1);
+    Cell.Faces{numCell}.Tris=cell(nFaces,1);
+    Cell.Tris{numCell}=zeros(max(cellfun(@length, Cell.Tris)),3);
+    Cell.Cv{numCell}=zeros(max(cellfun(@length, Cell.Cv)),2);
+    nSurfTris=1;  % counter for cellular-number of SurfsTris
+    nVertexBars=1;  % counter for cellular-number of vertex-bars
     
-    for numNode = 1:length(Cell.cNodes{numCell}) % loop over cell-Faces
+    %% Loop over all the faces of the cell
+    for numNode = 1:length(Cell.cNodes{numCell})
         
         SurfAxes=[Cell.Int(numCell) Cell.cNodes{numCell}(numNode)];                               % line crossing the surface
-        SurfTet=Cell.cTet{numCell}(sum(ismember(Cell.cTet{numCell},SurfAxes),2)==2,:);
-        SurfTetID=Cell.cTetID{numCell}(sum(ismember(Cell.cTet{numCell},SurfAxes),2)==2);
+        SurfTet=Cell.cTet{numCell}(sum(ismember(Cell.cTet{numCell},SurfAxes), 2) == 2, :);
+        SurfTetID=Cell.cTetID{numCell}(sum(ismember(Cell.cTet{numCell},SurfAxes), 2) == 2);
         
         %------Order Surface Vertices\Tets as loop
         SurfVertices=zeros(length(SurfTetID),1);
@@ -47,26 +51,27 @@ for numCell = Cell.Int(ismember(Cell.Int,Cell.AssembleNodes))
         AuxSurfTetID(1)=[];
         % Take the nearby regardless of the direction
         NextVertexlogic=sum(ismember(AuxSurfTet,SurfTet(1,:)),2)==3;
-        aux1=1:length(NextVertexlogic); aux1=aux1(NextVertexlogic);
+        aux1=1:length(NextVertexlogic); 
+        aux1=aux1(NextVertexlogic);
         if length(aux1)<1
             flag=true;
             return
         end
         SurfVertices(2)=AuxSurfTetID(aux1(1));
         %remove the Found
-        aux2=AuxSurfTet(aux1(1),:);
+        idOppossedNode=AuxSurfTet(aux1(1),:);
         AuxSurfTet(aux1(1),:)=[];
         AuxSurfTetID(aux1(1))=[];
         for k=3:length(SurfVertices) %loop over Surf-vertices
             % Find the next, as the one who share three nodes with previous
-            NextVertexlogic=sum(ismember(AuxSurfTet,aux2),2)==3;
+            NextVertexlogic=sum(ismember(AuxSurfTet,idOppossedNode),2)==3;
             if length(AuxSurfTetID(NextVertexlogic))~=1
                 flag=true;
                 return
             end
             SurfVertices(k)=AuxSurfTetID(NextVertexlogic);
             %remove the Found
-            aux2=AuxSurfTet(NextVertexlogic,:);
+            idOppossedNode=AuxSurfTet(NextVertexlogic,:);
             AuxSurfTet(NextVertexlogic,:)=[];
             AuxSurfTetID(NextVertexlogic)=[];
         end
@@ -74,24 +79,27 @@ for numCell = Cell.Int(ismember(Cell.Int,Cell.AssembleNodes))
         %---build the center of the face (interpolation)
         % look for the center ID in the previuos strucutre
         % (by cheking the corresponding Nodal connevtiiy )
-        aux2=Copy_Surface.FaceCentresID(Copy_cNodes==SurfAxes(2));
+        %[SurfVertices, previousSurfTet, faceCentrePos, oppNode, cID] = BuildFaceCentre(numCell, SurfAxes, Cell, X, Y, SurfVertices, Includedx, H, numFaceCentresFaces, extrapolateFaceCentre);
+        
+        oppNode = Copy_cNodes==SurfAxes(2);
+        idOppossedNode=Copy_Surface.FaceCentresID(oppNode);
         aux3=[];
-        if isempty(aux2) && ~isempty(nC)
+        if isempty(idOppossedNode) && ~isempty(nC)
             % if it is not found check if it is already added by another cell
             for nf=1:length(nC)
                 if all(ismember(SurfAxes,Cell.AllFaces.Nodes(nC(nf),:)))
-                    aux2=nC(nf);
-                    aux3=Cell.AllFaces.Vertices{aux2};
+                    idOppossedNode=nC(nf);
+                    aux3=Cell.AllFaces.Vertices{idOppossedNode};
                 end
             end
-        elseif ~isempty(aux2)
+        elseif ~isempty(idOppossedNode)
             aux3=Copy_Surface.Vertices{Copy_cNodes==SurfAxes(2)};
         end
-        if ~isempty(aux2)
+        if ~isempty(idOppossedNode)
             if length(aux3)==3
                 aux=sum(Y.DataRow(SurfVertices,:),1)/length(SurfVertices);
             else
-                aux=Cell.FaceCentres.DataRow(aux2,:);
+                aux=Cell.FaceCentres.DataRow(idOppossedNode,:);
             end
         else
             % Center/Face is not there !! Add it !!
@@ -127,102 +135,65 @@ for numCell = Cell.Int(ismember(Cell.Int,Cell.AssembleNodes))
             SurfVertices=flip(SurfVertices);
         end
         
-        
-        
-        
-        
         % save face-data
-        if ~isempty(aux2)
-            Cell.AllFaces.Vertices{aux2}=SurfVertices;
-            if length(SurfVertices)==3
-                Cell.AllFaces.V3(aux2)=true;
-                Cell.AllFaces.V4(aux2)=false;
-            elseif length(SurfVertices)==4
-                Cell.AllFaces.V3(aux2)=false;
-                Cell.AllFaces.V4(aux2)=true;
-            else
-                Cell.AllFaces.V3(aux2)=false;
-                Cell.AllFaces.V4(aux2)=false;
-            end
-            Cell.FaceCentres.DataRow(aux2,:)=aux;
+        if ~isempty(idOppossedNode)
+            Cell.AllFaces.Vertices{idOppossedNode}=SurfVertices;
+            Cell.FaceCentres.DataRow(idOppossedNode,:)=aux;
         else
             [Cell.FaceCentres,nCC]=Cell.FaceCentres.Add(aux);
-            nC=[nC nCC]; %#ok<AGROW>
+            nC=[nC nCC];
             SCn=SCn.Add(aux);
-            [Cell.AllFaces,aux2]=Cell.AllFaces.Add(SurfAxes,SurfVertices,Y.DataRow,Cell.FaceCentres.DataRow);
+            [Cell.AllFaces,idOppossedNode]=Cell.AllFaces.Add(SurfAxes,SurfVertices,Y.DataRow,Cell.FaceCentres.DataRow);
         end
         
         % Save surface vertices
         Cell.Faces{numCell}.Vertices{numNode}=SurfVertices;
         if length(SurfVertices)==3
-            Cell.Tris{numCell}(count3,:)=[SurfVertices(1) SurfVertices(2) -SurfVertices(3)];
+            Cell.Tris{numCell}(nSurfTris,:)=[SurfVertices(1) SurfVertices(2) -SurfVertices(3)];
             Cell.Faces{numCell}.Tris{numNode}=[SurfVertices(1) SurfVertices(2) -SurfVertices(3)];
             auxCv=[SurfVertices(1) SurfVertices(2);
                 SurfVertices(2) SurfVertices(3);
                 SurfVertices(3) SurfVertices(1)];
-            count3=count3+1;
+            nSurfTris=nSurfTris+1;
             
             auxCv(ismember(auxCv,Cell.Cv{numCell},'rows') | ismember(flip(auxCv,2),Cell.Cv{numCell},'rows'),:)=[];
-            Cell.Cv{numCell}(count4:count4+size(auxCv,1)-1,:)=auxCv;
-            count4=count4+size(auxCv,1);
+            Cell.Cv{numCell}(nVertexBars:nVertexBars+size(auxCv,1)-1,:)=auxCv;
+            nVertexBars=nVertexBars+size(auxCv,1);
             
             % save Surface-center
-            Cell.Faces{numCell}.FaceCentresID(numNode)=aux2;
+            Cell.Faces{numCell}.FaceCentresID(numNode)=idOppossedNode;
         else
             % Build Tringles and CellCv
             auxCv=zeros(length(SurfVertices),2);
             Cell.Faces{numCell}.Tris{numNode}=zeros(length(SurfVertices),3);
             for h=2:length(SurfVertices)
-                Cell.Tris{numCell}(count3,:)=[SurfVertices(h-1) SurfVertices(h) aux2];
-                Cell.Faces{numCell}.Tris{numNode}(h-1,:)=[SurfVertices(h-1) SurfVertices(h) aux2];
+                Cell.Tris{numCell}(nSurfTris,:)=[SurfVertices(h-1) SurfVertices(h) idOppossedNode];
+                Cell.Faces{numCell}.Tris{numNode}(h-1,:)=[SurfVertices(h-1) SurfVertices(h) idOppossedNode];
                 auxCv(2*(h-1)-1,:)=[SurfVertices(h-1) SurfVertices(h)];
-                auxCv(2*(h-1),:)=[SurfVertices(h-1) -aux2];
+                auxCv(2*(h-1),:)=[SurfVertices(h-1) -idOppossedNode];
                 %             Cell.Cv{i}(count4)=
-                count3=count3+1;
+                nSurfTris=nSurfTris+1;
             end
-            Cell.Tris{numCell}(count3,:)=[SurfVertices(end) SurfVertices(1) aux2];
-            Cell.Faces{numCell}.Tris{numNode}(h,:)=[SurfVertices(end) SurfVertices(1) aux2];
+            Cell.Tris{numCell}(nSurfTris,:)=[SurfVertices(end) SurfVertices(1) idOppossedNode];
+            Cell.Faces{numCell}.Tris{numNode}(h,:)=[SurfVertices(end) SurfVertices(1) idOppossedNode];
             
             auxCv(2*h-1,:)=[SurfVertices(end) SurfVertices(1)];
-            auxCv(2*h,:)=[SurfVertices(end) -aux2];
+            auxCv(2*h,:)=[SurfVertices(end) -idOppossedNode];
             % remove do duplicated bars
             auxCv(ismember(auxCv,Cell.Cv{numCell},'rows') | ismember(flip(auxCv,2),Cell.Cv{numCell},'rows'),:)=[];
-            Cell.Cv{numCell}(count4:count4+size(auxCv,1)-1,:)=auxCv;
+            Cell.Cv{numCell}(nVertexBars:nVertexBars+size(auxCv,1)-1,:)=auxCv;
             %          count2=count2+1;
-            count3=count3+1;
-            count4=count4+size(auxCv,1);
+            nSurfTris=nSurfTris+1;
+            nVertexBars=nVertexBars+size(auxCv,1);
             
             
             % save Surface-center
-            Cell.Faces{numCell}.FaceCentresID(numNode)=aux2;
-            
+            Cell.Faces{numCell}.FaceCentresID(numNode)=idOppossedNode;
         end
-        
-        
     end
-    Cell.Tris{numCell}(count3:end,:)=[];
-    Cell.Cv{numCell}(count4:end,:)=[];
+    Cell.Tris{numCell}(nSurfTris:end,:)=[];
+    Cell.Cv{numCell}(nVertexBars:end,:)=[];
     Cell.nTotalTris=Cell.nTotalTris+size(Cell.Tris{numCell},1);
     
-    % This bit need to be corrected
-    %     Cell.CvID{i}=count0:count0+size(Cell.Cv{i},1)-1;
-    %     Cv(count0:count0+size(Cell.Cv{i},1)-1,:)=Cell.Cv{i};
-    %     count0=count0+size(Cell.Cv{i},1);
 end
-
-
-% for i=1:length(Cell.Ext) % loop over  Interior cells
-%     Cell.cTet{i}=T.DataRow(any(ismember(T.DataRow,Cell.Ext(i)),2),:);        % should be improved
-%     if ~ismember(Cell.Ext(i),Cell.AssembleNodes)
-%         continue
-%     end
-% end
-% [Twg_ordered] = CheckTetrahedronOrder(Twg, X)
-% [Cell]=BuildEdges(Cell,Y);
-
-
-% Total number
-
-% Area and volume
-
 end

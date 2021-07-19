@@ -1,4 +1,4 @@
-function [Dofs, Set]=GetDOFs(Y, Cell, Set, contrainBorderVertices)
+function [Dofs]=GetDOFs(Y, Cell, Set, contrainBorderVertices)
 % Define free and constrained vertices:
 %   1) Vertices with y-coordinates > Set.VPrescribed are those to be prescribed (pulled)
 %   2) Vertices with y-coordinates < Set.VFixed are those to be fixed
@@ -7,14 +7,8 @@ function [Dofs, Set]=GetDOFs(Y, Cell, Set, contrainBorderVertices)
 IDY=1:Y.n;
 IDS=1:Cell.FaceCentres.n;
 IDC=1:Cell.n;
-
-if Set.BC==1
-    prescribedBoundary = Set.VPrescribed;
-elseif Set.BC==2
-    Set.WallPosition=max(Y.DataRow(:,2))+0.2;
-    Set.WallPosition=Set.WallPosition-Set.dx/((Set.TStopBC-Set.TStartBC)/Set.dt);
-    prescribedBoundary = Set.WallPosition;
-end
+prescribedBoundary = Set.prescribedBoundary;
+threefoldVertices = cellfun(@(x) length(x) == 3, Cell.AllFaces.Vertices);
 
 %% prescribed and constraint vertices 
 pIDY=IDY(Y.DataRow(:,2) > prescribedBoundary & Y.NotEmpty);
@@ -53,7 +47,7 @@ else
 end
 
 freeIDS=1:Cell.FaceCentres.n;
-SdofD=3.*(kron(freeIDS(Cell.AllFaces.V3(1:Cell.AllFaces.n)),[1 1 1])-1)+kron(ones(1,length(freeIDS(Cell.AllFaces.V3(1:Cell.AllFaces.n)))),[1 2 3]);
+SdofD=3.*(kron(freeIDS(threefoldVertices),[1 1 1])-1)+kron(ones(1,length(freeIDS(threefoldVertices))),[1 2 3]);
 SdofC=3.*(kron(cIDS,[1 1 1])-1)+kron(ones(1,length(cIDS)),[1 2 3]);
 if Set.BC==1
     SdofP=3.*(kron(pIDS,[1 1 1])-1)+kron(ones(1,length(pIDS)),[1 2 3]);

@@ -3,6 +3,12 @@ function [Cell,Y,Yn,SCn,Tetrahedra,X,Dofs,Set, Vnew] = flip23(Cell,Y0, Y,Yn,SCn,
 %   Involves replacing the edge pq as it shorten to zero length by the new 
 %   triangle ghf that is shared between cell A and B (A has been displaced 
 %   upward to reveal the new interface ghf).
+%
+%   Consequences:
+%   - 1 connection between nodes (Xs) dissappear and 1 appears.
+%   - 2 vertices (and its correspondant tetrahedra) are removed.
+%   - 3 vertices (and its correspondant tetrahedra) are created.
+
 %% loop over the rest of faces (Flip23)
 facesList=1:Cell.AllFaces.n;
 didNotConverge=false;
@@ -22,7 +28,7 @@ for idFace = facesList
     
     % Check if the face need to be remodel
     if ~Cell.AllFaces.NotEmpty(idFace)|| any(ismember(Cell.AllFaces.Vertices{idFace},Dofs.PrescribedY))...
-            ||  max(EnergyTri)<Set.RemodelTol || Cell.AllFaces.V3(idFace)
+            ||  max(EnergyTri)<Set.RemodelTol || length(Cell.AllFaces.Vertices{idFace}) == 3
         continue
     end
     % copy data
@@ -71,7 +77,8 @@ for idFace = facesList
         fprintf('=>> 23 Flip.\n');
         Ynew=PerformFlip23(Y.DataRow(edgeToChange,:),X,n3);
         
-        [Tetrahedra, Y, Yn, SCn, Cell] = removeFaceInRemodelling(Tetrahedra, Y, Yn, SCn, Cell, edgeToChange, []); %% last param? should be 'i'? or just empty []? Face should be removed?
+        %% last param? should be 'i'? or just empty []? Face should be removed?
+        [Tetrahedra, Y, Yn, SCn, Cell] = removeFaceInRemodelling(Tetrahedra, Y, Yn, SCn, Cell, edgeToChange, []); 
         
         % filter ghost tets
         filter=ismember(Tnew,XgID);
@@ -79,7 +86,7 @@ for idFace = facesList
         Tnew(filter,:)=[]; 
         Ynew(filter,:)=[];
         
-        [Tetrahedra, Y, Yn, Cell, nV, Vnew, nC, SCn, Set, V3, flag] = addNewVerticesInRemodelling(Tetrahedra, Tnew, Y, Ynew, Yn, Cell, Vnew, X, SCn, XgID, Set);
+        [Tetrahedra, Y, Yn, Cell, nV, Vnew, SCn, Set, flag] = addNewVerticesInRemodelling(Tetrahedra, Tnew, Y, Ynew, Yn, Cell, Vnew, X, SCn, XgID, Set);
         
         if length(nV) ==3
             fprintf('Vertices number %i %i -> were replaced by -> %i %i %i.\n',edgeToChange(1),edgeToChange(2),nV(1),nV(2),nV(3));
@@ -89,7 +96,7 @@ for idFace = facesList
         
         
         if ~flag
-            [Dofs]=UpdateDofs(Dofs,edgeToChange,nV,[],nC,Y,V3);
+            [Dofs] = GetDOFs(Y,Cell,Set, inputImage);
             Cell.RemodelledVertices=nV;
             [Cell,Y,Yn,SCn,X,Dofs,Set,~,didNotConverge]=SolveRemodelingStep(Cell,Y0,Y,X,Dofs,Set,Yn,SCn,CellInput);  
         else

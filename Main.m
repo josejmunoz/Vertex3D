@@ -61,6 +61,13 @@ Set.ApplyBC=true;
 
 % Dofs & Boundary
 if Set.BC==1 || Set.BC==2
+    if Set.BC==1
+        Set.prescribedBoundary = Set.VPrescribed;
+    elseif Set.BC==2
+        Set.WallPosition=max(Y.DataRow(:,2))+0.2;
+        Set.WallPosition=Set.WallPosition-Set.dx/((Set.TStopBC-Set.TStartBC)/Set.dt);
+        Set.prescribedBoundary = Set.WallPosition;
+    end
     [Dofs, Set] = GetDOFs(Y,Cell,Set, inputImage);
 else
     error('Invalid Input in Set.BC and Set.Substrate. \n')

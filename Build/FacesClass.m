@@ -37,14 +37,6 @@ classdef FacesClass
         %---------------------------------------------------------------------
         EmptyList       % - List of empty Faces
         %---------------------------------------------------------------------
-        V3              % - Faces with 3 vertices ( Logical array of size [NumFaces 1] )
-        %                     V3(i)= true -> Face (i) has  3 vertices.
-        %                     V3(i)= false -> Face (i) dose not has 3 vertices.
-        %---------------------------------------------------------------------
-        V4              % - Faces with 4 vertices ( Logical array of size [NumFaces 1] )
-        %                      V4(i)= true -> Face (i) has 4 vertices.
-        %                      V4(i)= false -> Face (i) dose not has 4 vertices.
-        %---------------------------------------------------------------------
         n               % counter on the list of faces
     end
     
@@ -58,8 +50,6 @@ classdef FacesClass
             Array.Energy=zeros(S1,1);
             Array.EnergyTri=cell(S1,1);
             Array.NotEmpty=false(S1,1);
-            Array.V3=false(S1,1);
-            Array.V4=false(S1,1);
             Array.InterfaceType=zeros(S1,1);
             Array.EmptyList=nan(S1,1);
             Array.n=0;
@@ -86,16 +76,6 @@ classdef FacesClass
             obj.Nodes(indexToAdd,:)=Nodes;
             obj.Energy(indexToAdd,:)=0;
             
-            if length(Vertices) == 3
-                obj.V3(indexToAdd)=true;
-                obj.V4(indexToAdd)=false;
-            elseif length(Vertices)==4
-                obj.V3(indexToAdd)=false;
-                obj.V4(indexToAdd)=true;
-            else
-                obj.V3(indexToAdd)=false;
-                obj.V4(indexToAdd)=false;
-            end
             % Compute Area
             obj.AreaTri{indexToAdd}=zeros(length(Vertices),1);
             obj.EnergyTri{indexToAdd}=zeros(length(Vertices),1);
@@ -133,8 +113,6 @@ classdef FacesClass
             obj.InterfaceType(V)=0;
             obj.AreaTri{V}=[];
             obj.NotEmpty(V)=false;
-            obj.V3(V)=false;
-            obj.V4(V)=false;
             obj.EmptyList(obj.nE+1:obj.nE+length(V))=V;
             obj.nE=obj.nE+length(V);
         end

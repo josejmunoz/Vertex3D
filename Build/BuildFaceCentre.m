@@ -18,6 +18,12 @@ else
     previousSurfTet=numFaceCentresFaces;
 end
 
+% % check orientation
+% v1=Y.DataRow(SurfVertices(1),:)-aux;
+% v2=Y.DataRow(SurfVertices(2),:)-aux;
+% if dot(cross(v1,v2),aux-X(Cell.Int(i),:))<0
+%     SurfVertices=flip(SurfVertices);
+% end
 Order=0;
 for iii=1:length(SurfVertices)
     if iii==length(SurfVertices)

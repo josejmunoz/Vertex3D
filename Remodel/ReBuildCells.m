@@ -41,39 +41,39 @@ for numCell = Cell.Int(ismember(Cell.Int,Cell.AssembleNodes))
         SurfTet=Cell.cTet{numCell}(sum(ismember(Cell.cTet{numCell},SurfAxes), 2) == 2, :);
         SurfTetID=Cell.cTetID{numCell}(sum(ismember(Cell.cTet{numCell},SurfAxes), 2) == 2);
         
-        %------Order Surface Vertices\Tets as loop
+        %% Order Surface Vertices\Tets as loop
         SurfVertices=zeros(length(SurfTetID),1);
-        AuxSurfTet=SurfTet;
-        AuxSurfTetID=SurfTetID; % To be arranged
+        remainingSurfTet=SurfTet;
+        remainingSurfTetID=SurfTetID; % To be arranged
         % Take the first
         SurfVertices(1)=SurfTetID(1);
-        AuxSurfTet(1,:)=[];
-        AuxSurfTetID(1)=[];
+        remainingSurfTet(1,:)=[];
+        remainingSurfTetID(1)=[];
         % Take the nearby regardless of the direction
-        NextVertexlogic=sum(ismember(AuxSurfTet,SurfTet(1,:)),2)==3;
-        aux1=1:length(NextVertexlogic); 
-        aux1=aux1(NextVertexlogic);
-        if length(aux1)<1
+        NextVertexlogic=sum(ismember(remainingSurfTet,SurfTet(1,:)),2)==3;
+        remainingVertices=1:length(NextVertexlogic); 
+        remainingVertices=remainingVertices(NextVertexlogic);
+        if length(remainingVertices)<1
             flag=true;
             return
         end
-        SurfVertices(2)=AuxSurfTetID(aux1(1));
+        SurfVertices(2)=remainingSurfTetID(remainingVertices(1));
         %remove the Found
-        idOppossedNode=AuxSurfTet(aux1(1),:);
-        AuxSurfTet(aux1(1),:)=[];
-        AuxSurfTetID(aux1(1))=[];
+        previousSurfTet=remainingSurfTet(remainingVertices(1),:);
+        remainingSurfTet(remainingVertices(1),:)=[];
+        remainingSurfTetID(remainingVertices(1))=[];
         for k=3:length(SurfVertices) %loop over Surf-vertices
             % Find the next, as the one who share three nodes with previous
-            NextVertexlogic=sum(ismember(AuxSurfTet,idOppossedNode),2)==3;
-            if length(AuxSurfTetID(NextVertexlogic))~=1
+            NextVertexlogic=sum(ismember(remainingSurfTet,previousSurfTet),2)==3;
+            if length(remainingSurfTetID(NextVertexlogic))~=1
                 flag=true;
                 return
             end
-            SurfVertices(k)=AuxSurfTetID(NextVertexlogic);
+            SurfVertices(k)=remainingSurfTetID(NextVertexlogic);
             %remove the Found
-            idOppossedNode=AuxSurfTet(NextVertexlogic,:);
-            AuxSurfTet(NextVertexlogic,:)=[];
-            AuxSurfTetID(NextVertexlogic)=[];
+            previousSurfTet=remainingSurfTet(NextVertexlogic,:);
+            remainingSurfTet(NextVertexlogic,:)=[];
+            remainingSurfTetID(NextVertexlogic)=[];
         end
         
         %---build the center of the face (interpolation)
@@ -81,10 +81,11 @@ for numCell = Cell.Int(ismember(Cell.Int,Cell.AssembleNodes))
         % (by cheking the corresponding Nodal connevtiiy )
         %[SurfVertices, previousSurfTet, faceCentrePos, oppNode, cID] = BuildFaceCentre(numCell, SurfAxes, Cell, X, Y, SurfVertices, Includedx, H, numFaceCentresFaces, extrapolateFaceCentre);
         
+        % check if the centre i already built
         oppNode = Copy_cNodes==SurfAxes(2);
         idOppossedNode=Copy_Surface.FaceCentresID(oppNode);
         aux3=[];
-        if isempty(idOppossedNode) && ~isempty(nC)
+        if ~isempty(nC)
             % if it is not found check if it is already added by another cell
             for nf=1:length(nC)
                 if all(ismember(SurfAxes,Cell.AllFaces.Nodes(nC(nf),:)))
@@ -92,43 +93,41 @@ for numCell = Cell.Int(ismember(Cell.Int,Cell.AssembleNodes))
                     aux3=Cell.AllFaces.Vertices{idOppossedNode};
                 end
             end
-        elseif ~isempty(idOppossedNode)
+        else
             aux3=Copy_Surface.Vertices{Copy_cNodes==SurfAxes(2)};
         end
+        
         if ~isempty(idOppossedNode)
             if length(aux3)==3
-                aux=sum(Y.DataRow(SurfVertices,:),1)/length(SurfVertices);
+                faceCentrePos=sum(Y.DataRow(SurfVertices,:),1)/length(SurfVertices);
             else
-                aux=Cell.FaceCentres.DataRow(idOppossedNode,:);
+                faceCentrePos=Cell.FaceCentres.DataRow(idOppossedNode,:);
             end
         else
-            % Center/Face is not there !! Add it !!
-            aux=sum(Y.DataRow(SurfVertices,:),1)/length(SurfVertices);
-            %              if sum(ismember(SurfAxes,Cell.Int))==1
-            %                  dir=(aux-X(Cell.Int(i),:)); dir=dir/norm(dir);
-            %                  H=1.5/2;
-            %                  aux=X(Cell.Int(i),:)+H.*dir;
-            %              end
-            
+            faceCentrePos=sum(Y.DataRow(SurfVertices,:),1)/length(SurfVertices);
+            if sum(ismember(SurfAxes,Cell.Int))==1 && extrapolateFaceCentre
+                dir=(faceCentrePos-X(Cell.Int(numCell),:)); dir=dir/norm(dir);
+                faceCentrePos=X(Cell.Int(numCell),:)+H.*dir;
+            end
+            previousSurfTet=numFaceCentresFaces;
         end
         
-        % check  Orientation
-        %         v1=Y.DataRow(SurfVertices(1),:)-aux;
-        %         v2=Y.DataRow(SurfVertices(2),:)-aux;
-        %         if dot(cross(v1,v2),aux-X(Cell.Int(i),:))<0
-        %            SurfVertices=flip(SurfVertices);
-        %         end
+        % % check orientation
+        % v1=Y.DataRow(SurfVertices(1),:)-aux;
+        % v2=Y.DataRow(SurfVertices(2),:)-aux;
+        % if dot(cross(v1,v2),aux-X(Cell.Int(i),:))<0
+        %     SurfVertices=flip(SurfVertices);
+        % end
         Order=0;
-        aux4=sum(Y.DataRow(SurfVertices,:),1)/length(SurfVertices);
         for iii=1:length(SurfVertices)
             if iii==length(SurfVertices)
-                v1=Y.DataRow(SurfVertices(iii),:)-aux4;
-                v2=Y.DataRow(SurfVertices(1),:)-aux4;
-                Order=Order+dot(cross(v1,v2),aux4-X(Cell.Int(numCell),:))/length(SurfVertices);
+                v1=Y.DataRow(SurfVertices(iii),:)-faceCentrePos;
+                v2=Y.DataRow(SurfVertices(1),:)-faceCentrePos;
+                Order=Order+dot(cross(v1,v2),faceCentrePos-X(Cell.Int(numCell),:))/length(SurfVertices);
             else
-                v1=Y.DataRow(SurfVertices(iii),:)-aux4;
-                v2=Y.DataRow(SurfVertices(iii+1),:)-aux4;
-                Order=Order+dot(cross(v1,v2),aux4-X(Cell.Int(numCell),:))/length(SurfVertices);
+                v1=Y.DataRow(SurfVertices(iii),:)-faceCentrePos;
+                v2=Y.DataRow(SurfVertices(iii+1),:)-faceCentrePos;
+                Order=Order+dot(cross(v1,v2),faceCentrePos-X(Cell.Int(numCell),:))/length(SurfVertices);
             end
         end
         if Order<0
@@ -138,11 +137,11 @@ for numCell = Cell.Int(ismember(Cell.Int,Cell.AssembleNodes))
         % save face-data
         if ~isempty(idOppossedNode)
             Cell.AllFaces.Vertices{idOppossedNode}=SurfVertices;
-            Cell.FaceCentres.DataRow(idOppossedNode,:)=aux;
+            Cell.FaceCentres.DataRow(idOppossedNode,:)=faceCentrePos;
         else
-            [Cell.FaceCentres,nCC]=Cell.FaceCentres.Add(aux);
+            [Cell.FaceCentres,nCC]=Cell.FaceCentres.Add(faceCentrePos);
             nC=[nC nCC];
-            SCn=SCn.Add(aux);
+            SCn=SCn.Add(faceCentrePos);
             [Cell.AllFaces,idOppossedNode]=Cell.AllFaces.Add(SurfAxes,SurfVertices,Y.DataRow,Cell.FaceCentres.DataRow);
         end
         

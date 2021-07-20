@@ -77,39 +77,37 @@ for numCell = Cell.Int(ismember(Cell.Int,Cell.AssembleNodes))
         end
         
         %---build the center of the face (interpolation)
-        % look for the center ID in the previuos strucutre
-        % (by cheking the corresponding Nodal connevtiiy )
+        % look for the center ID in the previous structure
+        % (by cheking the corresponding Nodal connectivity )
+        extrapolateFaceCentre = 0;
+        numFaceCentresFaces = -1; % Change this to be the number of faceCentres faces (maybe Faces.n or idOppossedNode)
         %[SurfVertices, previousSurfTet, faceCentrePos, oppNode, cID] = BuildFaceCentre(numCell, SurfAxes, Cell, X, Y, SurfVertices, Includedx, H, numFaceCentresFaces, extrapolateFaceCentre);
         
         % check if the centre i already built
         oppNode = Copy_cNodes==SurfAxes(2);
         idOppossedNode=Copy_Surface.FaceCentresID(oppNode);
-        aux3=[];
-        if ~isempty(nC)
+        opposedVertices=[];
+        if isempty(idOppossedNode) && ~isempty(nC)
             % if it is not found check if it is already added by another cell
-            for nf=1:length(nC)
-                if all(ismember(SurfAxes,Cell.AllFaces.Nodes(nC(nf),:)))
-                    idOppossedNode=nC(nf);
-                    aux3=Cell.AllFaces.Vertices{idOppossedNode};
+            for numFace=1:length(nC)
+                if all(ismember(SurfAxes,Cell.AllFaces.Nodes(nC(numFace),:)))
+                    idOppossedNode=nC(numFace);
+                    opposedVertices=Cell.AllFaces.Vertices{idOppossedNode};
                 end
             end
-        else
-            aux3=Copy_Surface.Vertices{Copy_cNodes==SurfAxes(2)};
+        elseif ~isempty(idOppossedNode)
+            opposedVertices=Copy_Surface.Vertices{Copy_cNodes==SurfAxes(2)};
         end
         
-        if ~isempty(idOppossedNode)
-            if length(aux3)==3
-                faceCentrePos=sum(Y.DataRow(SurfVertices,:),1)/length(SurfVertices);
-            else
-                faceCentrePos=Cell.FaceCentres.DataRow(idOppossedNode,:);
-            end
+        if ~isempty(idOppossedNode) && length(opposedVertices)==1
+            faceCentrePos=Cell.FaceCentres.DataRow(idOppossedNode,:);
         else
             faceCentrePos=sum(Y.DataRow(SurfVertices,:),1)/length(SurfVertices);
             if sum(ismember(SurfAxes,Cell.Int))==1 && extrapolateFaceCentre
                 dir=(faceCentrePos-X(Cell.Int(numCell),:)); dir=dir/norm(dir);
                 faceCentrePos=X(Cell.Int(numCell),:)+H.*dir;
             end
-            previousSurfTet=numFaceCentresFaces;
+            %previousSurfTet=numFaceCentresFaces;
         end
         
         % % check orientation

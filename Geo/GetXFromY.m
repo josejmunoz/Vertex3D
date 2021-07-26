@@ -12,17 +12,18 @@ function [X]=GetXFromY(Cell,X,T,Y,XgID,Set, Y0, Tetrahedra_weights)
 if Set.ObtainX == 0 && exist('Tetrahedra_weights', 'var')
     
     X_Previous = X;
-    disp('Getting X from Y')
     YChange = Y.DataRow - Y0.DataRow;
     
     for numX = 1:size(X, 1)
         currentTetrahedra = any(ismember(T.DataRow, numX), 2);
-        if ismember(numX, Cell.Int)
-            changeOfSurroundingYs = mean(Tetrahedra_weights(currentTetrahedra, :) .* YChange(currentTetrahedra, :));
-        else
-            changeOfSurroundingYs = mean(YChange(currentTetrahedra, :));
+        if any(currentTetrahedra)
+            if ismember(numX, Cell.Int)
+                changeOfSurroundingYs = mean(Tetrahedra_weights(currentTetrahedra, :) .* YChange(currentTetrahedra, :));
+            else
+                changeOfSurroundingYs = mean(YChange(currentTetrahedra, :));
+            end
+            X(numX, :) = X(numX, :) + changeOfSurroundingYs;
         end
-        X(numX, :) = X(numX, :) + changeOfSurroundingYs;
     end
 %     Tetrahedra = T.DataRow(1:T.n, :);
 %     allXs = unique(Tetrahedra);

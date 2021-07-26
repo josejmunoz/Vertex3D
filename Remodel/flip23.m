@@ -69,20 +69,24 @@ for idFace = facesList
             || any(ismember(edgeToChange, Vnew.Data))
         continue
     end
+    
+    % filter ghost tets
+    ghostNodes = ismember(Tnew,XgID);
+    ghostNodes = all(ghostNodes,2);
+    if any(ghostNodes)
+        Tnew(ghostNodes,:)=[];
+        fprintf('=>> Flips 2-2 are not allowed for now\n');
+        return
+    end
    
     % Check Convexity Condition
     if CheckConvexityCondition(Tnew,Tetrahedra, X) == 0
         fprintf('=>> 23 Flip.\n');
         Ynew=PerformFlip23(Y.DataRow(edgeToChange,:),X,n3);
+        Ynew(ghostNodes,:)=[];
         
         %% last param? should be 'i'? or just empty []? Face should be removed?
         [Tetrahedra, Y, Yn, SCn, Cell] = removeFaceInRemodelling(Tetrahedra, Y, Yn, SCn, Cell, edgeToChange, []); 
-        
-        % filter ghost tets
-        filter=ismember(Tnew,XgID);
-        filter=all(filter,2);
-        Tnew(filter,:)=[]; 
-        Ynew(filter,:)=[];
         
         [Tetrahedra, Y, Yn, Cell, nV, Vnew, nC, SCn, Set, flag] = addNewVerticesInRemodelling(Tetrahedra, Tnew, Y, Ynew, Yn, Cell, Vnew, X, SCn, XgID, Set);
         

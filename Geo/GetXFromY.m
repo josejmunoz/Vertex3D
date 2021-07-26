@@ -1,23 +1,75 @@
-function [X]=GetXFromY(Cell,X,T,Y,XgID,Set)
+function [X]=GetXFromY(Cell,X,T,Y,XgID,Set, Y0, Tetrahedra_weights)
 % Obtain X (nodal position) from given vertex (Y) Position
 
 
-% Set cell centres as the centre of mass
-for i=1:Cell.n
-    YY=unique(Cell.Tris{i}(:,[1 2]));
-    YYY=unique(Cell.Tris{i}(Cell.Tris{i}(:,3)<0,3));
-    YYY=abs(YYY);
-    CC=unique(Cell.Tris{i}(Cell.Tris{i}(:,3)>0,3));
-    A=length(YY)+length(YYY)+length(CC);
-    YY=sum(Y.DataRow(YY,:),1);
-    YYY=sum(Y.DataRow(YYY,:),1);
-    CC=sum(Cell.FaceCentres.DataRow(CC,:),1);
-    YY=(YY+YYY+CC)./A;
-    X(Cell.Int(i),:)=YY;
-end
+% % Set cell centres as the centre of mass
+% for numCell = 1:Cell.n
+%     allVertices=unique(Cell.Tris{numCell}(:,[1 2]));
+%     centreOfMass = mean(Y.DataRow(allVertices, :), 1);
+%     X(Cell.Int(numCell),:)=centreOfMass;
+% end
 
-
-if Set.ObtainX==1
+if Set.ObtainX == 0 && exist('Tetrahedra_weights', 'var')
+    
+    X_Previous = X;
+    disp('Getting X from Y')
+    YChange = Y.DataRow - Y0.DataRow;
+    
+    for numX = 1:size(X, 1)
+        currentTetrahedra = any(ismember(T.DataRow, numX), 2);
+        if ismember(numX, Cell.Int)
+            changeOfSurroundingYs = mean(Tetrahedra_weights(currentTetrahedra, :) .* YChange(currentTetrahedra, :));
+        else
+            changeOfSurroundingYs = mean(YChange(currentTetrahedra, :));
+        end
+        X(numX, :) = X(numX, :) + changeOfSurroundingYs;
+    end
+%     Tetrahedra = T.DataRow(1:T.n, :);
+%     allXs = unique(Tetrahedra);
+%     allXs(ismember(allXs, Cell.Int)) = [];
+%     %XsToFind = sym('newX', [3 length(allXs)]);
+%     XsToFind = optimvar('newX', 3, length(allXs));
+% %     LowerBoundXs = -Inf(3, length(allXs));
+% %     LowerBoundXs(3, X(allXs, 3)>0) = 0;   
+% %     upperBoundXs = Inf(3, length(allXs));
+% %     upperBoundXs(3, X(allXs, 3)<0) = 0;
+% %     XsToFind.LowerBound = LowerBoundXs;
+% %     XsToFind.UpperBound = upperBoundXs;
+%     equations = [];
+%     
+%     for numTet = 1:T.n
+%         currentTetrahedron = T.DataRow(numTet, :);
+%         for numCoord = 1:3
+%             currentEqRightSide = Y.DataRow(numTet, numCoord)*4;
+%             currentEqLeftSide = 0;
+%             for numNode = currentTetrahedron
+%                 if ismember(numNode, Cell.Int)
+%                     currentEqRightSide = currentEqRightSide + X(numNode, numCoord);
+%                 else
+%                     currentEqLeftSide = currentEqLeftSide + XsToFind(numCoord, allXs == numNode);
+%                 end
+%             end
+%             
+%             equations = [equations, currentEqLeftSide == currentEqRightSide];
+%         end
+%         
+%     end
+% %     tic
+% %     [A,B] = equationsToMatrix(equations, XsToFind);
+% %     newXSolved = linsolve(A,B);
+% %     toc
+% %     tic
+%     prob = eqnproblem('Equations',equations);
+%     x0.newX = X_Previous(allXs, :)';
+%     [sol] = solve(prob, x0, 'solver', 'lsqnonlin');
+%     X(allXs, :) = sol.newX';
+% %     toc
+% %     tic
+% %     newXSolved = solve(equations);
+% %     toc
+%     disp('end');
+    
+elseif Set.ObtainX==1
     %% The functional to be minimized (Xi =1/4)
     %  J:= (y-NN*x)'*(y-NN*x) + LM'*( X(cellcentre) - Xc)
     %  X^*=min_X (J)
@@ -29,18 +81,18 @@ if Set.ObtainX==1
     ID(XgID)=[];
     
     % Assemble NN matrix
-    for i=1:size(Y,1)
-        ii=3*(i-1)+1;
+    for numCell=1:size(Y,1)
+        ii=3*(numCell-1)+1;
         for j=1:4
-            jj=3*(T(i,j)-1)+1;
-            NN(ii:ii+2,jj:jj+2)=N(i,j)*eye(3);
+            jj=3*(T(numCell,j)-1)+1;
+            NN(ii:ii+2,jj:jj+2)=N(numCell,j)*eye(3);
         end
     end
     
     I=zeros(3*size(X,1),3*length(ID));
-    for i=1:length(ID)
-        ii=3*(i-1)+1;
-        jj=3*(ID(i)-1)+1;
+    for numCell=1:length(ID)
+        ii=3*(numCell-1)+1;
+        jj=3*(ID(numCell)-1)+1;
         I(ii:ii+2,jj:jj+2)=eye(3);
     end
     
@@ -72,12 +124,12 @@ elseif Set.ObtainX==2
     N=ones(size(T))*(1/4);
 
     TetV0=zeros(size(T,1),1);
-    for i=1:size(T,1)
-        X1=X(T(i,1),:);
-        X2=X(T(i,2),:);
-        X3=X(T(i,3),:);
-        X4=X(T(i,4),:);
-        TetV0(i)=(1/6)*dot(X1'-X3',cross(X2-X3,X4-X3)');
+    for numCell=1:size(T,1)
+        X1=X(T(numCell,1),:);
+        X2=X(T(numCell,2),:);
+        X3=X(T(numCell,3),:);
+        X4=X(T(numCell,4),:);
+        TetV0(numCell)=(1/6)*dot(X1'-X3',cross(X2-X3,X4-X3)');
     end
     
     
@@ -114,27 +166,27 @@ elseif Set.ObtainX==3
     % nodes are placed with a distance d form the cell centre in the direction of centre of the face. 
     d=1;
     % Loop over boundary nodes
-    for i=1:length(XgID)
+    for numCell=1:length(XgID)
         nf=0; % number of cells/nodes connected to XgID(i)
         XX=zeros(3,1);
         for f=1:Cell.AllFaces.n
-            aux=ismember(XgID(i),Cell.AllFaces.Nodes(f,:));
+            aux=ismember(XgID(numCell),Cell.AllFaces.Nodes(f,:));
             if ~Cell.AllFaces.NotEmpty(f) || aux==0
                 continue
             end
             nf=nf+1;
             xi=Cell.FaceCentres.DataRow(f,:)';     
-            pi=X(Cell.AllFaces.Nodes(f,Cell.AllFaces.Nodes(f,:)~=XgID(i)),:)';
+            pi=X(Cell.AllFaces.Nodes(f,Cell.AllFaces.Nodes(f,:)~=XgID(numCell)),:)';
             v=(xi-pi)/norm(xi-pi);
             XX=XX+d*v+pi;
         end
         
         if nf==1
-            X(XgID(i),:)=d*v+pi;
+            X(XgID(numCell),:)=d*v+pi;
         elseif nf ==0
             continue
         else
-            X(XgID(i),:)=XX./nf;
+            X(XgID(numCell),:)=XX./nf;
         end
         
     end

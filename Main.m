@@ -24,7 +24,7 @@ if isempty(Set.InputSegmentedImage)
     [X]=Example(Set.e);
     [X, Y0, Y,tetrahedra,XgID,Cell,Cn,~,Yn,SCn,Set] = InitializeGeometry3DVertex(X,Set);
 else
-    [X, Y0, Y,tetrahedra,XgID,Cell,Cn,~,Yn,SCn,Set] = InputImage(Set);
+    [X, Y0, Y,tetrahedra,Tetrahedra_weights, XgID,Cell,Cn,~,Yn,SCn,Set] = InputImage(Set);
 end
 
 if Set.VTK, PostProcessingVTK(X,Y,tetrahedra.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),0,Set); end
@@ -113,7 +113,7 @@ while t<=Set.tend
         fprintf('STEP %i has converged ...\n',Set.iIncr)
         
         %Update Nodes (X) from Vertices (Y)
-        [X]=GetXFromY(Cell,Faces,X,tetrahedra,Y,XgID,Set);
+        [X]=GetXFromY(Cell,X,tetrahedra,Y,XgID,Set, Y0, Tetrahedra_weights);
         
         %% Post processing
         if Set.VTK, PostProcessingVTK(X,Y,tetrahedra.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end

@@ -69,11 +69,9 @@ for idFace = facesList
             || any(ismember(edgeToChange, Vnew.Data))
         continue
     end
-    
+   
     % Check Convexity Condition
-    [IsNotConvex]=CheckConvexityCondition(Tnew,Tetrahedra);
-    
-    if IsNotConvex == 0
+    if CheckConvexityCondition(Tnew,Tetrahedra, X) == 0
         fprintf('=>> 23 Flip.\n');
         Ynew=PerformFlip23(Y.DataRow(edgeToChange,:),X,n3);
         
@@ -110,6 +108,20 @@ for idFace = facesList
             fprintf('=>> Local problem did not converge -> 23 Flip rejected !! \n');
             break
         else
+%             figure, 
+%             %Previous tetrahedra
+%             tetramesh(Tp.DataRow(edgeToChange, :), Xp)
+%             hold on;
+%             %Previous edges to change
+%             plot3(Yp.DataRow(edgeToChange, 1), Yp.DataRow(edgeToChange, 2), Yp.DataRow(edgeToChange, 3), 'bo')
+%             
+%             figure,
+%             %New tetrahedra
+%             tetramesh(Tnew(1, :), X)
+%             hold on;
+%             %Previous edges to change
+%             plot3(Ynew(1, 1), Ynew(1, 2), Ynew(1, 3), 'bo')
+            
             Set.N_Accepted_Transfromation=Set.N_Accepted_Transfromation+1;
         end
     else

@@ -13,6 +13,8 @@ classdef FacesClass
         %---------------------------------------------------------------------
         Vertices       % - The vertices of faces (cell-structure ,  Size={NumFaces 1}):
         %                  (e.g. Vertices{i} -> array with the vertices of face i
+        PerimeterTri
+        Perimeter
         %---------------------------------------------------------------------
         Area           % - The area of faces (array-structure ,  Size=[NumFaces 1]):
         %                  (e.g. Area(i) -> The area of face i)
@@ -46,6 +48,8 @@ classdef FacesClass
             Array.Vertices=cell(S1,1);
             Array.AreaTri=cell(S1,1);
             Array.Area=zeros(S1,1);
+            Array.PerimeterTri=cell(S1,1);
+            Array.Perimeter=zeros(S1,1);
             Array.Nodes=zeros(S1,2);
             Array.Energy=zeros(S1,1);
             Array.EnergyTri=cell(S1,1);
@@ -117,6 +121,23 @@ classdef FacesClass
             obj.nE=obj.nE+length(V);
         end
         
+        %-------------Compute the permiter of faces ------------------------
+        function [obj] = ComputePerimeterTri(obj, Y, SurfsCenters)
+            for i=1:obj.n
+                if obj.NotEmpty(i)
+                    obj.PerimeterTri{i}=zeros(length(obj.Vertices{i}),1);
+                    for j=1:length(obj.Vertices{i})-1
+                        YTri=[Y(obj.Vertices{i}([j j+1]),:); SurfsCenters(i,:)];
+                        obj.PerimeterTri{i}(j) = std([pdist2(YTri(1,:), YTri(2,:)), pdist2(YTri(2,:), YTri(3,:)), pdist2(YTri(3,:), YTri(1,:))]);
+                    end
+                    YTri=[Y(obj.Vertices{i}([j+1 1]),:); SurfsCenters(i,:)];
+                    obj.PerimeterTri{i}(j+1) = std([pdist2(YTri(1,:), YTri(2,:)), pdist2(YTri(2,:), YTri(3,:)), pdist2(YTri(3,:), YTri(1,:))]);
+                    obj.Perimeter(i)=sum(obj.PerimeterTri{i});
+                else
+                    obj.PerimeterTri{i}=[];
+                end
+            end
+        end
         %-------------Compute the area of faces ----------------------------
         function [obj]=ComputeAreaTri(obj,Y,SurfsCenters)
             for i=1:obj.n
@@ -143,7 +164,7 @@ classdef FacesClass
                 if obj.NotEmpty(i)
                     obj.EnergyTri{i}=zeros(size(obj.Vertices{i}));
                     for j=1:length(obj.Vertices{i})
-                        obj.EnergyTri{i}(j)= exp(Set.lambdaB*(1-Set.Beta*obj.AreaTri{i}(j)/Set.BarrierTri0));
+                        obj.EnergyTri{i}(j)= exp(Set.lambdaB*(1-Set.Beta*(obj.AreaTri{i}(j))/Set.BarrierTri0));
                     end
                     obj.Energy(i)=sum(obj.EnergyTri{i});
                 else

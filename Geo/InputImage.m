@@ -194,6 +194,7 @@ Set.NumXs = size(X, 1);
 Cn=BuildCn(Twg);
 
 Cell.AllFaces=Cell.AllFaces.ComputeAreaTri(Y.DataRow,Cell.FaceCentres.DataRow);
+Cell.AllFaces=Cell.AllFaces.ComputePerimeterTri(Y.DataRow,Cell.FaceCentres.DataRow);
 Cell.AllFaces=Cell.AllFaces.CheckInteriorFaces(XgID);
 
 Yn = Y;
@@ -209,11 +210,17 @@ T=T.Add(Twg);
 % figure,
 % tetramesh(T.DataRow(any(ismember(T.DataRow, 1), 2), :), XNew);
 
+
 Set.BarrierTri0=realmax; 
+
 for i=1:Cell.n
     Set.BarrierTri0=min([Cell.SAreaTri{i}; Set.BarrierTri0]);
 end
 Set.BarrierTri0=Set.BarrierTri0/10;
+
+% allPerimeters = vertcat(Cell.AllFaces.PerimeterTri{:});
+% allAreas = vertcat(Cell.AllFaces.AreaTri{:});
+% Set.BarrierTri0=min(allAreas .* allPerimeters)/5;
 
 [Cell,Y]=CheckOrderingOfTriangulaiton(Cell,Y,Set);
 

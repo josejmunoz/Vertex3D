@@ -17,21 +17,24 @@ if any(foundTets>0)
 end
 
 %% Checking if Tnew overlap with other tetrahedra
-for numTnew = 1:size(Tnew, 1)
-    currentTet = Tnew(numTnew, :);
-    tetShape = alphaShape(X(currentTet, 1), X(currentTet, 2), X(currentTet, 3));
-    allXsExceptCurrentTet = 1:size(X, 1);
-    allXsExceptCurrentTet(Tnew(numTnew, :)) = [];
-    % Checking if any point of the Xs are inside the tetrahedra
-    if any(tetShape.inShape(X(allXsExceptCurrentTet, 1), X(allXsExceptCurrentTet, 2), X(allXsExceptCurrentTet, 3)))
-        tetID = numTnew;
-        isConvex = true;
-        return
-    end
-end
+% Here, we would calculate the plane of each face of the Tetrahedron and
+% see if that intersect with other plane of a neighbouring tetrahedron. 
+% Two faces would interesect if:
+%  - They are not parallel AND
+%  - They share a different point than the vertices on the corners
 
-
-
+% for numTnew = 1:size(Tnew, 1)
+%     currentTet = Tnew(numTnew, :);
+%     tetShape = alphaShape(X(currentTet, 1), X(currentTet, 2), X(currentTet, 3));
+%     allXsExceptCurrentTet = 1:size(X, 1);
+%     allXsExceptCurrentTet(Tnew(numTnew, :)) = [];
+%     % Checking if any point of the Xs are inside the tetrahedra
+%     if any(tetShape.inShape(X(allXsExceptCurrentTet, 1), X(allXsExceptCurrentTet, 2), X(allXsExceptCurrentTet, 3)))
+%         tetID = numTnew;
+%         isConvex = true;
+%         return
+%     end
+% end
 
 %% Checking if Tnew is convex
 

@@ -1,10 +1,15 @@
-function [g,K,Cell, Y, Energy, Set, gr, dyr, dy] = newtonRaphson(Set, Cell, SCn, K, g, Dofs, Y, Y0, Yn, CellInput, numStep, t)
+function [g,K,Cell, Y, Energy, Set, gr, dyr, dy] = newtonRaphson(Set, Cell, SCn, K, g, Dofs, Y, Y0, Yn, CellInput, numStep, t, remodelling)
 %NEWTONRAPHSON Summary of this function goes here
 %   Detailed explanation goes here
 
 dy=zeros(Set.NumTotalV*3, 1);
-dyr=norm(dy(Dofs.FreeDofs));
-gr=norm(g(Dofs.FreeDofs));
+if remodelling
+    dyr=norm(dy(Dofs.Remodel));
+    gr=norm(g(Dofs.Remodel));
+else
+    dyr=norm(dy(Dofs.FreeDofs));
+    gr=norm(g(Dofs.FreeDofs));
+end
 gr0=gr;
 if numStep > -1
     fprintf('Step: %i,Iter: %i ||gr||= %e ||dyr||= %e dt/dt0=%.3g\n',numStep,0,gr,dyr,Set.dt/Set.dt0);
@@ -17,7 +22,11 @@ auxgr=zeros(3,1);
 auxgr(1)=gr;
 ig=1;
 while (gr>Set.tol || dyr>Set.tol) && Set.iter<Set.MaxIter
-    dy(Dofs.FreeDofs)=-K(Dofs.FreeDofs,Dofs.FreeDofs)\g(Dofs.FreeDofs);
+    if remodelling
+        dy(Dofs.Remodel)=-K(Dofs.Remodel,Dofs.Remodel)\g(Dofs.Remodel);
+    else
+        dy(Dofs.FreeDofs)=-K(Dofs.FreeDofs,Dofs.FreeDofs)\g(Dofs.FreeDofs);
+    end
     [alpha]=LineSearch(Cell,SCn,dy,g,Dofs.FreeDofs,Set,Y,Y0,Yn,CellInput);
 
     %% Update mechanical nodes
@@ -42,8 +51,13 @@ while (gr>Set.tol || dyr>Set.tol) && Set.iter<Set.MaxIter
             throw(ME)
         end
     end
-    dyr=norm(dy(Dofs.FreeDofs));
-    gr=norm(g(Dofs.FreeDofs));
+    if remodelling
+        dyr=norm(dy(Dofs.Remodel));
+        gr=norm(g(Dofs.Remodel));
+    else
+        dyr=norm(dy(Dofs.FreeDofs));
+        gr=norm(g(Dofs.FreeDofs));
+    end
     if numStep > -1
         fprintf('Step: % i,Iter: %i, Time: %g ||gr||= %.3e ||dyr||= %.3e alpha= %.3e  nu/nu0=%.3g \n',numStep,Set.iter,t,gr,dyr,alpha,Set.nu/Set.nu0);
     end

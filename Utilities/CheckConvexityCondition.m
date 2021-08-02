@@ -5,14 +5,14 @@ function [isConvex, tetID]=CheckConvexityCondition(Tnew,Tetrahedra, X)
 %   - overlap with other tetrahedra
 %   - is convex
 
-isConvex = false;
+isConvex = true;
 tetID = -1;
 
 %% Checking if the same tetrahadron is already on T
 [foundTets, tetFoundIds] = ismember(sort(Tnew, 2),sort(Tetrahedra.DataRow, 2), 'rows');
 if any(foundTets>0)
     tetID = tetFoundIds(foundTets);
-    isConvex = true;
+    isConvex = false;
     return
 end
 
@@ -37,6 +37,39 @@ end
 % end
 
 %% Checking if Tnew is convex
+disp('h')
+for numTet = 1:size(Tnew, 1)
+    currentTet = Tnew(numTet, :);
+    for nextNumTet = numTet+1:size(Tnew, 1)
+        nextTet = Tnew(nextNumTet, :);
+        
+        sharedVertices = currentTet(ismember(currentTet, nextTet));
+        endPointCurrentTet = currentTet(ismember(currentTet, nextTet) == 0);
+        endPointNextTet = nextTet(ismember(nextTet, currentTet) == 0);
+        
+        allPairedVertices = nchoosek(sharedVertices,2);
+        for numPair = 1:size(allPairedVertices, 1)
+            edge = allPairedVertices(numPair, :);
+            
+            theOtherVertex = sharedVertices(ismember(sharedVertices, edge) == 0);
+            
+            figure, plot3(X([endPointCurrentTet endPointNextTet], 1), X([endPointCurrentTet endPointNextTet], 2), X([endPointCurrentTet endPointNextTet], 3), 'x')
+            hold on, plot3(X(edge, 1), X(edge, 2), X(edge, 3), 'bo')
+            hold on, plot3(X(theOtherVertex, 1), X(theOtherVertex, 2), X(theOtherVertex, 3), 'ro')
+            
+            %https://stackoverflow.com/questions/2142552/calculate-the-angle-between-two-triangles-in-cuda
+            normal2Triangle = cross(X(endPointNextTet, :) - X(edge(1), :), X(edge(2), :) - X(edge(1), :));
+            normal1Triangle = cross(X(endPointCurrentTet, :) - X(edge(1), :), X(edge(2), :) - X(edge(1), :));
+            
+            angleOfTriangle = acosd(dot(normal1Triangle, normal2Triangle) / (norm(normal1Triangle) * norm(normal2Triangle)));
+            
+            if angleOfTriangle > 180
+                isConvex = false;
+                return
+            end
+        end
+    end
+end
 
 end
 

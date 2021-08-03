@@ -52,18 +52,42 @@ for numTet = 1:size(Tnew, 1)
             edge = allPairedVertices(numPair, :);
             
             theOtherVertex = sharedVertices(ismember(sharedVertices, edge) == 0);
+            vectorToOtherVertex_Current = X(endPointCurrentTet, :) - X(theOtherVertex, :);
+            vectorToOtherVertex_Next = X(endPointNextTet, :) - X(theOtherVertex, :);
             
-            figure, plot3(X([endPointCurrentTet endPointNextTet], 1), X([endPointCurrentTet endPointNextTet], 2), X([endPointCurrentTet endPointNextTet], 3), 'x')
-            hold on, plot3(X(edge, 1), X(edge, 2), X(edge, 3), 'bo')
-            hold on, plot3(X(theOtherVertex, 1), X(theOtherVertex, 2), X(theOtherVertex, 3), 'ro')
+%             figure, plot3(X([endPointCurrentTet endPointNextTet], 1), X([endPointCurrentTet endPointNextTet], 2), X([endPointCurrentTet endPointNextTet], 3), 'x')
+%             hold on, plot3(X(edge, 1), X(edge, 2), X(edge, 3), 'bo')
+%             hold on, plot3(X(theOtherVertex, 1), X(theOtherVertex, 2), X(theOtherVertex, 3), 'ro')
             
             %https://stackoverflow.com/questions/2142552/calculate-the-angle-between-two-triangles-in-cuda
+            % Here we create two normals of the triangles cross of two
+            % vectors represents its normal
             normal2Triangle = cross(X(endPointNextTet, :) - X(edge(1), :), X(edge(2), :) - X(edge(1), :));
             normal1Triangle = cross(X(endPointCurrentTet, :) - X(edge(1), :), X(edge(2), :) - X(edge(1), :));
             
-            angleOfTriangle = acosd(dot(normal1Triangle, normal2Triangle) / (norm(normal1Triangle) * norm(normal2Triangle)));
+            if dot(vectorToOtherVertex_Current, normal1Triangle) / (norm(vectorToOtherVertex_Current) *  norm(normal1Triangle)) > 0 
+                normal1Triangle = -normal1Triangle;
+            end
             
-            if angleOfTriangle > 180
+            if dot(vectorToOtherVertex_Next, normal2Triangle) / (norm(vectorToOtherVertex_Next) *  norm(normal2Triangle)) > 0 
+                normal2Triangle = -normal2Triangle;
+            end
+            
+            % Define
+            directionVectorTriangles = cross(normal1Triangle, normal2Triangle);
+            directionVectorOrigin = cross(vectorToOtherVertex_Current, vectorToOtherVertex_Next);
+            % Dot is how aligned are them: 1 is parallel; -1 opposite
+            % direction
+            alignmentDirections = dot(directionVectorOrigin, directionVectorTriangles) / (norm(directionVectorOrigin) * norm(directionVectorTriangles));
+            
+            determinant = det(directionVectorOrigin * directionVectorTriangles);
+            atan2(determinant, alignmentDirections)
+            
+            %Another option is to do a dimensionality reduction and obtain
+            %a 2D problem: https://math.stackexchange.com/questions/878785/how-to-find-an-angle-in-range0-360-between-2-vectors
+            
+            %
+            if alignmentDirections < -0.5
                 isConvex = false;
                 return
             end

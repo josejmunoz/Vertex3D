@@ -123,15 +123,18 @@ classdef FacesClass
         
         %-------------Compute the permiter of faces ------------------------
         function [obj] = ComputePerimeterTri(obj, Y, SurfsCenters)
+            % Fuction lmin/lmax
             for i=1:obj.n
                 if obj.NotEmpty(i)
                     obj.PerimeterTri{i}=zeros(length(obj.Vertices{i}),1);
                     for j=1:length(obj.Vertices{i})-1
                         YTri=[Y(obj.Vertices{i}([j j+1]),:); SurfsCenters(i,:)];
-                        obj.PerimeterTri{i}(j) = std([pdist2(YTri(1,:), YTri(2,:)), pdist2(YTri(2,:), YTri(3,:)), pdist2(YTri(3,:), YTri(1,:))]);
+                        distances = [pdist2(YTri(1,:), YTri(2,:)), pdist2(YTri(2,:), YTri(3,:)), pdist2(YTri(3,:), YTri(1,:))];
+                        obj.PerimeterTri{i}(j) = min(distances)/max(distances);
                     end
                     YTri=[Y(obj.Vertices{i}([j+1 1]),:); SurfsCenters(i,:)];
-                    obj.PerimeterTri{i}(j+1) = std([pdist2(YTri(1,:), YTri(2,:)), pdist2(YTri(2,:), YTri(3,:)), pdist2(YTri(3,:), YTri(1,:))]);
+                    distances = [pdist2(YTri(1,:), YTri(2,:)), pdist2(YTri(2,:), YTri(3,:)), pdist2(YTri(3,:), YTri(1,:))];
+                    obj.PerimeterTri{i}(j+1) = min(distances)/max(distances);
                     obj.Perimeter(i)=sum(obj.PerimeterTri{i});
                 else
                     obj.PerimeterTri{i}=[];
@@ -159,17 +162,18 @@ classdef FacesClass
         
         %-------------Compute the energy barrier of faces -----------------
         % The energy --> WBexp = exp( Set.lambdaB*  ( 1 - Set.Beta*At/Set.BarrierTri0 )  );
-        function [obj]=ComputeEnergy(obj,Set)
-            for i=1:obj.n
-                if obj.NotEmpty(i)
-                    obj.EnergyTri{i}=zeros(size(obj.Vertices{i}));
-                    for j=1:length(obj.Vertices{i})
-                        obj.EnergyTri{i}(j)= exp(Set.lambdaB*(1-Set.Beta*(obj.AreaTri{i}(j))/Set.BarrierTri0));
+        function [obj]=ComputeEnergy(obj, Set)
+            for numFace=1:obj.n
+                if obj.NotEmpty(numFace)
+                    obj.EnergyTri{numFace}=zeros(size(obj.Vertices{numFace}));
+                    for numTri=1:length(obj.Vertices{numFace})
+                        %obj.EnergyTri{i}(j)= exp(Set.lambdaB*(1-Set.Beta*(obj.AreaTri{i}(j))/Set.BarrierTri0));
+                        obj.EnergyTri{numFace}(numTri) = exp(Set.lambdaB * (1 - Set.Beta * obj.PerimeterTri{numFace}(numTri)/0.1));
                     end
-                    obj.Energy(i)=sum(obj.EnergyTri{i});
+                    obj.Energy(numFace)=sum(obj.EnergyTri{numFace});
                 else
-                    obj.EnergyTri{i}=[];
-                    obj.Energy(i)=0;
+                    obj.EnergyTri{numFace}=[];
+                    obj.Energy(numFace)=0;
                 end
             end
         end

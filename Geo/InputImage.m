@@ -211,16 +211,15 @@ T=T.Add(Twg);
 % tetramesh(T.DataRow(any(ismember(T.DataRow, 1), 2), :), XNew);
 
 
-Set.BarrierTri0=realmax; 
+% Set.BarrierTri0=realmax; 
+% for i=1:Cell.n
+%     Set.BarrierTri0=min([Cell.SAreaTri{i}; Set.BarrierTri0]);
+% end
+% Set.BarrierTri0=Set.BarrierTri0/10;
 
-for i=1:Cell.n
-    Set.BarrierTri0=min([Cell.SAreaTri{i}; Set.BarrierTri0]);
-end
-Set.BarrierTri0=Set.BarrierTri0/10;
-
-% allPerimeters = vertcat(Cell.AllFaces.PerimeterTri{:});
-% allAreas = vertcat(Cell.AllFaces.AreaTri{:});
-% Set.BarrierTri0=min(allAreas .* allPerimeters)/5;
+allPerimeters = vertcat(Cell.AllFaces.PerimeterTri{:});
+allAreas = vertcat(Cell.AllFaces.AreaTri{:});
+Set.BarrierTri0=min(allPerimeters .* allAreas)/2;
 
 [Cell,Y]=CheckOrderingOfTriangulaiton(Cell,Y,Set);
 

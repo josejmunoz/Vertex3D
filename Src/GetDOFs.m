@@ -31,7 +31,7 @@ elseif Set.BC==2
     YdofP=3.*(kron(pIDY,1)-1)+kron(ones(1,length(pIDY)),2);
 end
 
-% Border vertices are only constrained on x,y coordinates
+% Border vertices are only constrained on x,y,z coordinates
 YdofCBorder = 3.*(kron(constrainedBorderIDY,[1 1 1])-1)+kron(ones(1,length(constrainedBorderIDY)),[1 2 3]);
 
 Ydof=1:Y.n*3;

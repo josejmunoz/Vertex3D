@@ -26,7 +26,7 @@ end
 
 % The Method to obtain X from Y 
 if ~isfield(Set,'ObtainX') 
-    Set.ObtainX=3;
+    Set.ObtainX=0;
 end 
 % Set.ObtainX==1 -->  Minimisation problem with functional: (Xi =1/4)
 %                       J:= (y-NN*x)'*(y-NN*x) + LM'*( X(cellcentre) - Xc)

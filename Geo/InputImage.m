@@ -57,13 +57,10 @@ for numQuartets = 1:size(quartets, 1)
 end
 
 [ verticesInfo ] = calculateVertices( labelledImg, imgNeighbours, ratio);
-%% Slightly change the positions of repated vertices (or fourfold verties)
+% Slightly change the positions of repated vertices (or fourfold verties)
 [~, ia] = unique(verticesInfo.location, 'rows');
 repeatedVertices = find(ismember(1:size(verticesInfo.location, 1), ia) == 0);
 verticesInfo.location(repeatedVertices, 1) = verticesInfo.location(repeatedVertices, 1)+1;
-
-vertex2D(ismember(1:size(vertex2D, 1), ia) == 0, :);
-
 
 faceCentres = regionprops(labelledImg, 'centroid');
 faceCentresVertices = fliplr(vertcat(faceCentres.Centroid)) / imgSize;

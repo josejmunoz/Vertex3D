@@ -1,4 +1,4 @@
-function [isConvex, concaveTetVertices]=CheckConvexityCondition(TetsNew,Tetrahedra, X, performConvexify)
+function [isConvex, concaveTetVertices] = CheckConvexityCondition(TetsNew,Tetrahedra, X, performConvexify)
 %CHECKCONVEXITYCONDITION Summary of this function goes here
 %   Check if the tetrahedron:
 %   - is already created
@@ -26,6 +26,7 @@ end
 
 [TetsNew] = reorderTetrahedra(TetsNew, X);
 
+
 %% Checking if Tnew overlap with other tetrahedra
 % Here, we would calculate the plane of each face of the Tetrahedron and
 % see if that intersect with other plane of a neighbouring tetrahedron.
@@ -47,19 +48,25 @@ for numTet = 1:size(TetsNew, 1)
         [isConvex_1] = IsConvex_Method1(currentTetPairs, X);
         [isConvex_2] = IsConvex_Method2(currentTetPairs, X);
         
-        %In order to maintain the vertices order, we do it manually
-        allPairedVertices = [sharedVertices(1), sharedVertices(2);
-            sharedVertices(2), sharedVertices(3);
-            sharedVertices(3), sharedVertices(1)];
-        
-        for numPair = 1:size(allPairedVertices, 1)
-            edge = allPairedVertices(numPair, :);
-            
-            theOtherVertex = sharedVertices(ismember(sharedVertices, edge) == 0);
-
-            [isConvex] = IsConvex_Method3(endPointCurrentTet, theOtherVertex, edge, endPointNextTet, X);
-            %[isConvex] = IsConvex_Method4(endPointCurrentTet, theOtherVertex, edge, endPointNextTet, X);
+        if isConvex_1 == false && isConvex_2 == false
+            tetVertices = [endPointCurrentTet endPointNextTet sharedVertices];
+            concaveTetVertices = [concaveTetVertices; tetVertices];
+            isConvex = false;
         end
+        
+%         %In order to maintain the vertices order, we do it manually
+%         allPairedVertices = [sharedVertices(1), sharedVertices(2);
+%             sharedVertices(2), sharedVertices(3);
+%             sharedVertices(3), sharedVertices(1)];
+%         
+%         for numPair = 1:size(allPairedVertices, 1)
+%             edge = allPairedVertices(numPair, :);
+%             
+%             theOtherVertex = sharedVertices(ismember(sharedVertices, edge) == 0);
+% 
+%             [isConvex] = IsConvex_Method3(endPointCurrentTet, theOtherVertex, edge, endPointNextTet, X);
+%             %[isConvex] = IsConvex_Method4(endPointCurrentTet, theOtherVertex, edge, endPointNextTet, X);
+%         end
     end
 end
 
@@ -111,7 +118,7 @@ for s=1:3
     norms(1,:)=norms(1,:)/norm(norms(1,:));
     norms(2,:)=norms(2,:)/norm(norms(2,:));
     isConvex=isConvex && det([d;norms])<0;
-    fprintf('Segment %i, Nodes (%i,%i): det(d,n2,n1)=%e\n',s,y,-det([d;norms]));
+    %fprintf('Segment %i, Nodes (%i,%i): det(d,n2,n1)=%e\n',s,y,-det([d;norms]));
 end
 end
 

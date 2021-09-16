@@ -26,7 +26,7 @@ if Set.ObtainX == 0 && exist('Tetrahedra_weights', 'var')
         end
     end
     
-    [isConvex, tetID]=CheckConvexityCondition([],T, X);
+    %[isConvex, tetID]=CheckConvexityCondition([],T, X);
 %     Tetrahedra = T.DataRow(1:T.n, :);
 %     allXs = unique(Tetrahedra);
 %     allXs(ismember(allXs, Cell.Int)) = [];

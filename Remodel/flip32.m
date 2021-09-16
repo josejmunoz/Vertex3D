@@ -8,7 +8,8 @@ DidNotConverge = false;
 for i=1:Cell.AllFaces.n
     if ~Cell.AllFaces.NotEmpty(i) || any(ismember(Cell.AllFaces.Vertices{i},Vnew.Data))...
             || any(ismember(Cell.AllFaces.Vertices{i},Dofs.PrescribedY)) || length(Cell.AllFaces.Vertices{i}) ~= 3 ...
-            ||  max(Cell.AllFaces.EnergyTri{i})<Set.RemodelTol
+            ||  max(Cell.AllFaces.EnergyTri{i})<Set.RemodelTol || Cell.AllFaces.InterfaceType(idFace) > 0 ...
+            || any(ismember(Cell.AllFaces.Vertices{i}, Dofs.dofCBorder))
         continue 
     end
     % copy data

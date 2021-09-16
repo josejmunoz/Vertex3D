@@ -96,7 +96,7 @@ fprintf(file,'%s \n','LOOKUP_TABLE default');
 % end
 for i=1:ncell
     for f=1:Cell.Faces{i}.nFaces
-        fprintf(file,'%3.35f\n', Cell.AllFaces.EnergyTri{Cell.Faces{i}.FaceCentresID(f)});
+        fprintf(file,'%3.15f\n', Cell.AllFaces.EnergyTri{Cell.Faces{i}.FaceCentresID(f)});
     end
 end
 

@@ -20,8 +20,6 @@ function [X,X0,Y,Yt,T,XgID,Cell,Faces,Cn,Cv,Yn,SCn,Set]=InitializeGeometry3DVert
 %            - Cn   : Nodal connectivity (Bars) (used only for visualization)
 %            - Cv   : matrix with all the vertex edges
 
-
-
 %% Centre Nodal position at (0,0)
 X(:,1)=X(:,1)-mean(X(:,1));
 X(:,2)=X(:,2)-mean(X(:,2));
@@ -36,8 +34,6 @@ elseif Set.SeedingMethod==2
     % Fast marching method  
     [XgID,X]=SeedWithDistanceFunction(X,Set.s);
 end
-
-
 
 %% Do Delaunay with ghost nodes
 Twg=delaunay(X);

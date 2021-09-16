@@ -26,11 +26,11 @@ if isempty(Set.InputSegmentedImage)
 else
     [X, Y0, Y,tetrahedra,Tetrahedra_weights, XgID,Cell,Cn,~,Yn,SCn,Set] = InputImage(Set);
 end
-TetsNew = delaunayn(X);
-TetsNew(all(ismember(TetsNew,XgID),2),:)=[];
-[TetsNew] = CheckTetrahedronOrder(TetsNew, X);
-%[isConvex, tetID]=CheckConvexityCondition([],TetsNew, X);
-%[isConvex, tetID]=CheckConvexityCondition([],tetrahedra.DataRow, X);
+% TetsNew = delaunayn(X);
+% TetsNew(all(ismember(TetsNew,XgID),2),:)=[];
+% [TetsNew] = CheckTetrahedronOrder(TetsNew, X);
+% %[isConvex, tetID]=CheckConvexityCondition([],TetsNew, X);
+% %[isConvex, tetID]=CheckConvexityCondition([],tetrahedra.DataRow, X);
 
 if Set.VTK, PostProcessingVTK(X,Y,tetrahedra.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),0,Set); end
 fprintf('Model Initialized... \n');

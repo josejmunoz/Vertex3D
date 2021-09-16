@@ -84,14 +84,14 @@ if nargout>1
         K=K+Kb; g=g+gb;
     end
     
-    %% Energy Barrier for small triangles
-    if Set.EnergyBarrier && Set.Parallel
-        [gB,KB,Cell,Energy.EB]=KgTriEnergyBarrierParallel(Cell,Y,Set);
-        K=K+KB; g=g+gB;
-    elseif Set.EnergyBarrier
-        [gB,KB,Cell,Energy.EB]=KgTriEnergyBarrier(Cell,Y,Set);
-        K=K+KB; g=g+gB;
-    end
+%     %% Energy Barrier for small triangles
+%     if Set.EnergyBarrier && Set.Parallel
+%         [gB,KB,Cell,Energy.EB]=KgTriEnergyBarrierParallel(Cell,Y,Set);
+%         K=K+KB; g=g+gB;
+%     elseif Set.EnergyBarrier
+%         [gB,KB,Cell,Energy.EB]=KgTriEnergyBarrier(Cell,Y,Set);
+%         K=K+KB; g=g+gB;
+%     end
     
     
     %% Propulsion Forces
@@ -179,11 +179,11 @@ else
         g=g+gb;
     end
     
-    %% Energy Barrier for small triangles
-    if Set.EnergyBarrier
-        [gB]=KgTriEnergyBarrier(Cell,Y,Set);
-        g=g+gB;
-    end
+%     %% Energy Barrier for small triangles
+%     if Set.EnergyBarrier
+%         [gB]=KgTriEnergyBarrier(Cell,Y,Set);
+%         g=g+gB;
+%     end
     
     %% Propulsion Forces
     if Set.Propulsion

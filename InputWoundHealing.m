@@ -66,15 +66,14 @@ Set.Nincr=1000;
 
 
 %% Remodeling
-Set.Remodelling=false;
-Set.RemodelTol=.5e-2;
+Set.Remodelling=true;
+Set.lambdaB = 5; %Default value: 5
+%Set.RemodelTol= 0.9*ln(Set.lambdaB) * 0.001; %Proportional to Set.lambdaB
 Set.RemodelingFrequency=Set.tend/Set.Nincr;
 
 %---------- EnergyBarrier
 Set.EnergyBarrier=true;
-Set.lambdaB=1;
-Set.Beta=1;
-Set.BarrierTri0 = 5e-2; % CARE!! THIS IS OVERRIDE WITHIN THE CODE: INPUTIMAGE.M
+%Set.BarrierTri0 = 5e-2; % CARE!! THIS IS OVERRIDE WITHIN THE CODE: INPUTIMAGE.M
 % WBexp =exp( lambdaB*  ( 1 - Set.Beta*At/At0 )  );   
 
 %% Ablating cells
@@ -95,7 +94,7 @@ Set.cPurseString = 3;
 Set.Contractility_Variability_PurseString = ([1 1 2.5 2] - 1) * Set.cPurseString;
 Set.Contractility_TimeVariability_PurseString = [0 7 16 60]/60*(Set.TEndAblation - Set.TInitAblation);
 
-Set.cLateralCables = 1.5;
+Set.cLateralCables = 0.5;
 Set.Contractility_Variability_LateralCables = ([0.5 1.4 1.4] - 0.5) * Set.cLateralCables;
 Set.Contractility_TimeVariability_LateralCables = [0 16 60]/60*(Set.TEndAblation - Set.TInitAblation);
 

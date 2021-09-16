@@ -14,7 +14,7 @@ function [newXs] = convexify(tetrahedra, X, concaveTetVertices)
         
         %Modify the outer vertices to make them a 
         indicesToCheck = 1:2;
-        newXs(currentVertices(indicesToCheck), :) = newXs(currentVertices(indicesToCheck), :) - difference;
+        newXs(currentVertices(indicesToCheck), :) = newXs(currentVertices(indicesToCheck), :) - (difference*1.0001);
         
         [newXs, isConvex] = checkCurrentTetIsNowConvex(newXs, tetrahedra, currentVertices, X, indicesToCheck);
         
@@ -23,17 +23,17 @@ function [newXs] = convexify(tetrahedra, X, concaveTetVertices)
         end
         
         indicesToCheck = 3:4;
-        newXs(currentVertices(indicesToCheck), :) = newXs(currentVertices(indicesToCheck), :) + difference;
+        newXs(currentVertices(indicesToCheck), :) = newXs(currentVertices(indicesToCheck), :) + (difference*1.0001);
         
         [newXs, isConvex] = checkCurrentTetIsNowConvex(newXs, tetrahedra, currentVertices, X, indicesToCheck);
         if isConvex
             continue 
         end
         %% Method 2: Move the other vertices 
-        sum(ismember(K.ConnectivityList, tetrahedra, 'rows'))
-        
-        
+        %sum(ismember(K.ConnectivityList, tetrahedra, 'rows'))
+        numPairOfTets
     end
+    [currentFace_isConvex, concaveTetVertices_new] = CheckConvexityCondition([], tetrahedra, newXs, false);
     disp('Convexify - done');
 end
 
@@ -43,10 +43,10 @@ function [newXs, isConvex] = checkCurrentTetIsNowConvex(newXs, tetrahedra, curre
 isConvex = false;
 
 Tnew = tetrahedra(sum(ismember(tetrahedra, currentVertices), 2)>3, :);
-if CheckConvexityCondition(Tnew, tetrahedra, newXs, false)
+[currentFace_isConvex, concaveTetVertices] = CheckConvexityCondition(Tnew, tetrahedra, newXs, false);
+if currentFace_isConvex == false
     % We go back to the old vertices position
     newXs(currentVertices(indicesToCheck), :) = X(currentVertices(indicesToCheck), :);
-else
     return
 end
 

@@ -6,7 +6,8 @@ DidNotConverge=false;
 for i=1:Cell.AllFaces.n
     if ~Cell.AllFaces.NotEmpty(i) || any(ismember(Cell.AllFaces.Vertices{i},Vnew.Data))...
             || any(ismember(Cell.AllFaces.Vertices{i},Dofs.PrescribedY)) || length(Cell.AllFaces.Vertices{i})~=4 ...
-            ||  (min(Cell.AllFaces.EnergyTri{i})<Set.RemodelTol*1e-4 ||  max(Cell.AllFaces.EnergyTri{i})<Set.RemodelTol)
+            ||  (min(Cell.AllFaces.EnergyTri{i})<Set.RemodelTol*1e-4 ||  max(Cell.AllFaces.EnergyTri{i})<Set.RemodelTol) ...
+            || Cell.AllFaces.InterfaceType(idFace) > 0 || any(ismember(Cell.AllFaces.Vertices{i}, Dofs.dofCBorder))
         continue 
     end
     % copy data

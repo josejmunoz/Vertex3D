@@ -148,10 +148,10 @@ classdef FacesClass
                     obj.AreaTri{i}=zeros(length(obj.Vertices{i}),1);
                     for j=1:length(obj.Vertices{i})-1
                         YTri=[Y(obj.Vertices{i}([j j+1]),:); SurfsCenters(i,:)];
-                        obj.AreaTri{i}(j)=(1/2)*norm(cross(YTri(2,:)-YTri(1,:),YTri(1,:)-YTri(3,:)));
+                        obj.AreaTri{i}(j)=(1/2)*norm(cross(YTri(2,:)-YTri(1,:),YTri(1,:)-YTri(3,:))) * max([norm(YTri(1,:)-YTri(3,:)), norm(YTri(2,:)-YTri(1,:)), norm(YTri(3,:)-YTri(2,:))]);
                     end
                     YTri=[Y(obj.Vertices{i}([j+1 1]),:); SurfsCenters(i,:)];
-                    obj.AreaTri{i}(j+1)=(1/2)*norm(cross(YTri(2,:)-YTri(1,:),YTri(1,:)-YTri(3,:)));
+                    obj.AreaTri{i}(j+1)=(1/2)*norm(cross(YTri(2,:)-YTri(1,:),YTri(1,:)-YTri(3,:))) * max([norm(YTri(1,:)-YTri(3,:)), norm(YTri(2,:)-YTri(1,:)), norm(YTri(3,:)-YTri(2,:))]);
                     obj.Area(i)=sum(obj.AreaTri{i});
                 else
                     obj.AreaTri{i}=[];

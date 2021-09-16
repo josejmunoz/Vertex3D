@@ -28,119 +28,140 @@ for idFace = facesList
     
     % Check if the face need to be remodel
     if ~Cell.AllFaces.NotEmpty(idFace)|| any(ismember(Cell.AllFaces.Vertices{idFace},Dofs.PrescribedY))...
-            ||  max(EnergyTri)<Set.RemodelTol || length(Cell.AllFaces.Vertices{idFace}) == 3
+            ||  max(EnergyTri)<Set.RemodelTol || length(Cell.AllFaces.Vertices{idFace}) == 3 ...
+            || Cell.AllFaces.InterfaceType(idFace) > 0 || any(ismember(Cell.AllFaces.Vertices{idFace}, Dofs.dofCBorder))
         continue
     end
     % copy data
     Cellp=Cell; Yp=Y; Ynp=Yn;  SCnp=SCn; Tp=Tetrahedra; Xp=X; Dofsp=Dofs; Setp=Set; Vnewp=Vnew;
-    [~,idVertex]=max(EnergyTri);
     
-    % Here we consider the energy of the triangles is calculated with the
-    % current vertex and the next. Still, the energy is 'stored' on the first
-    % vertex.
-    % if the Vertex is the last one, connect it with the first one
-    if idVertex==length(Cell.AllFaces.Vertices{idFace})
-        edgeToChange=[Cell.AllFaces.Vertices{idFace}(idVertex) ;Cell.AllFaces.Vertices{idFace}(1)];
-    else % if not, with the next one
-        edgeToChange=[Cell.AllFaces.Vertices{idFace}(idVertex) ;Cell.AllFaces.Vertices{idFace}(idVertex+1)];
-    end
-    
-    % These 5 vertices are involved in the flip 2-3 (involving 1
-    % tetrahedron and 1 vertex of the other tetrahedron)
-    % The common three nodes within the doublet
-    n3=Tetrahedra.DataRow( edgeToChange(1), ismember(Tetrahedra.DataRow(edgeToChange(1),:),Tetrahedra.DataRow(edgeToChange(2),:)));
-    n1=Tetrahedra.DataRow( edgeToChange(1) , ~ismember(Tetrahedra.DataRow(edgeToChange(1),:),n3) );
-    n2=Tetrahedra.DataRow( edgeToChange(2) , ~ismember(Tetrahedra.DataRow(edgeToChange(2),:),n3) );
-    num=[1 2 3 4];
-    num=num(Tetrahedra.DataRow( edgeToChange(1),:)==n1);
-    
-    % The location fo the vertex with the maximum energy
-    if num == 2 || num == 4
-        Tnew=[n3([1 2]) n2 n1;
-              n3([2 3]) n2 n1;
-              n3([3 1]) n2 n1];
-    else
-        Tnew=[n3([1 2]) n1 n2;
-              n3([2 3]) n1 n2;
-              n3([3 1]) n1 n2];         
-    end
-    
-    if CheckSkinnyTriangles(Y.DataRow(edgeToChange(1),:),Y.DataRow(edgeToChange(2),:),Cell.FaceCentres.DataRow(idFace,:))...
-            || any(ismember(edgeToChange, Vnew.Data))
-        continue
-    end
-    
-    % filter ghost tets
-    ghostNodes = ismember(Tnew,XgID);
-    ghostNodes = all(ghostNodes,2);
-    Tnew(ghostNodes,:)=[];
-   
-    %% Check Convexity Condition
-    if CheckConvexityCondition(Tnew, Tetrahedra) == 0
-        if size(Tnew, 1) < 3
-            fprintf('=>> 2-2 Flip is not allowed for now\n');
-            %return
-        else
-            fprintf('=>> 2-3 Flip\n');
-        end
-        Ynew=PerformFlip23(Y.DataRow(edgeToChange,:),X,n3);
-        Ynew(ghostNodes,:)=[];
-        
-        %% Double check here if the STD is too different
-        Ynew(:, 3) = mean(Y.DataRow(edgeToChange, 3));
-        
-        %% last param? should be 'idFace'? or just empty []? Face should be removed?
-        [Tetrahedra, Y, Yn, SCn, Cell] = removeFaceInRemodelling(Tetrahedra, Y, Yn, SCn, Cell, edgeToChange, []); 
-        
-        [Tetrahedra, Y, Yn, Cell, nV, Vnew, nC, SCn, Set, flag] = addNewVerticesInRemodelling(Tetrahedra, Tnew, Y, Ynew, Yn, Cell, Vnew, X, SCn, XgID, Set);
-        
-        if length(nV) ==3
-            fprintf('Vertices number %i %i -> were replaced by -> %i %i %i.\n',edgeToChange(1),edgeToChange(2),nV(1),nV(2),nV(3));
-        elseif length(nV) ==2
-            fprintf('Vertices number %i %i -> were replaced by -> %i %i.\n',edgeToChange(1),edgeToChange(2),nV(1),nV(2));
-        end 
-        
-        if ~flag
-            [Dofs] = GetDOFs(Y,Cell,Set, isempty(Set.InputSegmentedImage) == 0);
-            [Dofs] = updateRemodelingDOFs(Dofs, nV, nC, Y);
-            
-            Cell.RemodelledVertices = nV;
-            [Cell,Y,Yn,SCn,X,Dofs,Set,~,didNotConverge]=SolveRemodelingStep(Cell,Y0,Y,X,Dofs,Set,Yn,SCn,CellInput);  
-        else
-            fprintf('=>> 2-3 Flip is is not compatible rejected !! \n');
+    for idVertex = find(EnergyTri >= Set.RemodelTol)'
+        % Here we consider the energy of the triangles is calculated with the
+        % current vertex and the next. Still, the energy is 'stored' on the first
+        % vertex.
+        % if the Vertex is the last one, connect it with the first one
+        if idVertex==length(Cell.AllFaces.Vertices{idFace})
+            edgeToChange=[Cell.AllFaces.Vertices{idFace}(idVertex) ;Cell.AllFaces.Vertices{idFace}(1)];
+        else % if not, with the next one
+            edgeToChange=[Cell.AllFaces.Vertices{idFace}(idVertex) ;Cell.AllFaces.Vertices{idFace}(idVertex+1)];
         end
 
-        
-        if  didNotConverge || flag
-            [Cell, Y, Yn, SCn, Tetrahedra, X, Dofs, Set, Vnew] = backToPreviousStep(Cellp, Yp, Ynp, SCnp, Tp, Xp, Dofsp, Setp, Vnewp);
-            fprintf('=>> Local problem did not converge -> 2-3 Flip rejected !! \n');
-            break
+        % These 5 vertices are involved in the flip 2-3 (involving 1
+        % tetrahedron and 1 vertex of the other tetrahedron)
+        % The common three nodes within the doublet
+        n3=Tetrahedra.DataRow( edgeToChange(1), ismember(Tetrahedra.DataRow(edgeToChange(1),:),Tetrahedra.DataRow(edgeToChange(2),:)));
+        n1=Tetrahedra.DataRow( edgeToChange(1) , ~ismember(Tetrahedra.DataRow(edgeToChange(1),:),n3) );
+        n2=Tetrahedra.DataRow( edgeToChange(2) , ~ismember(Tetrahedra.DataRow(edgeToChange(2),:),n3) );
+        num=[1 2 3 4];
+        num=num(Tetrahedra.DataRow( edgeToChange(1),:)==n1);
+
+        % The location fo the vertex with the maximum energy
+        if num == 2 || num == 4
+            Tnew=[n3([1 2]) n2 n1;
+                  n3([2 3]) n2 n1;
+                  n3([3 1]) n2 n1];
         else
-%             figure, 
-%             %Previous tetrahedra
-%             tetramesh(Tp.DataRow(edgeToChange, :), Xp)
-%             hold on;
-%             %Previous edges to change
-%             plot3(Yp.DataRow(edgeToChange, 1), Yp.DataRow(edgeToChange, 2), Yp.DataRow(edgeToChange, 3), 'bo')
-%             
-%             figure,
-%             %New tetrahedra
-%             tetramesh(Tnew(1, :), X)
-%             hold on;
-%             %Previous edges to change
-%             plot3(Ynew(1, 1), Ynew(1, 2), Ynew(1, 3), 'bo')
-            
-            Set.N_Accepted_Transfromation=Set.N_Accepted_Transfromation+1;
+            Tnew=[n3([1 2]) n1 n2;
+                  n3([2 3]) n1 n2;
+                  n3([3 1]) n1 n2];         
         end
-    else
-        fprintf('=>> Flip23 is is not compatible rejected !! \n');
+
+        %% if CheckSkinnyTriangles(Y.DataRow(edgeToChange(1),:),Y.DataRow(edgeToChange(2),:),Cell.FaceCentres.DataRow(idFace,:))
+        if any(ismember(edgeToChange, Vnew.Data))
+            continue
+        end
+
+        % filter ghost tets
+        ghostNodes = ismember(Tnew,XgID);
+        ghostNodes = all(ghostNodes,2);
+        Tnew(ghostNodes,:)=[];
+
+        %% Check Convexity Condition
+        %if CheckConvexityCondition(Tnew, Tetrahedra, X)
+        involvedFacesIDs = find(cellfun(@(x) all(ismember(edgeToChange, x)), Cell.AllFaces.Vertices));
+        involvedFacesIDs(involvedFacesIDs == idFace) = [];
+
+        if isempty(involvedFacesIDs) == 0 && isempty(intersect(Cell.AllFaces.Nodes(involvedFacesIDs, :), Cell.AllFaces.Nodes(idFace, :)))
+            if size(Tnew, 1) < 3
+                fprintf('=>> 2-2 Flip is not allowed for now\n');
+                continue;
+            else
+                fprintf('=>> 2-3 Flip\n');
+            end
+
+            figure,
+
+            involvedFaces = Cell.AllFaces.Vertices(involvedFacesIDs);
+            plot3(Y.DataRow(involvedTriangles, 1), Y.DataRow(involvedTriangles, 2), Y.DataRow(involvedTriangles, 3), 'ko');
+            hold on;
+            plot3(Y.DataRow(edgeToChange, 1), Y.DataRow(edgeToChange, 2), Y.DataRow(edgeToChange, 3), 'rx')
+
+            Ynew=PerformFlip23(Y.DataRow(edgeToChange,:),X,n3);
+            Ynew(ghostNodes,:)=[];
+
+            %% Double check here if the STD is too different
+            Ynew(:, 3) = mean(Y.DataRow(edgeToChange, 3));
+
+            %% 
+            YFake = zeros(size(Tnew, 1), 3);
+            for numT = 1:size(Tnew, 1)
+                YFake(numT, :) = mean(X(Tnew(numT, :), :));
+            end
+            Ynew = [Y.DataRow(edgeToChange,:); mean(Y.DataRow(edgeToChange,:))];
+
+            %% last param? should be 'idFace'? or just empty []? Face should be removed?
+            [Tetrahedra, Y, Yn, SCn, Cell] = removeFaceInRemodelling(Tetrahedra, Y, Yn, SCn, Cell, edgeToChange, []); 
+
+            [Tetrahedra, Y, Yn, Cell, nV, Vnew, nC, SCn, Set, flag] = addNewVerticesInRemodelling(Tetrahedra, Tnew, Y, Ynew, Yn, Cell, Vnew, X, SCn, XgID, Set);
+
+            if length(nV) ==3
+                fprintf('Vertices number %i %i -> were replaced by -> %i %i %i.\n',edgeToChange(1),edgeToChange(2),nV(1),nV(2),nV(3));
+            elseif length(nV) ==2
+                fprintf('Vertices number %i %i -> were replaced by -> %i %i.\n',edgeToChange(1),edgeToChange(2),nV(1),nV(2));
+            end 
+
+            if ~flag
+                [Dofs] = GetDOFs(Y,Cell,Set, isempty(Set.InputSegmentedImage) == 0);
+                [Dofs] = updateRemodelingDOFs(Dofs, nV, nC, Y);
+
+                Cell.RemodelledVertices = nV;
+                [Cell,Y,Yn,SCn,X,Dofs,Set,~,didNotConverge]=SolveRemodelingStep(Cell,Y0,Y,X,Dofs,Set,Yn,SCn,CellInput);  
+            else
+                fprintf('=>> 2-3 Flip is is not compatible rejected !! \n');
+            end
+
+
+            if  didNotConverge || flag
+                [Cell, Y, Yn, SCn, Tetrahedra, X, Dofs, Set, Vnew] = backToPreviousStep(Cellp, Yp, Ynp, SCnp, Tp, Xp, Dofsp, Setp, Vnewp);
+                fprintf('=>> Local problem did not converge -> 2-3 Flip rejected !! \n');
+                break
+            else
+    %             figure, 
+    %             %Previous tetrahedra
+    %             tetramesh(Tp.DataRow(edgeToChange, :), Xp)
+    %             hold on;
+    %             %Previous edges to change
+    %             plot3(Yp.DataRow(edgeToChange, 1), Yp.DataRow(edgeToChange, 2), Yp.DataRow(edgeToChange, 3), 'bo')
+    %             
+    %             figure,
+    %             %New tetrahedra
+    %             tetramesh(Tnew(1, :), X)
+    %             hold on;
+    %             %Previous edges to change
+    %             plot3(Ynew(1, 1), Ynew(1, 2), Ynew(1, 3), 'bo')
+
+                Set.N_Accepted_Transfromation=Set.N_Accepted_Transfromation+1;
+            end
+        else
+            fprintf('=>> Flip23 is is not compatible rejected !! \n');
+        end
     end
 end
 end
 
 %% ========================================================================
 function Yn = PerformFlip23(Yo,X,n3)
-% the new vertices are place at a distance "Length of the line to b
+% the new vertices are place at a distance "Length of the line to be
 % removed" from the "center of the line to be removed" in the direction of
 % the barycenter of the corresponding tet  
 

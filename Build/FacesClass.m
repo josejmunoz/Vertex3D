@@ -141,7 +141,6 @@ classdef FacesClass
                 end
             end
         end
-        
         %-------------Compute the area of faces ----------------------------
         function [obj]=ComputeAreaTri(obj,Y,SurfsCenters)
             for i=1:obj.n
@@ -159,6 +158,7 @@ classdef FacesClass
                 end
             end
         end
+        
         
         %-------------Compute the energy barrier of faces -----------------
         % The energy --> WBexp = exp( Set.lambdaB*  ( 1 - Set.Beta*At/Set.BarrierTri0 )  );

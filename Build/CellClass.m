@@ -165,40 +165,6 @@ classdef CellClass
             end
         end
         
-        %% Build cells without considering tetrahedra
-        function [obj] = buildCells_NoTets(obj, Y, X, X_network, Y_network)
-            Cell.AllFaces = FacesClass(size(X,1)*4);
-            numFaceCentresFaces = 1;
-            cellCreated = false(size(Cell.Int, 2),1);
-            %% Build Interior Cells
-            for i=1:length(obj.Int) % loop over  Interior cells
-                cellCreated(i) = 1;
-                obj.Centre(i, :) = X(i, :);
-                obj.cNodes{i} = Y_network.PerCell{i};
-                obj.cNodes{i}(obj.cNodes{i} == i) = [];
-                nS=length(obj.cNodes{i});
-                obj.Faces{i}.nFaces=nS;
-                obj.Faces{i}.FaceCentresID=zeros(nS,1);
-                obj.Faces{i}.Vertices=cell(nS,1);
-                obj.Faces{i}.Tris=cell(nS,1);
-                for j=1:length(obj.cNodes{i})
-                    connectingNodes = [i obj.cNodes{i}(j)];
-                    
-                    if cellCreated(obj.cNodes{i}(j)) %% Then, we don't need to recreate the face again
-                        
-                    else %% We create a new face
-                        Cell.Faces{i}.Vertices{j} = Y_network.edges{i}(:, 1);
-                        Cell.FaceCentres(numFaceCentresFaces,:)=mean(X(connectingNodes, :));
-                        Cell.Faces{i}.FaceCentresID(j)=numFaceCentresFaces;
-                        % Save Face-data base
-                        Cell.AllFaces = Cell.AllFaces.Add(connectingNodes,Cell.Faces{i}.Vertices{j},Y, Cell.FaceCentres);
-                        numFaceCentresFaces=numFaceCentresFaces+1;
-                    end
-                end
-                
-            end
-        end
-        
         %% Ablate cells
         % We assume there will only be one ablation. Thus, we could remove
         % the IDs from the middle.

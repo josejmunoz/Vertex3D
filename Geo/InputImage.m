@@ -50,17 +50,31 @@ faceCentresVertices = fliplr(vertcat(faceCentres.Centroid)) / imgSize;
 % Cell nodes:
 X = horzcat(faceCentresVertices, zeros(size(faceCentresVertices, 1), 1));
 
+nonEmptyCells = zeros(size(nonEmptyCells)) == 1;
+nonEmptyCells(cellIdsAsInternal) = 1;
+
+X = horzcat(faceCentresVertices, zeros(size(nonEmptyCells)));
+
+vertex2D = verticesInfo.location / imgSize;
+verticesInfo.location = vertex2D;
+
 % Ghost nodes:
 % Above vertices (including faces) of top and bottom
 XgTopFaceCentre = horzcat(faceCentresVertices, repmat(cellHeight, length(faceCentresVertices), 1));
 XgBottomFaceCentre = horzcat(faceCentresVertices, repmat(-cellHeight, length(faceCentresVertices), 1));
+%XgTopVertices = [vertex2D, repmat(cellHeight, size(vertex2D, 1), 1)];
+%XgBottomVertices = [vertex2D, repmat(-cellHeight, size(vertex2D, 1), 1)];
 
 X_bottomNodes = vertcat(XgBottomFaceCentre);
-X_bottomIds = size(X, 1) + 1: size(X, 1) + size(X_bottomNodes, 1);
+%X_bottomIds = size(X, 1) + 1: size(X, 1) + size(X_bottomNodes, 1);
+%X_bottomFaceIds = X_bottomIds(1:size(XgBottomFaceCentre, 1));
+%X_bottomVerticesIds = X_bottomIds(size(XgBottomFaceCentre, 1)+1:end);
 X = vertcat(X, X_bottomNodes);
 
 X_topNodes = vertcat(XgTopFaceCentre);
-X_topIds = size(X, 1) + 1: size(X, 1) + size(X_topNodes, 1);
+%X_topIds = size(X, 1) + 1: size(X, 1) + size(X_topNodes, 1);
+%X_topFaceIds = X_topIds(1:size(XgTopFaceCentre, 1));
+%X_topVerticesIds = X_topIds(size(XgTopFaceCentre, 1)+1:end);
 X = vertcat(X, X_topNodes);
 
 % Difference cell nodes and ghost nodes
@@ -69,41 +83,41 @@ XgID = 1:size(X, 1);
 XgID(xInternal) = [];
 
 %% Create tetrahedra
-% nodesDelaunay = delaunayTriangulation(X);
-% Twg = nodesDelaunay.ConnectivityList;
+% trianglesConnectivity = verticesInfo.connectedCells;
+% [Twg_bottom] = createTetrahedra(trianglesConnectivity, neighboursNetwork, verticesInfo.edges, xInternal, X_bottomFaceIds, X_bottomVerticesIds);
+% [Twg_top] = createTetrahedra(trianglesConnectivity, neighboursNetwork, verticesInfo.edges, xInternal, X_topFaceIds, X_topVerticesIds);
+% Twg = vertcat(Twg_top, Twg_bottom);
 
-nodesDelaunay = delaunayTriangulation(faceCentresVertices);
-Twg_mid = nodesDelaunay.ConnectivityList;
-Twg = [Twg_mid; Twg_mid + size(faceCentresVertices, 1); Twg_mid + (size(faceCentresVertices, 1)*2)];
+% triangulations = delaunayTriangulation(X);
+% Twg = triangulations.ConnectivityList;
 
 %% Filtering of unnecessary nodes
 % Remove Ghost tets 
-Twg(sum(ismember(Twg, XgID), 2)~=2,:)=[];
+% Twg(sum(ismember(Twg,XgID),2) ~= 2,:)=[];
 
-%Centre Nodal position at (0,0)
+% %Centre Nodal position at (0,0)
 X(:,1)=X(:,1)-mean(X(:,1));
 X(:,2)=X(:,2)-mean(X(:,2));
 X(:,3)=X(:,3)-mean(X(:,3));
 
 %% Check order of tetrahedrons
-[Twg] = CheckTetrahedronOrder(Twg, X);
+% [Twg] = CheckTetrahedronOrder(Twg, X);
 
 %% Create vertices Y
 %Y_new=GetYFromX(X,XgID,Twg,cellHeight/2);
-Y_new = zeros(size(Twg, 1), 3);
-Tetrahedra_weights = ones(size(Twg, 1), 3);
-for numTetrahedron = 1:size(Twg, 1)
-    Y_new(numTetrahedron, :) = mean(X(Twg(numTetrahedron, :), :));
-    if Y_new(numTetrahedron, 3) > 0
-        Tetrahedra_weights(numTetrahedron, :) = [1 1 Y_new(numTetrahedron, 3)/(cellHeight/2)];
-    elseif Y_new(numTetrahedron, 3) < 0
-        Tetrahedra_weights(numTetrahedron, :) = [1 1 Y_new(numTetrahedron, 3)/(-cellHeight/2)];
-    end
-    Y_new(numTetrahedron, :) = Y_new(numTetrahedron, :) ./ Tetrahedra_weights(numTetrahedron, :);
-end
+% Y_new = zeros(size(Twg, 1), 3);
+% Tetrahedra_weights = ones(size(Twg, 1), 3);
+% for numTetrahedron = 1:size(Twg, 1)
+%     Y_new(numTetrahedron, :) = mean(X(Twg(numTetrahedron, :), :));
+%     if Y_new(numTetrahedron, 3) > 0
+%         Tetrahedra_weights(numTetrahedron, :) = [1 1 Y_new(numTetrahedron, 3)/(cellHeight/2)];
+%     elseif Y_new(numTetrahedron, 3) < 0
+%         Tetrahedra_weights(numTetrahedron, :) = [1 1 Y_new(numTetrahedron, 3)/(-cellHeight/2)];
+%     end
+%     Y_new(numTetrahedron, :) = Y_new(numTetrahedron, :) ./ Tetrahedra_weights(numTetrahedron, :);
+% end
 
-Y=DynamicArray(ceil(size(Y_new,1)*1.5),size(Y_new,2));
-Y=Y.Add(Y_new);
+Y_new = [vertex2D repmat(cellHeight/2, size(vertex2D, 1), 1); vertex2D zeros(size(vertex2D, 1), 1); vertex2D repmat(-cellHeight/2, size(vertex2D, 1), 1)];
 
 % % sum(any(ismember(Twg, xInternal(2)), 2))
 % index = any(ismember(Twg, xInternal), 2);
@@ -114,7 +128,8 @@ Y=Y.Add(Y_new);
 % hold on, plot3(Y.DataRow(indexVertices, 1), Y.DataRow(indexVertices, 2), Y.DataRow(indexVertices, 3), 'bo');
 
 %% Create cells
-[Cv,Cell]=BuildCells(Twg,Y,X,xInternal, cellHeight, false);
+Cell = CellClass(length(xInternal),xInternal);
+Cell = Cell.buildCells_NoTets(Y_new, X, neighboursNetwork, verticesInfo);
 
 borderPairs = neighboursNetwork(sum(ismember(neighboursNetwork, xInternal), 2) == 1, :);
 borderPairs = unique(sort(borderPairs, 2), 'rows');

@@ -28,7 +28,6 @@ labelledImg = newLabelledImg;
 
 cellIdsAsInternal = findCentralCells(faceCentresVertices, totalCells);
 
-
 cellArea = regionprops(labelledImg, 'Area');
 avgCellArea = mean(vertcat(cellArea(1:totalCells).Area))/(imgSize^2);
 cellHeight = Set.CellHeight * avgCellArea;
@@ -36,51 +35,6 @@ cellHeight = Set.CellHeight * avgCellArea;
 cellIdsAsInternal = 1:totalCells;
 
 [imgNeighbours] = calculateNeighbours(labelledImg, ratio);
-
-%% Remove quartets
-[quartets] = getFourFoldVertices(imgNeighbours, labelledImg);
-for numQuartets = 1:size(quartets, 1)
-    currentCentroids = faceCentresVertices(quartets(numQuartets, :), :);
-    distanceBetweenCentroids = squareform(pdist(currentCentroids));
-    [maxDistance] = max(distanceBetweenCentroids(:));
-    [row, col] = find(distanceBetweenCentroids == maxDistance);
-    
-    % Remove first neighbour from the furthest pair of neighbour
-    currentNeighs = imgNeighbours{quartets(numQuartets, col(1))};
-    currentNeighs(currentNeighs == quartets(numQuartets, row(1))) = [];
-    imgNeighbours{quartets(numQuartets, col(1))} = currentNeighs;
-    
-    % Remove the second of the same pair
-    currentNeighs = imgNeighbours{quartets(numQuartets, row(1))};
-    currentNeighs(currentNeighs == quartets(numQuartets, col(1))) = [];
-    imgNeighbours{quartets(numQuartets, row(1))} = currentNeighs;
-end
-
-[ verticesInfo ] = calculateVertices( labelledImg, imgNeighbours, ratio);
-% Slightly change the positions of repated vertices (or fourfold verties)
-[~, ia] = unique(verticesInfo.location, 'rows');
-repeatedVertices = find(ismember(1:size(verticesInfo.location, 1), ia) == 0);
-verticesInfo.location(repeatedVertices, 1) = verticesInfo.location(repeatedVertices, 1)+1;
-
-faceCentres = regionprops(labelledImg, 'centroid');
-faceCentresVertices = fliplr(vertcat(faceCentres.Centroid)) / imgSize;
-
-totalCells = max(verticesInfo.connectedCells(:));
-verticesInfo.PerCell = cell(totalCells, 1);
-
-for numCell = 1:totalCells
-    verticesOfCell = find(any(ismember(verticesInfo.connectedCells, numCell), 2));
-    verticesInfo.PerCell{numCell} = verticesOfCell;
-    currentVertices = verticesInfo.location(verticesOfCell, :);
-    currentConnectedCells = verticesInfo.connectedCells(verticesOfCell, :)';
-    currentConnectedCells(currentConnectedCells == numCell) = [];
-    currentConnectedCells = vertcat(currentConnectedCells(1:2:length(currentConnectedCells)), currentConnectedCells(2:2:length(currentConnectedCells)))';
-    verticesInfo.edges{numCell, 1} = verticesOfCell(boundaryOfCell(currentVertices, currentConnectedCells));
-    if size(verticesInfo.edges{numCell, 1}, 1) < length(imgNeighbours{numCell})
-        verticesInfo.edges{numCell, 1} = [];
-    end
-end
-
 neighboursNetwork = [];
 
 for numCell = 1:length(imgNeighbours)
@@ -89,20 +43,12 @@ for numCell = 1:length(imgNeighbours)
     
     neighboursNetwork = vertcat(neighboursNetwork, currentCellNeighbours);
 end
-
-% figure, imshow(labelledImg, colorcube(600))
-% hold on;
-% for numVertex = 1:size(verticesInfo.location, 1)
-%     %plot(round(faceCentresVertices(numVertex, 2)), round(faceCentresVertices(numVertex, 1)), 'bo');
-%     plot(round(verticesInfo.location(numVertex, 2)), round(verticesInfo.location(numVertex, 1)), 'rx');
-%     hold on;
-% end
-% figure, imshow(ismember(labelledImg, find(cellfun(@isempty, verticesInfo.edges) == 0)).*labelledImg, colorcube(600))
+faceCentres = regionprops(labelledImg, 'centroid');
+faceCentresVertices = fliplr(vertcat(faceCentres.Centroid)) / imgSize;
 
 %% Create nodes X from Y
 % Cell nodes:
-% x,y: centroidsOfCells; z: 0
-nonEmptyCells = cellfun(@isempty, verticesInfo.edges) == 0;
+X = horzcat(faceCentresVertices, zeros(size(faceCentresVertices, 1), 1));
 
 nonEmptyCells = zeros(size(nonEmptyCells)) == 1;
 nonEmptyCells(cellIdsAsInternal) = 1;
@@ -132,8 +78,9 @@ X = vertcat(X, X_topNodes);
 
 
 % Difference cell nodes and ghost nodes
-xInternal = find(nonEmptyCells);
-XgID = horzcat(find(nonEmptyCells == 0)', (length(faceCentresVertices)+1):size(X, 1));
+xInternal = cellIdsAsInternal;
+XgID = 1:size(X, 1);
+XgID(xInternal) = [];
 
 %% Create tetrahedra
 trianglesConnectivity = verticesInfo.connectedCells;
@@ -178,7 +125,6 @@ Y=Y.Add(Y_new);
 % %indexVertices = sum(ismember(Twg, borderPairs), 2) == 1;
 % indexVertices = sum(ismember(Twg, borderPairs(1:22, 2)), 2) >= 1;
 % hold on, plot3(Y.DataRow(indexVertices, 1), Y.DataRow(indexVertices, 2), Y.DataRow(indexVertices, 3), 'bo');
-
 
 %% Create cells
 xInternal = xInternal';

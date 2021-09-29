@@ -1,4 +1,4 @@
-function [X,Y,Yt,T,XgID,Cell,Faces,Cn,Cv,Yn,SCn,Set] = InputImage(Set)
+function [X, Y0, Y,T, Tetrahedra_weights,XgID,Cell,Cn,Cv,Yn,SCn,Set] = InputImage(Set)
 %INPUTIMAGE Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -147,18 +147,21 @@ X(:,1)=X(:,1)-mean(X(:,1));
 X(:,2)=X(:,2)-mean(X(:,2));
 X(:,3)=X(:,3)-mean(X(:,3));
 
-%% Create vertices Y
-Y=DynamicArray(size(verticesInfo.location, 1)*3, 3);
+%% Check order of tetrahedrons
+%[Twg] = CheckTetrahedronOrder(Twg, X);
 
+%% Create vertices Y
 %Y_new=GetYFromX(X,XgID,Twg,cellHeight/2);
 Y_new = zeros(size(Twg, 1), 3);
+Tetrahedra_weights = ones(size(Twg, 1), 3);
 for numTetrahedron = 1:size(Twg, 1)
     Y_new(numTetrahedron, :) = mean(X(Twg(numTetrahedron, :), :));
-    if  Y_new(numTetrahedron, 3) > 0
-        Y_new(numTetrahedron, 3) = cellHeight/2;
+    if Y_new(numTetrahedron, 3) > 0
+        Tetrahedra_weights(numTetrahedron, :) = [1 1 Y_new(numTetrahedron, 3)/(cellHeight/2)];
     elseif Y_new(numTetrahedron, 3) < 0
-        Y_new(numTetrahedron, 3) = -cellHeight/2;
+        Tetrahedra_weights(numTetrahedron, :) = [1 1 Y_new(numTetrahedron, 3)/(-cellHeight/2)];
     end
+    Y_new(numTetrahedron, :) = Y_new(numTetrahedron, :) ./ Tetrahedra_weights(numTetrahedron, :);
 end
 
 Y=DynamicArray(ceil(size(Y_new,1)*1.5),size(Y_new,2));
@@ -172,30 +175,39 @@ Y=Y.Add(Y_new);
 % indexVertices = sum(ismember(Twg, borderPairs(1:22, 2)), 2) >= 1;
 % hold on, plot3(Y.DataRow(indexVertices, 1), Y.DataRow(indexVertices, 2), Y.DataRow(indexVertices, 3), 'bo');
 
+
 %% Create cells
 xInternal = xInternal';
-[Cv,Cell,Faces]=BuildCells(Twg,Y,X,xInternal, cellHeight, false);
+[Cv,Cell]=BuildCells(Twg,Y,X,xInternal, cellHeight, false);
 
 borderPairs = neighboursNetwork(sum(ismember(neighboursNetwork, xInternal), 2) == 1, :);
 borderPairs = unique(sort(borderPairs, 2), 'rows');
 Cell.BorderVertices = find(sum(ismember(Twg, borderPairs(:, 2)), 2) >= 1);
 % Add facecentres
-Cell.BorderVertices = [Cell.BorderVertices; -find(ismember(Faces.Nodes, borderPairs, 'rows'))];
+Cell.BorderVertices = [Cell.BorderVertices; -find(ismember(Cell.AllFaces.Nodes, borderPairs, 'rows'))];
 Cell.BorderCells = ismember(Cell.Int, borderPairs(:));
 Set.NumMainV=Y.n;
 Set.NumAuxV=Cell.FaceCentres.n;
-Set.NumTotalV=Set.NumMainV+Set.NumAuxV;
+Set.NumCellCentroid = Cell.n;
+Set.NumTotalV=Set.NumMainV + Set.NumAuxV + Set.NumCellCentroid;
+Set.NumXs = size(X, 1);
 Cn=BuildCn(Twg);
 
-Faces=Faces.ComputeAreaTri(Y.DataRow,Cell.FaceCentres.DataRow);
-Faces=Faces.CheckInteriorFaces(XgID);
+Cell.AllFaces=Cell.AllFaces.ComputeAreaTri(Y.DataRow,Cell.FaceCentres.DataRow);
+Cell.AllFaces=Cell.AllFaces.CheckInteriorFaces(XgID);
 
-Yn=Y;
-SCn=Cell.FaceCentres;
-Yt=[Y.DataOrdered ;Cell.FaceCentres.DataOrdered];
+Yn = Y;
+Y0 = Y;
+SCn = Cell.FaceCentres;
+Cell.Centre_n = Cell.Centre;
 
 T=DynamicArray(ceil(size(Twg,1)*1.5),size(Twg,2));
 T=T.Add(Twg);
+
+%[X]=GetXFromY(Cell,X,T,Y,XgID,Set);
+
+% figure,
+% tetramesh(T.DataRow(any(ismember(T.DataRow, 1), 2), :), XNew);
 
 Set.BarrierTri0=realmax; 
 for i=1:Cell.n
@@ -203,7 +215,7 @@ for i=1:Cell.n
 end
 Set.BarrierTri0=Set.BarrierTri0/10;
 
-[Cell,Faces,Y]=CheckOrderingOfTriangulaiton(Cell,Faces,Y,Set);
+[Cell,Y]=CheckOrderingOfTriangulaiton(Cell,Y,Set);
 
 end
 

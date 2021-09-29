@@ -64,7 +64,8 @@ for i=1:ncell
  
     g=g+ge*fact/6; % Volume contribution of each triangle is det(Y1,Y2,Y3)/6
     if nargout>1
-        K=K+lambdaV*(ge)*(ge')/6/6/Cell.Vol0(i)^2;
+        geMatrix = lambdaV*((ge)*(ge')/6/6/Cell.Vol0(i)^2);
+        K=K+geMatrix;
         EnergyV=EnergyV+ lambdaV/2 *((Cell.Vol(i)-Cell.Vol0(i))/Cell.Vol0(i))^2;    
     end
 

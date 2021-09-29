@@ -20,6 +20,12 @@ for numCell = 1:ncell
 %     else
 %         kSubstrate = Set.kSubstrate;
 %     end
+
+    if Set.Sparse > 0
+        ge=sparse(size(g, 1), 1); % Local cell residual
+    else
+        ge=zeros(size(g, 1), 1);
+    end
     
     kSubstrate = Set.kSubstrate;
 
@@ -47,7 +53,7 @@ for numCell = 1:ncell
 
         %% Calculate residual g
         g_current = computeGSubstrate(kSubstrate, currentVertex(:, 3), z0);
-        g = Assembleg(g, g_current, vertexIndex);
+        ge = Assembleg(ge, g_current, vertexIndex);
         
         %% Save contractile forces (g) to output
         substrateForcesOfCell(numVertexElem, 1) = g_current(3);
@@ -67,7 +73,8 @@ for numCell = 1:ncell
         end
         
     end
-
+    
+    g = g + ge;
     Cell.SubstrateForce(numCell) = {substrateForcesOfCell};
 end
 

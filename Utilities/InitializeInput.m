@@ -49,12 +49,15 @@ if isempty(Set.Contractility_Variability_PurseString) == 0
     for numTimePoint = 2:length(Set.Contractility_Variability_PurseString)
         [Set.cPurseString_TimeDependent{numTimePoint-1}] = functionVariableOnTime(Set.Contractility_Variability_PurseString(numTimePoint-1), Set.Contractility_Variability_PurseString(numTimePoint), Set.Contractility_TimeVariability_PurseString(numTimePoint-1), Set.Contractility_TimeVariability_PurseString(numTimePoint), Set);
     end
+    [Set.cPurseString_TimeDependent{numTimePoint}] = functionVariableOnTime(Set.Contractility_Variability_PurseString(numTimePoint), Set.Contractility_Variability_PurseString(numTimePoint), Set.Contractility_TimeVariability_PurseString(numTimePoint), Set.tend, Set);
 end
 
 if isempty(Set.Contractility_Variability_LateralCables) == 0
     for numTimePoint = 2:length(Set.Contractility_Variability_LateralCables)
         [Set.cLateralCables_TimeDependent{numTimePoint-1}] = functionVariableOnTime(Set.Contractility_Variability_LateralCables(numTimePoint-1), Set.Contractility_Variability_LateralCables(numTimePoint), Set.Contractility_TimeVariability_LateralCables(numTimePoint-1), Set.Contractility_TimeVariability_LateralCables(numTimePoint), Set);
     end
+    
+    [Set.cLateralCables_TimeDependent{numTimePoint}] = functionVariableOnTime(Set.Contractility_Variability_LateralCables(numTimePoint), Set.Contractility_Variability_LateralCables(numTimePoint), Set.Contractility_TimeVariability_LateralCables(numTimePoint), Set.tend, Set);
 end
 
 if Set.TEndAblation > 0

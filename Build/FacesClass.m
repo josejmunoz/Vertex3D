@@ -37,14 +37,6 @@ classdef FacesClass
         %---------------------------------------------------------------------
         EmptyList       % - List of empty Faces
         %---------------------------------------------------------------------
-        V3              % - Faces with 3 vertices ( Logical array of size [NumFaces 1] )
-        %                     V3(i)= true -> Face (i) has  3 vertices.
-        %                     V3(i)= false -> Face (i) dose not has 3 vertices.
-        %---------------------------------------------------------------------
-        V4              % - Faces with 4 vertices ( Logical array of size [NumFaces 1] )
-        %                      V4(i)= true -> Face (i) has 4 vertices.
-        %                      V4(i)= false -> Face (i) dose not has 4 vertices.
-        %---------------------------------------------------------------------
         n               % counter on the list of faces
     end
     
@@ -58,8 +50,6 @@ classdef FacesClass
             Array.Energy=zeros(S1,1);
             Array.EnergyTri=cell(S1,1);
             Array.NotEmpty=false(S1,1);
-            Array.V3=false(S1,1);
-            Array.V4=false(S1,1);
             Array.InterfaceType=zeros(S1,1);
             Array.EmptyList=nan(S1,1);
             Array.n=0;
@@ -76,87 +66,39 @@ classdef FacesClass
         function [obj,list] = Add(obj,Nodes,Vertices,Y,SurfsCenters)
             if obj.nE>0
                 % There are empty faces (storage spots) -> refill them first
-                obj.Vertices{obj.EmptyList(obj.nE)}=Vertices;
-                obj.Nodes(obj.EmptyList(obj.nE),:)=Nodes;
-                obj.Energy(obj.EmptyList(obj.nE),:)=0;
-                if length(Vertices)==3
-                    obj.V3(obj.EmptyList(obj.nE))=true;
-                    obj.V4(obj.EmptyList(obj.nE))=false;
-                    % Compute Area
-                    YTri=Y(Vertices,:);
-                    obj.AreaTri{obj.EmptyList(obj.nE)}=(1/2)*norm(cross(YTri(2,:)-YTri(1,:),YTri(1,:)-YTri(3,:)));
-                    obj.EnergyTri{obj.EmptyList(obj.nE)}=0;
-                    obj.Area(obj.EmptyList(obj.nE))=sum(obj.AreaTri{obj.EmptyList(obj.nE)});
-                    list=obj.EmptyList(obj.nE);
-                    
-                    obj.NotEmpty(obj.EmptyList(obj.nE))=true;
-                    obj.EmptyList(obj.nE)=nan;
-                    obj.nE=obj.nE-1;
-                else
-                    if length(Vertices)==4
-                        obj.V4(obj.EmptyList(obj.nE))=true;
-                    else
-                        obj.V4(obj.EmptyList(obj.nE))=false;
-                    end
-                    obj.V3(obj.EmptyList(obj.nE))=false;
-                    % Compute Area
-                    obj.AreaTri{obj.EmptyList(obj.nE)}=zeros(length(Vertices),1);
-                    obj.EnergyTri{obj.EmptyList(obj.nE)}=zeros(length(Vertices),1);
-                    for j=1:length(Vertices)-1
-                        YTri=[Y(Vertices([j j+1]),:); SurfsCenters(obj.EmptyList(obj.nE),:)];
-                        obj.AreaTri{obj.EmptyList(obj.nE)}(j)=(1/2)*norm(cross(YTri(2,:)-YTri(1,:),YTri(1,:)-YTri(3,:)));
-                        %                         obj.AreaTri0{obj.EmptyList(obj.nE)}(j)=obj.AreaTri{obj.EmptyList(obj.nE)}(j);
-                    end
-                    YTri=[Y(Vertices([j+1 1]),:); SurfsCenters(obj.EmptyList(obj.nE),:)];
-                    obj.AreaTri{obj.EmptyList(obj.nE)}(j+1)=(1/2)*norm(cross(YTri(2,:)-YTri(1,:),YTri(1,:)-YTri(3,:)));
-                    obj.Area(obj.EmptyList(obj.nE))=sum(obj.AreaTri{obj.EmptyList(obj.nE)});
-                                        
-                    list=obj.EmptyList(obj.nE);
-                    obj.NotEmpty(obj.EmptyList(obj.nE))=true;
-                    obj.EmptyList(obj.nE)=nan;
-                    obj.nE=obj.nE-1;
-                end
-                
+                indexToAdd = obj.EmptyList(obj.nE);
             else
                 % There are no empty faces (storage spots) -> Add the new face at the end of the list
-                obj.Vertices{obj.n+1}=Vertices;
-                obj.Nodes(obj.n+1,:)=Nodes;
-                obj.Energy(obj.n+1)=0;
-                if length(Vertices)==3
-                    obj.V3(obj.n+1)=true;
-                    obj.V4(obj.n+1)=false;
-                    % Compute Area
-                    YTri=Y(Vertices,:);
-                    obj.AreaTri{obj.n+1}=(1/2)*norm(cross(YTri(2,:)-YTri(1,:),YTri(1,:)-YTri(3,:)));
-                    obj.EnergyTri{obj.n+1}=0;
-                    obj.Area(obj.n+1)=sum(obj.AreaTri{obj.n+1});
-                    list=obj.n+1;
-                    obj.NotEmpty(obj.n+1)=true;
-                    obj.n=obj.n+1;
-                    
-                else
-                    obj.V3(obj.n+1)=false;
-                    if length(Vertices)==4
-                        obj.V4(obj.n+1)=true;
-                    else
-                        obj.V4(obj.n+1)=false;
-                    end
-                    % Compute Area
-                    obj.AreaTri{obj.n+1}=zeros(length(Vertices),1);
-                    obj.EnergyTri{obj.n+1}=zeros(length(Vertices),1);
-                    for j=1:length(Vertices)-1
-                        YTri=[Y(Vertices([j j+1]),:); SurfsCenters(obj.n+1,:)];
-                        obj.AreaTri{obj.n+1}(j)=(1/2)*norm(cross(YTri(2,:)-YTri(1,:),YTri(1,:)-YTri(3,:)));
-                    end
-                    YTri=[Y(Vertices([j+1 1]),:); SurfsCenters(obj.n+1,:)];
-                    obj.AreaTri{obj.n+1}(j+1)=(1/2)*norm(cross(YTri(2,:)-YTri(1,:),YTri(1,:)-YTri(3,:)));
-                    obj.Area(obj.n+1)=sum(obj.AreaTri{obj.n+1});
-                    
-                    list=obj.n+1;
-                    obj.NotEmpty(obj.n+1)=true;
-                    obj.n=obj.n+1;
-                end
-                
+                indexToAdd = obj.n+1;
+            end
+            
+            obj.Vertices{indexToAdd}=Vertices;
+            obj.Nodes(indexToAdd,:)=Nodes;
+            obj.Energy(indexToAdd,:)=0;
+            
+            % Compute Area
+            obj.AreaTri{indexToAdd}=zeros(length(Vertices),1);
+            obj.EnergyTri{indexToAdd}=zeros(length(Vertices),1);
+            for j=1:length(Vertices)-1
+                YTri=[Y(Vertices([j j+1]),:); SurfsCenters(indexToAdd,:)];
+                obj.AreaTri{indexToAdd}(j)=(1/2)*norm(cross(YTri(2,:)-YTri(1,:),YTri(1,:)-YTri(3,:)));
+                %                         obj.AreaTri0{indexToAdd}(j)=obj.AreaTri{indexToAdd}(j);
+            end
+            YTri=[Y(Vertices([j+1 1]),:); SurfsCenters(indexToAdd,:)];
+            obj.AreaTri{indexToAdd}(j+1)=(1/2)*norm(cross(YTri(2,:)-YTri(1,:),YTri(1,:)-YTri(3,:)));
+            obj.Area(indexToAdd)=sum(obj.AreaTri{indexToAdd});
+            
+            if obj.nE>0
+                % There are empty faces (storage spots) -> refill them first
+                list=obj.EmptyList(obj.nE);
+                obj.NotEmpty(obj.EmptyList(obj.nE))=true;
+                obj.EmptyList(obj.nE)=nan;
+                obj.nE=obj.nE-1;
+            else
+                % There are no empty faces (storage spots) -> Add the new face at the end of the list
+                list=obj.n+1;
+                obj.NotEmpty(obj.n+1)=true;
+                obj.n=obj.n+1;
             end
         end
         
@@ -171,8 +113,6 @@ classdef FacesClass
             obj.InterfaceType(V)=0;
             obj.AreaTri{V}=[];
             obj.NotEmpty(V)=false;
-            obj.V3(V)=false;
-            obj.V4(V)=false;
             obj.EmptyList(obj.nE+1:obj.nE+length(V))=V;
             obj.nE=obj.nE+length(V);
         end
@@ -181,20 +121,14 @@ classdef FacesClass
         function [obj]=ComputeAreaTri(obj,Y,SurfsCenters)
             for i=1:obj.n
                 if obj.NotEmpty(i)
-                    if length(obj.Vertices{i})==3
-                        YTri=Y(obj.Vertices{i},:);
-                        obj.AreaTri{i}=(1/2)*norm(cross(YTri(2,:)-YTri(1,:),YTri(1,:)-YTri(3,:)));
-                        obj.Area(i)=sum(obj.AreaTri{i});
-                    else
-                        obj.AreaTri{i}=zeros(length(obj.Vertices{i}),1);
-                        for j=1:length(obj.Vertices{i})-1
-                            YTri=[Y(obj.Vertices{i}([j j+1]),:); SurfsCenters(i,:)];
-                            obj.AreaTri{i}(j)=(1/2)*norm(cross(YTri(2,:)-YTri(1,:),YTri(1,:)-YTri(3,:)));
-                        end
-                        YTri=[Y(obj.Vertices{i}([j+1 1]),:); SurfsCenters(i,:)];
-                        obj.AreaTri{i}(j+1)=(1/2)*norm(cross(YTri(2,:)-YTri(1,:),YTri(1,:)-YTri(3,:)));
-                        obj.Area(i)=sum(obj.AreaTri{i});
+                    obj.AreaTri{i}=zeros(length(obj.Vertices{i}),1);
+                    for j=1:length(obj.Vertices{i})-1
+                        YTri=[Y(obj.Vertices{i}([j j+1]),:); SurfsCenters(i,:)];
+                        obj.AreaTri{i}(j)=(1/2)*norm(cross(YTri(2,:)-YTri(1,:),YTri(1,:)-YTri(3,:)));
                     end
+                    YTri=[Y(obj.Vertices{i}([j+1 1]),:); SurfsCenters(i,:)];
+                    obj.AreaTri{i}(j+1)=(1/2)*norm(cross(YTri(2,:)-YTri(1,:),YTri(1,:)-YTri(3,:)));
+                    obj.Area(i)=sum(obj.AreaTri{i});
                 else
                     obj.AreaTri{i}=[];
                 end
@@ -207,16 +141,11 @@ classdef FacesClass
         function [obj]=ComputeEnergy(obj,Set)
             for i=1:obj.n
                 if obj.NotEmpty(i)
-                    if length(obj.Vertices{i})==3
-                        obj.EnergyTri{i}=exp(Set.lambdaB*(1-Set.Beta*obj.AreaTri{i}/Set.BarrierTri0));
-                        obj.Energy(i)=sum(obj.EnergyTri{i});
-                    else
-                        obj.EnergyTri{i}=zeros(size(obj.Vertices{i}));
-                        for j=1:length(obj.Vertices{i})
-                            obj.EnergyTri{i}(j)= exp(Set.lambdaB*(1-Set.Beta*obj.AreaTri{i}(j)/Set.BarrierTri0));
-                        end
-                        obj.Energy(i)=sum(obj.EnergyTri{i});
+                    obj.EnergyTri{i}=zeros(size(obj.Vertices{i}));
+                    for j=1:length(obj.Vertices{i})
+                        obj.EnergyTri{i}(j)= exp(Set.lambdaB*(1-Set.Beta*obj.AreaTri{i}(j)/Set.BarrierTri0));
                     end
+                    obj.Energy(i)=sum(obj.EnergyTri{i});
                 else
                     obj.EnergyTri{i}=[];
                     obj.Energy(i)=0;

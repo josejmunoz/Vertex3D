@@ -1,4 +1,4 @@
-function [Y,Cell,Faces,Yn,SCn]=RegularizeMesh(Y,Cell,Faces,Set,Yn,SCn)
+function [Y,Cell,Yn,SCn]=RegularizeMesh(Y,Cell,Set,Yn,SCn)
 
 
 
@@ -12,10 +12,10 @@ Set.dt=Set.dt0;
 % Dofs & Boundary 
 
 if Set.BC==1
-    [Dofs]=GetDOFs(Y,Cell,Faces,Set);
+    [Dofs]=GetDOFs(Y,Cell,Set);
 elseif Set.BC==2
     Set.WallPosition=max(Y.DataRow(:,2))+0.2;
-    [Dofs]=GetWallBoundaryCondition(Set,Y,Cell,Faces);
+    [Dofs]=GetWallBoundaryCondition(Set,Y,Cell);
     error('Invalid Input ... \n')
 end
 

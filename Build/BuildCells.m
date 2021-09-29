@@ -1,4 +1,4 @@
-function [Cv,Cell,SharedFaces]=BuildCells(T,Y,X,xInternal,H, extrapolateFaceCentre)
+function [Cv,Cell]=BuildCells(T,Y,X,xInternal,H, extrapolateFaceCentre)
 % Basically in this function  the cells are built by doing the following loops
 % Loop i over cell
 %   Loop j over the segment connecting the node (cell centre) i with neighbouring nodes (cells) j,  in the same time each segment (ij) correspond to a face shared by cell i and j.
@@ -9,14 +9,13 @@ function [Cv,Cell,SharedFaces]=BuildCells(T,Y,X,xInternal,H, extrapolateFaceCent
 
 nC=length(xInternal);
 Cell = CellClass(nC,xInternal);
-
 % -------
 TetIDs=1:size(T,1);
 %% Initiate global database
 Cv=zeros(Cell.n*16*8,2);
 numVertexBarElem=1; % counter for the number of vertex-bar Elements
 Cell.FaceCentres=zeros(size(X,1)*4,3); % the position of Cell-surface centres
-SharedFaces = FacesClass(size(X,1)*4);
+Cell.AllFaces = FacesClass(size(X,1)*4);
 numFaceCentresFaces=1; % counter for the number of FaceCentres / faces;
 numTotalSurfsTris=0; % counter for total number of SurfsTris
 
@@ -24,6 +23,7 @@ Includedx=false(size(Cell.Int, 2),1);
 %% Build Interior Cells
 for i=1:length(Cell.Int) % loop over  Interior cells
     Includedx(i)=true;
+    Cell.Centre(i, :) = X(i, :);
     % i Should be Cell.Int(i) when boundary nodes are included
     
     %% Build Tetrahedra of the nodes
@@ -92,7 +92,7 @@ for i=1:length(Cell.Int) % loop over  Interior cells
             Cell.FaceCentres(numFaceCentresFaces,:)=faceCentrePos;
             Cell.Faces{i}.FaceCentresID(j)=numFaceCentresFaces;
             % Save Face-data base
-            SharedFaces = SharedFaces.Add(SurfAxes,SurfVertices,Y.DataOrdered,Cell.FaceCentres);
+            Cell.AllFaces = Cell.AllFaces.Add(SurfAxes,SurfVertices,Y.DataOrdered,Cell.FaceCentres);
             numFaceCentresFaces=numFaceCentresFaces+1;
         end
         
@@ -145,8 +145,7 @@ end
 Cell.FaceCentres(numFaceCentresFaces:end,:)=[];
 Cv(numVertexBarElem:end,:)=[];
 Cell.nTotalTris=numTotalSurfsTris;
-
-
+Cell.Centre0 = Cell.Centre;
 
 %% change type of data structure (should be done in the beginning)
 
@@ -154,6 +153,10 @@ faceCentrePos=Cell.FaceCentres;
 Cell.FaceCentres=DynamicArray(size(X,1)*8,3);
 Cell.FaceCentres=Cell.FaceCentres.Add(faceCentrePos);
 [Cell]=BuildEdges(Cell,Y);
+
+Cell.FaceCentres0 = Cell.FaceCentres;
+Cell.Tris0 = Cell.Tris;
+
 %% Compute Cells volume
 [Cell]=ComputeCellVolume(Cell,Y);
 Cell.Vol0=Cell.Vol;
@@ -162,12 +165,12 @@ for i=1:Cell.n
     Cell.SAreaTrin{i}=Cell.SAreaTri{i};
 end
 Cell.SAreaFace0=Cell.SAreaFace;
-SharedFaces=SharedFaces.ComputeAreaTri(Y.DataRow,Cell.FaceCentres.DataRow);
+Cell.AllFaces=Cell.AllFaces.ComputeAreaTri(Y.DataRow,Cell.FaceCentres.DataRow);
 
 %% Apico-basal distinction
 [Cell] = Cell.computeEdgeLocation(Y);
 
-%% Contractility L_0
+%% Contractility L_0: Only when builiding the cells to avoid issues in remodelling
 [Cell, uniqueEdges] = Cell.computeEdgeLengths(Y);
 allEdges = vertcat(Cell.EdgeLengths{:});
 Cell.EdgeLengths0_average = mean(allEdges(uniqueEdges));

@@ -2,7 +2,8 @@ function [g, Energy, ncell, K, si, sj, sk, sv] = initializeKg(Cell, Set)
 %INITIALIZEKG Summary of this function goes here
 %   Detailed explanation goes here
 ncell=Cell.n;
-dimg=Set.NumTotalV*3;
+% First: Vertices, Faces and Tetrahedrons
+dimg=(Set.NumTotalV)*3;
 
 if Set.Sparse > 0
     g = sparse(dimg, 1); % Local cell residual

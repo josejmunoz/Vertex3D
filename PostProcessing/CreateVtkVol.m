@@ -1,4 +1,4 @@
-function CreateVtkVol(Y,Cell,X,outputDir, suffix,TimeStep)
+function CreateVtkVol(Y,Cell,outputDir, suffix,TimeStep)
 %% ------- Initiate ---------------------------------------------------
 % str0='VTKResults';
 str0=outputDir;                          % First Name of the file 
@@ -65,7 +65,6 @@ fprintf(file,'%s \n','LOOKUP_TABLE default');
 color=rand(ncell,1)*10;
 for i=1:ncell
     ntri=ones(size(Cell.Tris{i},1),1);
-%     Cell.Vol(i)=Cell.Vol(i)+color(i);
 
     fprintf(file,'%f\n', (Cell.Vol(i)-Cell.Vol0(i))/Cell.Vol0(i)*ntri);
 end
@@ -80,7 +79,6 @@ fprintf(file,'%s \n','LOOKUP_TABLE default');
 %
 for i=1:ncell
     ntri=ones(size(Cell.Tris{i},1),1);
-%     Cell.Vol(i)=Cell.Vol(i)+color(i);
 
     fprintf(file,'%f\n', (Cell.SArea(i)-Cell.SArea0(i))/Cell.SArea0(i)*ntri);
 end
@@ -91,27 +89,16 @@ end
 fprintf(file,'%s \n','SCALARS TriAreaChange double');
 fprintf(file,'%s \n','LOOKUP_TABLE default');
 
-for i=1:ncell
-    for t=1:length(Cell.SAreaTri{i})
-%     ntri=ones(size(Cell.Tris{i},1),1);
-%     Cell.Vol(i)=Cell.Vol(i)+color(i);
-
-         fprintf(file,'%f\n', (Cell.SAreaTri{i}(t)-Cell.SAreaTrin{i}(t))/Cell.SAreaTrin{i}(t));
-    end 
-end
-
-% % Add ablated cells
-% fprintf(file,'%s %d\n','LOOKUP_TABLE ghostCells', nTries);
-% %
 % for i=1:ncell
 %     for t=1:length(Cell.SAreaTri{i})
-%         if Cell.GhostCells(i)
-%             fprintf(file,'%f %f %f %f\n', 1, 1, 1, 0.3);
-%         else
-%             fprintf(file,'%f %f %f %f\n', 1, 1, 1, 1.0);
-%         end
-%     end
+%          fprintf(file,'%f\n', (Cell.SAreaTri{i}(t)-Cell.SAreaTrin{i}(t))/Cell.SAreaTrin{i}(t));
+%     end 
 % end
+for i=1:ncell
+    for f=1:Cell.Faces{i}.nFaces
+        fprintf(file,'%3.35f\n', Cell.AllFaces.EnergyTri{Cell.Faces{i}.FaceCentresID(f)});
+    end
+end
 
 
 fclose(file);

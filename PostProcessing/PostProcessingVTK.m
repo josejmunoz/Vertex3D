@@ -1,8 +1,11 @@
 function PostProcessingVTK(X,Y,T,Cn,Cell,folder,TimeStep,Set)
 % Create VTK files 
 
+
+Cell.AllFaces=Cell.AllFaces.ComputeAreaTri(Y.DataRow,Cell.FaceCentres.DataRow);
+Cell.AllFaces=Cell.AllFaces.ComputeEnergy(Set);
 %Create Cell Volume
-CreateVtkVol(Y.DataOrdered,Cell,X,folder, '_All',TimeStep)
+CreateVtkVol(Y.DataOrdered,Cell,folder, '_All',TimeStep)
 
 %Create node connections
 CreateVtkBar(X,Cn,ones(size(Cn, 1)),folder, 'Nodal_Connectivity','n',TimeStep)
@@ -16,6 +19,8 @@ forceToDisplay_All = vertcat(Cell.ContractileForces{:});
 
 CreateVtkBar(vertices, edgeConnections_All, forceToDisplay_All, folder, 'AllEdges_','contractility',TimeStep)
 
+CreateVtkPoint(Cell.Centre_n, 1:Cell.n, pdist2(Cell.Centre_n, Cell.Centre0), folder, '_MechanicalNuclei_',TimeStep, 'DistanceFromOrigin');
+
 if Set.Substrate
     [uniqueVerticesIds, indicesOfOldArray] = unique(vertcat(Cell.BasalVertices{:}));
     allVerticesValues = vertcat(Cell.SubstrateForce{:});
@@ -23,7 +28,7 @@ if Set.Substrate
     
     uniqueVerticesIds(uniqueVerticesIds<0) = abs(uniqueVerticesIds(uniqueVerticesIds<0)) + size(Y.DataRow, 1);
     
-    CreateVtkPoint(vertices, uniqueVerticesIds, uniqueVerticesValues, folder, '_Basal',TimeStep);
+    CreateVtkPoint(vertices, uniqueVerticesIds, uniqueVerticesValues, folder, '_Basal',TimeStep, 'SubstrateSpring');
 end
 
 
@@ -37,8 +42,8 @@ if Set.Ablation
         
     
     %Create Cell Volume
-    CreateVtkVol(Y.DataOrdered,CellNoAblated,X,folder, '_NoAblated', TimeStep)
-    CreateVtkVol(Y.DataOrdered,CellOnlyAblated,X,folder,'_OnlyAblated', TimeStep)
+    CreateVtkVol(Y.DataOrdered,CellNoAblated,folder, '_NoAblated', TimeStep)
+    CreateVtkVol(Y.DataOrdered,CellOnlyAblated,folder,'_OnlyAblated', TimeStep)
     
     %Display contractile forces
     edgeConnections_NoAblated = vertcat(CellNoAblated.Cv{:});

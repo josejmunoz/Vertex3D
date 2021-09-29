@@ -1,4 +1,4 @@
-function [Cell,Faces,Y]=CheckOrderingOfTriangulaiton(Cell,Faces,Y,Set)
+function [Cell,Y]=CheckOrderingOfTriangulaiton(Cell,Y,Set)
 %% This function makes sure that the triangulation of cell-Faces is ordered correctly.   
 
 
@@ -124,7 +124,7 @@ for c=1:Cell.n
            else 
               Cell.Faces{c}.Tris{s}=TrisAux(aux1:aux1+length(Cell.Faces{c}.Vertices{s})-1,:);
            end 
-           Faces.Vertices{Cell.Faces{c}.FaceCentresID(s)}=Cell.Faces{c}.Vertices{s};
+           Cell.AllFaces.Vertices{Cell.Faces{c}.FaceCentresID(s)}=Cell.Faces{c}.Vertices{s};
         end 
         if length(Cell.Faces{c}.Vertices{s})==3
             aux1=aux1+1;
@@ -138,8 +138,8 @@ end
 if Recompute
     [Cell]=BuildEdges(Cell,Y);
     [Cell]=ComputeCellVolume(Cell,Y);
-    Faces=Faces.ComputeAreaTri(Y.DataRow,Cell.FaceCentres.DataRow);
-    Faces=Faces.ComputeEnergy(Set);
+    Cell.AllFaces=Cell.AllFaces.ComputeAreaTri(Y.DataRow,Cell.FaceCentres.DataRow);
+    Cell.AllFaces=Cell.AllFaces.ComputeEnergy(Set);
 end 
 
 end

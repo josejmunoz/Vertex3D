@@ -4,6 +4,7 @@ classdef CellClass
         Int           % - Cell nodes (array-structure ,  Size={1 NumCells}):
         %       IDs of internal nodes (Cell centres)
         %---------------------------------------------------------------------
+        Tris0
         Tris                  % -Cell-surface Triangulation (Type=cell-structure ,  Size={NumCells 1})
         %     Each cell is an array of size [ntris 3] with triangles defining cell surfaces.
         %     e.g. Cell.Tris{1}(2,:)=[v1 v2 v3] -> such that v1, v2 and v3 are the vertices which
@@ -44,6 +45,12 @@ classdef CellClass
         %--------------------------------------------------------------------
         FaceCentres          %% -Face centres  (Type=array-structure ,  Size={1 NumFaces}):
         % the x-y-z coordinates of face centres
+        %
+        FaceCentres0
+        %--------------------------------------------------------------------
+        Centre
+        Centre0
+        Centre_n
         %--------------------------------------------------------------------
         nTotalTris           %% - Total number of triangles (Type=scalar)
         %--------------------------------------------------------------------
@@ -57,6 +64,8 @@ classdef CellClass
         %--------------------------------------------------------------------
         SArea0               %% - Initial\reference area of Cells   (Type=array-structure ,  Size=[NumCells1 ]):
         %--------------------------------------------------------------------
+        AllFaces
+        
         Faces                %% - Cell Faces (Type=cell-structure ,  Size={NumCells 1}):
         %     - Cell.Faces{i}.nFaces          -> number of faces of Cell i            (Type=scalar)
         %     - Cell.Faces{i}.FaceCentresID   -> The IDs of faces of Cell i           (Type=array-structure, Size=[Cell{i}.nFaces 1])
@@ -132,7 +141,7 @@ classdef CellClass
                 Cell.SAreaTrin=cell(Cell.n,1);
                 Cell.SAreaFace=cell(Cell.n,1);
                 Cell.SAreaFace0=cell(Cell.n,1);
-                Cell.Faces=cell(nC,1);
+                Cell.Faces=cell(nC, 1);
                 Cell.AssembleAll=true;
                 Cell.AssembleNodes=[];
                 Cell.RemodelledVertices=[];
@@ -150,6 +159,9 @@ classdef CellClass
                 Cell.BasalBorderVertices = cell(nC, 1);
                 Cell.BorderVertices = [];
                 Cell.BorderCells=false(nC, 1);
+                Cell.Centre = zeros(nC, 3);
+                Cell.Centre0 = zeros(nC, 3);
+                Cell.AllFaces = []; 
             end
         end
         
@@ -160,7 +172,32 @@ classdef CellClass
         function Cell = AblateCells(obj, cellsToRemove)
             obj.DebrisCells(ismember(obj.Int, cellsToRemove)) = true;
             Cell = obj;
-        end 
+        end
+        
+        function [obj, CellInput, XgID,nC,SCn,flag32, Dofs] = removeCell(obj, CellInput, XgID, T, Y, X, SCn, cellsToRemove, Set)
+            %REMOVECELLDEPENDINGVOL Summary of this function goes here
+            %   Detailed explanation goes here
+            
+            idsToRemove = obj.Int(cellsToRemove);
+            obj = obj.removeCells(cellsToRemove);
+            CellInput.LambdaS1Factor(cellsToRemove) = [];
+            CellInput.LambdaS2Factor(cellsToRemove) = [];
+            CellInput.LambdaS3Factor(cellsToRemove) = [];
+            CellInput.LambdaS4Factor(cellsToRemove) = [];
+            XgID = [XgID; idsToRemove];
+            
+            %Remove edges between debris cell and external nodes. Therefore,
+            %also, remove faces between ghost cell and external nodes and
+            %associated vertices
+            
+            %Here it should change interior faces to exterior face from the smaller one
+            obj.AllFaces=obj.AllFaces.CheckInteriorFaces(XgID);
+            obj.AssembleNodes = obj.Int;
+            [obj,nC,SCn,flag32] = ReBuildCells(obj,T,Y,X,SCn);
+            
+            % Check consequences of this one:
+            Dofs=GetDOFs(Y,obj,Set);
+        end
         
         function Cell = removeCells(obj, cellsToRemove)
             obj.Int(cellsToRemove) = [];
@@ -226,13 +263,13 @@ classdef CellClass
         end
         
         %%
-        function [obj, featuresTable, resultingImage] = exportTableWithCellFeatures(obj, Y, timeStep, Faces, Set)
+        function [obj, featuresTable] = exportTableWithCellFeatures(obj, Y, timeStep, Set)
             %% Features to obtain per tissue:
             % Avg Cell height
             
             
             %% Features to obtain per cell:
-            cellCellFaces = find(Faces.InterfaceType == 1);
+            cellCellFaces = find(obj.AllFaces.InterfaceType == 1);
             
             featuresTable_cell = [];
             for numCell = obj.Int
@@ -335,7 +372,10 @@ classdef CellClass
                 basalEdges = all(ismember(currentEdgesOfCell, bottomVerticesBorder), 2);
                 lateralEdges = any(ismember(currentEdgesOfCell, upperVerticesBorder), 2) + any(ismember(currentEdgesOfCell, bottomVerticesBorder), 2) == 2;
                 
-                
+                %Add two segment lines
+                edgesToFaceCentres = currentEdgesOfCell(ismember(currentEdgesOfCell(:, 2), cellCellFaceCentres), :);
+                additionalLateralEdges = edgesToFaceCentres(ismember(edgesToFaceCentres(:, 1), currentEdgesOfCell(lateralEdges, :)) == 0, :);
+                additionalLateralEdgesBool = ismember(currentEdgesOfCell, additionalLateralEdges, 'rows');
                 %% Get all apical and basal vertices
                 upperZMinimum = (mean(midZ) + mean(Y.DataRow(upperVerticesBorder, 3))/10);
                 bottomZMinimum = (mean(midZ) - mean(Y.DataRow(upperVerticesBorder, 3))/10);       
@@ -365,9 +405,26 @@ classdef CellClass
                 end
                 
                 % 2:Basal 3:Apical 1:Lateral
-                obj.EdgeLocation{numCell} = lateralEdges + 3*apicalEdges + 2*basalEdges;
+                obj.EdgeLocation{numCell} = lateralEdges + additionalLateralEdgesBool + 3*apicalEdges + 2*basalEdges;
                 
             end
+            
+%             % Contractility only applied to edges shared by 1 debris cell
+%             % and 2 regular cells
+%             for numCell = 1:obj.n
+%                 if obj.DebrisCells(numCell)
+%                     currentEdges = obj.Cv{numCell}(obj.EdgeLocation{numCell} == 1, :);
+%                     currentEdges_sorted = sort(currentEdges, 2);
+%                     repatedEdges = zeros(size(currentEdges, 1), 1);
+%                     for numCellAdjacent = 1:obj.n
+%                         if obj.DebrisCells(numCellAdjacent) == 0
+%                             currentEdgesAdjacent = sort(obj.Cv{numCellAdjacent}(obj.EdgeLocation{numCellAdjacent} == 1, :), 2);
+%                             repatedEdges = double(ismember(currentEdges_sorted, currentEdgesAdjacent, 'rows')) + repatedEdges;
+%                         end
+%                     end
+%                     obj.EdgeLocation{numCell}(obj.EdgeLocation{numCell} == 1 & ismember(obj.Cv{numCell}, currentEdges(repatedEdges == 1, :), 'rows')) = 0;
+%                 end
+%             end
         end
     end
 end

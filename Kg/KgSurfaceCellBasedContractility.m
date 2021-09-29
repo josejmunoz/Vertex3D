@@ -1,4 +1,4 @@
-function [g,K,Cell,EnergyS]=KgSurfaceCellBasedAdhesion(Cell,Y,Set,CellInput)
+function [g,K,Cell,EnergyS]=KgSurfaceCellBasedContractility(Cell,Y,Set,CellInput)
 % The residual g and Jacobian K of Surface Energy
 % Energy based on the total cell area with differential Lambda depending on the face type  (external, cell-cell, Cell-substrate)
 %    W_s= sum_cell( sum_face (lambdaS*factor_f(Af)^2) / Ac0^2 )
@@ -34,78 +34,26 @@ for i=1:ncell
     % First loop to commpute fact
     fact0=0;
     for f=1:Cell.Faces{i}.nFaces
-        if Cell.AllFaces.InterfaceType(Cell.Faces{i}.FaceCentresID(f))==0
-            % Lambda of External faces
-            Lambda=Set.lambdaS1*CellInput.LambdaS1Factor(i);
-            fact0=fact0+Lambda*Cell.SAreaFace{i}(f);
-        elseif  Cell.AllFaces.InterfaceType(Cell.Faces{i}.FaceCentresID(f))==1
+        Lambda=0;
+        if  Cell.AllFaces.InterfaceType(Cell.Faces{i}.FaceCentresID(f))==1
             cellsOfFace = Cell.AllFaces.Nodes(Cell.Faces{i}.FaceCentresID(f), :);
-            if all(Cell.DebrisCells(ismember(Cell.Int, cellsOfFace)))
-                % Walls Debris-Debris cells faces
-                Lambda = Set.lambdaS2*Set.LambdaSFactor_Debris;
-            elseif sum(Cell.DebrisCells(ismember(Cell.Int, cellsOfFace))) == 1 
+            if sum(Cell.DebrisCells(ismember(Cell.Int, cellsOfFace))) == 1 
                 % Addition of lateral cables when cell-debris faces
-                %Lambda = Set.lambdaS2 + Set.cLateralCables;
-                Lambda = Set.lambdaS2*CellInput.LambdaS2Factor(i);
-            else
-                % Lambda of Cell-Cell faces
-                Lambda=Set.lambdaS2*CellInput.LambdaS2Factor(i);
-            end
-            
-            fact0=fact0+Lambda*Cell.SAreaFace{i}(f);
-            
-        elseif Cell.AllFaces.InterfaceType(Cell.Faces{i}.FaceCentresID(f))==2
-            % Lambda of Cell-substrate faces
-            Lambda=Set.lambdaS3*CellInput.LambdaS3Factor(i);
-            if Set.Confinement
-                % ------------------------ Confinement --------------------
-                Tris=Cell.Faces{i}.Tris{f};
-                for t=1:size(Tris,1)
-                    nY=Tris(t,:);
-                    Y1=Y.DataRow(nY(1),:);
-                    Y2=Y.DataRow(nY(2),:);
-                    if nY(3)<0
-                        nY(3)=abs(nY(3));
-                        Y3=Y.DataRow(nY(3),:);
-                    else
-                        Y3=Cell.FaceCentres.DataRow(nY(3),:);
-                    end
-                    T=(1/2)*norm(cross(Y2-Y1,Y1-Y3));
-                    if min([Y1(1) Y2(1) Y3(1)]) < Set.ConfinementX1 || max([Y1(1) Y2(1) Y3(1)]) > Set.ConfinementX2...
-                            || min([Y1(2) Y2(2) Y3(2)]) < Set.ConfinementY1 || min([Y1(2) Y2(2) Y3(2)]) > Set.ConfinementY2
-                        fact0=fact0+Set.lambdaS1*CellInput.LambdaS1Factor(i)*T;
-                    else
-                        fact0=fact0+Lambda*T;
-                    end
-                end
-                % ---------------------------------------------------------
-            else
-                fact0=fact0+Lambda*Cell.SAreaFace{i}(f);
+                Lambda = Set.cLateralCables;
             end
         end
+        fact0=fact0+Lambda*Cell.SAreaFace{i}(f);
     end
     fact=fact0/Cell.SArea0(i)^2;
     
     for f=1:Cell.Faces{i}.nFaces
-        if Cell.AllFaces.InterfaceType(Cell.Faces{i}.FaceCentresID(f))==0
-            % External
-            Lambda=Set.lambdaS1*CellInput.LambdaS1Factor(i);
-        elseif  Cell.AllFaces.InterfaceType(Cell.Faces{i}.FaceCentresID(f))==1
+        Lambda = 0;
+        if  Cell.AllFaces.InterfaceType(Cell.Faces{i}.FaceCentresID(f))==1
             cellsOfFace = Cell.AllFaces.Nodes(Cell.Faces{i}.FaceCentresID(f), :);
-            if all(Cell.DebrisCells(ismember(Cell.Int, cellsOfFace)))
-                Lambda = Set.lambdaS2 * Set.LambdaSFactor_Debris;
-            elseif sum(Cell.DebrisCells(ismember(Cell.Int, cellsOfFace))) == 1 
+            if sum(Cell.DebrisCells(ismember(Cell.Int, cellsOfFace))) == 1 
                 % Addition of lateral cables when cell-debris faces
-                %Lambda = Set.lambdaS2 + Set.cLateralCables;
-                Lambda=Set.lambdaS2*CellInput.LambdaS2Factor(i);
-            else
-                % Cell-Cell
-                Lambda=Set.lambdaS2*CellInput.LambdaS2Factor(i);
+                Lambda = Set.cLateralCables;
             end
-            
-        elseif Cell.AllFaces.InterfaceType(Cell.Faces{i}.FaceCentresID(f))==2
-            % Cell-substrate
-            Lambda=Set.lambdaS3*CellInput.LambdaS3Factor(i);
         end
         % Loop over Cell-face-triangles
         Tris=Cell.Faces{i}.Tris{f};
@@ -134,6 +82,13 @@ for i=1:ncell
             end
             % -------------------------------------------------------------
             [gs,Ks,Kss]=gKSArea(Y1,Y2,Y3);
+            keepOnlyZsIds = [1, 2, 4, 5, 7, 8];
+            gs(keepOnlyZsIds) = 0;
+            Ks(keepOnlyZsIds, :) = 0;
+            Ks(:, keepOnlyZsIds) = 0;
+            Kss(keepOnlyZsIds, :) = 0;
+            Kss(:, keepOnlyZsIds) = 0;
+            
             gs=Lambda*gs;
             ge=Assembleg(ge,gs,nY);
             if nargout>1

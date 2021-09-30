@@ -12,7 +12,7 @@ cd(newSubFolder);        % go to the new folder
 
 for numCell = 1:Cell.n
     %% Init file
-    nameout=strcat('Cell_', num2str(numCell), '_', numTimeStep, fileExtension);   % full name of the file 
+    nameout=strcat('Cell_', num2str(numCell, '%04d'), '_', numTimeStep, fileExtension);   % full name of the file 
     file=fopen(nameout,'w');
     fprintf(file,'%s\n','# vtk DataFile Version 3.98');
     fprintf(file,'%s\n','Delaunay_vtk');

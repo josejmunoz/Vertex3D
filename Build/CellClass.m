@@ -228,6 +228,8 @@ classdef CellClass
             obj.EdgeLengthsn(cellsToRemove) = [];
             obj.ContractileForces(cellsToRemove) = [];
             obj.DebrisCells(cellsToRemove) = [];
+            obj.BasalVertices(cellsToRemove) = [];
+            obj.ApicalVertices(cellsToRemove) = [];
             
             obj.n = obj.n - sum(cellsToRemove);
             obj.nTotalTris = sum(cellfun(@(X) size(X,1), obj.Tris));

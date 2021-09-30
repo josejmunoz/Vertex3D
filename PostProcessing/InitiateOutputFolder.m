@@ -20,31 +20,22 @@ if exist(DirOutput, 'dir')
         
         if exist(fullfile(DirOutput,'ResultVTK'), 'dir')
             aux=fullfile(DirOutput,'ResultVTK');
-            cd(aux)
-            delete *.vtk
-            cd(R)
+            rmdir(aux,'s')
         end
         
         if exist(fullfile(DirOutput,'ResultVTK_iter'), 'dir')
             aux=fullfile(DirOutput,'ResultVTK_iter');
-            cd(aux)
-            delete *.vtk
-            cd(R)
+            rmdir(aux,'s')
         end
         
         if exist(fullfile(DirOutput,'Workspace'), 'dir')
             aux=fullfile(DirOutput,'Workspace');
-            cd(aux)
-            delete *.mat
-            cd(R)
+            rmdir(aux,'s')
         end
         
         if exist(fullfile(DirOutput, 'Analysis'), 'dir')
             aux=fullfile(DirOutput, 'Analysis');
-            cd(aux)
-            delete *.csv
-            delete *.mat
-            cd(R)
+            rmdir(aux,'s')
         end
     end
 else

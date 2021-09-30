@@ -265,7 +265,7 @@ classdef CellClass
         end
         
         %%
-        function [obj, featuresTable] = exportTableWithCellFeatures(obj, Y, timeStep, Set)
+        function [obj, featuresTable] = exportTableWithCellFeatures(obj, tetrahedra, timeStep, Set)
             %% Features to obtain per tissue:
             % Avg Cell height
             
@@ -274,6 +274,12 @@ classdef CellClass
             cellCellFaces = find(obj.AllFaces.InterfaceType == 1);
             
             featuresTable_cell = [];
+            apicalSideVertices = [];
+            basalSideVertices = [];
+            lengthApicalEdges = [];
+            lengthBasalEdges = [];
+            woundEdgeCellSurfaceArea = [];
+            cellSurfaceAreaPerNeighbour = [];
             for numCell = obj.Int
                 % - Cell height
                 % avg and std distance between connected apical and basal
@@ -298,19 +304,53 @@ classdef CellClass
                 
                 % - Shared lateral area per neighbour (avg and std)
                 currentFaceIDs = obj.Faces{numCell}.FaceCentresID;
-                cellCellAreas = obj.SAreaFace{1}(ismember(currentFaceIDs, cellCellFaces));
+                cellCellAreas = obj.SAreaFace{numCell}(ismember(currentFaceIDs, cellCellFaces));
                 lateralAreaSharedPerNeighbour_AVG = mean(cellCellAreas);
                 lateralAreaSharedPerNeighbour_STD = std(cellCellAreas);
                 
                 % - Neighbours: 3D neighbours, apical and basal neighbours,
+                neighbours3D = unique(tetrahedra(any(ismember(tetrahedra, numCell), 2), :));
+                neighbours3D = neighbours3D(ismember(neighbours3D, obj.Int));
                 % polygon distribution
                 apicalNeighbours = [];
                 basalNeighbours = [];
                 
                 basalBorderVerticesIDs = obj.BasalVertices{numCell}(obj.BasalBorderVertices{numCell});
                 apicalBorderVerticesIDs = obj.ApicalVertices{numCell}(obj.ApicalBorderVertices{numCell});
-                for neighbourCell = 1:obj.n
+                
+                %% Quantifications per neighbour
+                apicalNeighbours = [];
+                basalNeighbours = [];
+                for neighbourCell = neighbours3D'
                     if neighbourCell ~= numCell
+                        sharedIdFace = find(obj.AllFaces.Nodes(:, 1) == numCell & obj.AllFaces.Nodes(:, 2) == neighbourCell);
+                        cellSurfaceAreaPerNeighbour(end+1) = obj.SAreaFace{numCell}(ismember(currentFaceIDs, sharedIdFace));
+                        %% Edges
+                        currentEdges = obj.Cv{numCell};
+                        neighbourEdges = obj.Cv{neighbourCell};
+                        idShareEdges = find(ismember(sort(currentEdges, 2), sort(neighbourEdges, 2), 'rows'));
+                        sharedEdges = currentEdges(idShareEdges, :);
+                        idShareEdges(sharedEdges(:, 2) < 0) = [];
+                        sharedEdges(sharedEdges(:, 2) < 0, :) = [];
+                        if obj.DebrisCells(neighbourCell) % Wound edge
+                            woundEdgeCell = 1;
+                            
+                            apicalSideEdges = idShareEdges(obj.EdgeLocation{numCell}(idShareEdges) == 3);
+                            basalSideEdges = idShareEdges(obj.EdgeLocation{numCell}(idShareEdges) == 2);
+                            
+                            % Wound 2D perimeter
+                            lengthApicalEdges(end+1:end+2) = obj.EdgeLengths{numCell}(apicalSideEdges); % Apical
+                            lengthBasalEdges(end+1:end+2) = obj.EdgeLengths{numCell}(basalSideEdges); % Basal
+                            
+                            % Wound 2D vertices
+                            apicalSideVertices(end+1:end+3) = unique(obj.Cv{numCell}(apicalSideEdges));
+                            basalSideVertices(end+1:end+3) = unique(obj.Cv{numCell}(basalSideEdges));
+                            
+                            woundEdgeCellSurfaceArea(end+1) = cellSurfaceAreaPerNeighbour(neighbourCell);
+                        else %Cell is not in the edge
+                            woundEdgeCellSurfaceArea(end+1) = 0;
+                        end
+                        
                         %Apical neighbours
                         if any(ismember(apicalBorderVerticesIDs, obj.ApicalVertices{neighbourCell}(obj.ApicalBorderVertices{neighbourCell})))
                             apicalNeighbours = [apicalNeighbours, neighbourCell];
@@ -324,7 +364,7 @@ classdef CellClass
                 end
                 
                 % - Convexity/concavity of cell
-                % - info normalized: 35microns cell height initial
+                % - info normalized: according to initial cell height
                 Set.CellHeight;
                 
                 featuresTable_cell = [featuresTable_cell; numCell, obj.BorderCells(numCell), obj.DebrisCells(numCell), cellHeight, ...
@@ -332,6 +372,12 @@ classdef CellClass
                     basalArea, lateralTrianglesArea, lateralAreaSharedPerNeighbour_AVG, ...
                     lateralAreaSharedPerNeighbour_STD, {apicalNeighbours}, ...
                     numel(apicalNeighbours), {basalNeighbours}, numel(basalNeighbours)];
+            end
+            
+            %% Calculate wound edge stats
+            if any(obj.DebrisCell) 
+                %% Wound
+                disp('Calculate wound stats');
             end
             
             featuresTable = cell2table(featuresTable_cell, 'VariableNames', ...

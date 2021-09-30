@@ -42,8 +42,8 @@ for numCell = 1:ncell
             edgeVertices(numEdge, 2) = abs(edgeVertices(numEdge, 2)) + Set.NumMainV;
         end
         
-        if edgeLocation(numEdge) == 3
-            if Cell.DebrisCells(numCell)
+        if edgeLocation(numEdge) == 3 
+            if Cell.DebrisCells(numCell) % Wound edge
                 C = Set.cLineTension + Set.cPurseString;
             else
                 C = Set.cLineTension;

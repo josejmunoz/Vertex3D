@@ -119,8 +119,10 @@ while t<=Set.tend
         if Set.VTK, PostProcessingVTK(X,Y,tetrahedra.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end
         
         %% Analise cells
-        [~, cellFeatures{numStep}] = Cell.exportTableWithCellFeatures(Y, numStep, Set);
-        writetable(vertcat(cellFeatures{:}), strcat(Set.OutputFolder,Esc,'Analysis',Esc,'cellFeatures_', num2str(Set.iIncr),'_', num2str(t) ,'_.csv'))
+        [~, cellFeatures{numStep}] = Cell.exportTableWithCellFeatures(tetrahedra.DataRow, numStep, Set);
+        analysisDir = strcat(Set.OutputFolder,Esc,'Analysis',Esc);
+        save(strcat(analysisDir, 'cellInfo_', num2str(Set.iIncr), '.m'), 'Cell', 'Y', 'X');
+        writetable(vertcat(cellFeatures{:}), strcat(analysisDir,'cellFeatures_', num2str(Set.iIncr),'_', num2str(t) ,'_.csv'))
         
         %% Update energies
         EnergyS(numStep)=Energy.Es;

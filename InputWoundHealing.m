@@ -1,9 +1,10 @@
 %% geometry
 Set.InputSegmentedImage = 'InputImage_dWP3.bmp';
 
-Set.CellHeight = 35; %Microns
+Set.CellHeight = 15; %Microns
 Set.zScale = 19.23; %MicronsXY-MicronsZ relation
-Set.AvgCellArea = 5; %Microns
+Set.EllipseFitDiameter = 1; %Microns of a fitted ellipsed in Rob's Wing Discs
+Set.AvgCellArea = pi * (Set.EllipseFitDiameter/2)^2; %Microns
 Set.CellHeight = (Set.CellHeight * Set.zScale) / Set.AvgCellArea;
 Set.TotalCells = 225; %Aim 225
 %Set.TotalCells = 40;
@@ -95,7 +96,7 @@ Set.cPurseString = 3;
 Set.Contractility_Variability_PurseString = ([1 1 2.5 2] - 1) * Set.cPurseString;
 Set.Contractility_TimeVariability_PurseString = [0 7 16 60]/60*(Set.TEndAblation - Set.TInitAblation);
 
-Set.cLateralCables = 1.5;
+Set.cLateralCables = 0.5;
 Set.Contractility_Variability_LateralCables = ([0.5 1.4 1.4] - 0.5) * Set.cLateralCables;
 Set.Contractility_TimeVariability_LateralCables = [0 16 60]/60*(Set.TEndAblation - Set.TInitAblation);
 

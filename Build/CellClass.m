@@ -265,7 +265,7 @@ classdef CellClass
         end
         
         %%
-        function [obj, featuresTable] = exportTableWithCellFeatures(obj, tetrahedra, timeStep, Set)
+        function [obj, cellFeaturesTable, woundFeatures, woundEdgeCellFeatures] = exportTableWithCellFeatures(obj, tetrahedra, Y, timeStep, Set)
             %% Features to obtain per tissue:
             % Avg Cell height
             
@@ -280,6 +280,9 @@ classdef CellClass
             lengthBasalEdges = [];
             woundEdgeCellSurfaceArea = [];
             cellSurfaceAreaPerNeighbour = [];
+            woundEdgeCells = [];
+            lateralWoundHeight = [];
+            tiltedAngle = [];
             for numCell = obj.Int
                 % - Cell height
                 % avg and std distance between connected apical and basal
@@ -322,9 +325,13 @@ classdef CellClass
                 apicalNeighbours = [];
                 basalNeighbours = [];
                 for neighbourCell = neighbours3D'
-                    if neighbourCell ~= numCell
-                        sharedIdFace = find(obj.AllFaces.Nodes(:, 1) == numCell & obj.AllFaces.Nodes(:, 2) == neighbourCell);
-                        cellSurfaceAreaPerNeighbour(end+1) = obj.SAreaFace{numCell}(ismember(currentFaceIDs, sharedIdFace));
+                    if neighbourCell ~= numCell && obj.DebrisCells(numCell) == 0
+                        allNodesConnections = sort(obj.AllFaces.Nodes, 2);
+                        sharedIdFace = find(ismember(allNodesConnections, sort([numCell, neighbourCell], 2), 'rows'));
+                        currentFaceConnection = ismember(currentFaceIDs, sharedIdFace);
+                        cellSurfaceAreaPerNeighbour(end+1) = obj.SAreaFace{numCell}(currentFaceConnection);
+                        currentFaceVertices = obj.Faces{numCell}.Vertices{currentFaceConnection};
+                        
                         %% Edges
                         currentEdges = obj.Cv{numCell};
                         neighbourEdges = obj.Cv{neighbourCell};
@@ -333,20 +340,43 @@ classdef CellClass
                         idShareEdges(sharedEdges(:, 2) < 0) = [];
                         sharedEdges(sharedEdges(:, 2) < 0, :) = [];
                         if obj.DebrisCells(neighbourCell) % Wound edge
-                            woundEdgeCell = 1;
+                            woundEdgeCells(end+1) = numCell;
                             
-                            apicalSideEdges = idShareEdges(obj.EdgeLocation{numCell}(idShareEdges) == 3);
-                            basalSideEdges = idShareEdges(obj.EdgeLocation{numCell}(idShareEdges) == 2);
+                            apicalSideEdges = [idShareEdges(obj.EdgeLocation{numCell}(idShareEdges) == 3)];
+                            basalSideEdges = [idShareEdges(obj.EdgeLocation{numCell}(idShareEdges) == 2)];
+                            
+                            lateralSideEdges = [idShareEdges(obj.EdgeLocation{numCell}(idShareEdges) == 1)];
                             
                             % Wound 2D perimeter
                             lengthApicalEdges(end+1:end+2) = obj.EdgeLengths{numCell}(apicalSideEdges); % Apical
                             lengthBasalEdges(end+1:end+2) = obj.EdgeLengths{numCell}(basalSideEdges); % Basal
                             
                             % Wound 2D vertices
-                            apicalSideVertices(end+1:end+3) = unique(obj.Cv{numCell}(apicalSideEdges));
-                            basalSideVertices(end+1:end+3) = unique(obj.Cv{numCell}(basalSideEdges));
+                            apicalSideVertices(end+1:end+3) = unique(obj.Cv{numCell}(apicalSideEdges, :));
+                            basalSideVertices(end+1:end+3) = unique(obj.Cv{numCell}(basalSideEdges, :));
                             
-                            woundEdgeCellSurfaceArea(end+1) = cellSurfaceAreaPerNeighbour(neighbourCell);
+                            woundEdgeCellSurfaceArea(end+1) = cellSurfaceAreaPerNeighbour(end);
+                            
+                            % Wound titling
+                            sharedEdgesWithVertex = intersect(idShareEdges, find(any(ismember(obj.Cv{numCell}, obj.Cv{numCell}(lateralSideEdges(1), 2)), 2)));
+
+                            sharedVertex = obj.Cv{numCell}(sharedEdgesWithVertex(1), ismember(obj.Cv{numCell}(sharedEdgesWithVertex(1), :), obj.Cv{numCell}(sharedEdgesWithVertex(2), :)));
+                            theVertexToChange = obj.Cv{numCell}(sharedEdgesWithVertex(obj.EdgeLocation{numCell}(sharedEdgesWithVertex) == 1), :);
+                            theVertexToChange(theVertexToChange == sharedVertex) = [];
+                            
+                            tiltedVerticesIds = unique(obj.Cv{numCell}(sharedEdgesWithVertex, :));
+                            tiltedVerticesIds(ismember(tiltedVerticesIds, [sharedVertex theVertexToChange])) = [];
+                            tiltedTriangle = Y.DataRow([tiltedVerticesIds sharedVertex theVertexToChange], :);
+                            orthogonalTriangle = Y.DataRow([tiltedVerticesIds sharedVertex sharedVertex], :);
+                            orthogonalTriangle(3, 3) = Y.DataRow(theVertexToChange, 3);
+                            
+                            tiltedTriangle = cross(tiltedTriangle(2, :) - tiltedTriangle(3, :), tiltedTriangle(2, :) - tiltedTriangle(1, :));
+                            orthogonalTriangleNormal = cross(orthogonalTriangle(2, :) - orthogonalTriangle(3, :), orthogonalTriangle(2, :) - orthogonalTriangle(1, :));
+                            
+                            tiltedAngle(end+1) = acosd(dot(tiltedTriangle, orthogonalTriangleNormal) / (norm(orthogonalTriangleNormal) * norm(tiltedTriangle)));
+
+                            % Cell edge height
+                            lateralWoundHeight(end+1) = mean(obj.EdgeLengths{numCell}(lateralSideEdges));
                         else %Cell is not in the edge
                             woundEdgeCellSurfaceArea(end+1) = 0;
                         end
@@ -374,19 +404,44 @@ classdef CellClass
                     numel(apicalNeighbours), {basalNeighbours}, numel(basalNeighbours)];
             end
             
-            %% Calculate wound edge stats
-            if any(obj.DebrisCell) 
-                %% Wound
-                disp('Calculate wound stats');
-            end
-            
-            featuresTable = cell2table(featuresTable_cell, 'VariableNames', ...
+            cellFeaturesTable = cell2table(featuresTable_cell, 'VariableNames', ...
                 {'ID', 'IsBorderCell', 'IsDebrisCell', 'HeightAVG', 'HeightSTD', ...
                 'Volume', 'SurfaceArea', 'ApicalArea', 'BasalArea', ...
                 'LateralArea', 'LateralAreaSharedPerNeighbourAVG', ...
                 'LateralAreaSharedPerNeighbourASTD', 'ApicalNeighbours', ...
                 'NumApicalNeighbours', 'BasalNeigbhours', 'NumBasalNeighbours'});
             
+            %% Calculate wound edge stats
+            if any(obj.DebrisCells) 
+                %% Wound stats
+                %Apical
+                wound3DApical = alphaShape(Y.DataRow(apicalSideVertices, :));
+                wound3DApicalSurfArea = wound3DApical.surfaceArea;
+                wound3DApicalVolume = wound3DApical.volume;
+                
+                polyOrder = boundary(Y.DataRow(apicalSideVertices, 1:2)); %% INSTEAD OF THIS USE THE EDGES TO CONNECT
+                wound2DApical = polyshape(Y.DataRow(apicalSideVertices(polyOrder), 1:2));
+                wound2DApicalArea = wound2DApical.area;
+                wound2DApicalPerimeter = wound2DApical.perimeter;
+                
+                %Basal
+                wound3DBasal = alphaShape(Y.DataRow(basalSideVertices, :));
+                wound3DBasalSurfArea = wound3DBasal.surfaceArea;
+                wound3DBasalVolume = wound3DBasal.volume;
+                
+                polyOrder = boundary(Y.DataRow(basalSideVertices, 1:2));
+                wound2DBasal = polyshape(Y.DataRow(basalSideVertices(polyOrder), 1:2));
+                wound2DBasalArea = wound2DBasal.area;
+                wound2DBasalPerimeter = wound2DBasal.perimeter;
+                woundFeatures = table(wound3DApicalSurfArea, wound3DApicalVolume, wound2DApicalArea, wound2DApicalPerimeter, ...
+                        wound3DBasalSurfArea, wound3DBasalVolume, wound2DBasalArea, wound2DBasalPerimeter);
+                    
+                %% Wound edge cell stats
+                woundEdgeCellFeatures = table(woundEdgeCells, lateralWoundHeight, tiltedAngle, woundEdgeCellSurfaceArea);
+            else
+                woundFeatures = table();
+                woundEdgeCellFeatures = table();
+            end
         end
         
         %%

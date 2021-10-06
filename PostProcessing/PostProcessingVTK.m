@@ -40,7 +40,7 @@ for numCell = Cell.Int
 end
 
 if ~isempty(T)
-    CreateVtkTet(X,T,fullfile(folder, '_Tetrahedra'),TimeStep)
+    CreateVtkTet(X,T,fullfile(folder, 'Tetrahedra'),TimeStep)
 end 
 
 if Set.Confinement, CreateVtkConfinement(Set,folder,TimeStep); end 

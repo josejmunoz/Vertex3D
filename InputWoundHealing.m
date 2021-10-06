@@ -62,8 +62,8 @@ Set.Substrate = true;
 Set.kSubstrate = 50;
 
 %% time
-Set.tend=0.04; % 0.04 = 40 minutes (30 after ablation)
-Set.Nincr=40;
+Set.tend=0.041; % 0.04 = 40 minutes (30 after ablation)
+Set.Nincr=41;
 
 
 %% Remodeling
@@ -84,24 +84,18 @@ Set.Ablation = true;
 % Aim: Set.cellsToAblate = 1:15;
 Set.cellsToAblate = 1:15;
 Set.TInitAblation = 0.01;
-Set.TEndAblation = 0.04;
+Set.TEndAblation = 0.041;
 
 %% Contractility
 % 0: No contractility
 % 1: Lateral cables end-to-end
 % 2: Lateral surface contractility
 Set.Contractility = 1; 
-
 Set.cPurseString = 3;
-Set.Contractility_Variability_PurseString = ([1 1 2.5 2.5] - 1) * Set.cPurseString;
-Set.Contractility_TimeVariability_PurseString = [0 7 16 30]/30*(Set.TEndAblation - Set.TInitAblation);
-
 Set.cLateralCables = 0.5;
-Set.Contractility_Variability_LateralCables = ([0.5 1.4 1.4] - 0.5) * Set.cLateralCables;
-Set.Contractility_TimeVariability_LateralCables = [0 16 30]/30*(Set.TEndAblation - Set.TInitAblation);
 
 %% Execution parameters
-Set.OutputFolder = strcat('Result/cLineTension_', num2str(Set.cLineTension),'_typeOfContractility_', num2str(Set.Contractility),'_cPurseString_', num2str(Set.cPurseString), '_cLateralCables_', num2str(Set.cLateralCables), '_lambdaV_', num2str(Set.lambdaV), '_lambdaS1_', num2str(Set.lambdaS1),'_lambda_S2_', num2str(Set.lambdaS2), '_KSubstrate_', num2str(Set.kSubstrate),'_Remodelling_', num2str(Set.Remodelling),'_confinedXYZ_OuterVertices_NCells_', num2str(Set.TotalCells), '_viscosity_', num2str(Set.nu), '_elasticity_mu_', num2str(Set.mu_bulk), '_elasticity_lambda_', num2str(Set.lambda_bulk));
+Set.batchProcessing = true;
 Set.diary = true;
 Set.MaxIter = 400;
 Set.tol=1e-10;

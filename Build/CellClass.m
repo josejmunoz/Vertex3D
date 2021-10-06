@@ -377,8 +377,6 @@ classdef CellClass
 
                             % Cell edge height
                             lateralWoundHeight(end+1) = mean(obj.EdgeLengths{numCell}(lateralSideEdges));
-                        else %Cell is not in the edge
-                            woundEdgeCellSurfaceArea(end+1) = 0;
                         end
                         
                         %Apical neighbours
@@ -437,7 +435,7 @@ classdef CellClass
                         wound3DBasalSurfArea, wound3DBasalVolume, wound2DBasalArea, wound2DBasalPerimeter);
                     
                 %% Wound edge cell stats
-                woundEdgeCellFeatures = table(woundEdgeCells, lateralWoundHeight, tiltedAngle, woundEdgeCellSurfaceArea);
+                woundEdgeCellFeatures = table(woundEdgeCells', lateralWoundHeight', tiltedAngle', woundEdgeCellSurfaceArea');
             else
                 woundFeatures = table();
                 woundEdgeCellFeatures = table();

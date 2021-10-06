@@ -45,6 +45,8 @@ EnergySub=zeros(Set.Nincr,1);  Energy.Esub=0;
 StepSize=zeros(Set.Nincr,1);
 
 cellFeatures=cell(Set.Nincr, 1);
+woundFeatures=cell(Set.Nincr, 1);
+woundEdgeFeatures=cell(Set.Nincr, 1);
 
 Set.N_Rejected_Transfromation=0; Set.N_Accepted_Transfromation=0;
 
@@ -119,11 +121,14 @@ while t<=Set.tend
         if Set.VTK, PostProcessingVTK(X,Y,tetrahedra.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end
         
         %% Analise cells
-        [~, cellFeatures{numStep}] = Cell.exportTableWithCellFeatures(tetrahedra.DataRow, numStep, Set);
+        [~, cellFeatures{numStep}, woundFeatures{numStep}, woundEdgeFeatures{numStep}] = Cell.exportTableWithCellFeatures(tetrahedra.DataRow, Y, numStep, Set);
         analysisDir = strcat(Set.OutputFolder,Esc,'Analysis',Esc);
-        save(strcat(analysisDir, 'cellInfo_', num2str(Set.iIncr), '.m'), 'Cell', 'Y', 'X');
-        writetable(vertcat(cellFeatures{:}), strcat(analysisDir,'cellFeatures_', num2str(Set.iIncr),'_', num2str(t) ,'_.csv'))
+        save(strcat(analysisDir, 'cellInfo_', num2str(Set.iIncr), '.m'), 'Cell', 'Y', 'X', 'tetrahedra', 'cellFeatures', 'woundFeatures', 'woundEdgeFeatures');
         
+        if any(Cell.DebrisCells)
+            writetable(vertcat(woundEdgeFeatures{:}), strcat(analysisDir,'woundEdgeFeatures.csv'))
+            writetable(vertcat(woundFeatures{:}), strcat(analysisDir,'woundFeatures.csv'))
+        end
         %% Update energies
         EnergyS(numStep)=Energy.Es;
         EnergyV(numStep)=Energy.Ev;

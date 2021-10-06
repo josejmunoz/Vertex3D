@@ -123,16 +123,16 @@ if ~isfield(Set,'SurfaceType')
     Set.SurfaceType=1;
     Set.A0eq0=true; 
 end 
-if ~isfield(Set,'LambdaS1') % Cell-external
+if ~isfield(Set,'lambdaS1') % Cell-external
     Set.lambdaS1=0.5;
 end 
-if ~isfield(Set,'LambdaS2') % Cell-Cell
+if ~isfield(Set,'lambdaS2') % Cell-Cell
     Set.lambdaS2=0.1;
 end 
-if ~isfield(Set,'LambdaS3') % Cell-substrate
+if ~isfield(Set,'lambdaS3') % Cell-substrate
     Set.lambdaS3=Set.lambdaS2;
 end 
-if ~isfield(Set,'LambdaS4') % Cell-Debris
+if ~isfield(Set,'lambdaS4') % Cell-Debris
     Set.lambdaS4=Set.lambdaS2;
 end 
 
@@ -314,31 +314,6 @@ if ~isfield(Set,'BC')
     Set.TStartBC=20;  %30  
     Set.TStopBC=100;
 end 
-
-%% ============================= PostProcessing ===========================
-
-if ~isfield(Set,'diary') % save log File   
-    Set.diary=false;
-end
-
-if ~isfield(Set,'VTK') % Vtk files for each time step
-    Set.VTK=true;
-end 
-if ~isfield(Set,'gVTK') % NOT YET! Vtk files of forces  (arrows) 
-    Set.gVTK=false;
-end 
-if ~isfield(Set,'VTK_iter') % vtk file for each iteration
-    Set.VTK_iter=false;
-end 
-if ~isfield(Set,'OutputFolder') % Name of output file
-   Set.OutputFolder='Result'; 
-end
-if ~isfield(Set,'SaveWorkspace') % Save Workspace at each time step
-    Set.SaveWorkspace=false;   
-end
-if ~isfield(Set,'SaveSetting')
-    Set.SaveSetting=false;
-end
        
 %% ============================= Ablation ===========================
 % Cells are ablated by becoming 'Debris'
@@ -379,14 +354,17 @@ end
 % Contractility coefficient values on the purse string during a period of time
 % defined by 'Contractility_TimeVariability_PurseString'
 if ~isfield(Set, 'Contractility_Variability_PurseString')
-    Set.Contractility_Variability_PurseString = [1 1]*Set.cPurseString;
+    %Set.Contractility_Variability_PurseString = [1 1]*Set.cPurseString;
+    Set.Contractility_Variability_PurseString = ([1 1 2.5 2.5] - 1) * Set.cPurseString;
+    
 end
 
 % Timepoints where differeent values of 'cPurseString' appear.
 % Intermediate values of 'cPurseString' are extrapolated considering the
 % difference between each timepoint.
 if ~isfield(Set, 'Contractility_TimeVariability_PurseString')
-    Set.Contractility_TimeVariability_PurseString = [0 Set.tend];
+    %Set.Contractility_TimeVariability_PurseString = [0 Set.tend];
+    Set.Contractility_TimeVariability_PurseString = [0 7 16 30]/30*(Set.TEndAblation - Set.TInitAblation);
 end
 
 if ~isfield(Set, 'cLateralCables') % Contractility coefficient on the lateral cables
@@ -396,13 +374,41 @@ end
 % Contractility coefficient values on the lateral cables during a period of 
 % time defined by 'Contractility_TimeVariability_PurseString'
 if ~isfield(Set, 'Contractility_Variability_LateralCables')
-    Set.Contractility_Variability_LateralCables = [1 1]*Set.cLateralCables;
+    %Set.Contractility_Variability_LateralCables = [1 1]*Set.cLateralCables;
+    Set.Contractility_Variability_LateralCables = ([0.5 1.4 1.4] - 0.5) * Set.cLateralCables;
 end
 
 % Timepoints where differeent values of 'cLateralCables' appear.
 % Intermediate values of 'cLateralCables' are extrapolated considering the
 % difference between each timepoint.
 if ~isfield(Set, 'Contractility_TimeVariability_LateralCables')
-    Set.Contractility_TimeVariability_LateralCables = [0 Set.tend];
+    %Set.Contractility_TimeVariability_LateralCables = [0 Set.tend];
+    Set.Contractility_TimeVariability_LateralCables = [0 16 30]/30*(Set.TEndAblation - Set.TInitAblation);
+end
+%% ============================= PostProcessing ===========================
+
+if ~isfield(Set,'diary') % save log File   
+    Set.diary=false;
+end
+
+if ~isfield(Set,'VTK') % Vtk files for each time step
+    Set.VTK=true;
+end 
+if ~isfield(Set,'gVTK') % NOT YET! Vtk files of forces  (arrows) 
+    Set.gVTK=false;
+end 
+if ~isfield(Set,'VTK_iter') % vtk file for each iteration
+    Set.VTK_iter=false;
+end 
+if ~isfield(Set,'OutputFolder') % Name of output file
+   Set.OutputFolder='Result'; 
+elseif Set.batchProcessing
+    Set.OutputFolder = strcat('Result/cLineTension_', num2str(Set.cLineTension),'_typeOfContractility_', num2str(Set.Contractility),'_cPurseString_', num2str(Set.cPurseString), '_cLateralCables_', num2str(Set.cLateralCables), '_lambdaV_', num2str(Set.lambdaV), '_lambdaS1_', num2str(Set.lambdaS1),'_lambda_S2_', num2str(Set.lambdaS2), '_KSubstrate_', num2str(Set.kSubstrate),'_Remodelling_', num2str(Set.Remodelling),'_confinedXYZ_OuterVertices_NCells_', num2str(Set.TotalCells), '_viscosity_', num2str(Set.nu), '_elasticity_mu_', num2str(Set.mu_bulk), '_elasticity_lambda_', num2str(Set.lambda_bulk));
+end
+if ~isfield(Set,'SaveWorkspace') % Save Workspace at each time step
+    Set.SaveWorkspace=false;   
+end
+if ~isfield(Set,'SaveSetting')
+    Set.SaveSetting=false;
 end
 end 

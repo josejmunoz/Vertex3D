@@ -30,6 +30,7 @@ else
 end
 
 for numLine = 1:length(tlines)
+    disp('--------- SIMULATION STARTS ---------');
     eval(tlines{numLine});
     [Set]=SetDefault(Set);
     [skipSimulation] = InitiateOutputFolder(Set);
@@ -220,7 +221,11 @@ for numLine = 1:length(tlines)
     end
     %% New simulation
     if Set.batchProcessing
-        clearvars -except 'Set' 'tlines'
+        clearvars -except 'tlines'
+        %InputCompression
+        %InputStretch2 % Example of 2 stretched cells
+        % InputSubstrateExtrusion
+        InputWoundHealing
     end
 end
 fprintf('Done!!\n')

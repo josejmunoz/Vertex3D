@@ -139,15 +139,6 @@ for numLine = 1:length(tlines)
             %% Post processing
             if Set.VTK, PostProcessingVTK(X,Y,tetrahedra.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end
 
-            %% Analise cells
-            [~, cellFeatures{numStep}, woundFeatures{numStep}, woundEdgeFeatures{numStep}] = Cell.exportTableWithCellFeatures(tetrahedra.DataRow, Y, numStep, Set);
-            analysisDir = strcat(Set.OutputFolder,Esc,'Analysis',Esc);
-            save(strcat(analysisDir, 'cellInfo_', num2str(Set.iIncr), '.m'), 'Cell', 'Y', 'X', 'tetrahedra', 'cellFeatures', 'woundFeatures', 'woundEdgeFeatures');
-
-            if any(Cell.DebrisCells)
-                writetable(vertcat(woundEdgeFeatures{:}), strcat(analysisDir,'woundEdgeFeatures.csv'))
-                writetable(vertcat(woundFeatures{:}), strcat(analysisDir,'woundFeatures.csv'))
-            end
             %% Update energies
             EnergyS(numStep)=Energy.Es;
             EnergyV(numStep)=Energy.Ev;
@@ -182,6 +173,16 @@ for numLine = 1:length(tlines)
             tooSmallCells = Cell.Vol < (Cell.Vol0/1000);
             if any(tooSmallCells) % Remove cell in the case is too small
                 [Cell, CellInput, XgID,nC,SCn,flag32, Dofs] = Cell.removeCell(CellInput, XgID, tetrahedra, Y, X, SCn, tooSmallCells, Set);
+            end
+            
+            %% Analise cells
+            [~, cellFeatures{numStep}, woundFeatures{numStep}, woundEdgeFeatures{numStep}] = Cell.exportTableWithCellFeatures(tetrahedra.DataRow, Y, numStep, Set);
+            analysisDir = strcat(Set.OutputFolder,Esc,'Analysis',Esc);
+            save(strcat(analysisDir, 'cellInfo_', num2str(Set.iIncr), '.mat'), 'Cell', 'Y', 'X', 'tetrahedra', 'cellFeatures', 'woundFeatures', 'woundEdgeFeatures');
+
+            if any(Cell.DebrisCells)
+                writetable(vertcat(woundEdgeFeatures{:}), strcat(analysisDir,'woundEdgeFeatures.csv'))
+                writetable(vertcat(woundFeatures{:}), strcat(analysisDir,'woundFeatures.csv'))
             end
 
             %% Update time

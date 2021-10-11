@@ -31,7 +31,7 @@ Set.lambdaS2=1;
 Set.lambdaS3=Set.lambdaS1;
 
 %---------- Line tension
-Set.cLineTension = 1;
+Set.cLineTension = 4.1;
 
 %---------- In plane elasticity
 Set.InPlaneElasticity = true;

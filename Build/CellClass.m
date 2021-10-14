@@ -283,6 +283,9 @@ classdef CellClass
             woundEdgeCells = [];
             lateralWoundHeight = [];
             tiltedAngle = [];
+            lateralWoundLength = [];
+            apicalIndention = [];
+            basalIndention = [];
             for numCell = obj.Int
                 % - Cell height
                 % avg and std distance between connected apical and basal
@@ -375,8 +378,20 @@ classdef CellClass
                             
                             tiltedAngle(end+1) = acosd(dot(tiltedTriangle, orthogonalTriangleNormal) / (norm(orthogonalTriangleNormal) * norm(tiltedTriangle)));
 
-                            % Cell edge height
-                            lateralWoundHeight(end+1) = mean(obj.EdgeLengths{numCell}(lateralSideEdges));
+                            % Cell edge height with tilting
+                            lateralWoundLength(end+1) = mean(obj.EdgeLengths{numCell}(lateralSideEdges));
+                            
+                            % Cell edge height with tilting
+                            sharedApicalVertices = intersect(obj.ApicalVertices{numCell}, obj.ApicalVertices{neighbourCell});
+                            sharedBasalVertices = intersect(obj.BasalVertices{numCell}, obj.BasalVertices{neighbourCell});
+                            
+                            apicalVerticesPos = Y.DataRow(sharedApicalVertices(sharedApicalVertices>0), 3);
+                            basalVerticesPos = Y.DataRow(sharedBasalVertices(sharedBasalVertices>0), 3);
+                            
+                            distances = pdist2(apicalVerticesPos, basalVerticesPos);
+                            lateralWoundHeight(end+1) = mean(distances(:));
+                            apicalIndention(end+1) = mean(apicalVerticesPos);
+                            basalIndention(end+1) = mean(basalVerticesPos);
                         end
                         
                         %Apical neighbours
@@ -422,6 +437,8 @@ classdef CellClass
                 wound2DApicalArea = wound2DApical.area;
                 wound2DApicalPerimeter = wound2DApical.perimeter;
                 
+                apicalIndentionAvg = mean(apicalIndention);
+                
                 %Basal
                 wound3DBasal = alphaShape(Y.DataRow(basalSideVertices, :));
                 wound3DBasalSurfArea = wound3DBasal.surfaceArea;
@@ -431,8 +448,19 @@ classdef CellClass
                 wound2DBasal = polyshape(Y.DataRow(basalSideVertices(polyOrder), 1:2));
                 wound2DBasalArea = wound2DBasal.area;
                 wound2DBasalPerimeter = wound2DBasal.perimeter;
+                
+                basalIndentionAvg = mean(basalIndention);
+                
+                %% Lateral
+                tiltedAngleAvg = mean(tiltedAngle);
+                lateralWoundHeightAvg = mean(lateralWoundHeight);
+                lateralWoundLengthAvg = mean(lateralWoundLength);
+                
+                %% General
                 woundFeatures = table(wound3DApicalSurfArea, wound3DApicalVolume, wound2DApicalArea, wound2DApicalPerimeter, ...
-                        wound3DBasalSurfArea, wound3DBasalVolume, wound2DBasalArea, wound2DBasalPerimeter);
+                        wound3DBasalSurfArea, wound3DBasalVolume, wound2DBasalArea, wound2DBasalPerimeter, ...
+                        tiltedAngleAvg, lateralWoundHeightAvg, lateralWoundLengthAvg, ...
+                        apicalIndentionAvg, basalIndentionAvg);
                     
                 %% Wound edge cell stats
                 woundEdgeCellFeatures = table(woundEdgeCells', lateralWoundHeight', tiltedAngle', woundEdgeCellSurfaceArea');

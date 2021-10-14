@@ -114,6 +114,27 @@ XgBottomFaceCentre = horzcat(faceCentresVertices, repmat(-cellHeight, length(fac
 XgTopVertices = [vertex2D, repmat(cellHeight, size(vertex2D, 1), 1)];
 XgBottomVertices = [vertex2D, repmat(-cellHeight, size(vertex2D, 1), 1)];
 
+% %% Make big cells, smaller and small cells bigger
+% 
+% cellArea = vertcat(cellArea(1:totalCells).Area);
+% cellAreaPerCell = cellArea/(imgSize^2);
+% cellAreaChange = (1 - avgCellArea./cellAreaPerCell)*3;
+% 
+% for numVertex = 1:size(verticesInfo.connectedCells, 1)
+%     vertexPos = vertex2D(numVertex, :);
+%     
+%     vertex1 = verticesInfo.connectedCells(numVertex, 1);
+%     vertex2 = verticesInfo.connectedCells(numVertex, 2);
+%     vertex3 = verticesInfo.connectedCells(numVertex, 3);
+%     
+%     v1 = cellAreaChange(vertex1) * (faceCentresVertices(vertex1, :) - vertexPos);
+%     v2 = cellAreaChange(vertex2) * (faceCentresVertices(vertex2, :) - vertexPos);
+%     v3 = cellAreaChange(vertex3) * (faceCentresVertices(vertex3, :) - vertexPos);
+%     
+%     XgBottomVertices(numVertex, 1:2) = vertexPos + mean(vertcat(v1, v2, v3));
+% end
+%%
+
 X_bottomNodes = vertcat(XgBottomFaceCentre, XgBottomVertices);
 X_bottomIds = size(X, 1) + 1: size(X, 1) + size(X_bottomNodes, 1);
 X_bottomFaceIds = X_bottomIds(1:size(XgBottomFaceCentre, 1));

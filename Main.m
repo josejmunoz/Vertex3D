@@ -16,7 +16,7 @@ addpath(strcat(pwd,Esc,'Src'));
 % InputSubstrateExtrusion
 InputWoundHealing
 
-if Set.batchProcessing
+if isfield(Set,'batchProcessing') && Set.batchProcessing
     fid = fopen('batchParameters.txt');
     tline = fgetl(fid);
     tlines = cell(0,1);
@@ -26,7 +26,8 @@ if Set.batchProcessing
     end
     fclose(fid);
 else
-    tlines = {'Single execution'};
+    Set.batchProcessing = false;
+    tlines = {'"Single execution"'};
 end
 
 for numLine = 1:length(tlines)

@@ -160,6 +160,8 @@ Cell.Tris0 = Cell.Tris;
 %% Compute Cells volume
 [Cell]=ComputeCellVolume(Cell,Y);
 Cell.Vol0=Cell.Vol;
+% volumeDevMean = Cell.Vol - mean(Cell.Vol);
+% Cell.Vol0 = Cell.Vol - (volumeDevMean/1.5);
 Cell.SArea0=Cell.SArea;
 for i=1:Cell.n
     Cell.SAreaTrin{i}=Cell.SAreaTri{i};

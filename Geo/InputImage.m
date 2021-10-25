@@ -28,7 +28,6 @@ labelledImg = newLabelledImg;
 
 cellIdsAsInternal = findCentralCells(faceCentresVertices, totalCells);
 
-
 cellArea = regionprops(labelledImg, 'Area');
 avgCellArea = mean(vertcat(cellArea(1:totalCells).Area))/(imgSize^2);
 cellHeight = Set.CellHeight * avgCellArea;
@@ -114,11 +113,10 @@ XgBottomFaceCentre = horzcat(faceCentresVertices, repmat(-cellHeight, length(fac
 XgTopVertices = [vertex2D, repmat(cellHeight, size(vertex2D, 1), 1)];
 XgBottomVertices = [vertex2D, repmat(-cellHeight, size(vertex2D, 1), 1)];
 
-% %% Make big cells, smaller and small cells bigger
-% 
+%% Make big cells, smaller and small cells bigger
 % cellArea = vertcat(cellArea(1:totalCells).Area);
 % cellAreaPerCell = cellArea/(imgSize^2);
-% cellAreaChange = (1 - avgCellArea./cellAreaPerCell)*3;
+% cellAreaChange = (1 - avgCellArea./cellAreaPerCell)*2;
 % 
 % for numVertex = 1:size(verticesInfo.connectedCells, 1)
 %     vertexPos = vertex2D(numVertex, :);
@@ -131,7 +129,7 @@ XgBottomVertices = [vertex2D, repmat(-cellHeight, size(vertex2D, 1), 1)];
 %     v2 = cellAreaChange(vertex2) * (faceCentresVertices(vertex2, :) - vertexPos);
 %     v3 = cellAreaChange(vertex3) * (faceCentresVertices(vertex3, :) - vertexPos);
 %     
-%     XgBottomVertices(numVertex, 1:2) = vertexPos + mean(vertcat(v1, v2, v3));
+%     XgTopVertices(numVertex, 1:2) = vertexPos + mean(vertcat(v1, v2, v3));
 % end
 %%
 

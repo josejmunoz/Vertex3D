@@ -16,6 +16,9 @@ else
 end
 
 for numCell = 1:ncell
+    if Cell.DebrisCells(numCell)
+        continue
+    end
     edgeVertices = Cell.Cv{numCell};
     
     edgeLengths = Cell.EdgeLengths{numCell};
@@ -32,6 +35,13 @@ for numCell = 1:ncell
         ge=zeros(size(g, 1), 1);
     end
     
+    if any(Cell.DebrisCells)
+        neighbourWoundEdges = vertcat(Cell.Cv{Cell.DebrisCells});
+        idShareEdges = find(ismember(sort(edgeVertices, 2), sort(neighbourWoundEdges, 2), 'rows'));
+    else
+        idShareEdges = [];
+    end
+    
     for numEdge = 1:length(edgeLengths)
         y_1 = Y.DataRow(edgeVertices(numEdge, 1), :);
         
@@ -43,14 +53,14 @@ for numCell = 1:ncell
         end
         
         if edgeLocation(numEdge) == 3 % Apical side
-            if Cell.DebrisCells(numCell) % Wound edge
+            if ismember(numEdge, idShareEdges) % Wound edge
                 C = Set.cLineTension + Set.cPurseString;
             else
                 C = Set.cLineTension;
             end
         elseif edgeLocation(numEdge) == 2 % Basal side
             C = Set.cLineTension/100;
-        elseif edgeLocation(numEdge) == 1 && Cell.DebrisCells(numCell) %lateralCables
+        elseif edgeLocation(numEdge) == 1 && ismember(numEdge, idShareEdges) %lateralCables
             C = Set.cLateralCables;
         else
             C = 0;

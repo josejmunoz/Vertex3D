@@ -6,8 +6,7 @@ Set.zScale = 19.23; %MicronsXY-MicronsZ relation
 Set.EllipseFitDiameter = 1; %Microns of a fitted ellipsed in Rob's Wing Discs
 Set.AvgCellArea = pi * (Set.EllipseFitDiameter/2)^2; %Microns
 Set.CellHeight = (Set.CellHeight * Set.zScale) / Set.AvgCellArea;
-Set.TotalCells = 225; %Aim 225
-%Set.TotalCells = 40;
+Set.TotalCells = 150; %Aim 225
 
 %Set.e=4;  % Example Number look in Geo\Example.m 
 Set.Method=1;
@@ -31,7 +30,7 @@ Set.lambdaS2=1;
 Set.lambdaS3=Set.lambdaS1;
 
 %---------- Line tension
-Set.cLineTension = 4.1;
+Set.cLineTension = 3.7;
 
 %---------- In plane elasticity
 Set.InPlaneElasticity = true;
@@ -59,11 +58,11 @@ Set.BC=2; % BC=1: Stretching, BC=2: Compression, BC=nan, substrate extrussion
     
 %% Substrate
 Set.Substrate = true;
-Set.kSubstrate = 50;
+Set.kSubstrate = 1200; % kSubstrate >=2000 does not converge
 
 %% time
-Set.tend=0.041; % 0.04 = 40 minutes (30 after ablation)
-Set.Nincr=41;
+Set.tend=0.071; % 0.071 = 70 minutes (60 after ablation)
+Set.Nincr=Set.tend*1000;
 
 
 %% Remodeling
@@ -83,16 +82,16 @@ Set.Ablation = true;
 %Set.cellsToAblate = findCentralCells(Example(Set.e), 1);
 % Aim: Set.cellsToAblate = 1:15;
 Set.cellsToAblate = 1:15;
-Set.TInitAblation = 0.01;
-Set.TEndAblation = 0.041;
+Set.TInitAblation = 0.01; 
+Set.TEndAblation = 0.071; %40 minutes (30 after ablation)
 
 %% Contractility
 % 0: No contractility
 % 1: Lateral cables end-to-end
 % 2: Lateral surface contractility
-Set.Contractility = 1; 
-Set.cPurseString = 3;
-Set.cLateralCables = 0.5;
+Set.Contractility = 1;
+Set.cPurseString = 14;
+Set.cLateralCables = 0.33;
 
 %% Execution parameters
 Set.batchProcessing = true;

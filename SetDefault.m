@@ -364,7 +364,7 @@ end
 % difference between each timepoint.
 if ~isfield(Set, 'Contractility_TimeVariability_PurseString')
     %Set.Contractility_TimeVariability_PurseString = [0 Set.tend];
-    Set.Contractility_TimeVariability_PurseString = [0 7 16 30]/30*(Set.TEndAblation - Set.TInitAblation);
+    Set.Contractility_TimeVariability_PurseString = [0 5 16 60]/60*(Set.TEndAblation - Set.TInitAblation);
 end
 
 if ~isfield(Set, 'cLateralCables') % Contractility coefficient on the lateral cables
@@ -383,7 +383,7 @@ end
 % difference between each timepoint.
 if ~isfield(Set, 'Contractility_TimeVariability_LateralCables')
     %Set.Contractility_TimeVariability_LateralCables = [0 Set.tend];
-    Set.Contractility_TimeVariability_LateralCables = [0 1 16 30]/30*(Set.TEndAblation - Set.TInitAblation);
+    Set.Contractility_TimeVariability_LateralCables = [0 1 16 60]/60*(Set.TEndAblation - Set.TInitAblation);
 end
 %% ============================= PostProcessing ===========================
 

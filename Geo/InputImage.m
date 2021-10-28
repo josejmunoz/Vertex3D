@@ -1,4 +1,4 @@
-function [X, Y0, Y,T, Tetrahedra_weights,XgID,Cell,Cn,Cv,Yn,SCn,Set] = InputImage(Set)
+function [X, Y0, Y,T, Tetrahedra_weights,XgID,Cell,Cn,Cv,Yn,SCn, X_IDs, Set] = InputImage(Set)
 %INPUTIMAGE Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -145,6 +145,10 @@ X_topFaceIds = X_topIds(1:size(XgTopFaceCentre, 1));
 X_topVerticesIds = X_topIds(size(XgTopFaceCentre, 1)+1:end);
 X = vertcat(X, X_topNodes);
 
+X_IDs.bottomVerticesIds = X_bottomVerticesIds;
+X_IDs.bottomFaceIds = X_bottomFaceIds;
+X_IDs.topVerticesIds = X_topVerticesIds;
+X_IDs.topFaceIds = X_topFaceIds;
 
 % Difference cell nodes and ghost nodes
 xInternal = find(nonEmptyCells);

@@ -1,4 +1,4 @@
-function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y, tetrahedra_, Tetrahedra_weights, X, X_IDs, SCn, XgID, Set)
+function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, tetrahedra_, Tetrahedra_weights, X, X_IDs, SCn, XgID, Set)
 %SIMPLEREMODELLING Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -94,11 +94,12 @@ function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y, tetrahedra_, Tetrahe
            
            % Remove face on cells
            for numCell = nodesToChange'
-               idToRemove = ismember(Cell.Faces{numCell}.FaceCentresID, faceToRemove);
-               Cell.Faces{numCell}.FaceCentresID(idToRemove) = [];
-               Cell.Faces{numCell}.Vertices(idToRemove) = [];
-               Cell.Faces{numCell}.Tris(idToRemove) = [];
-               Cell.Faces{numCell}.nFaces = Cell.Faces{numCell}.nFaces - sum(idToRemove);
+               idsToRemove = ismember(Cell.Faces{numCell}.FaceCentresID, faceToRemove);
+               Cell.Faces{numCell}.FaceCentresID(idsToRemove) = [];
+               Cell.Faces{numCell}.Vertices(idsToRemove) = [];
+               Cell.Faces{numCell}.Tris(idsToRemove) = [];
+               Cell.Faces{numCell}.nFaces = Cell.Faces{numCell}.nFaces - sum(idsToRemove);
+               Cell.cNodes{numCell}(idsToRemove) = [];
            end
            
            %% Rebuild cells
@@ -117,9 +118,9 @@ function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y, tetrahedra_, Tetrahe
            
            %% Solve modelling step with only those vertices
            [Dofs] = GetDOFs(Y, Cell, Set, isempty(Set.InputSegmentedImage) == 0);
-           [Dofs] = updateRemodelingDOFs(Dofs, nV, nC, Y);
+           [Dofs] = updateRemodelingDOFs(Dofs, find(tetsToChangeAll_IDs), nC, Y);
            
-           Cell.RemodelledVertices=[nV; nC+Y.n];
+           Cell.RemodelledVertices=[find(tetsToChangeAll_IDs)', nC+Y.n];
            [Cell,Y,Yn,SCn,X,Dofs,Set,~,DidNotConverge]=SolveRemodelingStep(Cell,Y0,Y,X,Dofs,Set,Yn,SCn,CellInput);
        end
     end

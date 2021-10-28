@@ -106,7 +106,8 @@ for numLine = 1:length(tlines)
 
         %% ----------- Remodel--------------------------------------------------
         if Set.Remodelling && Set.ReModel && abs(t-tr)>=Set.RemodelingFrequency
-            [Cell,Y,Yn,SCn,tetrahedra,X,Dofs,Cn,Set]=Remodeling(Cell,Y,Yn,SCn,tetrahedra,X,Set,Dofs,Y0,XgID,CellInput);
+            [Cell, Y] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, tetrahedra, Tetrahedra_weights, X, X_IDs, SCn, XgID, Set);
+            %[Cell,Y,Yn,SCn,tetrahedra,X,Dofs,Cn,Set]=Remodeling(Cell,Y,Yn,SCn,tetrahedra,X,Set,Dofs,Y0,XgID,CellInput);
             Set.ReModel=false;
             tr=t;
         end
@@ -179,7 +180,7 @@ for numLine = 1:length(tlines)
             %% Analise cells
             [~, cellFeatures{numStep}, woundFeatures{numStep}, woundEdgeFeatures{numStep}] = Cell.exportTableWithCellFeatures(tetrahedra.DataRow, Y, numStep, Set);
             analysisDir = strcat(Set.OutputFolder,Esc,'Analysis',Esc);
-            save(strcat(analysisDir, 'cellInfo_', num2str(Set.iIncr), '.mat'), 'Cell', 'Y', 'X', 'SCn', 'Tetrahedra_weights', 'tetrahedra', 'XgID', 'CellInput', 'cellFeatures', 'woundFeatures', 'woundEdgeFeatures');
+            save(strcat(analysisDir, 'cellInfo_', num2str(Set.iIncr), '.mat'), 'Cell', 'Y0', 'Y', 'Yn', 'Cn', 'X', 'SCn', 'Tetrahedra_weights', 'tetrahedra', 'XgID', 'CellInput', 'cellFeatures', 'woundFeatures', 'woundEdgeFeatures');
 
             if any(Cell.DebrisCells)
                 writetable(vertcat(woundEdgeFeatures{:}), strcat(analysisDir,'woundEdgeFeatures.csv'))

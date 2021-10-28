@@ -1,6 +1,8 @@
-function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y, tetrahedra, X, X_IDs, Set)
+function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y, tetrahedra_, Tetrahedra_weights, X, X_IDs, SCn, XgID, Set)
 %SIMPLEREMODELLING Summary of this function goes here
 %   Detailed explanation goes here
+
+    tetrahedra = tetrahedra_.DataRow;
 
     %% Identify if any edge is shorter than it should
     remodellingCells = [];
@@ -46,7 +48,8 @@ function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y, tetrahedra, X, X_IDs
            tetsToChange = tetrahedra(sum(ismember(tetrahedra, currentIntercalation), 2) >=2, :);
            verticesToChange = unique(tetsToChange);
            nodesToChange = verticesToChange(ismember(verticesToChange, Cell.Int));
-           tetsToChangeAll = tetrahedra(sum(ismember(tetrahedra, verticesToChange), 2) >= 3 , :);
+           tetsToChangeAll_IDs = sum(ismember(tetrahedra, verticesToChange), 2) >= 3 ;
+           tetsToChangeAll = tetrahedra(tetsToChangeAll_IDs , :);
            
            newConnectedNodes = nodesToChange(ismember(nodesToChange, currentIntercalation) == 0);
            
@@ -64,12 +67,53 @@ function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y, tetrahedra, X, X_IDs
            Twg_vertices_2 = tetsToChange_2(sum(ismember(tetsToChange_2, currentIntercalation), 2) == 2, :);
            Twg_vertices_2(Twg_vertices_2 == currentIntercalation(1)) = newConnectedNodes(1);
            Twg_vertices_2(Twg_vertices_2 == currentIntercalation(2)) = newConnectedNodes(2);
+           tetsToChange_2(sum(ismember(tetsToChange_2, currentIntercalation), 2) == 2, :) = Twg_vertices_2;
+           Twg_vertices_2 = tetsToChange_2;
            
            % Relationships: 1 cell node and 3 ghost nodes
-           Twg_vertices_3 = horzcat(newConnectedNodes, X_IDs.topFaceIds(newConnectedNodes)', repmat(tetsToChangeAll(1:2, 4)', 2, 1));
+           Twg_vertices_3_1 = horzcat(newConnectedNodes, X_IDs.topFaceIds(newConnectedNodes)', repmat(tetsToChange_1(1:2, 4)', 2, 1));
+           Twg_vertices_3_2 = horzcat(newConnectedNodes, X_IDs.bottomFaceIds(newConnectedNodes)', repmat(tetsToChange_1(3:4, 4)', 2, 1));
+           
+           %% New tetrahedra substitution
+           tetrahedra(tetsToChangeAll_IDs, :) = vertcat(Twg_vertices_1(1:2, :), Twg_vertices_2(1:size(Twg_vertices_2, 1)/2, :), Twg_vertices_3_1, ...
+              Twg_vertices_1(3:4, :), Twg_vertices_2(size(Twg_vertices_2, 1)/2+1:end, :), Twg_vertices_3_2);
+           
+           %% New Y_s
+           for numTetrahedron = find(tetsToChangeAll_IDs)'
+               Y.DataRow(numTetrahedron, :) = mean(X(tetrahedra(numTetrahedron, :), :)) ./ Tetrahedra_weights(numTetrahedron, :);
+           end
+           
+           %% Remove face
+           faceToRemove = find(all(ismember(Cell.AllFaces.Nodes, nodesToChange), 2));
+           Cell.AllFaces=Cell.AllFaces.Remove(faceToRemove);
+           SCn=SCn.Remove(faceToRemove);
+           Cell.FaceCentres=Cell.FaceCentres.Remove(faceToRemove);
+           
+           % Remove face on cells
+           for numCell = nodesToChange'
+               idToRemove = ismember(Cell.Faces{numCell}.FaceCentresID, faceToRemove);
+               Cell.Faces{numCell}.FaceCentresID(idToRemove) = [];
+               Cell.Faces{numCell}.Vertices(idToRemove) = [];
+               Cell.Faces{numCell}.Tris(idToRemove) = [];
+               Cell.Faces{numCell}.nFaces = Cell.Faces{numCell}.nFaces - sum(idToRemove);
+           end
+           
+           %% Rebuild cells
+           Cell.AssembleNodes=nodesToChange;
+           [Cell, nC, SCn, flag]=ReBuildCells(Cell, tetrahedra_, Y, X, SCn);
+           
+           if ~flag
+               Cell.AllFaces=Cell.AllFaces.CheckInteriorFaces(XgID);
+               [Cell]=ComputeCellVolume(Cell,Y);
+               Cell = Cell.computeEdgeLengths(Y);
+               for jj=1:Cell.n
+                   Cell.SAreaTrin{jj}=Cell.SAreaTri{jj};
+                   Cell.EdgeLengthsn{jj}=Cell.EdgeLengths{jj};
+               end
+           end
            
            %% Solve modelling step with only those vertices
-           [Dofs] = GetDOFs(Y,Cell,Set, isempty(Set.InputSegmentedImage) == 0);
+           [Dofs] = GetDOFs(Y, Cell, Set, isempty(Set.InputSegmentedImage) == 0);
            [Dofs] = updateRemodelingDOFs(Dofs, nV, nC, Y);
            
            Cell.RemodelledVertices=[nV; nC+Y.n];

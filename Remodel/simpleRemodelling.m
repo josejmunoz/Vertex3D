@@ -26,6 +26,9 @@ function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y, tetrahedra_, Tetrahe
         apicalEdgeLength = [];
         basalEdgeLength = [];
         for neighbourCell = neighbours3D'
+            if neighbourCell == numCell
+                continue
+            end
             neighbourWoundEdges = vertcat(Cell.Cv{neighbourCell});
             idShareEdges = ismember(sort(currentEdgeVertices, 2), sort(neighbourWoundEdges, 2), 'rows');
             %% Apical edge

@@ -1,4 +1,4 @@
-function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, tetrahedra_, Tetrahedra_weights, X, X_IDs, SCn, XgID, Set)
+function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, tetrahedra_, Tetrahedra_weights, X, X_IDs, SCn, XgID, Cn, Set)
 %SIMPLEREMODELLING Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -32,11 +32,11 @@ function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, t
             neighbourWoundEdges = vertcat(Cell.Cv{neighbourCell});
             idShareEdges = ismember(sort(currentEdgeVertices, 2), sort(neighbourWoundEdges, 2), 'rows');
             %% Apical edge
-            apicalEdgeLength(end+1) = sum(Cell.EdgeLengths{numCell}(idShareEdges & Cell.EdgeLocation{numCell} == 3)) / apicalArea;
+            apicalEdgeLength(end+1) = apicalArea / sum(Cell.EdgeLengths{numCell}(idShareEdges & Cell.EdgeLocation{numCell} == 3));
             %% Basal edge
-            basalEdgeLength(end+1) = sum(Cell.EdgeLengths{numCell}(idShareEdges & Cell.EdgeLocation{numCell} == 2))  / basalArea;
+            basalEdgeLength(end+1) = basalArea / sum(Cell.EdgeLengths{numCell}(idShareEdges & Cell.EdgeLocation{numCell} == 2));
             
-            if basalEdgeLength(end) < Set.MinEdgeLength || apicalEdgeLength(end) < Set.MinEdgeLength
+            if basalEdgeLength(end) > Set.MinEdgeLength || apicalEdgeLength(end) > Set.MinEdgeLength
                 remodellingCells(end+1, 1:2) = [numCell, neighbourCell];
             end
         end
@@ -87,7 +87,7 @@ function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, t
            end
            
            %% Remove face
-           faceToRemove = find(all(ismember(Cell.AllFaces.Nodes, nodesToChange), 2));
+           faceToRemove = find(all(ismember(Cell.AllFaces.Nodes, currentIntercalation), 2));
            Cell.AllFaces=Cell.AllFaces.Remove(faceToRemove);
            SCn=SCn.Remove(faceToRemove);
            Cell.FaceCentres=Cell.FaceCentres.Remove(faceToRemove);
@@ -101,6 +101,10 @@ function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, t
                Cell.Faces{numCell}.nFaces = Cell.Faces{numCell}.nFaces - sum(idsToRemove);
                Cell.cNodes{numCell}(idsToRemove) = [];
            end
+           
+           %% Add new face
+           Cell.cNodes{nodesToChange(1)}(end) = nodesToChange(2);
+           Cell.cNodes{nodesToChange(2)}(end) = nodesToChange(1);
            
            %% Rebuild cells
            Cell.AssembleNodes=nodesToChange;
@@ -121,6 +125,8 @@ function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, t
            [Dofs] = updateRemodelingDOFs(Dofs, find(tetsToChangeAll_IDs), nC, Y);
            
            Cell.RemodelledVertices=[find(tetsToChangeAll_IDs)', nC+Y.n];
+           if Set.VTK, PostProcessingVTK(X,Y,tetrahedra_.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end
+
            [Cell,Y,Yn,SCn,X,Dofs,Set,~,DidNotConverge]=SolveRemodelingStep(Cell,Y0,Y,X,Dofs,Set,Yn,SCn,CellInput);
        end
     end

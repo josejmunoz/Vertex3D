@@ -11,7 +11,7 @@ filExt='.vtk';                            % extension
 strTimeStep=num2str(TimeStep);                
 strType=Type;
 R=pwd;
-newSubFolder = strcat(pwd,Esc,folderName);    % make folder 
+newSubFolder = strcat(pwd,Esc,folderName, Esc, NameFile);    % make folder 
 if ~exist(newSubFolder, 'dir')
     mkdir(newSubFolder);
 end

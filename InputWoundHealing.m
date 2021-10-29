@@ -1,12 +1,12 @@
 %% geometry
 Set.InputSegmentedImage = 'InputImage_dWP3.bmp';
 
-Set.CellHeight = 35; %Microns
+Set.CellHeight = 15; %Microns
 Set.zScale = 19.23; %MicronsXY-MicronsZ relation
-Set.AvgCellArea = 5; %Microns
+Set.EllipseFitDiameter = 1; %Microns of a fitted ellipsed in Rob's Wing Discs
+Set.AvgCellArea = pi * (Set.EllipseFitDiameter/2)^2; %Microns
 Set.CellHeight = (Set.CellHeight * Set.zScale) / Set.AvgCellArea;
-%Set.TotalCells = 225; %Aim 225
-Set.TotalCells = 40;
+Set.TotalCells = 150; %Aim 225
 
 %Set.e=4;  % Example Number look in Geo\Example.m 
 Set.Method=1;
@@ -30,7 +30,7 @@ Set.lambdaS2=1;
 Set.lambdaS3=Set.lambdaS1;
 
 %---------- Line tension
-Set.cLineTension = 1;
+Set.cLineTension = 3.7;
 
 %---------- In plane elasticity
 Set.InPlaneElasticity = true;
@@ -58,11 +58,11 @@ Set.BC=2; % BC=1: Stretching, BC=2: Compression, BC=nan, substrate extrussion
     
 %% Substrate
 Set.Substrate = true;
-Set.kSubstrate = 50;
+Set.kSubstrate = 1200; % kSubstrate >=2000 does not converge
 
 %% time
-Set.tend=1;
-Set.Nincr=1000;
+Set.tend=0.071; % 0.071 = 70 minutes (60 after ablation)
+Set.Nincr=Set.tend*1000;
 
 
 %% Remodeling
@@ -81,26 +81,20 @@ Set.BarrierTri0 = 5e-2; % CARE!! THIS IS OVERRIDE WITHIN THE CODE: INPUTIMAGE.M
 Set.Ablation = true;
 %Set.cellsToAblate = findCentralCells(Example(Set.e), 1);
 % Aim: Set.cellsToAblate = 1:15;
-Set.cellsToAblate = 1:3;
-Set.TInitAblation = 0.01;
-Set.TEndAblation = 0.05;
+Set.cellsToAblate = 1:15;
+Set.TInitAblation = 0.01; 
+Set.TEndAblation = 0.071; %40 minutes (30 after ablation)
 
 %% Contractility
 % 0: No contractility
 % 1: Lateral cables end-to-end
 % 2: Lateral surface contractility
-Set.Contractility = 1; 
-
-Set.cPurseString = 3;
-Set.Contractility_Variability_PurseString = ([1 1 2.5 2] - 1) * Set.cPurseString;
-Set.Contractility_TimeVariability_PurseString = [0 7 16 60]/60*(Set.TEndAblation - Set.TInitAblation);
-
-Set.cLateralCables = 1.5;
-Set.Contractility_Variability_LateralCables = ([0.5 1.4 1.4] - 0.5) * Set.cLateralCables;
-Set.Contractility_TimeVariability_LateralCables = [0 16 60]/60*(Set.TEndAblation - Set.TInitAblation);
+Set.Contractility = 1;
+Set.cPurseString = 14;
+Set.cLateralCables = 0.33;
 
 %% Execution parameters
-Set.OutputFolder = strcat('Result/cLineTension_', num2str(Set.cLineTension),'_typeOfContractility_', num2str(Set.Contractility),'_cPurseString_', num2str(Set.cPurseString), '_cLateralCables_', num2str(Set.cLateralCables), '_lambdaV_', num2str(Set.lambdaV), '_lambdaS1_', num2str(Set.lambdaS1),'_lambda_S2_', num2str(Set.lambdaS2), '_KSubstrate_', num2str(Set.kSubstrate),'_Remodelling_', num2str(Set.Remodelling),'_confinedXYZ_OuterVertices_NCells_', num2str(Set.TotalCells), '_viscosity_', num2str(Set.nu), '_elasticity_mu_', num2str(Set.mu_bulk), '_elasticity_lambda_', num2str(Set.lambda_bulk));
+Set.batchProcessing = true;
 Set.diary = true;
 Set.MaxIter = 400;
 Set.tol=1e-10;

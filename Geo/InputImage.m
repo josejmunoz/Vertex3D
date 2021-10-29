@@ -1,4 +1,4 @@
-function [X, Y0, Y,T, Tetrahedra_weights,XgID,Cell,Cn,Cv,Yn,SCn,Set] = InputImage(Set)
+function [X, Y0, Y,T, Tetrahedra_weights,XgID,Cell,Cn,Cv,Yn,SCn, X_IDs, Set] = InputImage(Set)
 %INPUTIMAGE Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -27,7 +27,6 @@ end
 labelledImg = newLabelledImg;
 
 cellIdsAsInternal = findCentralCells(faceCentresVertices, totalCells);
-
 
 cellArea = regionprops(labelledImg, 'Area');
 avgCellArea = mean(vertcat(cellArea(1:totalCells).Area))/(imgSize^2);
@@ -114,6 +113,26 @@ XgBottomFaceCentre = horzcat(faceCentresVertices, repmat(-cellHeight, length(fac
 XgTopVertices = [vertex2D, repmat(cellHeight, size(vertex2D, 1), 1)];
 XgBottomVertices = [vertex2D, repmat(-cellHeight, size(vertex2D, 1), 1)];
 
+%% Make big cells, smaller and small cells bigger
+% cellArea = vertcat(cellArea(1:totalCells).Area);
+% cellAreaPerCell = cellArea/(imgSize^2);
+% cellAreaChange = (1 - avgCellArea./cellAreaPerCell)*2;
+% 
+% for numVertex = 1:size(verticesInfo.connectedCells, 1)
+%     vertexPos = vertex2D(numVertex, :);
+%     
+%     vertex1 = verticesInfo.connectedCells(numVertex, 1);
+%     vertex2 = verticesInfo.connectedCells(numVertex, 2);
+%     vertex3 = verticesInfo.connectedCells(numVertex, 3);
+%     
+%     v1 = cellAreaChange(vertex1) * (faceCentresVertices(vertex1, :) - vertexPos);
+%     v2 = cellAreaChange(vertex2) * (faceCentresVertices(vertex2, :) - vertexPos);
+%     v3 = cellAreaChange(vertex3) * (faceCentresVertices(vertex3, :) - vertexPos);
+%     
+%     XgTopVertices(numVertex, 1:2) = vertexPos + mean(vertcat(v1, v2, v3));
+% end
+%%
+
 X_bottomNodes = vertcat(XgBottomFaceCentre, XgBottomVertices);
 X_bottomIds = size(X, 1) + 1: size(X, 1) + size(X_bottomNodes, 1);
 X_bottomFaceIds = X_bottomIds(1:size(XgBottomFaceCentre, 1));
@@ -126,6 +145,10 @@ X_topFaceIds = X_topIds(1:size(XgTopFaceCentre, 1));
 X_topVerticesIds = X_topIds(size(XgTopFaceCentre, 1)+1:end);
 X = vertcat(X, X_topNodes);
 
+X_IDs.bottomVerticesIds = X_bottomVerticesIds;
+X_IDs.bottomFaceIds = X_bottomFaceIds;
+X_IDs.topVerticesIds = X_topVerticesIds;
+X_IDs.topFaceIds = X_topFaceIds;
 
 % Difference cell nodes and ghost nodes
 xInternal = find(nonEmptyCells);

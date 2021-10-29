@@ -1,4 +1,4 @@
-function InitiateOutputFolder(Set)
+function [alreadyPerformedSimulation] = InitiateOutputFolder(Set, batchProcessing)
 % Creates Output Folder and deletes old files if exsit
 
 fclose('all');
@@ -6,11 +6,17 @@ diary off
 R=pwd;
 DirOutput=fullfile(R,Set.OutputFolder);
 if exist(DirOutput, 'dir')
-    y=input('Remove everything from output directory?[y]');
-    if isempty(y)
-        y='y';
+    if Set.batchProcessing
+        alreadyPerformedSimulation = 1;
+        return
+    else
+        answer=input('Remove everything from output directory?[y]');
     end
-    if y=='y'
+    
+    if isempty(answer)
+        answer='y';
+    end
+    if answer=='y'
         % clean
         aux=fullfile(DirOutput,'LogFile.out');
         if exist(aux, 'file'), delete(aux); end
@@ -20,31 +26,22 @@ if exist(DirOutput, 'dir')
         
         if exist(fullfile(DirOutput,'ResultVTK'), 'dir')
             aux=fullfile(DirOutput,'ResultVTK');
-            cd(aux)
-            delete *.vtk
-            cd(R)
+            rmdir(aux,'s')
         end
         
         if exist(fullfile(DirOutput,'ResultVTK_iter'), 'dir')
             aux=fullfile(DirOutput,'ResultVTK_iter');
-            cd(aux)
-            delete *.vtk
-            cd(R)
+            rmdir(aux,'s')
         end
         
         if exist(fullfile(DirOutput,'Workspace'), 'dir')
             aux=fullfile(DirOutput,'Workspace');
-            cd(aux)
-            delete *.mat
-            cd(R)
+            rmdir(aux,'s')
         end
         
         if exist(fullfile(DirOutput, 'Analysis'), 'dir')
             aux=fullfile(DirOutput, 'Analysis');
-            cd(aux)
-            delete *.csv
-            delete *.mat
-            cd(R)
+            rmdir(aux,'s')
         end
     end
 else
@@ -77,6 +74,9 @@ cd '..'
 for numDirs = 1:length(regexpi(Set.OutputFolder, '[\/]'))
     cd '..'
 end
+
+alreadyPerformedSimulation = 0;
+
 end
 
 

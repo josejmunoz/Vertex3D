@@ -31,23 +31,19 @@ for numCell = 1:ncell
 
     substrateForcesOfCell = Cell.SubstrateForce{numCell};
     numVertexElem = 0;
-    basalJunctionVertices = Cell.BasalBorderVertices{numCell};
+    %basalJunctionVertices = Cell.BasalBorderVertices{numCell};
     for numVertex = Cell.BasalVertices{numCell}'
         numVertexElem = numVertexElem + 1;
-        if basalJunctionVertices(numVertexElem) == 0
-            continue;
-        end
+%         if basalJunctionVertices(numVertexElem) == 0
+%             continue;
+%         end
         
         z0 = Set.z0Substrate;
         if numVertex < 0 %% Face centre
-            continue
-%             currentVertex = Cell.FaceCentres.DataRow(abs(numVertex), :);
-%             %z0 = SCn.DataRow(abs(numVertex), 3);
-%             vertexIndex = abs(numVertex) + Set.NumMainV;
-%             kSubstrate = 0;
+            currentVertex = Cell.FaceCentres.DataRow(abs(numVertex), :);
+            vertexIndex = abs(numVertex) + Set.NumMainV;
         else %% Regular Vertex
             currentVertex = Y.DataRow(numVertex, :);
-            %z0 = Yn.DataRow(numVertex, 3);
             vertexIndex = numVertex;
         end
 

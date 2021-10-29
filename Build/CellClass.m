@@ -228,6 +228,8 @@ classdef CellClass
             obj.EdgeLengthsn(cellsToRemove) = [];
             obj.ContractileForces(cellsToRemove) = [];
             obj.DebrisCells(cellsToRemove) = [];
+            obj.BasalVertices(cellsToRemove) = [];
+            obj.ApicalVertices(cellsToRemove) = [];
             
             obj.n = obj.n - sum(cellsToRemove);
             obj.nTotalTris = sum(cellfun(@(X) size(X,1), obj.Tris));
@@ -263,7 +265,7 @@ classdef CellClass
         end
         
         %%
-        function [obj, featuresTable] = exportTableWithCellFeatures(obj, Y, timeStep, Set)
+        function [obj, cellFeaturesTable, woundFeatures, woundEdgeCellFeatures] = exportTableWithCellFeatures(obj, tetrahedra, Y, timeStep, Set)
             %% Features to obtain per tissue:
             % Avg Cell height
             
@@ -272,6 +274,18 @@ classdef CellClass
             cellCellFaces = find(obj.AllFaces.InterfaceType == 1);
             
             featuresTable_cell = [];
+            apicalSideVertices = [];
+            basalSideVertices = [];
+            lengthApicalEdges = [];
+            lengthBasalEdges = [];
+            woundEdgeCellSurfaceArea = [];
+            cellSurfaceAreaPerNeighbour = [];
+            woundEdgeCells = [];
+            lateralWoundHeight = [];
+            tiltedAngle = [];
+            lateralWoundLength = [];
+            apicalIndention = [];
+            basalIndention = [];
             for numCell = obj.Int
                 % - Cell height
                 % avg and std distance between connected apical and basal
@@ -296,19 +310,90 @@ classdef CellClass
                 
                 % - Shared lateral area per neighbour (avg and std)
                 currentFaceIDs = obj.Faces{numCell}.FaceCentresID;
-                cellCellAreas = obj.SAreaFace{1}(ismember(currentFaceIDs, cellCellFaces));
+                cellCellAreas = obj.SAreaFace{numCell}(ismember(currentFaceIDs, cellCellFaces));
                 lateralAreaSharedPerNeighbour_AVG = mean(cellCellAreas);
                 lateralAreaSharedPerNeighbour_STD = std(cellCellAreas);
                 
                 % - Neighbours: 3D neighbours, apical and basal neighbours,
+                neighbours3D = unique(tetrahedra(any(ismember(tetrahedra, numCell), 2), :));
+                neighbours3D = neighbours3D(ismember(neighbours3D, obj.Int));
                 % polygon distribution
                 apicalNeighbours = [];
                 basalNeighbours = [];
                 
                 basalBorderVerticesIDs = obj.BasalVertices{numCell}(obj.BasalBorderVertices{numCell});
                 apicalBorderVerticesIDs = obj.ApicalVertices{numCell}(obj.ApicalBorderVertices{numCell});
-                for neighbourCell = 1:obj.n
-                    if neighbourCell ~= numCell
+                
+                %% Quantifications per neighbour
+                apicalNeighbours = [];
+                basalNeighbours = [];
+                for neighbourCell = neighbours3D'
+                    if neighbourCell ~= numCell && obj.DebrisCells(numCell) == 0
+                        allNodesConnections = sort(obj.AllFaces.Nodes, 2);
+                        sharedIdFace = find(ismember(allNodesConnections, sort([numCell, neighbourCell], 2), 'rows'));
+                        currentFaceConnection = ismember(currentFaceIDs, sharedIdFace);
+                        cellSurfaceAreaPerNeighbour(end+1) = obj.SAreaFace{numCell}(currentFaceConnection);
+                        currentFaceVertices = obj.Faces{numCell}.Vertices{currentFaceConnection};
+                        
+                        %% Edges
+                        currentEdges = obj.Cv{numCell};
+                        neighbourEdges = obj.Cv{neighbourCell};
+                        idShareEdges = find(ismember(sort(currentEdges, 2), sort(neighbourEdges, 2), 'rows'));
+                        sharedEdges = currentEdges(idShareEdges, :);
+                        idShareEdges(sharedEdges(:, 2) < 0) = [];
+                        sharedEdges(sharedEdges(:, 2) < 0, :) = [];
+                        if obj.DebrisCells(neighbourCell) % Wound edge
+                            woundEdgeCells(end+1) = numCell;
+                            
+                            apicalSideEdges = [idShareEdges(obj.EdgeLocation{numCell}(idShareEdges) == 3)];
+                            basalSideEdges = [idShareEdges(obj.EdgeLocation{numCell}(idShareEdges) == 2)];
+                            
+                            lateralSideEdges = [idShareEdges(obj.EdgeLocation{numCell}(idShareEdges) == 1)];
+                            
+                            % Wound 2D perimeter
+                            lengthApicalEdges(end+1:end+2) = obj.EdgeLengths{numCell}(apicalSideEdges); % Apical
+                            lengthBasalEdges(end+1:end+2) = obj.EdgeLengths{numCell}(basalSideEdges); % Basal
+                            
+                            % Wound 2D vertices
+                            apicalSideVertices(end+1:end+3) = unique(obj.Cv{numCell}(apicalSideEdges, :));
+                            basalSideVertices(end+1:end+3) = unique(obj.Cv{numCell}(basalSideEdges, :));
+                            
+                            woundEdgeCellSurfaceArea(end+1) = cellSurfaceAreaPerNeighbour(end);
+                            
+                            % Wound titling
+                            sharedEdgesWithVertex = intersect(idShareEdges, find(any(ismember(obj.Cv{numCell}, obj.Cv{numCell}(lateralSideEdges(1), 2)), 2)));
+
+                            sharedVertex = obj.Cv{numCell}(sharedEdgesWithVertex(1), ismember(obj.Cv{numCell}(sharedEdgesWithVertex(1), :), obj.Cv{numCell}(sharedEdgesWithVertex(2), :)));
+                            theVertexToChange = obj.Cv{numCell}(sharedEdgesWithVertex(obj.EdgeLocation{numCell}(sharedEdgesWithVertex) == 1), :);
+                            theVertexToChange(theVertexToChange == sharedVertex) = [];
+                            
+                            tiltedVerticesIds = unique(obj.Cv{numCell}(sharedEdgesWithVertex, :));
+                            tiltedVerticesIds(ismember(tiltedVerticesIds, [sharedVertex theVertexToChange])) = [];
+                            tiltedTriangle = Y.DataRow([tiltedVerticesIds sharedVertex theVertexToChange], :);
+                            orthogonalTriangle = Y.DataRow([tiltedVerticesIds sharedVertex sharedVertex], :);
+                            orthogonalTriangle(3, 3) = Y.DataRow(theVertexToChange, 3);
+                            
+                            tiltedTriangle = cross(tiltedTriangle(2, :) - tiltedTriangle(3, :), tiltedTriangle(2, :) - tiltedTriangle(1, :));
+                            orthogonalTriangleNormal = cross(orthogonalTriangle(2, :) - orthogonalTriangle(3, :), orthogonalTriangle(2, :) - orthogonalTriangle(1, :));
+                            
+                            tiltedAngle(end+1) = acosd(dot(tiltedTriangle, orthogonalTriangleNormal) / (norm(orthogonalTriangleNormal) * norm(tiltedTriangle)));
+
+                            % Cell edge height with tilting
+                            lateralWoundLength(end+1) = mean(obj.EdgeLengths{numCell}(lateralSideEdges));
+                            
+                            % Cell edge height with tilting
+                            sharedApicalVertices = intersect(obj.ApicalVertices{numCell}, obj.ApicalVertices{neighbourCell});
+                            sharedBasalVertices = intersect(obj.BasalVertices{numCell}, obj.BasalVertices{neighbourCell});
+                            
+                            apicalVerticesPos = Y.DataRow(sharedApicalVertices(sharedApicalVertices>0), 3);
+                            basalVerticesPos = Y.DataRow(sharedBasalVertices(sharedBasalVertices>0), 3);
+                            
+                            distances = pdist2(apicalVerticesPos, basalVerticesPos);
+                            lateralWoundHeight(end+1) = mean(distances(:));
+                            apicalIndention(end+1) = mean(apicalVerticesPos);
+                            basalIndention(end+1) = mean(basalVerticesPos);
+                        end
+                        
                         %Apical neighbours
                         if any(ismember(apicalBorderVerticesIDs, obj.ApicalVertices{neighbourCell}(obj.ApicalBorderVertices{neighbourCell})))
                             apicalNeighbours = [apicalNeighbours, neighbourCell];
@@ -322,7 +407,7 @@ classdef CellClass
                 end
                 
                 % - Convexity/concavity of cell
-                % - info normalized: 35microns cell height initial
+                % - info normalized: according to initial cell height
                 Set.CellHeight;
                 
                 featuresTable_cell = [featuresTable_cell; numCell, obj.BorderCells(numCell), obj.DebrisCells(numCell), cellHeight, ...
@@ -332,13 +417,57 @@ classdef CellClass
                     numel(apicalNeighbours), {basalNeighbours}, numel(basalNeighbours)];
             end
             
-            featuresTable = cell2table(featuresTable_cell, 'VariableNames', ...
+            cellFeaturesTable = cell2table(featuresTable_cell, 'VariableNames', ...
                 {'ID', 'IsBorderCell', 'IsDebrisCell', 'HeightAVG', 'HeightSTD', ...
                 'Volume', 'SurfaceArea', 'ApicalArea', 'BasalArea', ...
                 'LateralArea', 'LateralAreaSharedPerNeighbourAVG', ...
                 'LateralAreaSharedPerNeighbourASTD', 'ApicalNeighbours', ...
                 'NumApicalNeighbours', 'BasalNeigbhours', 'NumBasalNeighbours'});
             
+            %% Calculate wound edge stats
+            if any(obj.DebrisCells) 
+                %% Wound stats
+                %Apical
+                wound3DApical = alphaShape(Y.DataRow(apicalSideVertices, :));
+                wound3DApicalSurfArea = wound3DApical.surfaceArea;
+                wound3DApicalVolume = wound3DApical.volume;
+                
+                polyOrder = boundary(Y.DataRow(apicalSideVertices, 1:2)); %% INSTEAD OF THIS USE THE EDGES TO CONNECT
+                wound2DApical = polyshape(Y.DataRow(apicalSideVertices(polyOrder), 1:2));
+                wound2DApicalArea = wound2DApical.area;
+                wound2DApicalPerimeter = wound2DApical.perimeter;
+                
+                apicalIndentionAvg = mean(apicalIndention);
+                
+                %Basal
+                wound3DBasal = alphaShape(Y.DataRow(basalSideVertices, :));
+                wound3DBasalSurfArea = wound3DBasal.surfaceArea;
+                wound3DBasalVolume = wound3DBasal.volume;
+                
+                polyOrder = boundary(Y.DataRow(basalSideVertices, 1:2));
+                wound2DBasal = polyshape(Y.DataRow(basalSideVertices(polyOrder), 1:2));
+                wound2DBasalArea = wound2DBasal.area;
+                wound2DBasalPerimeter = wound2DBasal.perimeter;
+                
+                basalIndentionAvg = mean(basalIndention);
+                
+                %% Lateral
+                tiltedAngleAvg = mean(tiltedAngle);
+                lateralWoundHeightAvg = mean(lateralWoundHeight);
+                lateralWoundLengthAvg = mean(lateralWoundLength);
+                
+                %% General
+                woundFeatures = table(wound3DApicalSurfArea, wound3DApicalVolume, wound2DApicalArea, wound2DApicalPerimeter, ...
+                        wound3DBasalSurfArea, wound3DBasalVolume, wound2DBasalArea, wound2DBasalPerimeter, ...
+                        tiltedAngleAvg, lateralWoundHeightAvg, lateralWoundLengthAvg, ...
+                        apicalIndentionAvg, basalIndentionAvg);
+                    
+                %% Wound edge cell stats
+                woundEdgeCellFeatures = table(woundEdgeCells', lateralWoundHeight', tiltedAngle', woundEdgeCellSurfaceArea');
+            else
+                woundFeatures = table();
+                woundEdgeCellFeatures = table();
+            end
         end
         
         %%

@@ -115,7 +115,7 @@ classdef FacesClass
             obj.Energy(V)=nan;
             obj.Area(V)=nan;
             obj.InterfaceType(V)=0;
-            obj.AreaTri{V}=[];
+            obj.AreaTri(V)=[];
             obj.NotEmpty(V)=false;
             obj.EmptyList(obj.nE+1:obj.nE+length(V))=V;
             obj.nE=obj.nE+length(V);

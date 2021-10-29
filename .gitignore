@@ -18,3 +18,11 @@ Notes/*
 *.fig
 
 *.xlsx
+
+*.pvsm
+
+*.png
+
+Result/*
+batchParameters.txt
+*~

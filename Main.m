@@ -106,7 +106,7 @@ for numLine = 1:length(tlines)
 
         %% ----------- Remodel--------------------------------------------------
         if Set.Remodelling && Set.ReModel && abs(t-tr)>=Set.RemodelingFrequency
-            [Cell, Y] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, tetrahedra, Tetrahedra_weights, X, X_IDs, SCn, XgID, Set);
+            [Cell, Y] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, tetrahedra, Tetrahedra_weights, X, X_IDs, SCn, XgID, Cn, Set);
             %[Cell,Y,Yn,SCn,tetrahedra,X,Dofs,Cn,Set]=Remodeling(Cell,Y,Yn,SCn,tetrahedra,X,Set,Dofs,Y0,XgID,CellInput);
             Set.ReModel=false;
             tr=t;
@@ -136,7 +136,7 @@ for numLine = 1:length(tlines)
             fprintf('STEP %i has converged ...\n',Set.iIncr)
 
             %Update Nodes (X) from Vertices (Y)
-            [X]=GetXFromY(Cell,X,tetrahedra,Y,XgID,Set, Y0, Tetrahedra_weights);
+            [X]=GetXFromY(Cell,X,tetrahedra,Y,XgID,Set, Yn, Tetrahedra_weights);
 
             %% Post processing
             if Set.VTK, PostProcessingVTK(X,Y,tetrahedra.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end

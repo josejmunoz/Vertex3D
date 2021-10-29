@@ -82,17 +82,22 @@ function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, t
               Twg_vertices_1(3:4, :), Twg_vertices_2(size(Twg_vertices_2, 1)/2+1:end, :), Twg_vertices_3_2);
            
            %% New Y_s
+           Yp = Y;
+           figure;
            for numTetrahedron = find(tetsToChangeAll_IDs)'
-               Y.DataRow(numTetrahedron, :) = mean(X(tetrahedra(numTetrahedron, :), :)) ./ Tetrahedra_weights(numTetrahedron, :);
+               Y.DataRow(numTetrahedron, 1:2) = mean(X(tetrahedra(numTetrahedron, :), 1:2));
+               plot3(Y.DataRow(numTetrahedron, 1), Y.DataRow(numTetrahedron, 2), Y.DataRow(numTetrahedron, 3), 'rx')
+               hold on
+               plot3(Yp.DataRow(numTetrahedron, 1), Yp.DataRow(numTetrahedron, 2), Yp.DataRow(numTetrahedron, 3), 'ko')
            end
            
-           %% Remove face
-           faceToRemove = find(all(ismember(Cell.AllFaces.Nodes, currentIntercalation), 2));
+           %% Remove faces belonging to the cells in the intercalation
+           faceToRemove = find(all(ismember(Cell.AllFaces.Nodes, nodesToChange), 2));
            Cell.AllFaces=Cell.AllFaces.Remove(faceToRemove);
            SCn=SCn.Remove(faceToRemove);
            Cell.FaceCentres=Cell.FaceCentres.Remove(faceToRemove);
            
-           % Remove face on cells
+           % Remove faces from cells
            for numCell = nodesToChange'
                idsToRemove = ismember(Cell.Faces{numCell}.FaceCentresID, faceToRemove);
                Cell.Faces{numCell}.FaceCentresID(idsToRemove) = [];
@@ -102,9 +107,13 @@ function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, t
                Cell.cNodes{numCell}(idsToRemove) = [];
            end
            
-           %% Add new face
-           Cell.cNodes{nodesToChange(1)}(end) = nodesToChange(2);
-           Cell.cNodes{nodesToChange(2)}(end) = nodesToChange(1);
+           %% Add correct connections:
+           % 2-connected nodes
+           Cell.cNodes{currentIntercalation(1)}(end+1:end+2) = newConnectedNodes;
+           Cell.cNodes{currentIntercalation(2)}(end+1:end+2) = newConnectedNodes;
+           % 3-connected nodes
+           Cell.cNodes{newConnectedNodes(1)}(end+1:end+3) = [newConnectedNodes; currentIntercalation(2)];
+           Cell.cNodes{newConnectedNodes(2)}(end+1:end+3) = [newConnectedNodes; currentIntercalation(1)];
            
            %% Rebuild cells
            Cell.AssembleNodes=nodesToChange;

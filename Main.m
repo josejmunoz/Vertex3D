@@ -44,7 +44,7 @@ for numLine = 1:length(tlines)
         [X]=Example(Set.e);
         [X, Y0, Y,tetrahedra,XgID,Cell,Cn,~,Yn,SCn,Set] = InitializeGeometry3DVertex(X,Set);
     else
-        [X, Y0, Y,tetrahedra,Tetrahedra_weights, XgID,Cell,Cn,~,Yn,SCn,X_IDs, Set] = InputImage(Set);
+        [X, Y0, Y,tetrahedra,Tetrahedra_weights, XgID,Cell,Cn,~,Yn,SCn,X_IDs, verticesInfo, neighboursNetwork, Set] = InputImage(Set);
     end
 
     if Set.VTK, PostProcessingVTK(X,Y,tetrahedra.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),0,Set); end
@@ -106,7 +106,7 @@ for numLine = 1:length(tlines)
 
         %% ----------- Remodel--------------------------------------------------
         if Set.Remodelling && Set.ReModel && abs(t-tr)>=Set.RemodelingFrequency
-            [Cell, Y] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, tetrahedra, Tetrahedra_weights, X, X_IDs, SCn, XgID, Cn, Set);
+            [Cell, Y] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, tetrahedra, Tetrahedra_weights, X, X_IDs, SCn, XgID, Cn, verticesInfo, neighboursNetwork, Set);
             %[Cell,Y,Yn,SCn,tetrahedra,X,Dofs,Cn,Set]=Remodeling(Cell,Y,Yn,SCn,tetrahedra,X,Set,Dofs,Y0,XgID,CellInput);
             Set.ReModel=false;
             tr=t;
@@ -180,8 +180,8 @@ for numLine = 1:length(tlines)
             %% Analise cells
             [~, cellFeatures{numStep}, woundFeatures{numStep}, woundEdgeFeatures{numStep}] = Cell.exportTableWithCellFeatures(tetrahedra.DataRow, Y, numStep, Set);
             analysisDir = strcat(Set.OutputFolder,Esc,'Analysis',Esc);
-            save(strcat(analysisDir, 'cellInfo_', num2str(Set.iIncr), '.mat'), 'Cell', 'Y0', 'Y', 'Yn', 'Cn', 'X', 'SCn', 'Tetrahedra_weights', 'tetrahedra', 'XgID', 'CellInput', 'cellFeatures', 'woundFeatures', 'woundEdgeFeatures');
-
+            save(strcat(analysisDir, 'cellInfo_', num2str(Set.iIncr), '.mat'), 'Cell', 'Y0', 'Y', 'Yn', 'Cn', 'X', 'X_IDs', 'SCn', 'Tetrahedra_weights', 'tetrahedra', 'XgID', 'CellInput', 'cellFeatures', 'woundFeatures', 'woundEdgeFeatures', 'verticesInfo', 'Set');
+            
             if any(Cell.DebrisCells)
                 writetable(vertcat(woundEdgeFeatures{:}), strcat(analysisDir,'woundEdgeFeatures.csv'))
                 writetable(vertcat(woundFeatures{:}), strcat(analysisDir,'woundFeatures.csv'))

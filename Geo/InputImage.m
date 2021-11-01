@@ -1,4 +1,4 @@
-function [X, Y0, Y,T, Tetrahedra_weights,XgID,Cell,Cn,Cv,Yn,SCn, X_IDs, Set] = InputImage(Set)
+function [X, Y0, Y,T, Tetrahedra_weights,XgID,Cell,Cn,Cv,Yn,SCn, X_IDs, verticesInfo, neighboursNetwork, Set] = InputImage(Set)
 %INPUTIMAGE Summary of this function goes here
 %   Detailed explanation goes here
 

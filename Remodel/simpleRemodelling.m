@@ -1,4 +1,4 @@
-function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, tetrahedra_, Tetrahedra_weights, X, X_IDs, SCn, XgID, Cn, Set)
+function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, tetrahedra_, Tetrahedra_weights, X, X_IDs, SCn, XgID, Cn, verticesInfo, neighboursNetwork, Set)
 %SIMPLEREMODELLING Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -56,30 +56,91 @@ function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, t
            
            newConnectedNodes = nodesToChange(ismember(nodesToChange, currentIntercalation) == 0);
            
-           %% Reconstruct Tets
-           % New triangles
+           % Reconstruct Tets
+           index = find(tetsToChangeAll_IDs)';
+           figure, tetramesh(tetrahedra(index, :), X);
+           %% Option 1: New triangles
            trianglesConnectivity = nchoosek(nodesToChange, 3);
            trianglesConnectivity(sum(ismember(trianglesConnectivity, currentIntercalation), 2) >=2, :) = [];
            
-           % Relationships: 1 ghost node, three cell nodes
+           % Change old connection for new connections
+           trianglesConnectivity_all = verticesInfo.connectedCells;
+           trianglesConnectivity_all(all(ismember(trianglesConnectivity_all, nodesToChange), 2), :) = sort([repmat(newConnectedNodes', 2, 1), sort(currentIntercalation)'], 2);
+           neighboursNetwork(all(ismember(neighboursNetwork, currentIntercalation), 2), :) = [newConnectedNodes(1) newConnectedNodes(2); newConnectedNodes(2) newConnectedNodes(1)];
+           
+           % Remove vertices from edges
+           vertices2DToChange = find(all(ismember(trianglesConnectivity_all, nodesToChange), 2));
+           verticesConnectedToCells = sort(currentIntercalation)';
+           for numCellOriginal = 1:size(verticesInfo.edges, 1)
+               currentEdges = verticesInfo.edges{numCellOriginal};
+               if all(ismember(vertices2DToChange, currentEdges))
+                   currentEdges(currentEdges(:) == vertices2DToChange(ismember(verticesConnectedToCells, numCellOriginal))) = [];
+                   verticesInfo.edges{numCellOriginal} = reshape(currentEdges, length(currentEdges)/2, 2);
+               end
+           end
+           
+           % Add vertices in edges
+           verticesConnectedToCells %IMPORTANT: the first goes with the second from vertices2DToChange and viceversa
+           
+           
+           [Twg_bottom] = createTetrahedra(trianglesConnectivity_all, neighboursNetwork, verticesInfo.edges, Cell.Int', X_IDs.bottomFaceIds, X_IDs.bottomVerticesIds);
+           [Twg_top] = createTetrahedra(trianglesConnectivity_all, neighboursNetwork, verticesInfo.edges, Cell.Int', X_IDs.topFaceIds, X_IDs.topVerticesIds);
+           newTets = vertcat(Twg_top, Twg_bottom);
+           tetrahedra(any(ismember(tetrahedra, verticesToChange), 2), :) = newTets(any(ismember(newTets, verticesToChange), 2), :);
+           tetrahedra_.DataRow = tetrahedra;
+           
+%            % Relationships: 1 ghost node, three cell nodes
+%            tetsToChange_1 = tetrahedra(sum(ismember(tetrahedra, nodesToChange), 2) >= 3 , :);
+%            Twg_vertices_1 = horzcat(repmat(trianglesConnectivity, 2, 1), tetsToChange_1(:, 4));
+%            
+%            % Relationships: 2 ghost nodes, two cell nodes
+%            tetsToChange_2 = tetsToChangeAll(sum(ismember(tetsToChangeAll, nodesToChange), 2) == 2 , :);
+%            Twg_vertices_2 = tetsToChange_2(sum(ismember(tetsToChange_2, currentIntercalation), 2) == 2, :);
+%            Twg_vertices_2(Twg_vertices_2 == currentIntercalation(1)) = newConnectedNodes(1);
+%            Twg_vertices_2(Twg_vertices_2 == currentIntercalation(2)) = newConnectedNodes(2);
+%            tetsToChange_2(sum(ismember(tetsToChange_2, currentIntercalation), 2) == 2, :) = Twg_vertices_2;
+%            Twg_vertices_2 = tetsToChange_2;
+%            
+%            % Relationships: 1 cell node and 3 ghost nodes
+%            Twg_vertices_3_1 = horzcat(newConnectedNodes, X_IDs.topFaceIds(newConnectedNodes)', repmat(tetsToChange_1(1:2, 4)', 2, 1));
+%            Twg_vertices_3_2 = horzcat(newConnectedNodes, X_IDs.bottomFaceIds(newConnectedNodes)', repmat(tetsToChange_1(3:4, 4)', 2, 1));
+%            
+%            % New tetrahedra substitution
+%            tetrahedra(tetsToChangeAll_IDs, :) = vertcat(Twg_vertices_1(1:2, :), Twg_vertices_2(1:size(Twg_vertices_2, 1)/2, :), Twg_vertices_3_1, ...
+%               Twg_vertices_1(3:4, :), Twg_vertices_2(size(Twg_vertices_2, 1)/2+1:end, :), Twg_vertices_3_2);
+%            tetrahedra_.DataRow = tetrahedra;
+           
+           index = find(tetsToChangeAll_IDs)';
+           figure, tetramesh(tetrahedra(index, :), X);
+           
+%            %% Option 2:
+%            trianglesConnectivity = verticesInfo.connectedCells;
+%            trianglesConnectivity(all(ismember(trianglesConnectivity, nodesToChange), 2), :) = sort([repmat(newConnectedNodes', 2, 1), currentIntercalation'], 2);
+%            neighboursNetwork(all(ismember(neighboursNetwork, currentIntercalation), 2), :) = [newConnectedNodes(1) newConnectedNodes(2); newConnectedNodes(2) newConnectedNodes(1)];
+% 
+%            [Twg_bottom] = createTetrahedra(trianglesConnectivity, neighboursNetwork, verticesInfo.edges, Cell.Int', X_IDs.bottomFaceIds, X_IDs.bottomVerticesIds);
+%            [Twg_top] = createTetrahedra(trianglesConnectivity, neighboursNetwork, verticesInfo.edges, Cell.Int', X_IDs.topFaceIds, X_IDs.topVerticesIds);
+% 
+%            tetrahedra = vertcat(Twg_top, Twg_bottom);
+%            tetrahedra(all(ismember(tetrahedra,XgID),2),:)=[];
+%            tetrahedra_.DataRow = tetrahedra;
+%            
+%            
+%            index = find(tetsToChangeAll_IDs)';
+%            figure, tetramesh(tetrahedra(index, :), X);
+           
+           %% New nodes
            tetsToChange_1 = tetrahedra(sum(ismember(tetrahedra, nodesToChange), 2) >= 3 , :);
-           Twg_vertices_1 = horzcat(repmat(trianglesConnectivity, 2, 1), tetsToChange_1(:, 4));
-           
-           % Relationships: 2 ghost nodes, two cell nodes
-           tetsToChange_2 = tetsToChangeAll(sum(ismember(tetsToChangeAll, nodesToChange), 2) == 2 , :);
-           Twg_vertices_2 = tetsToChange_2(sum(ismember(tetsToChange_2, currentIntercalation), 2) == 2, :);
-           Twg_vertices_2(Twg_vertices_2 == currentIntercalation(1)) = newConnectedNodes(1);
-           Twg_vertices_2(Twg_vertices_2 == currentIntercalation(2)) = newConnectedNodes(2);
-           tetsToChange_2(sum(ismember(tetsToChange_2, currentIntercalation), 2) == 2, :) = Twg_vertices_2;
-           Twg_vertices_2 = tetsToChange_2;
-           
-           % Relationships: 1 cell node and 3 ghost nodes
-           Twg_vertices_3_1 = horzcat(newConnectedNodes, X_IDs.topFaceIds(newConnectedNodes)', repmat(tetsToChange_1(1:2, 4)', 2, 1));
-           Twg_vertices_3_2 = horzcat(newConnectedNodes, X_IDs.bottomFaceIds(newConnectedNodes)', repmat(tetsToChange_1(3:4, 4)', 2, 1));
-           
-           %% New tetrahedra substitution
-           tetrahedra(tetsToChangeAll_IDs, :) = vertcat(Twg_vertices_1(1:2, :), Twg_vertices_2(1:size(Twg_vertices_2, 1)/2, :), Twg_vertices_3_1, ...
-              Twg_vertices_1(3:4, :), Twg_vertices_2(size(Twg_vertices_2, 1)/2+1:end, :), Twg_vertices_3_2);
+           for numX = 1:size(tetsToChange_1(:, 4), 1)
+               if ismember(tetsToChange_1(numX, 4), X_IDs.bottomVerticesIds)
+                   X(tetsToChange_1(numX, 4), :) = mean(X(X_IDs.bottomFaceIds(tetsToChange_1(numX, 1:3)), :));
+               else
+                   X(tetsToChange_1(numX, 4), :) = mean(X(X_IDs.topFaceIds(tetsToChange_1(numX, 1:3)), :));
+               end
+           end
+ 
+           index = find(tetsToChangeAll_IDs)';
+           figure, tetramesh(tetrahedra(index, :), X);
            
            %% New Y_s
            Yp = Y;
@@ -97,23 +158,23 @@ function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, t
            SCn=SCn.Remove(faceToRemove);
            Cell.FaceCentres=Cell.FaceCentres.Remove(faceToRemove);
            
-           % Remove faces from cells
-           for numCell = nodesToChange'
-               idsToRemove = ismember(Cell.Faces{numCell}.FaceCentresID, faceToRemove);
-               Cell.Faces{numCell}.FaceCentresID(idsToRemove) = [];
-               Cell.Faces{numCell}.Vertices(idsToRemove) = [];
-               Cell.Faces{numCell}.Tris(idsToRemove) = [];
-               Cell.Faces{numCell}.nFaces = Cell.Faces{numCell}.nFaces - sum(idsToRemove);
-               Cell.cNodes{numCell}(idsToRemove) = [];
-           end
+%            % Remove faces from cells
+%            for numCell = nodesToChange'
+%                idsToRemove = ismember(Cell.Faces{numCell}.FaceCentresID, faceToRemove);
+%                Cell.Faces{numCell}.FaceCentresID(idsToRemove) = [];
+%                Cell.Faces{numCell}.Vertices(idsToRemove) = [];
+%                Cell.Faces{numCell}.Tris(idsToRemove) = [];
+%                Cell.Faces{numCell}.nFaces = Cell.Faces{numCell}.nFaces - sum(idsToRemove);
+%                Cell.cNodes{numCell}(idsToRemove) = [];
+%            end
            
-           %% Add correct connections:
-           % 2-connected nodes
-           Cell.cNodes{currentIntercalation(1)}(end+1:end+2) = newConnectedNodes;
-           Cell.cNodes{currentIntercalation(2)}(end+1:end+2) = newConnectedNodes;
-           % 3-connected nodes
-           Cell.cNodes{newConnectedNodes(1)}(end+1:end+3) = [newConnectedNodes; currentIntercalation(2)];
-           Cell.cNodes{newConnectedNodes(2)}(end+1:end+3) = [newConnectedNodes; currentIntercalation(1)];
+%            %% Add correct connections: CHECK CONNECTIONS WITH CELLS: 1 SHOULD NOT BE CONNECTED WITH 10
+%            % 2-connected nodes
+%            Cell.cNodes{currentIntercalation(1)}(end+1:end+2) = newConnectedNodes;
+%            Cell.cNodes{currentIntercalation(2)}(end+1:end+2) = newConnectedNodes;
+%            % 3-connected nodes
+%            Cell.cNodes{newConnectedNodes(1)}(end+1:end+3) = [currentIntercalation'; newConnectedNodes(2)];
+%            Cell.cNodes{newConnectedNodes(2)}(end+1:end+3) = [currentIntercalation'; newConnectedNodes(1)];
            
            %% Rebuild cells
            Cell.AssembleNodes=nodesToChange;

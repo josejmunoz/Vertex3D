@@ -74,8 +74,12 @@ function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, t
                    edgesToRemoveIDs = find(any(currentEdges == vertexToRemove, 2));
                    edgesToRemove = currentEdges(edgesToRemoveIDs, :);
                    
-                   currentEdges = [currentEdges(1:edgesToRemoveIDs(1)-1, :); ...
-                        edgesToRemove(1), edgesToRemove(end) ; currentEdges(edgesToRemoveIDs(2)+1:end, :)];
+                   if edgesToRemoveIDs(1) == 1 && edgesToRemoveIDs(2) == size(currentEdges, 1)
+                       currentEdges = [edgesToRemove(2), edgesToRemove(3) ; currentEdges(edgesToRemoveIDs(1)+1:end-1, :)];
+                   else
+                       currentEdges = [currentEdges(1:edgesToRemoveIDs(1)-1, :); ...
+                            edgesToRemove(1), edgesToRemove(end) ; currentEdges(edgesToRemoveIDs(2)+1:end, :)];
+                   end
                end
                verticesInfo.edges{numCellOriginal} = currentEdges;
            end
@@ -107,7 +111,8 @@ function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, t
            newTets = vertcat(Twg_top, Twg_bottom);
            newTets(all(ismember(newTets,XgID),2),:) = [];
            tetrahedra = newTets;
-           tetrahedra_.DataRow = tetrahedra;
+           tetrahedra_ = DynamicArray(ceil(size(newTets,1)*1.5),size(newTets,2));
+           tetrahedra_=tetrahedra_.Add(newTets);
            
            index = find(tetsToChangeAll_IDs)';
            figure, tetramesh(tetrahedra(index, :), X);
@@ -130,7 +135,7 @@ function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, t
            figure;
            for numTetrahedron = find(sum(ismember(tetrahedra, nodesToChange), 2) >= 3 )'
                newCoords = mean(X(tetrahedra(numTetrahedron, :), 1:2));
-               Y.DataRow(numTetrahedron, 1:2) = mean([Yp.DataRow(numTetrahedron, 1:2)*2; newCoords/2]);
+               Y.DataRow(numTetrahedron, 1:2) = mean([Yp.DataRow(numTetrahedron, 1:2); newCoords]);
                plot3(Y.DataRow(numTetrahedron, 1), Y.DataRow(numTetrahedron, 2), Y.DataRow(numTetrahedron, 3), 'rx')
                hold on
                plot3(Yp.DataRow(numTetrahedron, 1), Yp.DataRow(numTetrahedron, 2), Yp.DataRow(numTetrahedron, 3), 'ko')

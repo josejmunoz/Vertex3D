@@ -57,8 +57,8 @@ function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, t
            newConnectedNodes = nodesToChange(ismember(nodesToChange, currentIntercalation) == 0);
            
            % Reconstruct Tets
-           index = find(tetsToChangeAll_IDs)';
-           figure, tetramesh(tetrahedra(index, :), X);
+%            index = find(tetsToChangeAll_IDs)';
+%            figure, tetramesh(tetrahedra(index, :), X);
            %% Option 1: New triangles
            trianglesConnectivity = nchoosek(nodesToChange, 3);
            trianglesConnectivity(sum(ismember(trianglesConnectivity, currentIntercalation), 2) >=2, :) = [];
@@ -73,15 +73,20 @@ function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, t
            verticesConnectedToCells = sort(currentIntercalation)';
            for numCellOriginal = 1:size(verticesInfo.edges, 1)
                currentEdges = verticesInfo.edges{numCellOriginal};
+               currentConnectedCells = verticesInfo.connectedCells(verticesInfo.PerCell{numCellOriginal}, :);
                if all(ismember(vertices2DToChange, currentEdges))
-                   currentEdges(currentEdges(:) == vertices2DToChange(ismember(verticesConnectedToCells, numCellOriginal))) = [];
-                   verticesInfo.edges{numCellOriginal} = reshape(currentEdges, length(currentEdges)/2, 2);
+                   currentEdges(all(ismember(currentConnectedCells, [currentIntercalation, vertices2DToChange(ismember(verticesConnectedToCells, numCellOriginal) == 0)]), 2), :) = [];
                end
+               verticesInfo.edges{numCellOriginal} = currentEdges;
            end
            
-           % Add vertices in edges
-           verticesConnectedToCells %IMPORTANT: the first goes with the second from vertices2DToChange and viceversa
-           
+           % Add vertices in edges corresponding to the new formed ones at
+           % the newConnectedNodes
+           trianglesConnectivity_all
+           for numCellOriginal = newConnectedNodes'
+               verticesInfo.edges{numCellOriginal}(any(ismember(verticesInfo.edges{numCellOriginal}, vertices2DToChange)), :)
+           end
+           verticesInfo.connectedCells = trianglesConnectivity_all;
            
            [Twg_bottom] = createTetrahedra(trianglesConnectivity_all, neighboursNetwork, verticesInfo.edges, Cell.Int', X_IDs.bottomFaceIds, X_IDs.bottomVerticesIds);
            [Twg_top] = createTetrahedra(trianglesConnectivity_all, neighboursNetwork, verticesInfo.edges, Cell.Int', X_IDs.topFaceIds, X_IDs.topVerticesIds);

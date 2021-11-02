@@ -60,9 +60,6 @@ function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, t
 %            index = find(tetsToChangeAll_IDs)';
 %            figure, tetramesh(tetrahedra(index, :), X);
            %% Option 1: New triangles
-           trianglesConnectivity = nchoosek(nodesToChange, 3);
-           trianglesConnectivity(sum(ismember(trianglesConnectivity, currentIntercalation), 2) >=2, :) = [];
-           
            % Change old connection for new connections
            trianglesConnectivity_all = verticesInfo.connectedCells;
            trianglesConnectivity_all(all(ismember(trianglesConnectivity_all, nodesToChange), 2), :) = sort([repmat(newConnectedNodes', 2, 1), sort(currentIntercalation)'], 2);
@@ -75,7 +72,17 @@ function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, t
                currentEdges = verticesInfo.edges{numCellOriginal};
                currentConnectedCells = verticesInfo.connectedCells(verticesInfo.PerCell{numCellOriginal}, :);
                if all(ismember(vertices2DToChange, currentEdges))
-                   currentEdges(all(ismember(currentConnectedCells, [currentIntercalation, vertices2DToChange(ismember(verticesConnectedToCells, numCellOriginal) == 0)]), 2), :) = [];
+                   index = find(all(ismember(currentConnectedCells, [currentIntercalation, vertices2DToChange(ismember(verticesConnectedToCells, numCellOriginal) == 0)]), 2));
+                   indexToChange = index+1;
+                   if indexToChange > size(currentEdges, 1)
+                       indexToChange = 1;
+                   end
+                   prevIndex = index - 1;
+                   if prevIndex < 1
+                       prevIndex = size(currentEdges, 1);
+                   end
+                   currentEdges(prevIndex, 2) = currentEdges(indexToChange, 1);
+                   currentEdges(index, :) = [];
                end
                verticesInfo.edges{numCellOriginal} = currentEdges;
            end
@@ -91,7 +98,7 @@ function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, t
                adjacentVertexToVertexToAdd = adjacentVertices(sum(ismember(trianglesConnectivity_all(adjacentVertices, :), trianglesConnectivity_all(vertexToAdd, :)), 2)>1);
                edgeToSplit = find(all(ismember(verticesInfo.edges{numCellOriginal}, [adjacentVertexToVertexToAdd vertexAdded]), 2));
                
-               if adjacentVertexToVertexToAdd == adjacentVertices(2)
+               if adjacentVertexToVertexToAdd == adjacentVertices(1)
                    newEdges = [adjacentVertexToVertexToAdd vertexToAdd; vertexToAdd vertexAdded];
                else
                    newEdges = [vertexAdded vertexToAdd; vertexToAdd adjacentVertexToVertexToAdd]; 
@@ -110,16 +117,16 @@ function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, t
            index = find(tetsToChangeAll_IDs)';
            figure, tetramesh(tetrahedra(index, :), X);
            
-           %% New nodes
-           tetsToChange_1 = tetrahedra(sum(ismember(tetrahedra, nodesToChange), 2) >= 3 , :);
-           %figure, tetramesh(tetsToChange_1, X);
-           for numX = 1:size(tetsToChange_1(:, 4), 1)
-               if ismember(tetsToChange_1(numX, 4), X_IDs.bottomVerticesIds)
-                   X(tetsToChange_1(numX, 4), :) = mean(X(X_IDs.bottomFaceIds(tetsToChange_1(numX, 1:3)), :));
-               else
-                   X(tetsToChange_1(numX, 4), :) = mean(X(X_IDs.topFaceIds(tetsToChange_1(numX, 1:3)), :));
-               end
-           end
+%            %% New nodes
+%            tetsToChange_1 = tetrahedra(sum(ismember(tetrahedra, nodesToChange), 2) >= 3 , :);
+%            %figure, tetramesh(tetsToChange_1, X);
+%            for numX = 1:size(tetsToChange_1(:, 4), 1)
+%                if ismember(tetsToChange_1(numX, 4), X_IDs.bottomVerticesIds)
+%                    X(tetsToChange_1(numX, 4), :) = mean(X(X_IDs.bottomFaceIds(tetsToChange_1(numX, 1:3)), :));
+%                else
+%                    X(tetsToChange_1(numX, 4), :) = mean(X(X_IDs.topFaceIds(tetsToChange_1(numX, 1:3)), :));
+%                end
+%            end
  
            %figure, tetramesh(tetsToChange_1, X);
            

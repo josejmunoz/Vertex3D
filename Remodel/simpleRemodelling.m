@@ -82,9 +82,22 @@ function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, t
            
            % Add vertices in edges corresponding to the new formed ones at
            % the newConnectedNodes
-           trianglesConnectivity_all
            for numCellOriginal = newConnectedNodes'
-               verticesInfo.edges{numCellOriginal}(any(ismember(verticesInfo.edges{numCellOriginal}, vertices2DToChange)), :)
+               currentEdges = verticesInfo.edges{numCellOriginal}(any(ismember(verticesInfo.edges{numCellOriginal}, vertices2DToChange), 2), :);
+               vertexToAdd = vertices2DToChange(ismember(vertices2DToChange, currentEdges) == 0);
+               vertexAdded = vertices2DToChange(ismember(vertices2DToChange, currentEdges));
+               adjacentVertices = currentEdges(ismember(currentEdges, vertices2DToChange) == 0);
+               
+               adjacentVertexToVertexToAdd = adjacentVertices(sum(ismember(trianglesConnectivity_all(adjacentVertices, :), trianglesConnectivity_all(vertexToAdd, :)), 2)>1);
+               edgeToSplit = find(all(ismember(verticesInfo.edges{numCellOriginal}, [adjacentVertexToVertexToAdd vertexAdded]), 2));
+               
+               if adjacentVertexToVertexToAdd == adjacentVertices(1)
+                   newEdges = [adjacentVertexToVertexToAdd vertexToAdd; vertexToAdd vertexAdded];
+               else
+                   newEdges = [vertexAdded vertexToAdd; vertexToAdd adjacentVertexToVertexToAdd]; 
+               end
+               verticesInfo.edges{numCellOriginal} = [verticesInfo.edges{numCellOriginal}(1:edgeToSplit-1, :); ...
+                      newEdges; verticesInfo.edges{numCellOriginal}(edgeToSplit+1:end, :)];
            end
            verticesInfo.connectedCells = trianglesConnectivity_all;
            

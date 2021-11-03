@@ -61,12 +61,12 @@ function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, t
            %% Option 1: New triangles
            % Change old connection for new connections
            trianglesConnectivity_all = verticesInfo.connectedCells;
-           trianglesConnectivity_all(all(ismember(trianglesConnectivity_all, nodesToChange), 2), :) = sort([repmat(newConnectedNodes', 2, 1), sort(currentIntercalation)'], 2);
+           trianglesConnectivity_all(all(ismember(trianglesConnectivity_all, nodesToChange), 2), :) = sort([repmat(newConnectedNodes', 2, 1), currentIntercalation'], 2);
            neighboursNetwork(all(ismember(neighboursNetwork, currentIntercalation), 2), :) = [newConnectedNodes(1) newConnectedNodes(2); newConnectedNodes(2) newConnectedNodes(1)];
            
            % Remove vertices from edges
            vertices2DToChange = find(all(ismember(trianglesConnectivity_all, nodesToChange), 2));
-           verticesConnectedToCells = currentIntercalation'; %sort(currentIntercalation)'; 
+           verticesConnectedToCells = [currentIntercalation(2) currentIntercalation(1)]; %% IT SHOULD BE DIFFERENT ORDER AS IN THE TRIANGULATION
            for numCellOriginal = 1:size(verticesInfo.edges, 1)
                currentEdges = verticesInfo.edges{numCellOriginal};
                if all(ismember(vertices2DToChange, currentEdges))
@@ -118,16 +118,15 @@ function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, t
 %            index = find(tetsToChangeAll_IDs)';
 %            figure, tetramesh(tetrahedra(index, :), X);
            
-%            % New nodes
-%            tetsToChange_1 = tetrahedra(sum(ismember(tetrahedra, nodesToChange), 2) >= 3 , :);
-%            figure, tetramesh(tetsToChange_1, X);
-%            for numX = 1:size(tetsToChange_1(:, 4), 1)
-%                if ismember(tetsToChange_1(numX, 4), X_IDs.bottomVerticesIds)
-%                    X(tetsToChange_1(numX, 4), :) = mean(X(X_IDs.bottomFaceIds(tetsToChange_1(numX, 1:3)), :));
-%                else
-%                    X(tetsToChange_1(numX, 4), :) = mean(X(X_IDs.topFaceIds(tetsToChange_1(numX, 1:3)), :));
-%                end
-%            end
+           % New nodes
+           tetsToChange_1 = tetrahedra(sum(ismember(tetrahedra, nodesToChange), 2) >= 3 , :);
+           for numX = 1:size(tetsToChange_1(:, 4), 1)
+               if ismember(tetsToChange_1(numX, 4), X_IDs.bottomVerticesIds)
+                   X(tetsToChange_1(numX, 4), :) = mean(X(X_IDs.bottomFaceIds(tetsToChange_1(numX, 1:3)), :));
+               else
+                   X(tetsToChange_1(numX, 4), :) = mean(X(X_IDs.topFaceIds(tetsToChange_1(numX, 1:3)), :));
+               end
+           end
  
 %            figure, tetramesh(tetsToChange_1, X);
            
@@ -145,10 +144,10 @@ function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, t
 %            end
            
            %% Remove faces belonging to the cells in the intercalation
-           faceToRemove = find(all(ismember(Cell.AllFaces.Nodes, nodesToChange), 2));
-           Cell.AllFaces=Cell.AllFaces.Remove(faceToRemove);
-           SCn=SCn.Remove(faceToRemove);
-           Cell.FaceCentres=Cell.FaceCentres.Remove(faceToRemove);
+%            faceToRemove = find(all(ismember(Cell.AllFaces.Nodes, nodesToChange), 2));
+%            Cell.AllFaces=Cell.AllFaces.Remove(faceToRemove);
+%            SCn=SCn.Remove(faceToRemove);
+%            Cell.FaceCentres=Cell.FaceCentres.Remove(faceToRemove);
            
            %% Rebuild cells
            Cell.AssembleNodes=Cell.Int;
@@ -168,7 +167,7 @@ function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, t
            [Dofs] = GetDOFs(Y, Cell, Set, isempty(Set.InputSegmentedImage) == 0);
            [Dofs] = updateRemodelingDOFs(Dofs, 1:size(tetrahedra, 1), nC, Y);
            
-           Cell.RemodelledVertices=[find(tetsToChangeAll_IDs)', nC+Y.n];
+           Cell.RemodelledVertices=[find(tetsToChangeAll_IDs>0)', nC+Y.n];
            if Set.VTK, PostProcessingVTK(X,Y,tetrahedra_.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end
 
            [Cell,Y,Yn,SCn,X,Dofs,Set,~,DidNotConverge]=SolveRemodelingStep(Cell,Y0,Y,X,Dofs,Set,Yn,SCn,CellInput);

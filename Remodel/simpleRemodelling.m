@@ -136,19 +136,7 @@ function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, t
                newCoords = mean(X(tetrahedra(numTetrahedron, :), 1:2));
                Y.DataRow(numTetrahedron, 1:2) = newCoords;
            end
-           
-%           for numTetrahedron = 1:size(tetrahedra, 1)
-%                if any(ismember(tetrahedra(numTetrahedron, :), verticesToChange))==0
-%                    Y.DataRow(numTetrahedron, 1:2) = Yp.DataRow(numTetrahedron, :);
-%                end
-%            end
-           
-           %% Remove faces belonging to the cells in the intercalation
-%            faceToRemove = find(all(ismember(Cell.AllFaces.Nodes, nodesToChange), 2));
-%            Cell.AllFaces=Cell.AllFaces.Remove(faceToRemove);
-%            SCn=SCn.Remove(faceToRemove);
-%            Cell.FaceCentres=Cell.FaceCentres.Remove(faceToRemove);
-           
+          
            %% Rebuild cells
            Cell.AssembleNodes=Cell.Int;
            [Cell, nC, SCn, flag]=ReBuildCells(Cell, tetrahedra_, Y, X, SCn);

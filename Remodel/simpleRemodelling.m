@@ -178,7 +178,7 @@ function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, t
            %% Rebuild cells
            Cell.AssembleNodes=Cell.Int;
            [Cell, nC, SCn, flag]=ReBuildCells(Cell, tetrahedra_, Y, X, SCn);
-           
+
            if ~flag
                Cell.AllFaces=Cell.AllFaces.CheckInteriorFaces(XgID);
                [Cell]=ComputeCellVolume(Cell,Y);
@@ -187,6 +187,10 @@ function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, t
                    Cell.SAreaTrin{jj}=Cell.SAreaTri{jj};
                    Cell.EdgeLengthsn{jj}=Cell.EdgeLengths{jj};
                end
+               Set.NumMainV=Y.n;
+               Set.NumAuxV=Cell.FaceCentres.n;
+               Set.NumCellCentroid = Cell.n;
+               Set.NumTotalV=Set.NumMainV + Set.NumAuxV + Set.NumCellCentroid;
            else
                return
            end

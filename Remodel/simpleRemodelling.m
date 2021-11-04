@@ -160,9 +160,9 @@ function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, t
           
           %Remove faces belonging to the cells in the intercalation
            faceToRemove = find(any(ismember(Cell.AllFaces.Nodes, unique(newTetsModified)), 2));
-%            Cell.AllFaces=Cell.AllFaces.Remove(faceToRemove);
-%            SCn=SCn.Remove(faceToRemove);
-%            Cell.FaceCentres=Cell.FaceCentres.Remove(faceToRemove);
+%            Cell.AllFaces=Cell.AllFaces.RemoveCompletely(faceToRemove);
+%            SCn=SCn.RemoveCompletely(faceToRemove);
+%            Cell.FaceCentres=Cell.FaceCentres.RemoveCompletely(faceToRemove);
            
            for numCellToChage = nodesToChange'
                currentFaces = Cell.Faces{numCellToChage};
@@ -191,6 +191,8 @@ function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, t
                Set.NumAuxV=Cell.FaceCentres.n;
                Set.NumCellCentroid = Cell.n;
                Set.NumTotalV=Set.NumMainV + Set.NumAuxV + Set.NumCellCentroid;
+               [Cn]=BuildCn(tetrahedra_.Data);
+               [Cell,Y]=CheckOrderingOfTriangulaiton(Cell,Y,Set);
            else
                return
            end
@@ -204,7 +206,10 @@ function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, t
            Cell.RemodelledVertices=[find(any(ismember(tetrahedra_.DataRow, nodesToChange), 2))', nC+Y.n];
 
            [Cell,Y,Yn,SCn,X,Dofs,Set,~,DidNotConverge]=SolveRemodelingStep(Cell,Y0,Y,X,Dofs,Set,Yn,SCn,CellInput);
+           
        end
+
+       Cell.AssembleAll=true;
     end
 end
 

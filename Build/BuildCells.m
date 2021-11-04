@@ -14,8 +14,8 @@ TetIDs=1:size(T,1);
 %% Initiate global database
 Cv=zeros(Cell.n*16*8,2);
 numVertexBarElem=1; % counter for the number of vertex-bar Elements
-Cell.FaceCentres=zeros(size(X,1)*4,3); % the position of Cell-surface centres
-Cell.AllFaces = FacesClass(size(X,1)*4);
+Cell.FaceCentres=zeros(size(X,1),3); % the position of Cell-surface centres
+Cell.AllFaces = FacesClass(size(X,1));
 numFaceCentresFaces=1; % counter for the number of FaceCentres / faces;
 numTotalSurfsTris=0; % counter for total number of SurfsTris
 

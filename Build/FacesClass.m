@@ -117,6 +117,21 @@ classdef FacesClass
             obj.nE=obj.nE+length(V);
         end
         
+        function [obj] = RemoveCompletely(obj, idFaces)
+            obj.Vertices(idFaces)=[];
+            obj.Nodes(idFaces,:)=[];
+            obj.Energy(idFaces)=[];
+            obj.Area(idFaces)=[];
+            obj.InterfaceType(idFaces)=[];
+            obj.AreaTri(idFaces)=[];
+            obj.NotEmpty(idFaces)=[];
+            obj.EnergyTri(idFaces)=[];
+
+            obj.NotEmpty(idFaces)=[];
+            obj.EmptyList(idFaces)=[];
+            obj.n = obj.n - length(idFaces);
+        end
+        
         %-------------Compute the area of faces ----------------------------
         function [obj]=ComputeAreaTri(obj,Y,SurfsCenters)
             for i=1:obj.n

@@ -199,7 +199,7 @@ function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, t
            
            %% Solve modelling step with only those vertices
            [Dofs] = GetDOFs(Y, Cell, Set, isempty(Set.InputSegmentedImage) == 0);
-           [Dofs] = updateRemodelingDOFs(Dofs, 1:size(tetrahedra, 1), nC, Y);
+           [Dofs] = updateRemodelingDOFs(Dofs, find(any(ismember(tetrahedra_.DataRow, nodesToChange), 2)), nC, Y);
            
            Cell.RemodelledVertices=[find(any(ismember(tetrahedra_.DataRow, nodesToChange), 2))', nC+Y.n];
 

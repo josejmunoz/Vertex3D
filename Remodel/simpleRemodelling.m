@@ -140,9 +140,6 @@ function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, t
             for numTetrahedron = find(any(ismember(tetrahedra_.DataRow, nodesToChange), 2))'
                 Y.DataRow(numTetrahedron, 1:2) = mean(X(tetrahedra(numTetrahedron, :), 1:2));
             end
-            
-           %%%%% REMOVING TETS AND YS IS BAD FOR THE ORDERING OF OTHER
-           %%%%% CELLS, SINCE WE ARE NOT REBUILIDING ALL THE CELLS
            
            newTetsIds = find(changedTets==0);
            for numTetrahedron = tetrahedra_.n+1:tetrahedra_.n+size(newTetsModified, 1)
@@ -150,8 +147,16 @@ function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, t
                newCoords(3) = Yp.DataRow(newTetsIds(1), 3);
                newTetsIds(1) = [];
                Y = Y.Add(newCoords);
+               Y0 = Y0.Add(newCoords);
+               Yn = Yn.Add(newCoords);
            end
            tetrahedra_ = tetrahedra_.Add(newTetsModified);
+           
+           %% 
+           tetrahedra_ = tetrahedra_.RemoveCompletely(missingTets);
+           Y = Y.RemoveCompletely(missingTets);
+           Y0 = Y0.RemoveCompletely(missingTets);
+           Yn = Yn.RemoveCompletely(missingTets);
           
           %Remove faces belonging to the cells in the intercalation
            faceToRemove = find(any(ismember(Cell.AllFaces.Nodes, unique(newTetsModified)), 2));
@@ -186,7 +191,7 @@ function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, t
                return
            end
            
-           %if Set.VTK, PostProcessingVTK(X,Y,tetrahedra_.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end
+           if Set.VTK, PostProcessingVTK(X,Y,tetrahedra_.DataRow(1:tetrahedra_.n, :),Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end
            
            %% Solve modelling step with only those vertices
            [Dofs] = GetDOFs(Y, Cell, Set, isempty(Set.InputSegmentedImage) == 0);

@@ -63,6 +63,12 @@ classdef DynamicArray
                obj.nE=obj.nE+length(V);
       end
       
-      
+            %% Remove Data 
+      function [obj] = RemoveCompletely(obj,idsToRemove)
+          obj.DataRow(idsToRemove,:)=[];
+          obj.NotEmpty(idsToRemove)=[];
+          obj.EmptyList(idsToRemove)=[];
+          obj.n = obj.n - length(idsToRemove);
+      end
    end
 end

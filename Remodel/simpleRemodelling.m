@@ -47,6 +47,7 @@ function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, t
     if isempty(remodellingCells) == 0
        %% Intercalate whole cell in 3D: both cells do not share a face anymore 
        for numIntercalation = 1:size(remodellingCells, 1)
+           Yp = Y;
            currentIntercalation = remodellingCells(numIntercalation, :); % Face to remove
            tetsToChange = tetrahedra(sum(ismember(tetrahedra, currentIntercalation), 2) >=2, :);
            verticesToChange = unique(tetsToChange);
@@ -110,14 +111,18 @@ function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, t
            [Twg_top] = createTetrahedra(trianglesConnectivity_all, neighboursNetwork, verticesInfo.edges, Cell.Int', X_IDs.topFaceIds, X_IDs.topVerticesIds);
            newTets = vertcat(Twg_top, Twg_bottom);
            newTets(all(ismember(newTets,XgID),2),:) = [];
-           changedTets  = ismember(newTets, tetrahedra, 'rows') == 0;
-           tetrahedra = newTets;
-           tetrahedra_ = DynamicArray(ceil(size(newTets,1)*1.5),size(newTets,2));
-           tetrahedra_=tetrahedra_.Add(newTets);
+           [changedTets, Locb] = ismember(tetrahedra, newTets, 'rows');
+           [changedTets_2, Locb] = ismember(newTets, tetrahedra, 'rows');
+           tetIds = 1:tetrahedra_.n;
+           missingTets = tetIds(ismember(tetIds, Locb) == 0);
+           newTetsModified = newTets(changedTets_2==0, :);
            
-%            index = find(tetsToChangeAll_IDs)';
-%            figure, tetramesh(tetrahedra(index, :), X);
-           
+%            %%%%%% CHANGE ORDER OF NEW TETS TO MATCH THE OLD ONES
+           tetrahedra(missingTets, :) = repmat([0 0 0 0], length(missingTets), 1);
+           tetrahedra_.DataRow(missingTets, :) = repmat([0 0 0 0], length(missingTets), 1);
+           Y.DataRow(missingTets, :) = repmat([-100 -100 -100], length(missingTets), 1);
+           tetrahedra(tetrahedra_.n+1:tetrahedra_.n+size(newTetsModified, 1), :) = newTetsModified;
+
            % New nodes
            tetsToChange_1 = tetrahedra(sum(ismember(tetrahedra, nodesToChange), 2) >= 3 , :);
            for numX = 1:size(tetsToChange_1(:, 4), 1)
@@ -127,16 +132,44 @@ function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, t
                    X(tetsToChange_1(numX, 4), :) = mean(X(X_IDs.topFaceIds(tetsToChange_1(numX, 1:3)), :));
                end
            end
- 
+%  
 %            figure, tetramesh(tetsToChange_1, X);
+
+
+            %Update Ys of intercalation cells
+            for numTetrahedron = find(any(ismember(tetrahedra_.DataRow, nodesToChange), 2))'
+                Y.DataRow(numTetrahedron, 1:2) = mean(X(tetrahedra(numTetrahedron, :), 1:2));
+            end
+            
+           %%%%% REMOVING TETS AND YS IS BAD FOR THE ORDERING OF OTHER
+           %%%%% CELLS, SINCE WE ARE NOT REBUILIDING ALL THE CELLS
            
-           % New Y_s %% TODO: HERE I NEED TO CHANGE THE EXACT TETS TO MAKE IT WORK
-           Yp = Y;
-           for numTetrahedron = 1:size(tetrahedra, 1) %find(changedTets)' % 
+           newTetsIds = find(changedTets==0);
+           for numTetrahedron = tetrahedra_.n+1:tetrahedra_.n+size(newTetsModified, 1)
                newCoords = mean(X(tetrahedra(numTetrahedron, :), 1:2));
-               Y.DataRow(numTetrahedron, 1:2) = newCoords;
+               newCoords(3) = Yp.DataRow(newTetsIds(1), 3);
+               newTetsIds(1) = [];
+               Y = Y.Add(newCoords);
            end
+           tetrahedra_ = tetrahedra_.Add(newTetsModified);
           
+          %Remove faces belonging to the cells in the intercalation
+           faceToRemove = find(any(ismember(Cell.AllFaces.Nodes, unique(newTetsModified)), 2));
+%            Cell.AllFaces=Cell.AllFaces.Remove(faceToRemove);
+%            SCn=SCn.Remove(faceToRemove);
+%            Cell.FaceCentres=Cell.FaceCentres.Remove(faceToRemove);
+           
+           for numCellToChage = nodesToChange'
+               currentFaces = Cell.Faces{numCellToChage};
+               facesToRemove = ismember(currentFaces.FaceCentresID, faceToRemove);
+               currentFaces.FaceCentresID(facesToRemove) = [];
+               currentFaces.Tris(facesToRemove) = [];
+               currentFaces.Vertices(facesToRemove) = [];
+               currentFaces.nFaces = currentFaces.nFaces - sum(facesToRemove);
+               Cell.Faces{numCellToChage} = currentFaces;
+               Cell.cNodes{numCellToChage}(facesToRemove) = [];
+           end
+
            %% Rebuild cells
            Cell.AssembleNodes=Cell.Int;
            [Cell, nC, SCn, flag]=ReBuildCells(Cell, tetrahedra_, Y, X, SCn);
@@ -149,14 +182,17 @@ function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, t
                    Cell.SAreaTrin{jj}=Cell.SAreaTri{jj};
                    Cell.EdgeLengthsn{jj}=Cell.EdgeLengths{jj};
                end
+           else
+               return
            end
+           
+           %if Set.VTK, PostProcessingVTK(X,Y,tetrahedra_.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end
            
            %% Solve modelling step with only those vertices
            [Dofs] = GetDOFs(Y, Cell, Set, isempty(Set.InputSegmentedImage) == 0);
            [Dofs] = updateRemodelingDOFs(Dofs, 1:size(tetrahedra, 1), nC, Y);
            
-           Cell.RemodelledVertices=[find(tetsToChangeAll_IDs>0)', nC+Y.n];
-           if Set.VTK, PostProcessingVTK(X,Y,tetrahedra_.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end
+           Cell.RemodelledVertices=[find(any(ismember(tetrahedra_.DataRow, nodesToChange), 2))', nC+Y.n];
 
            [Cell,Y,Yn,SCn,X,Dofs,Set,~,DidNotConverge]=SolveRemodelingStep(Cell,Y0,Y,X,Dofs,Set,Yn,SCn,CellInput);
        end

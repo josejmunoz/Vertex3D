@@ -87,11 +87,7 @@ for numCell = Cell.Int(ismember(Cell.Int,Cell.AssembleNodes))
         % check if the centre i already built
         oppNode = Copy_cNodes==SurfAxes(2);
         
-        if find(oppNode) > length(Copy_Surface.FaceCentresID)
-            idOppossedNode = [];
-        else
-            idOppossedNode=Copy_Surface.FaceCentresID(oppNode);
-        end
+        idOppossedNode=Copy_Surface.FaceCentresID(oppNode);
         
         opposedVertices=[];
         if isempty(idOppossedNode) && ~isempty(nC)

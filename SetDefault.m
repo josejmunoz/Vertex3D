@@ -357,7 +357,7 @@ end
 %% ============================= Contractility ============================
 
 if ~isfield(Set, 'Contractility')
-    Set.Contractility = true;
+    Set.Contractility = 0;
 end
 
 if ~isfield(Set, 'cPurseString')  % Contractility coefficient on the purse string
@@ -369,7 +369,7 @@ end
 if ~isfield(Set, 'Contractility_Variability_PurseString')
     %Set.Contractility_Variability_PurseString = [1 1]*Set.cPurseString;
     Set.Contractility_Variability_PurseString = ([1 1 2.5 2.5] - 1) * Set.cPurseString;
-    
+    %Set.Contractility_Variability_PurseString = ([1, 0.96, 1.087, 1.74, 2.37, 2.61, 2.487, 2.536, 2.46, 2.52, 2.606, 2.456, 2.387, 2.52, 2.31, 2.328, 2.134, 2.07, 2.055, 1.9, 1.9] - 1) * Set.cPurseString;
 end
 
 % Timepoints where differeent values of 'cPurseString' appear.
@@ -378,6 +378,7 @@ end
 if ~isfield(Set, 'Contractility_TimeVariability_PurseString')
     %Set.Contractility_TimeVariability_PurseString = [0 Set.tend];
     Set.Contractility_TimeVariability_PurseString = [0 5 16 60]/60*(Set.TEndAblation - Set.TInitAblation);
+    %Set.Contractility_TimeVariability_PurseString = (0:3:60)/60*(Set.TEndAblation - Set.TInitAblation);
 end
 
 if ~isfield(Set, 'cLateralCables') % Contractility coefficient on the lateral cables

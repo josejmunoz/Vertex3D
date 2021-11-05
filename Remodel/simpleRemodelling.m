@@ -137,9 +137,11 @@ function [Cell,Y,Yn,SCn,tetrahedra_,X,Dofs,Cn,Set] = simpleRemodelling(Cell, Y0,
 
 
             %Update Ys of intercalation cells
-            for numTetrahedron = find(any(ismember(tetrahedra_.DataRow, nodesToChange), 2))'
-                Y.DataRow(numTetrahedron, 1:2) = mean(X(tetrahedra(numTetrahedron, :), 1:2));
-            end
+            %%% ONLY CHANGE 1 CELL (NOT DEBRIS)
+%             changedYs = find(sum(ismember(tetrahedra, unique(tetsToChange_1)), 2)>2);
+%             for numTetrahedron = changedYs'
+%                 Y.DataRow(numTetrahedron, 1:2) = mean(X(tetrahedra(numTetrahedron, :), 1:2));
+%             end
            
            correspondancePreviousNewTets = arrayfun(@(x) find(sum(ismember(tetrahedra_p(missingTets, :), tetrahedra(x, :)), 2)>2), tetrahedra_.n+1:tetrahedra_.n+size(newTetsModified, 1), 'UniformOutput', false);
            withoutCorrespondanceIds = missingTets(ismember(missingTets, missingTets(unique(vertcat(correspondancePreviousNewTets{:})))) == 0);
@@ -152,6 +154,7 @@ function [Cell,Y,Yn,SCn,tetrahedra_,X,Dofs,Cn,Set] = simpleRemodelling(Cell, Y0,
                end
                oldTetCoords = mean(Yp.DataRow(previousIdTet, :), 1);
                newCoords = mean(X(tetrahedra(numTetrahedron, :), 1:3));
+               newCoords = mean([newCoords; oldTetCoords], 1);
                newCoords(3) = oldTetCoords(3);
                Y = Y.Add(newCoords);
                Y0 = Y0.Add(newCoords);
@@ -209,7 +212,8 @@ function [Cell,Y,Yn,SCn,tetrahedra_,X,Dofs,Cn,Set] = simpleRemodelling(Cell, Y0,
            
            %% Solve modelling step with only those vertices
            [Dofs] = GetDOFs(Y, Cell, Set, isempty(Set.InputSegmentedImage) == 0);
-           [Dofs] = updateRemodelingDOFs(Dofs, find(any(ismember(tetrahedra_.DataRow, nodesToChange), 2)), nC, Y);
+           %changedYs = find(sum(ismember(tetrahedra_.DataRow, unique(tetsToChange_1)), 2)>2);
+           [Dofs] = updateRemodelingDOFs(Dofs, Y.n - length(newTetsModified):Y.n, nC, Y);
            
            Cell.RemodelledVertices=[find(any(ismember(tetrahedra_.DataRow, nodesToChange), 2))', nC+Y.n];
 

@@ -1,4 +1,4 @@
-function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, tetrahedra_, Tetrahedra_weights, X, X_IDs, SCn, XgID, Cn, verticesInfo, neighboursNetwork, Set)
+function [Cell,Y,Yn,SCn,tetrahedra_,X,Dofs,Cn,Set] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, tetrahedra_, X, X_IDs, SCn, XgID, Cn, verticesInfo, neighboursNetwork, Dofs, Set)
 %SIMPLEREMODELLING Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -47,7 +47,7 @@ function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, t
     if isempty(remodellingCells) == 0
        %% Intercalate whole cell in 3D: both cells do not share a face anymore 
        for numIntercalation = 1:size(remodellingCells, 1)
-           Yp = Y;
+           Yp = Y; tetrahedra_p = tetrahedra;
            currentIntercalation = remodellingCells(numIntercalation, :); % Face to remove
            tetsToChange = tetrahedra(sum(ismember(tetrahedra, currentIntercalation), 2) >=2, :);
            verticesToChange = unique(tetsToChange);
@@ -141,14 +141,22 @@ function [Cell, Y, tetrahedra] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, t
                 Y.DataRow(numTetrahedron, 1:2) = mean(X(tetrahedra(numTetrahedron, :), 1:2));
             end
            
-           newTetsIds = find(changedTets==0);
+           correspondancePreviousNewTets = arrayfun(@(x) find(sum(ismember(tetrahedra_p(missingTets, :), tetrahedra(x, :)), 2)>2), tetrahedra_.n+1:tetrahedra_.n+size(newTetsModified, 1), 'UniformOutput', false);
+           withoutCorrespondanceIds = missingTets(ismember(missingTets, missingTets(unique(vertcat(correspondancePreviousNewTets{:})))) == 0);
+           numPrev = 1;
            for numTetrahedron = tetrahedra_.n+1:tetrahedra_.n+size(newTetsModified, 1)
-               newCoords = mean(X(tetrahedra(numTetrahedron, :), 1:2));
-               newCoords(3) = Yp.DataRow(newTetsIds(1), 3);
-               newTetsIds(1) = [];
+               if isempty(correspondancePreviousNewTets{numPrev})
+                   previousIdTet = withoutCorrespondanceIds(sum(ismember(tetrahedra_p(withoutCorrespondanceIds, :), tetrahedra(numTetrahedron, :)), 2) > 1);
+               else
+                   previousIdTet = missingTets(correspondancePreviousNewTets{numPrev});
+               end
+               oldTetCoords = mean(Yp.DataRow(previousIdTet, :), 1);
+               newCoords = mean(X(tetrahedra(numTetrahedron, :), 1:3));
+               newCoords(3) = oldTetCoords(3);
                Y = Y.Add(newCoords);
                Y0 = Y0.Add(newCoords);
                Yn = Yn.Add(newCoords);
+               numPrev = numPrev + 1;
            end
            tetrahedra_ = tetrahedra_.Add(newTetsModified);
            

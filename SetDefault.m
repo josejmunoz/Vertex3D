@@ -188,6 +188,19 @@ if ~isfield(Set,'BendingAreaDependent')
     Set.BendingAreaDependent=true; % If tru include area weighting in bending (larger areas -> larger bending resistance.
 end 
 
+%% ========================= In plane elasticity ==========================
+if ~isfield(Set,'InPlaneElasticity')
+   Set.InPlaneElasticity=false;
+end
+
+if ~isfield(Set,'mu_bulk')
+     Set.mu_bulk=1;
+end
+
+if ~isfield(Set,'lambda_bulk')
+     Set.lambda_bulk=1;
+end
+
 
 %--------Propulsion -------------------------------------------------------
 % Add random propulsion forces acting on bottom vertices  
@@ -273,7 +286,7 @@ end
 %% ============================= Solution =================================
 % ------- Tolerance
 if ~isfield(Set,'tol')       % Convergence Tolerance for Newton-Raphson
-    Set.tol=1e-10;
+    Set.tol=1e-9;
 end 
 if ~isfield(Set,'MaxIter')   % Maximum Number of iteration for Newton Raphson
     Set.MaxIter=200;

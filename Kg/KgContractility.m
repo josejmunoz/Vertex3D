@@ -54,14 +54,18 @@ for numCell = 1:ncell
         
         if edgeLocation(numEdge) == 3 % Apical side
             if ismember(numEdge, idShareEdges) % Wound edge
-                C = Set.cLineTension + Set.cPurseString;
+                C = Set.cPurseString;
             else
                 C = Set.cLineTension;
             end
         elseif edgeLocation(numEdge) == 2 % Basal side
             C = Set.cLineTension/100;
-        elseif edgeLocation(numEdge) == 1 && ismember(numEdge, idShareEdges) %lateralCables
-            C = Set.cLateralCables;
+        elseif edgeLocation(numEdge) == 1  %lateralCables
+            if ismember(numEdge, idShareEdges) % Wound edge
+                C = Set.cLateralCables;
+            else
+                C = 0.00001;
+            end
         else
             C = 0;
         end

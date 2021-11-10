@@ -180,8 +180,8 @@ for numLine = 1:length(tlines)
             %% Analise cells
             [~, cellFeatures{numStep}, woundFeatures{numStep}, woundEdgeFeatures{numStep}] = Cell.exportTableWithCellFeatures(tetrahedra.DataRow, Y, numStep, Set);
             analysisDir = strcat(Set.OutputFolder,Esc,'Analysis',Esc);
-            save(strcat(analysisDir, 'cellInfo_', num2str(Set.iIncr), '.mat'), 'Cell', 'Y0', 'Y', 'Yn', 'Cn', 'X', 'X_IDs', 'SCn', 'Tetrahedra_weights', 'tetrahedra', 'XgID', 'CellInput', 'cellFeatures', 'woundFeatures', 'woundEdgeFeatures', 'verticesInfo', 'Set');
-            
+            save(strcat(analysisDir, 'cellInfo_', num2str(Set.iIncr), '.mat'), 'Cell', 'Y0', 'Y', 'Yn', 'Cn', 'X', 'X_IDs', 'SCn', 'Tetrahedra_weights', 'tetrahedra', 'XgID', 'CellInput', 'cellFeatures', 'woundFeatures', 'woundEdgeFeatures', 'verticesInfo', 'neighboursNetwork', 'Dofs', 'Set');
+           
             if any(Cell.DebrisCells)
                 writetable(vertcat(woundEdgeFeatures{:}), strcat(analysisDir,'woundEdgeFeatures.csv'))
                 writetable(vertcat(woundFeatures{:}), strcat(analysisDir,'woundFeatures.csv'))

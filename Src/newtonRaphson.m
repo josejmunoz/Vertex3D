@@ -11,9 +11,9 @@ else
     gr=norm(g(Dofs.FreeDofs));
 end
 gr0=gr;
-if numStep > -1
+%if numStep > -1
     fprintf('Step: %i,Iter: %i ||gr||= %e ||dyr||= %e dt/dt0=%.3g\n',numStep,0,gr,dyr,Set.dt/Set.dt0);
-end
+%end
 
 Energy = 0;
 
@@ -58,9 +58,9 @@ while (gr>Set.tol || dyr>Set.tol) && Set.iter<Set.MaxIter
         dyr=norm(dy(Dofs.FreeDofs));
         gr=norm(g(Dofs.FreeDofs));
     end
-    if numStep > -1
+    %if numStep > -1
         fprintf('Step: % i,Iter: %i, Time: %g ||gr||= %.3e ||dyr||= %.3e alpha= %.3e  nu/nu0=%.3g \n',numStep,Set.iter,t,gr,dyr,alpha,Set.nu/Set.nu0);
-    end
+    %end
     
     %if Set.VTK_iter, PostProcessingVTK(X,Y,T.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK_iter'),Set.iter,Set); end
     

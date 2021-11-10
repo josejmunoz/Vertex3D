@@ -6,7 +6,7 @@ Set.zScale = 19.23; %MicronsXY-MicronsZ relation
 Set.EllipseFitDiameter = 1; %Microns of a fitted ellipsed in Rob's Wing Discs
 Set.AvgCellArea = pi * (Set.EllipseFitDiameter/2)^2; %Microns
 Set.CellHeight = (Set.CellHeight * Set.zScale) / Set.AvgCellArea;
-Set.TotalCells = 150; %Aim 225
+Set.TotalCells = 40; %Aim 225
 
 %Set.e=4;  % Example Number look in Geo\Example.m 
 Set.Method=1;
@@ -66,9 +66,10 @@ Set.Nincr=Set.tend*1000;
 
 
 %% Remodeling
-Set.Remodelling=false;
+Set.Remodelling=true;
 Set.RemodelTol=.5e-2;
 Set.RemodelingFrequency=Set.tend/Set.Nincr;
+Set.MinEdgeLength = 0.45; %% Higher number, smaller edge
 
 %---------- EnergyBarrier
 Set.EnergyBarrier=true;
@@ -81,7 +82,7 @@ Set.BarrierTri0 = 5e-2; % CARE!! THIS IS OVERRIDE WITHIN THE CODE: INPUTIMAGE.M
 Set.Ablation = true;
 %Set.cellsToAblate = findCentralCells(Example(Set.e), 1);
 % Aim: Set.cellsToAblate = 1:15;
-Set.cellsToAblate = 1:15;
+Set.cellsToAblate = 1:3;
 Set.TInitAblation = 0.01; 
 Set.TEndAblation = 0.071; %40 minutes (30 after ablation)
 
@@ -94,7 +95,7 @@ Set.cPurseString = 14;
 Set.cLateralCables = 0.33;
 
 %% Execution parameters
-Set.batchProcessing = true;
+Set.batchProcessing = 0;
 Set.diary = true;
 Set.MaxIter = 400;
 Set.tol=1e-10;

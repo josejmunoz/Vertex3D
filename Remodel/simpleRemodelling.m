@@ -215,7 +215,7 @@ function [Cell,Y,Yn,SCn,tetrahedra_,X,Dofs,Cn,Set] = simpleRemodelling(Cell, Y0,
            %changedYs = find(sum(ismember(tetrahedra_.DataRow, unique(tetsToChange_1)), 2)>2);
            [Dofs] = updateRemodelingDOFs(Dofs, Y.n - length(newTetsModified):Y.n, nC, Y);
            
-           Cell.RemodelledVertices=[find(any(ismember(tetrahedra_.DataRow, nodesToChange), 2))', nC+Y.n];
+           Cell.RemodelledVertices=Y.n - length(newTetsModified):Y.n;
 
            [Cell,Y,Yn,SCn,X,Dofs,Set,~,DidNotConverge]=SolveRemodelingStep(Cell,Y0,Y,X,Dofs,Set,Yn,SCn,CellInput);
            

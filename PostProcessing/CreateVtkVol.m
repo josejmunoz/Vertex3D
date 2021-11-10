@@ -78,7 +78,11 @@ for numCell = 1:Cell.n
     fprintf(file,'%s \n','SCALARS TriAreaChange double');
     fprintf(file,'%s \n','LOOKUP_TABLE default');
     for f=1:Cell.Faces{numCell}.nFaces
-        fprintf(file,'%3.35f\n', Cell.AllFaces.EnergyTri{Cell.Faces{numCell}.FaceCentresID(f)});
+        if Cell.Faces{numCell}.FaceCentresID(f) > 0
+            fprintf(file,'%3.35f\n', Cell.AllFaces.EnergyTri{Cell.Faces{numCell}.FaceCentresID(f)});
+        else
+            fprintf(file,'0\n');
+        end
     end
     fclose(file);
 end

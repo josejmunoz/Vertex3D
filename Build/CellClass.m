@@ -227,9 +227,11 @@ classdef CellClass
             obj.EdgeLengths(cellsToRemove) = [];
             obj.EdgeLengthsn(cellsToRemove) = [];
             obj.ContractileForces(cellsToRemove) = [];
+            obj.SubstrateForce(cellsToRemove) = [];
+            
+            obj.ApicalVertices(cellsToRemove) = [];
             obj.DebrisCells(cellsToRemove) = [];
             obj.BasalVertices(cellsToRemove) = [];
-            obj.ApicalVertices(cellsToRemove) = [];
             
             obj.n = obj.n - sum(cellsToRemove);
             obj.nTotalTris = sum(cellfun(@(X) size(X,1), obj.Tris));
@@ -508,11 +510,13 @@ classdef CellClass
                 %% Get all apical and basal vertices
                 upperZMinimum = (mean(midZ) + mean(Y.DataRow(upperVerticesBorder, 3))/10);
                 bottomZMinimum = (mean(midZ) - mean(Y.DataRow(upperVerticesBorder, 3))/10);       
-
-                obj.ApicalVertices{numCell} = vertcat(uniqueCurrentVertices(Y.DataRow(uniqueCurrentVertices, 3) > upperZMinimum), - find(obj.FaceCentres.DataRow(1:obj.FaceCentres.n, 3) > upperZMinimum));
+                
+                faceIds = obj.Faces{numCell}.FaceCentresID;
+                
+                obj.ApicalVertices{numCell} = vertcat(uniqueCurrentVertices(Y.DataRow(uniqueCurrentVertices, 3) > upperZMinimum), - faceIds(obj.FaceCentres.DataRow(faceIds, 3) > upperZMinimum));
                 obj.ApicalBorderVertices{numCell} = ismember(obj.ApicalVertices{numCell}, upperVerticesBorder);
                 
-                obj.BasalVertices{numCell} = vertcat(uniqueCurrentVertices(Y.DataRow(uniqueCurrentVertices, 3) < bottomZMinimum), - find(obj.FaceCentres.DataRow(1:obj.FaceCentres.n, 3) < bottomZMinimum));
+                obj.BasalVertices{numCell} = vertcat(uniqueCurrentVertices(Y.DataRow(uniqueCurrentVertices, 3) < bottomZMinimum), - faceIds(obj.FaceCentres.DataRow(faceIds, 3) < bottomZMinimum));
                 obj.BasalBorderVertices{numCell} = ismember(obj.BasalVertices{numCell}, bottomVerticesBorder);
                 
                 obj.SubstrateForce{numCell} = zeros(length(obj.BasalVertices{numCell}), 1);

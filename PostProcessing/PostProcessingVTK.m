@@ -10,7 +10,7 @@ CreateVtkVol(Y.DataOrdered,Cell,folder, '',TimeStep)
 CreateVtkBar(X,Cn,ones(size(Cn, 1)),folder, 'Nodal_Connectivity','n',TimeStep)
 
 %Display contractile forces
-vertices = vertcat(Y.DataRow, Cell.FaceCentres.DataRow(1:Cell.FaceCentres.n, :));
+vertices = vertcat(Y.Data, Cell.FaceCentres.DataRow(1:Cell.FaceCentres.n, :));
 
 
 allCells = Cell;
@@ -28,13 +28,12 @@ for numCell = Cell.Int
     CreateVtkBar(vertices, edgeConnections_current, forceToDisplay_NoAblated, folder, 'ContractilityEdges', strcat('_', num2str(numCell, '%04d'), '_'),TimeStep)
     
     if Set.Substrate
-        [uniqueVerticesIds, indicesOfOldArray] = unique(vertcat(currentCell.BasalVertices{:}));
-        allVerticesValues = vertcat(currentCell.SubstrateForce{:});
-        uniqueVerticesValues = allVerticesValues(indicesOfOldArray);
+        uniqueVerticesIds = vertcat(currentCell.BasalVertices{:});
+        uniqueVerticesValues = vertcat(currentCell.SubstrateForce{:});
         
-        uniqueVerticesIds(uniqueVerticesIds<0) = abs(uniqueVerticesIds(uniqueVerticesIds<0)) + size(Y.DataRow, 1);
+        uniqueVerticesIds(uniqueVerticesIds<0) = abs(uniqueVerticesIds(uniqueVerticesIds<0)) + size(Y.Data, 1);
         
-        CreateVtkPoint(vertices, uniqueVerticesIds, uniqueVerticesValues, fullfile(folder, 'Basal_Springs'), strcat('_', num2str(numCell, '%04d'), '_'), TimeStep, 'SubstrateSpring');
+        CreateVtkPoint(vertices(uniqueVerticesIds, :), 1:length(uniqueVerticesIds), uniqueVerticesValues, fullfile(folder, 'Basal_Springs'), strcat('_', num2str(numCell, '%04d'), '_'), TimeStep, 'SubstrateSpring');
     end
     Cell = allCells;
 end

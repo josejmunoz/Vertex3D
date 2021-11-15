@@ -34,7 +34,7 @@ while (gr>Set.tol || dyr>Set.tol) && Set.iter<Set.MaxIter
 
     [Y, Cell] = updateVertices(Y, Cell, dy_reshaped, Set);
 
-    if Set.nu > Set.nu0 &&  gr<1e-8
+    if Set.nu > Set.nu0 &&  gr<Set.tol
         Set.nu = max(Set.nu/2, Set.nu0);
     end
     %% ----------- Compute K, g ---------------------------------------

@@ -32,7 +32,7 @@ while 1
 
     [g,K,Cell, Y, Energy, Set, gr, dyr, dy] = newtonRaphson(Set, Cell, SCn, K, g, Dofs, Y, Y0, Yn, CellInput, -1, -1, 1);
     
-    if IncreaseEta &&  (gr>Set.tol || dyr>Set.tol)
+    if IncreaseEta && (gr>Set.tol || dyr>Set.tol)
         fprintf('Convergence was not achieved ... \n');
         fprintf('First strategy ---> Restart iterating while higher viscosity... \n');
         Y=Yp;
@@ -40,7 +40,7 @@ while 1
         Set.nu=Set.nu*10;
         Set.MaxIter=Set.MaxIter0*4;
         IncreaseEta=false;
-    elseif gr>Set.tol || dyr>Set.tol || any(isnan(g(Dofs.FreeDofs))) || any(isnan(dy(Dofs.FreeDofs)))
+    elseif gr>Set.tol || dyr>Set.tol || any(isnan(g(Dofs.FreeDofs))) || any(isnan(dy(Dofs.FreeDofs))) || Set.nu ~=1
         % this should not take place
         fprintf('Local Problem did not converge after %i iterations.\n',Set.iter);
         Set.MaxIter=Set.MaxIter0;

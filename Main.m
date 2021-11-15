@@ -132,7 +132,7 @@ for numLine = 1:length(tlines)
         [g,K,Cell, Y, Energy, Set, gr, dyr, dy] = newtonRaphson(Set, Cell, SCn, K, g, Dofs, Y, Y0, Yn, CellInput, numStep, t, 0);
 
         %%
-        if gr<Set.tol && dyr<Set.tol && all(isnan(g(Dofs.FreeDofs)) == 0) && all(isnan(dy(Dofs.FreeDofs)) == 0)
+        if gr<Set.tol && dyr<Set.tol && all(isnan(g(Dofs.FreeDofs)) == 0) && all(isnan(dy(Dofs.FreeDofs)) == 0) && Set.nu/Set.nu0 == 1
             fprintf('STEP %i has converged ...\n',Set.iIncr)
 
             %Update Nodes (X) from Vertices (Y)

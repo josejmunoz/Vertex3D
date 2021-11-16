@@ -181,7 +181,7 @@ function [Cell,Y,Yn,SCn,tetrahedra_,X,Dofs,Cn,Set] = simpleRemodelling(Cell, Y0,
 
            %% Rebuild cells
            Cell.AssembleNodes=Cell.Int;
-           [Cell, nC, SCn, flag]=ReBuildCells(Cell, tetrahedra_, Y, X, SCn);
+           [Cell, newFaces, SCn, flag]=ReBuildCells(Cell, tetrahedra_, Y, X, SCn);
 
            if ~flag
                Cell.AllFaces=Cell.AllFaces.CheckInteriorFaces(XgID);
@@ -207,14 +207,13 @@ function [Cell,Y,Yn,SCn,tetrahedra_,X,Dofs,Cn,Set] = simpleRemodelling(Cell, Y0,
            if Set.VTK, PostProcessingVTK(X,Y,tetrahedra_.DataRow(1:tetrahedra_.n, :),Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end
            
            %% Solve modelling step with only those vertices
-           [Dofs] = GetDOFs(Y, Cell, Set, isempty(Set.InputSegmentedImage) == 0);
-           %changedYs = find(sum(ismember(tetrahedra_.DataRow, unique(tetsToChange_1)), 2)>2);
-           [Dofs] = updateRemodelingDOFs(Dofs, Y.n - length(newTetsModified):Y.n, nC, Y);
-           
            Cell.RemodelledVertices=Y.n - length(newTetsModified):Y.n;
            
+           [Dofs] = GetDOFs(Y, Cell, Set, isempty(Set.InputSegmentedImage) == 0);
+           %changedYs = find(sum(ismember(tetrahedra_.DataRow, unique(tetsToChange_1)), 2)>2);
+           [Dofs] = updateRemodelingDOFs(Dofs, Cell.RemodelledVertices, newFaces, Y);
+           
            % Update basal/apical vertices, border vertices, 
-
            [Cell,Y,Yn,SCn,X,Dofs,Set,~,DidNotConverge]=SolveRemodelingStep(Cell,Y0,Y,X,Dofs,Set,Yn,SCn,CellInput);
            
        end

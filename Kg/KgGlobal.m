@@ -1,4 +1,4 @@
-function [g,K,Cell,Energy,gs,gv,gf,gB,gb]=KgGlobal(Cell, SCn, Y0, Y, Yn, Set, CellInput)
+function [g,K,Cell,Energy,gs,gv,gf,gB,gt,gC,gSub]=KgGlobal(Cell, SCn, Y0, Y, Yn, Set, CellInput)
 % The residual g and Jacobian K of all energies
 
 %% Calculate basic information

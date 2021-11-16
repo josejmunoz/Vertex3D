@@ -104,7 +104,7 @@ for numLine = 1:length(tlines)
 
         if Set.SaveWorkspace,    save(strcat(Set.OutputFolder,Esc,'Workspace',Esc,['Workspace' num2str(numStep) '.mat'])); end
 
-        %% ----------- Remodel--------------------------------------------------
+        % ----------- Remodel--------------------------------------------------
         if Set.Remodelling && Set.ReModel && abs(t-tr)>=Set.RemodelingFrequency
             [Cell,Y,Yn,SCn,tetrahedra,X,Dofs,Cn,Set] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, tetrahedra, X, X_IDs, SCn, XgID, Cn, verticesInfo, neighboursNetwork, Dofs, Set);
             %[Cell,Y,Yn,SCn,tetrahedra,X,Dofs,Cn,Set]=Remodeling(Cell,Y,Yn,SCn,tetrahedra,X,Set,Dofs,Y0,XgID,CellInput);
@@ -119,7 +119,6 @@ for numLine = 1:length(tlines)
 
         %% ----------- Apply Boundary Condition --------------------------------
         [Cell, Y, Dofs] = applyBoundaryCondition(t, Y, Set, Cell, Dofs);
-
 
         %% ----------- Compute K, g ---------------------------------------
         [Set, CellInput] = updateParametersOnTime(t, Set, Cell, CellInput);

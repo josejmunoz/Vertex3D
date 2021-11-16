@@ -58,6 +58,11 @@ while (gr>Set.tol || dyr>Set.tol) && Set.iter<Set.MaxIter
         dyr=norm(dy(Dofs.FreeDofs));
         gr=norm(g(Dofs.FreeDofs));
     end
+    
+    if Set.nu > Set.nu0 &&  gr<Set.tol
+        Set.nu = max(Set.nu/2, Set.nu0);
+    end
+    
     %if numStep > -1
         fprintf('Step: % i,Iter: %i, Time: %g ||gr||= %.3e ||dyr||= %.3e alpha= %.3e  nu/nu0=%.3g \n',numStep,Set.iter,t,gr,dyr,alpha,Set.nu/Set.nu0);
     %end

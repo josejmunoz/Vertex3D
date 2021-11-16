@@ -23,7 +23,7 @@ Set.nu=Set.nu_LP_Inital;
 Set.MaxIter=Set.MaxIter0/2;
 
 while 1
-    [g,K,Cell,Energy]=KgGlobal(Cell, SCn, Y0, Y, Yn, Set, CellInput);
+    [g,K,Cell,Energy,gs,gv,gf,gB,gt,gC,gSub]=KgGlobal(Cell, SCn, Y0, Y, Yn, Set, CellInput);
     
     dy=zeros(Set.NumTotalV*3);
     dyr=norm(dy(Dofs.Remodel));

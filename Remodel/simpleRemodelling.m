@@ -1,7 +1,6 @@
 function [Cell,Y,Yn,SCn,tetrahedra_,X,Dofs,Cn,Set] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, tetrahedra_, X, X_IDs, SCn, XgID, Cn, verticesInfo, neighboursNetwork, Dofs, Set)
-%SIMPLEREMODELLING Summary of this function goes here
-%   Detailed explanation goes here
-
+%SimplRemodelling
+%   Redefines test and new vertics
     tetrahedra = tetrahedra_.DataRow;
 
     %% Identify if any edge is shorter than it should
@@ -113,7 +112,7 @@ function [Cell,Y,Yn,SCn,tetrahedra_,X,Dofs,Cn,Set] = simpleRemodelling(Cell, Y0,
            [Twg_top] = createTetrahedra(trianglesConnectivity_all, neighboursNetwork, verticesInfo.edges, Cell.Int', X_IDs.topFaceIds, X_IDs.topVerticesIds);
            newTets = vertcat(Twg_top, Twg_bottom);
            newTets(all(ismember(newTets,XgID),2),:) = [];
-           [changedTets, Locb] = ismember(tetrahedra, newTets, 'rows');
+           changedTets = ismember(tetrahedra, newTets, 'rows');
            [changedTets_2, Locb] = ismember(newTets, tetrahedra, 'rows');
            tetIds = 1:tetrahedra_.n;
            missingTets = tetIds(ismember(tetIds, Locb) == 0);
@@ -160,8 +159,7 @@ function [Cell,Y,Yn,SCn,tetrahedra_,X,Dofs,Cn,Set] = simpleRemodelling(Cell, Y0,
            Y = Y.RemoveCompletely(missingTets);
            Y0 = Y0.RemoveCompletely(missingTets);
            Yn = Yn.RemoveCompletely(missingTets);
-           newVerticesIDs = newVerticesIDs - length(missingTets);
-          
+           newVerticesIDs = newVerticesIDs - length(missingTets);        
           %Remove faces belonging to the cells in the intercalation
            faceToRemove = find(any(ismember(Cell.AllFaces.Nodes, unique(newTetsModified)), 2));
 %            Cell.AllFaces=Cell.AllFaces.RemoveCompletely(faceToRemove);
@@ -178,11 +176,9 @@ function [Cell,Y,Yn,SCn,tetrahedra_,X,Dofs,Cn,Set] = simpleRemodelling(Cell, Y0,
                Cell.Faces{numCellToChage} = currentFaces;
                Cell.cNodes{numCellToChage}(facesToRemove) = [];
            end
-
            %% Rebuild cells
            Cell.AssembleNodes=Cell.Int;
            [Cell, newFaces, SCn, flag]=ReBuildCells(Cell, tetrahedra_, Y, X, SCn);
-
            if ~flag
                Cell.AllFaces=Cell.AllFaces.CheckInteriorFaces(XgID);
                [Cell]=ComputeCellVolume(Cell,Y);
@@ -200,24 +196,18 @@ function [Cell,Y,Yn,SCn,tetrahedra_,X,Dofs,Cn,Set] = simpleRemodelling(Cell, Y0,
            else
                %% ERROR
                error('Error rebuilding cells at remodelling');
-           end
-                   
-           [g,K,Cell,Energy]=KgGlobal(Cell, SCn, Y0, Y, Yn, Set, CellInput);
-
-           if Set.VTK, PostProcessingVTK(X,Y,tetrahedra_.DataRow(1:tetrahedra_.n, :),Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end
-           
+           end                  
+           [~,~,Cell]=KgGlobal(Cell, SCn, Y0, Y, Yn, Set, CellInput);
+           PostProcessingVTK(X,Y,tetrahedra_.DataRow(1:tetrahedra_.n, :),Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set)
            %% Solve modelling step with only those vertices
            Cell.RemodelledVertices=Y.n - length(newTetsModified):Y.n;
-           
-           [Dofs] = GetDOFs(Y, Cell, Set, isempty(Set.InputSegmentedImage) == 0);
+           Dofs = GetDOFs(Y, Cell, Set, isempty(Set.InputSegmentedImage) == 0);
            %changedYs = find(sum(ismember(tetrahedra_.DataRow, unique(tetsToChange_1)), 2)>2);
-           [Dofs] = updateRemodelingDOFs(Dofs, Cell.RemodelledVertices, newFaces, Y);
-           
+           Dofs = updateRemodelingDOFs(Dofs, Cell.RemodelledVertices, newFaces, Y);
            % Update basal/apical vertices, border vertices, 
-           [Cell,Y,Yn,SCn,X,Dofs,Set,~,DidNotConverge]=SolveRemodelingStep(Cell,Y0,Y,X,Dofs,Set,Yn,SCn,CellInput);
+           [Cell,Y,Yn,SCn,X,Dofs,Set]=SolveRemodelingStep(Cell,Y0,Y,X,Dofs,Set,Yn,SCn,CellInput);
            
        end
-
        Cell.AssembleAll=true;
     end
 end

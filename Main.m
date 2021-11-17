@@ -49,13 +49,14 @@ for numLine = 1:length(tlines)
         continue
     end    
     %% Mesh generation
+    fprintf('Generating geometry\n')
     if isempty(Set.InputSegmentedImage)
         X=Example(Set.Exemple);
         [X, Y0, Y,tetrahedra,XgID,Cell,Cn,~,Yn,SCn,Set] = InitializeGeometry3DVertex(X,Set);
     else
         [X, Y0, Y,tetrahedra,Tetrahedra_weights, XgID,Cell,Cn,~,Yn,SCn,X_IDs, verticesInfo, neighboursNetwork, Set] = InputImage(Set);
     end
-    if Set.VTK, PostProcessingVTK(X,Y,tetrahedra.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),0,Set); end
+    PostProcessingVTK(X,Y,tetrahedra,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),0,Set)
     fprintf('Model Initialized... \n');
 
     %% Initialize Data
@@ -93,9 +94,7 @@ for numLine = 1:length(tlines)
     tr=0;
     Set.nu0=Set.nu;
     Set.MaxIter0=Set.MaxIter;
-
     save(strcat(Set.OutputFolder,Esc,'set.mat'), 'Set');
-
     while t<=Set.tend
         if Set.SaveWorkspace,    save(strcat(Set.OutputFolder,Esc,'Workspace',Esc,['Workspace' num2str(numStep) '.mat'])); end
         %% ----------- Remodel--------------------------------------------------
@@ -116,16 +115,15 @@ for numLine = 1:length(tlines)
         [Set, CellInput] = updateParametersOnTime(t, Set, Cell, CellInput);
         fprintf('Step: %i - cPurseString: %d, cLateralCables: %d\n', numStep, Set.cPurseString, Set.cLateralCables);
         [g,K,Cell]=KgGlobal(Cell, SCn, Y0, Y, Yn, Set, CellInput);
-        %if Set.VTK, PostProcessingVTK(X,Y,tetrahedra.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end    
         %% Newton-raphson iterations 
-        [g,K,Cell, Y, Energy, Set, gr, dyr, dy] = newtonRaphson(Set, Cell, SCn, K, g, Dofs, Y, Y0, Yn, CellInput, numStep, t, 0);
+        [g,K,Cell, Y, Energy, Set, gr, dyr, dy] = newtonRaphson(Set, Cell, SCn, K, g, Dofs, tetrahedra, X, Y, Y0, Yn, CellInput, numStep, t, 0);
         %%
         if gr<Set.tol && dyr<Set.tol && all(isnan(g(Dofs.FreeDofs)) == 0) && all(isnan(dy(Dofs.FreeDofs)) == 0) && Set.nu/Set.nu0 == 1
             fprintf('STEP %i has converged ...\n',Set.iIncr)
             %Update Nodes (X) from Vertices (Y)
             X=GetXFromY(Cell,X,tetrahedra,Y,XgID,Set, Yn, Tetrahedra_weights);
             %% Post processing
-            if Set.VTK, PostProcessingVTK(X,Y,tetrahedra.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end
+            PostProcessingVTK(X,Y,tetrahedra,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set)
             %% Update energies
             [Energies,Energy]=UpdateEnergy(Set,numStep,Energy);
             %% Save for next steps

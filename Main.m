@@ -60,15 +60,8 @@ for numLine = 1:length(tlines)
 
     %% Initialize Data
     [CellInput, Set] = InitializeInput(Cell, Set, Y);
-    % Energy
-    EnergyS=zeros(Set.Nincr,1);  Energy.Es=0;
-    EnergyV=zeros(Set.Nincr,1);  Energy.Ev=0;
-    EnergyF=zeros(Set.Nincr,1);  Energy.Ef=0;
-    Energyb=zeros(Set.Nincr,1);  Energy.Eb=0;
-    EnergyB=zeros(Set.Nincr,1);  Energy.EB=0;
-    EnergyC=zeros(Set.Nincr,1);  Energy.Ec=0;
-    EnergyI=zeros(Set.Nincr,1);  Energy.Ei=0;
-    EnergySub=zeros(Set.Nincr,1);  Energy.Esub=0;
+    % Update Energy and features
+    [Energies,Energy]=UpdateEnergy(Set,0);
     StepSize=zeros(Set.Nincr,1);
     cellFeatures=cell(Set.Nincr, 1);
     woundFeatures=cell(Set.Nincr, 1);
@@ -104,9 +97,7 @@ for numLine = 1:length(tlines)
     save(strcat(Set.OutputFolder,Esc,'set.mat'), 'Set');
 
     while t<=Set.tend
-
         if Set.SaveWorkspace,    save(strcat(Set.OutputFolder,Esc,'Workspace',Esc,['Workspace' num2str(numStep) '.mat'])); end
-
         %% ----------- Remodel--------------------------------------------------
         if Set.Remodelling && Set.ReModel && abs(t-tr)>=Set.RemodelingFrequency
             [Cell,Y,Yn,SCn,tetrahedra,X,Dofs,Cn,Set] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, tetrahedra, X, X_IDs, SCn, XgID, Cn, verticesInfo, neighboursNetwork, Dofs, Set);
@@ -119,13 +110,12 @@ for numLine = 1:length(tlines)
         %   to be repeated
         Yp=Y; Cellp=Cell;
         Set.iIncr=numStep;
-
         %% ----------- Apply Boundary Condition --------------------------------
         [Cell, Y, Dofs] = applyBoundaryCondition(t, Y, Set, Cell, Dofs);
         %% ----------- Compute K, g ---------------------------------------
         [Set, CellInput] = updateParametersOnTime(t, Set, Cell, CellInput);
         fprintf('Step: %i - cPurseString: %d, cLateralCables: %d\n', numStep, Set.cPurseString, Set.cLateralCables);
-        [g,K,Cell,Energy]=KgGlobal(Cell, SCn, Y0, Y, Yn, Set, CellInput);
+        [g,K,Cell]=KgGlobal(Cell, SCn, Y0, Y, Yn, Set, CellInput);
         %if Set.VTK, PostProcessingVTK(X,Y,tetrahedra.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end    
         %% Newton-raphson iterations 
         [g,K,Cell, Y, Energy, Set, gr, dyr, dy] = newtonRaphson(Set, Cell, SCn, K, g, Dofs, Y, Y0, Yn, CellInput, numStep, t, 0);
@@ -137,19 +127,7 @@ for numLine = 1:length(tlines)
             %% Post processing
             if Set.VTK, PostProcessingVTK(X,Y,tetrahedra.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end
             %% Update energies
-            EnergyS(numStep)=Energy.Es;
-            EnergyV(numStep)=Energy.Ev;
-            %EnergyB(numStep)=Energy.EB;
-            if Set.Bending 
-                Energyb(numStep)=Energy.Eb;
-            end
-            EnergyF(numStep)=Energy.Ef;
-            if Set.Contractility && (Set.cPurseString > 0 || Set.cLateralCables > 0)
-                EnergyC(numStep)=Energy.Ec;
-            end
-            if Set.Substrate
-                EnergySub(numStep) = Energy.Esub;
-            end
+            [Energies,Energy]=UpdateEnergy(Set,numStep,Energy);
             %% Save for next steps
             for ii=1:Cell.n
                 Cell.SAreaTrin{ii}=Cell.SAreaTri{ii};

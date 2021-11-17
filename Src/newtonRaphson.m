@@ -1,7 +1,6 @@
 function [g,K,Cell, Y, Energy, Set, gr, dyr, dy] = newtonRaphson(Set, Cell, SCn, K, g, Dofs, Y, Y0, Yn, CellInput, numStep, t, remodelling)
 %NEWTONRAPHSON Summary of this function goes here
 %   Detailed explanation goes here
-
 dy=zeros(Set.NumTotalV*3, 1);
 if remodelling
     dyr=norm(dy(Dofs.Remodel));
@@ -16,7 +15,6 @@ gr0=gr;
 %end
 
 Energy = 0;
-
 Set.iter=1;
 auxgr=zeros(3,1);
 auxgr(1)=gr;

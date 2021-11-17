@@ -4,7 +4,6 @@ function [alreadyPerformedSimulation] = InitiateOutputFolder(Set)
 fclose('all');
 diary off
 R=pwd;
-Set.analysisDir = strcat(Set.OutputFolder,Esc,'Analysis',Esc);
 DirOutput=fullfile(R,Set.OutputFolder);
 if exist(DirOutput, 'dir')
     if Set.batchProcessing
@@ -22,25 +21,20 @@ if exist(DirOutput, 'dir')
         % clean
         aux=fullfile(DirOutput,'LogFile.out');
         if exist(aux, 'file'), delete(aux); end
-        
         aux=fullfile(DirOutput,'Set.mat');
         if exist(aux, 'file'), delete(aux); end
-        
         if exist(fullfile(DirOutput,'ResultVTK'), 'dir')
             aux=fullfile(DirOutput,'ResultVTK');
             rmdir(aux,'s')
-        end
-        
+        end        
         if exist(fullfile(DirOutput,'ResultVTK_iter'), 'dir')
             aux=fullfile(DirOutput,'ResultVTK_iter');
             rmdir(aux,'s')
         end
-        
         if exist(fullfile(DirOutput,'Workspace'), 'dir')
             aux=fullfile(DirOutput,'Workspace');
             rmdir(aux,'s')
         end
-        
         if exist(fullfile(DirOutput, 'Analysis'), 'dir')
             aux=fullfile(DirOutput, 'Analysis');
             rmdir(aux,'s')

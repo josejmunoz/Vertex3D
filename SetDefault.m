@@ -391,6 +391,9 @@ if ~isfield(Set,'OutputFolder') || Set.batchProcessing
                               '_elas_mu_',num2str(Set.mu_bulk),...
                               '_elas_lamb_', num2str(Set.lambda_bulk));
 end
+if ~isfield(Set,'analysisDir') % Directory for analysis data
+    Set.analysisDir = strcat(Set.OutputFolder,Esc,'Analysis',Esc);
+end
 if ~isfield(Set,'SaveWorkspace') % Save Workspace at each time step
     Set.SaveWorkspace=false;   
 end

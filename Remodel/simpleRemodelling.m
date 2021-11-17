@@ -156,10 +156,10 @@ function [Cell,Y,Yn,SCn,tetrahedra_,X,Dofs,Cn,Set] = simpleRemodelling(Cell, Y0,
            tetrahedra_ = tetrahedra_.Add(newTetsModified);
            
            %% REMOVE COMPLETELY THE IDS
-           tetrahedra_ = tetrahedra_.RemoveCompletely(missingTets);
-           Y = Y.RemoveCompletely(missingTets);
-           Y0 = Y0.RemoveCompletely(missingTets);
-           Yn = Yn.RemoveCompletely(missingTets);
+%            tetrahedra_ = tetrahedra_.RemoveCompletely(missingTets);
+%            Y = Y.RemoveCompletely(missingTets);
+%            Y0 = Y0.RemoveCompletely(missingTets);
+%            Yn = Yn.RemoveCompletely(missingTets);
            newVerticesIDs = newVerticesIDs - length(missingTets);
           
           %Remove faces belonging to the cells in the intercalation
@@ -168,19 +168,19 @@ function [Cell,Y,Yn,SCn,tetrahedra_,X,Dofs,Cn,Set] = simpleRemodelling(Cell, Y0,
 %            SCn=SCn.RemoveCompletely(faceToRemove);
 %            Cell.FaceCentres=Cell.FaceCentres.RemoveCompletely(faceToRemove);
            
-           for numCellToChage = nodesToChange'
-               currentFaces = Cell.Faces{numCellToChage};
-               facesToRemove = ismember(currentFaces.FaceCentresID, faceToRemove);
-               currentFaces.FaceCentresID(facesToRemove) = [];
-               currentFaces.Tris(facesToRemove) = [];
-               currentFaces.Vertices(facesToRemove) = [];
-               currentFaces.nFaces = currentFaces.nFaces - sum(facesToRemove);
-               Cell.Faces{numCellToChage} = currentFaces;
-               Cell.cNodes{numCellToChage}(facesToRemove) = [];
-           end
+%            for numCellToChage = nodesToChange'
+%                currentFaces = Cell.Faces{numCellToChage};
+%                facesToRemove = ismember(currentFaces.FaceCentresID, faceToRemove);
+%                currentFaces.FaceCentresID(facesToRemove) = [];
+%                currentFaces.Tris(facesToRemove) = [];
+%                currentFaces.Vertices(facesToRemove) = [];
+%                currentFaces.nFaces = currentFaces.nFaces - sum(facesToRemove);
+%                Cell.Faces{numCellToChage} = currentFaces;
+%                Cell.cNodes{numCellToChage}(facesToRemove) = [];
+%            end
 
            %% Rebuild cells
-           Cell.AssembleNodes=Cell.Int;
+           Cell.AssembleNodes=nodesToChange; %Cell.Int;
            [Cell, newFaces, SCn, flag]=ReBuildCells(Cell, tetrahedra_, Y, X, SCn);
 
            if ~flag

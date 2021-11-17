@@ -60,10 +60,12 @@ fprintf(file,'%s \n','SCALARS TetVol double');
 fprintf(file,'%s \n','LOOKUP_TABLE default');
 
 for j=1:nT1
-    D=[X(T(j,2),:)-X(T(j,1),:);
-       X(T(j,3),:)-X(T(j,1),:);
-       X(T(j,4),:)-X(T(j,1),:)];
-    fprintf(file,'%f\n',det(D));
+    if all(T(j, :) > 0)
+        D=[X(T(j,2),:)-X(T(j,1),:);
+           X(T(j,3),:)-X(T(j,1),:);
+           X(T(j,4),:)-X(T(j,1),:)];
+        fprintf(file,'%f\n',det(D));
+    end
 end
 
 

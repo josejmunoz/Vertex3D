@@ -1,7 +1,7 @@
 % Meaning of parameters is in SetDefault.m
 %
 %% geometry
-Set.e=6;  % Example Number look in Geo\Example.m 
+Set.Exemple=1;  % Example Number look in Geo\Example.m 
 Set.Method=1; % Method for seeding the boundary nodes 
 % Tuning parameters
 Set.s=1.5; % Average cell size 
@@ -37,13 +37,13 @@ Set.RemodelTol=.5e-6;
 Set.RemodelingFrequency=2;
 
 %% time
-tend=300;
+Set.tend=300;
 Set.Nincr=300;
 
 %%  Boundary Displacement 
 Set.BC=1;  %  Stretching
-    Set.VFixd=-1.0;      % Vertices with y coordinate < VFixs will not move
-    Set.VPrescribed=1.0; % Vertices with y coordinate > VPrescribed will have displacement imposed
+    Set.VFixd=-1.5;      % Vertices with y coordinate < VFixs will not move
+    Set.VPrescribed=1.5; % Vertices with y coordinate > VPrescribed will have displacement imposed
     Set.dx=2;         % Incremetnal stretching displcacement on side
     Set.TStartBC=20;  % Time where stretch is initiated
     Set.TStopBC=200;  % Time where stretch is stopped

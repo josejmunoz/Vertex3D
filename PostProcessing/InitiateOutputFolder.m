@@ -1,18 +1,20 @@
-function [alreadyPerformedSimulation] = InitiateOutputFolder(Set, batchProcessing)
+function [alreadyPerformedSimulation] = InitiateOutputFolder(Set)
 % Creates Output Folder and deletes old files if exsit
 
 fclose('all');
 diary off
 R=pwd;
+Set.analysisDir = strcat(Set.OutputFolder,Esc,'Analysis',Esc);
 DirOutput=fullfile(R,Set.OutputFolder);
 if exist(DirOutput, 'dir')
     if Set.batchProcessing
         alreadyPerformedSimulation = 1;
         return
+    elseif Set.OutputRemove
+        answer='y';
     else
         answer=input('Remove everything from output directory?[y]');
-    end
-    
+    end   
     if isempty(answer)
         answer='y';
     end
@@ -47,7 +49,7 @@ if exist(DirOutput, 'dir')
 else
     mkdir(DirOutput);
 end
-
+cpwd=pwd();
 cd(DirOutput);
 if Set.VTK && ~exist('ResultVTK','dir')
     mkdir('ResultVTK')
@@ -65,11 +67,11 @@ if Set.SaveSetting
     save('Set','Set')
 end
 
-if ~exist('Analysis','dir')
+if ~exist(strcat(Esc(),'Analysis'),'dir')
     mkdir('Analysis')
 end
 
-cd '..'
+cd(cpwd)
 
 for numDirs = 1:length(regexpi(Set.OutputFolder, '[\/]'))
     cd '..'

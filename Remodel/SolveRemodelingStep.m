@@ -16,11 +16,11 @@ IncreaseEta=true;
 
 % Copy Global Settings 
 original_nu=Set.nu;
-
-Set.nu0=Set.nu;
-Set.nu=Set.nu_LP_Inital;
-
-Set.MaxIter=Set.MaxIter0/2;
+% 
+% Set.nu0=Set.nu_LP_Inital;
+% Set.nu=Set.nu_LP_Inital;
+% 
+% Set.MaxIter=Set.MaxIter0/2;
 
 while 1
     [g,K,Cell,Energy,gs,gv,gf,gB,gt,gC,gSub]=KgGlobal(Cell, SCn, Y0, Y, Yn, Set, CellInput);

@@ -34,9 +34,6 @@ while (gr>Set.tol || dyr>Set.tol) && Set.iter<Set.MaxIter
 
     [Y, Cell] = updateVertices(Y, Cell, dy_reshaped, Set);
 
-    if Set.nu > Set.nu0 &&  gr<Set.tol
-        Set.nu = max(Set.nu/2, Set.nu0);
-    end
     %% ----------- Compute K, g ---------------------------------------
     try
         [g,K,Cell,Energy]=KgGlobal(Cell, SCn, Y0, Y, Yn, Set, CellInput);
@@ -61,6 +58,14 @@ while (gr>Set.tol || dyr>Set.tol) && Set.iter<Set.MaxIter
     
     if Set.nu > Set.nu0 &&  gr<Set.tol
         Set.nu = max(Set.nu/2, Set.nu0);
+        [g,K,Cell,Energy]=KgGlobal(Cell, SCn, Y0, Y, Yn, Set, CellInput);
+        if remodelling
+            dyr=norm(dy(Dofs.Remodel));
+            gr=norm(g(Dofs.Remodel));
+        else
+            dyr=norm(dy(Dofs.FreeDofs));
+            gr=norm(g(Dofs.FreeDofs));
+        end
     end
     
     %if numStep > -1

@@ -11,6 +11,8 @@ function [Dofs] = updateRemodelingDOFs(Dofs, nV, nC, Y)
             faceDofs=[];
         end 
         Dofs.Remodel=[YDofs faceDofs+Y.n*3];
+        
+        %Dofs.Remodel = setdiff(Dofs.Remodel, Dofs.Debris);
     else
         Dofs.Remodel = [];
     end

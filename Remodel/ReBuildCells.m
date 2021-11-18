@@ -196,4 +196,9 @@ for numCell = Cell.Int(ismember(Cell.Int,Cell.AssembleNodes))
     Cell.nTotalTris=Cell.nTotalTris+size(Cell.Tris{numCell},1);
     
 end
+
+[Cell]=BuildEdges(Cell,Y);
+
+Cell.FaceCentres0 = Cell.FaceCentres0.Add(Cell.FaceCentres.DataRow(nC, :));
+Cell.Tris0(ismember(Cell.Int,Cell.AssembleNodes)) = Cell.Tris(ismember(Cell.Int,Cell.AssembleNodes));
 end

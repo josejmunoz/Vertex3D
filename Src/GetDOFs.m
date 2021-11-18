@@ -1,4 +1,4 @@
-function [Dofs]=GetDOFs(Y, Cell, Set, contrainBorderVertices)
+function [Dofs]=GetDOFs(Y, Cell, Set, contrainBorderVertices, tetrahedra)
 % Define free and constrained vertices:
 %   1) Vertices with y-coordinates > Set.VPrescribed are those to be prescribed (pulled)
 %   2) Vertices with y-coordinates < Set.VFixed are those to be fixed
@@ -9,6 +9,16 @@ IDS=1:Cell.FaceCentres.n;
 IDC=1:Cell.n;
 prescribedBoundary = Set.prescribedBoundary;
 threefoldVertices = cellfun(@(x) length(x) == 3, Cell.AllFaces.Vertices);
+
+if exist('tetrahedra', 'var')
+    verticesDebris = IDY(any(ismember(tetrahedra, find(Cell.DebrisCells)), 2) & ~any(ismember(tetrahedra, find(Cell.DebrisCells == 0)), 2));
+    facesDebris = IDS(any(ismember(Cell.AllFaces.Nodes, find(Cell.DebrisCells)), 2)& ~any(ismember(Cell.AllFaces.Nodes, find(Cell.DebrisCells == 0)), 2));
+    mechNucleiDebris = IDC(Cell.DebrisCells);
+else
+    verticesDebris = [];
+    facesDebris = [];
+    mechNucleiDebris = [];
+end
 
 %% prescribed and constraint vertices 
 pIDY=IDY(Y.DataRow(:,2) > prescribedBoundary & Y.NotEmpty);
@@ -37,6 +47,9 @@ YdofCBorder = 3.*(kron(constrainedBorderIDY,[1 1 1])-1)+kron(ones(1,length(const
 Ydof=1:Y.n*3;
 Ydof([YdofC YdofP YdofCBorder])=[];
 
+% Just in case we need to constrain the Debris Vertices
+Y_Dofs_Debris=3.*(kron(verticesDebris,[1 1 1])-1)+kron(ones(1,length(verticesDebris)),[1 2 3]);
+
 %% prescribed and constraint face centers
 pIDS=IDS(Cell.FaceCentres.DataRow(:,2) > prescribedBoundary & Cell.FaceCentres.NotEmpty);
 cIDS=IDS(Cell.FaceCentres.DataRow(:,2) < Set.VFixd & Cell.FaceCentres.NotEmpty);
@@ -64,6 +77,9 @@ Sdof=1:Cell.FaceCentres.n*3;
 Sdof(unique([SdofC SdofP SdofD SdofCBorder]))=[];
 freeIDS(ismember(freeIDS,[pIDS cIDS SdofCBorder]))=[];
 
+% Faces of Debris
+S_Dofs_Debris = 3.*(kron(facesDebris,[1 1 1])-1)+kron(ones(1,length(facesDebris)),[1 2 3]);
+
 %% 'Mechanical' cell centres
 pIDC=IDC(Cell.Centre > prescribedBoundary);
 cIDC=IDC(Cell.Centre < Set.VFixd);
@@ -87,6 +103,9 @@ CdofCBorder = [];
 Cdof=1:Cell.n*3;
 Cdof([CdofC CdofP CdofCBorder])=[];
 
+% Debris cells:
+C_Dofs_Debris=3.*(kron(mechNucleiDebris,[1 1 1])-1)+kron(ones(1,length(mechNucleiDebris)),[1 2 3]);
+
 %% Final
 Dofs.PrescribedY=pIDY;
 Dofs.PrescribedS=pIDS;
@@ -95,6 +114,7 @@ Dofs.FreeDofs=[Ydof Sdof+Y.n*3 Cdof+Y.n*3+Cell.FaceCentres.n*3];
 Dofs.dofC=[YdofC SdofC+Y.n*3 CdofC+Y.n*3+Cell.FaceCentres.n*3];
 Dofs.dofP=[YdofP SdofP+Y.n*3 CdofP+Y.n*3+Cell.FaceCentres.n*3];
 Dofs.dofCBorder=[YdofCBorder SdofCBorder+Y.n*3];
+Dofs.Debris = [Y_Dofs_Debris S_Dofs_Debris+Y.n*3 C_Dofs_Debris+Y.n*3+Cell.FaceCentres.n*3];
 %% Not used
 Dofs.FreeY=freeIDY;
 Dofs.FreeS=freeIDS;

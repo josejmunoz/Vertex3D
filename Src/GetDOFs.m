@@ -59,6 +59,11 @@ else
     constrainedBorderIDS = [];
 end
 
+allFaces = [Cell.Faces{:}];
+usedIDFaces = unique(vertcat(allFaces.FaceCentresID));
+unusedIDFaces = setdiff(1:max(usedIDFaces), usedIDFaces);
+constrainedBorderIDS = [constrainedBorderIDS, unusedIDFaces];
+
 freeIDS=1:Cell.FaceCentres.n;
 SdofD=3.*(kron(freeIDS(threefoldVertices),[1 1 1])-1)+kron(ones(1,length(freeIDS(threefoldVertices))),[1 2 3]);
 SdofC=3.*(kron(cIDS,[1 1 1])-1)+kron(ones(1,length(cIDS)),[1 2 3]);

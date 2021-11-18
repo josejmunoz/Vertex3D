@@ -13,7 +13,7 @@ Set.kSubstrate = initValues.kSubstrate * (numStep / maxSteps);
 Set.cPurseString = initValues.cPurseString * (numStep / maxSteps);
 Set.cLateralCables = initValues.cLateralCables * (numStep / maxSteps);
 
-Set.nu = initValues.nu * (maxSteps^2);
+Set.nu = initValues.nu * (maxSteps^3);
 Set.nu0 = Set.nu;
 end
 

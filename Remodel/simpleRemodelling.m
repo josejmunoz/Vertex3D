@@ -240,6 +240,10 @@ function [Cell,Y,Yn,SCn,tetrahedra_,X,Dofs,Cn,Set] = simpleRemodelling(Cell, Y0,
            end
        end
        Set = Setp;
+       Set.NumMainV=Y.n;
+       Set.NumAuxV=Cell.FaceCentres.n;
+       Set.NumCellCentroid = Cell.n;
+       Set.NumTotalV=Set.NumMainV + Set.NumAuxV + Set.NumCellCentroid;
        Set.ReModel=true;
        Cell.AssembleAll=true;
        Yn=Y;

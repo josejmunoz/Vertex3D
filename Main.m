@@ -105,11 +105,9 @@ for numLine = 1:length(tlines)
         if Set.SaveWorkspace,    save(strcat(Set.OutputFolder,Esc,'Workspace',Esc,['Workspace' num2str(numStep) '.mat'])); end
 
         % ----------- Remodel--------------------------------------------------
-        if Set.Remodelling && Set.ReModel && abs(t-tr)>=Set.RemodelingFrequency
+        if Set.Remodelling && Set.ReModel
             [Cell,Y,Yn,SCn,tetrahedra,X,Dofs,Cn,Set] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, tetrahedra, X, X_IDs, SCn, XgID, Cn, verticesInfo, neighboursNetwork, Dofs, Set);
             %[Cell,Y,Yn,SCn,tetrahedra,X,Dofs,Cn,Set]=Remodeling(Cell,Y,Yn,SCn,tetrahedra,X,Set,Dofs,Y0,XgID,CellInput);
-            Set.ReModel=false;
-            tr=t;
         end
 
         %   Copy configuration in case the current step does not converge  and need

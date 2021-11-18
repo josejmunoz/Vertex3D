@@ -121,7 +121,7 @@ function [Cell,Y,Yn,SCn,tetrahedra_,X,Dofs,Cn,Set] = simpleRemodelling(Cell, Y0,
            
            tetrahedra(missingTets, :) = repmat([0 0 0 0], length(missingTets), 1);
            tetrahedra_.DataRow(missingTets, :) = repmat([0 0 0 0], length(missingTets), 1);
-           Y.DataRow(missingTets, :) = repmat([-100 -100 -100], length(missingTets), 1);
+           Y.DataRow(missingTets, :) = repmat([-100 -100 -100], length(missingTets), 1); %% these vertices don't affect the mechanics
            tetrahedra(tetrahedra_.n+1:tetrahedra_.n+size(newTetsModified, 1), :) = newTetsModified;
 
            % New nodes
@@ -164,6 +164,7 @@ function [Cell,Y,Yn,SCn,tetrahedra_,X,Dofs,Cn,Set] = simpleRemodelling(Cell, Y0,
           
           %Remove faces belonging to the cells in the intercalation
            faceToRemove = find(any(ismember(Cell.AllFaces.Nodes, unique(newTetsModified)), 2));
+           %Cell.FaceCentres.DataRow(faceToRemove, :) = [-100 -100 -100];
 %            Cell.AllFaces=Cell.AllFaces.RemoveCompletely(faceToRemove);
 %            SCn=SCn.RemoveCompletely(faceToRemove);
 %            Cell.FaceCentres=Cell.FaceCentres.RemoveCompletely(faceToRemove);
@@ -207,15 +208,26 @@ function [Cell,Y,Yn,SCn,tetrahedra_,X,Dofs,Cn,Set] = simpleRemodelling(Cell, Y0,
            if Set.VTK, PostProcessingVTK(X,Y,tetrahedra_.DataRow(1:tetrahedra_.n, :),Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end
            
            %% Solve modelling step with only those vertices
-           Cell.RemodelledVertices=Y.n - length(newTetsModified):Y.n;
+           Cell.RemodelledVertices=find(sum(ismember(tetrahedra_.Data, nodesToChange), 2) > 0);
            
-           [Dofs] = GetDOFs(Y, Cell, Set, isempty(Set.InputSegmentedImage) == 0);
-           %changedYs = find(sum(ismember(tetrahedra_.DataRow, unique(tetsToChange_1)), 2)>2);
+           [Dofs] = GetDOFs(Y, Cell, Set, isempty(Set.InputSegmentedImage) == 0, tetrahedra_.DataRow);
            [Dofs] = updateRemodelingDOFs(Dofs, Cell.RemodelledVertices, newFaces, Y);
            
-           % Update basal/apical vertices, border vertices, 
-           [Cell,Y,Yn,SCn,X,Dofs,Set,~,DidNotConverge]=SolveRemodelingStep(Cell,Y0,Y,X,Dofs,Set,Yn,SCn,CellInput);
+           maxSteps = 5;
+           for numStep = 1:maxSteps
+               [Set] = updateMechanicalParams(Set, Setp, maxSteps, numStep);
+               Cell.Vol0 = Cell.Vol .* ((maxSteps - numStep + 1)/maxSteps) + Cellp.Vol0 .* ((numStep - 1)/maxSteps);
+               Cell.FaceCentres0.DataRow = Cell.FaceCentres.DataRow .* ((maxSteps - numStep + 1)/maxSteps) + Cellp.FaceCentres0.DataRow .* ((numStep - 1)/maxSteps);
+               Cell.Centre0 = Cell.Centre .* ((maxSteps - numStep + 1)/maxSteps) + Cellp.Centre0 .* ((numStep - 1)/maxSteps);
+               Y0.DataRow = Y.DataRow .* ((maxSteps - numStep + 1)/maxSteps) + Y0p.DataRow .* ((numStep - 1)/maxSteps);
+               Yn.DataRow = Y.DataRow .* ((maxSteps - numStep + 1)/maxSteps) + Ynp.DataRow .* ((numStep - 1)/maxSteps);
+               SCn.DataRow = Cell.FaceCentres.DataRow .* ((maxSteps - numStep + 1)/maxSteps) + SCnp.DataRow .* ((numStep - 1)/maxSteps);
+
+               % Update basal/apical vertices, border vertices, 
+               %[Cell,Y,Yn,SCn,X,Dofs,Set,~,DidNotConverge]=SolveRemodelingStep(Cell,Y,Y,X,Dofs,Set,Y,Cell.FaceCentres,CellInput);
+               [Cell,Y,Yn,SCn,X,Dofs,Set,~,DidNotConverge]=SolveRemodelingStep(Cell,Y0,Y,X,Dofs,Set,Yn,SCn,CellInput);
            
+           end
        end
 
        Cell.AssembleAll=true;

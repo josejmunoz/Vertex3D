@@ -205,7 +205,7 @@ function [Cell,Y,Yn,SCn,tetrahedra_,X,Dofs,Cn,Set] = simpleRemodelling(Cell, Y0,
            %changedYs = find(sum(ismember(tetrahedra_.DataRow, unique(tetsToChange_1)), 2)>2);
            Dofs = updateRemodelingDOFs(Dofs, Cell.RemodelledVertices, newFaces, Y);
            % Update basal/apical vertices, border vertices, 
-           [Cell,Y,Yn,SCn,X,Dofs,Set]=SolveRemodelingStep(Cell,Y0,Y,X,Dofs,Set,Yn,SCn,CellInput);
+           [Cell,Y,Yn,SCn,X,Dofs,Set]=SolveRemodelingStep(Cell,tetrahedra_.DataRow(1:tetrahedra_.n, :),Y0,Y,X,Dofs,Set,Yn,Cn,SCn,CellInput);
            
        end
        Cell.AssembleAll=true;

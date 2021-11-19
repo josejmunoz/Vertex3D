@@ -23,26 +23,21 @@ for numCell = 1:ncell
         if ~ismember(Cell.Int(numCell),Cell.AssembleNodes)
             continue
         end
-    end
-    
+    end    
     if Cell.DebrisCells(numCell) %% Is this oK???
         continue;
     end
-    
     if Set.Sparse > 0
         ge=sparse(size(g, 1), 1);
     else
         ge=zeros(size(g, 1), 1);
     end
-    
     cellNuclei = Cell.Centre(numCell, :);
     cellNuclei0 = Cell.Centre0(numCell, :);
-    
     % Loop over Cell-face-triangles
     Tris=Cell.Tris{numCell};
     for ntriangle=1:size(Tris,1)
-        currentTet_ids=[Tris(ntriangle,:) numCell+Set.NumMainV+Set.NumAuxV];
-        
+        currentTet_ids=[Tris(ntriangle,:) numCell+Set.NumMainV+Set.NumAuxV];        
         Y1=Y.DataRow(currentTet_ids(1),:);
         Y0_1 = Y0.DataRow(currentTet_ids(1),:);
         Y2=Y.DataRow(currentTet_ids(2),:);
@@ -58,10 +53,8 @@ for numCell = 1:ncell
         end 
         if ~Cell.AssembleAll && ~any(ismember(currentTet_ids,Cell.RemodelledVertices)) 
             continue
-        end 
-        
+        end  
         currentTet = [Y1; Y2; Y3; cellNuclei];
-        
         currentTet0 = [Y0_1; Y0_2; Y0_3; cellNuclei0];
         
         try

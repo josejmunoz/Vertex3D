@@ -33,8 +33,6 @@ for i=1:ncell
     else
         ge=zeros(size(g, 1), 1);
     end
-    
-    
     % Loop over Cell-face-triangles
     Tris=Cell.Tris{i};
     for t=1:size(Tris,1)

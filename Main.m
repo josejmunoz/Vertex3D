@@ -104,7 +104,6 @@ for numLine = 1:length(tlines)
             Set.ReModel=false;
             tr=t;
         end
-
         %   Copy configuration in case the current step does not converge  and need
         %   to be repeated
         Yp=Y; Cellp=Cell;
@@ -116,7 +115,7 @@ for numLine = 1:length(tlines)
         fprintf('Step: %i - cPurseString: %d, cLateralCables: %d\n', numStep, Set.cPurseString, Set.cLateralCables);
         [g,K,Cell]=KgGlobal(Cell, SCn, Y0, Y, Yn, Set, CellInput);
         %% Newton-raphson iterations 
-        [g,K,Cell, Y, Energy, Set, gr, dyr, dy] = newtonRaphson(Set, Cell, SCn, K, g, Dofs, tetrahedra, X, Y, Y0, Yn, CellInput, numStep, t, 0);
+        [g,K,Cell, Y, Energy, Set, gr, dyr, dy] = newtonRaphson(Set, Cell,Cn, SCn, K, g, Dofs, tetrahedra, X, Y, Y0, Yn, CellInput, numStep, t, 0);
         %%
         if gr<Set.tol && dyr<Set.tol && all(isnan(g(Dofs.FreeDofs)) == 0) && all(isnan(dy(Dofs.FreeDofs)) == 0) && Set.nu/Set.nu0 == 1
             fprintf('STEP %i has converged ...\n',Set.iIncr)

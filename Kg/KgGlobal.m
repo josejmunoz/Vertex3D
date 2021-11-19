@@ -36,8 +36,6 @@ if nargout>1
     end
     
     % Viscous Forces ----------------------------------------------------------
-
-    
     if Set.Sparse > 0
         Kf=(Set.nu/Set.dt).*sparse(eye(size(Kv)));
         gf=(Set.nu/Set.dt).*sparse(y-yn);
@@ -63,13 +61,10 @@ if nargout>1
         [gft,Kft,~,~]=KgLocalViscosityTriangleBased(Cell,Y,Set);
         
         K=K+Kft; g=g+gft;
-    end
-    
-    
+    end  
     %% In plane elasticity (tetrahedra)
     if Set.InPlaneElasticity
-        [gt, Kt, Cell, Energy.EBulk] = KgBulk(Cell, Y, Y0, Set);
-        
+        [gt, Kt, Cell, Energy.EBulk] = KgBulk(Cell, Y, Y0, Set); 
         K = K + Kt;
         g = g + gt;
     end

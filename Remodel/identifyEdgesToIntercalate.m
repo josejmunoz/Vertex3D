@@ -1,4 +1,4 @@
-function [remodellingCells, apicalLengths,basalLengths] = identifyEdgesToIntercalate(Cell, tetrahedra)
+function [remodellingCells, apicalLengths,basalLengths] = identifyEdgesToIntercalate(Cell, tetrahedra, Set)
 %IDENTIFYEDGESTOINTERCALATE Summary of this function goes here
 %   Detailed explanation goes here
     remodellingCells = [];

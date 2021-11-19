@@ -5,7 +5,7 @@ function [Cell,Y0, Y,Yn,SCn,tetrahedra_,X,Dofs,Cn, Tetrahedra_weights, Set] = si
     tetrahedra = tetrahedra_.DataRow;
 
     %% Identify if any edge is shorter than it should
-    [remodellingCells, apicalLengths,basalLengths] = identifyEdgesToIntercalate(Cell, tetrahedra);
+    [remodellingCells, apicalLengths,basalLengths] = identifyEdgesToIntercalate(Cell, tetrahedra, Set);
     
     while isempty(remodellingCells) == 0
        

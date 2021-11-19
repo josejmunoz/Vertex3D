@@ -87,7 +87,7 @@ for numLine = 1:length(tlines)
             Set.WallPosition=Set.WallPosition-Set.dx/((Set.TStopBC-Set.TStartBC)/Set.dt);
             Set.prescribedBoundary = Set.WallPosition;
         end
-        [Dofs] = GetDOFs(Y,Cell,Set, isempty(Set.InputSegmentedImage) == 0);
+        [Dofs] = GetDOFs(Y,Cell,Set, isempty(Set.InputSegmentedImage) == 0, tetrahedra);
     else
         error('Invalid Input in Set.BC and Set.Substrate. \n')
     end
@@ -106,7 +106,7 @@ for numLine = 1:length(tlines)
 
         % ----------- Remodel--------------------------------------------------
         if Set.Remodelling && Set.ReModel
-            [Cell,Y0,Y,Yn,SCn,tetrahedra,X,Dofs,Cn,Set] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, tetrahedra, X, X_IDs, SCn, XgID, Cn, verticesInfo, neighboursNetwork, Dofs, Set);
+            [Cell,Y0,Y,Yn,SCn,tetrahedra,X,Dofs,Cn,Tetrahedra_weights,Set] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, tetrahedra, X, X_IDs, SCn, XgID, Cn, verticesInfo, neighboursNetwork, Dofs, Tetrahedra_weights, Set);
             %[Cell,Y,Yn,SCn,tetrahedra,X,Dofs,Cn,Set]=Remodeling(Cell,Y,Yn,SCn,tetrahedra,X,Set,Dofs,Y0,XgID,CellInput);
         end
 

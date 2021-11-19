@@ -1,4 +1,4 @@
-function [Cell,Y0, Y,Yn,SCn,tetrahedra_,X,Dofs,Cn,Set] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, tetrahedra_, X, X_IDs, SCn, XgID, Cn, verticesInfo, neighboursNetwork, Dofs, Set)
+function [Cell,Y0, Y,Yn,SCn,tetrahedra_,X,Dofs,Cn, Tetrahedra_weights, Set] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, tetrahedra_, X, X_IDs, SCn, XgID, Cn, verticesInfo, neighboursNetwork, Dofs, Tetrahedra_weights, Set)
 %SIMPLEREMODELLING Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -143,6 +143,7 @@ function [Cell,Y0, Y,Yn,SCn,tetrahedra_,X,Dofs,Cn,Set] = simpleRemodelling(Cell,
                    previousIdTet = withoutCorrespondanceIds(sum(ismember(tetrahedra_p(withoutCorrespondanceIds, :), tetrahedra(numTetrahedron, :)), 2) > 1);
                else
                    previousIdTet = missingTets(correspondancePreviousNewTets{numPrev});
+                   
                end
                oldTetCoords = mean(Yp.DataRow(previousIdTet, :), 1);
                newCoords = mean(X(tetrahedra(numTetrahedron, :), 1:3));
@@ -151,9 +152,13 @@ function [Cell,Y0, Y,Yn,SCn,tetrahedra_,X,Dofs,Cn,Set] = simpleRemodelling(Cell,
                Y = Y.Add(newCoords);
                Y0 = Y0.Add(newCoords);
                Yn = Yn.Add(newCoords);
+               Tetrahedra_weights(end+1, :) = mean(Tetrahedra_weights(previousIdTet, :), 1);
                numPrev = numPrev + 1;
            end
            tetrahedra_ = tetrahedra_.Add(newTetsModified);
+           
+           
+           Tetrahedra_weights(missingTets, :) = repmat([0 0 0], length(missingTets), 1);
 
            %% Rebuild cells
            Cell.AssembleNodes=nodesToChange; %Cell.Int;

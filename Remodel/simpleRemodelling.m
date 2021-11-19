@@ -5,52 +5,20 @@ function [Cell,Y0, Y,Yn,SCn,tetrahedra_,X,Dofs,Cn, Tetrahedra_weights, Set] = si
     tetrahedra = tetrahedra_.DataRow;
 
     %% Identify if any edge is shorter than it should
-    remodellingCells = [];
-    apicalLengths = {};
-    basalLengths = {};
-    for numCell = find(Cell.DebrisCells == 0)'
-        currentEdgeVertices = Cell.Cv{numCell};
-        
-        trianglesArea = Cell.SAreaTri{numCell};
-        apicalFaceCentres = abs(Cell.ApicalVertices{numCell}(Cell.ApicalVertices{numCell} < 0));
-        apicalTriangles = all(ismember(Cell.Tris{numCell}(:, 1:2), Cell.ApicalVertices{numCell}), 2) & ismember(Cell.Tris{numCell}(:, 3), apicalFaceCentres);
-        apicalArea = sum(trianglesArea(apicalTriangles));
-        
-        basalFaceCentres = abs(Cell.BasalVertices{numCell}(Cell.BasalVertices{numCell} < 0));
-        basalTriangles = all(ismember(Cell.Tris{numCell}(:, 1:2), Cell.BasalVertices{numCell}), 2) & ismember(Cell.Tris{numCell}(:, 3), basalFaceCentres);
-        basalArea = sum(trianglesArea(basalTriangles));
-        
-        neighbours3D = unique(tetrahedra(any(ismember(tetrahedra, numCell), 2), :));
-        neighbours3D = neighbours3D(ismember(neighbours3D, Cell.Int));
-        neighbours3D(neighbours3D == numCell) = [];
-        apicalEdgeLength = [];
-        basalEdgeLength = [];
-        for neighbourCell = neighbours3D'
-            if neighbourCell == numCell
-                continue
-            end
-            neighbourWoundEdges = vertcat(Cell.Cv{neighbourCell});
-            idShareEdges = ismember(sort(currentEdgeVertices, 2), sort(neighbourWoundEdges, 2), 'rows');
-            %% Apical edge
-            apicalEdgeLength(end+1) = apicalArea / sum(Cell.EdgeLengths{numCell}(idShareEdges & Cell.EdgeLocation{numCell} == 3));
-            %% Basal edge
-            basalEdgeLength(end+1) = basalArea / sum(Cell.EdgeLengths{numCell}(idShareEdges & Cell.EdgeLocation{numCell} == 2));
-            
-            if basalEdgeLength(end) > Set.MinEdgeLength || apicalEdgeLength(end) > Set.MinEdgeLength
-                remodellingCells(end+1, 1:4) = [numCell, neighbourCell, apicalEdgeLength(end), basalEdgeLength(end)];
-            end
-        end
-        apicalLengths{numCell} = apicalEdgeLength;
-        basalLengths{numCell} = basalEdgeLength;
-    end
+    [remodellingCells, apicalLengths,basalLengths] = identifyEdgesToIntercalate(Cell, tetrahedra);
     
-    if isempty(remodellingCells) == 0
+    while isempty(remodellingCells) == 0
+       
+       [smallestEdge, idEdges] = max(remodellingCells(:, 3:4));
+       [~, idSmallestEdge] = max(smallestEdge);
+       remodellingCells = remodellingCells(idEdges(idSmallestEdge), :);
+       
        %% Intercalate whole cell in 3D: both cells do not share a face anymore 
        for numIntercalation = 1:size(remodellingCells, 1)
            tetrahedra_p = tetrahedra;
            Cellp = Cell; Setp = Set; CellInputp = CellInput;
            Yp = Y; SCnp = SCn; Y0p = Y0; Ynp = Yn;
-           currentIntercalation = remodellingCells(numIntercalation, :); % Face to remove
+           currentIntercalation = remodellingCells(numIntercalation, 1:2); % Face to remove
            tetsToChange = tetrahedra(sum(ismember(tetrahedra, currentIntercalation), 2) >=2, :);
            verticesToChange = unique(tetsToChange);
            nodesToChange = verticesToChange(ismember(verticesToChange, Cell.Int));
@@ -156,8 +124,6 @@ function [Cell,Y0, Y,Yn,SCn,tetrahedra_,X,Dofs,Cn, Tetrahedra_weights, Set] = si
                numPrev = numPrev + 1;
            end
            tetrahedra_ = tetrahedra_.Add(newTetsModified);
-           
-           
            Tetrahedra_weights(missingTets, :) = repmat([0 0 0], length(missingTets), 1);
 
            %% Rebuild cells
@@ -189,10 +155,8 @@ function [Cell,Y0, Y,Yn,SCn,tetrahedra_,X,Dofs,Cn, Tetrahedra_weights, Set] = si
                %% ERROR
                error('Error rebuilding cells at remodelling');
            end
-                   
-           [g,K,Cell,Energy]=KgGlobal(Cell, SCn, Y0, Y, Yn, Set, CellInput);
 
-           %if Set.VTK, PostProcessingVTK(X,Y,tetrahedra_.DataRow(1:tetrahedra_.n, :),Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end
+           if Set.VTK, PostProcessingVTK(X,Y,tetrahedra_.DataRow(1:tetrahedra_.n, :),Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end
            
            %% Solve modelling step with only those vertices
            Cell.RemodelledVertices=find(sum(ismember(tetrahedra_.Data, nodesToChange), 2) > 0);
@@ -202,7 +166,7 @@ function [Cell,Y0, Y,Yn,SCn,tetrahedra_,X,Dofs,Cn, Tetrahedra_weights, Set] = si
            [Dofs] = GetDOFs(Y, Cell, Set, isempty(Set.InputSegmentedImage) == 0, tetrahedra_.DataRow);
            [Dofs] = updateRemodelingDOFs(Dofs, Cell.RemodelledVertices, remodelledFaces, Y);
            
-           maxSteps = 2;
+           maxSteps = 3;
            Y0.DataRow(Cell.RemodelledVertices, :) = Y.DataRow(Cell.RemodelledVertices, :);
            Cell.FaceCentres0.DataRow(remodelledFaces, :) = Cell.FaceCentres.DataRow(remodelledFaces, :);
            SCn = Cell.FaceCentres;               
@@ -216,20 +180,21 @@ function [Cell,Y0, Y,Yn,SCn,tetrahedra_,X,Dofs,Cn, Tetrahedra_weights, Set] = si
                %if Set.VTK, PostProcessingVTK(X,Y,tetrahedra_.DataRow(1:tetrahedra_.n, :),Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr+numStep,Set); end
                
                Set.MaxIter=Set.MaxIter0;
-               Set.ReModel=false;
                Set.ApplyBC=true;
            end
+           Set = Setp;
+           Yn=Y;
+           SCn=Cell.FaceCentres;
+           Set.NumMainV=Y.n;
+           Set.NumAuxV=Cell.FaceCentres.n;
+           Set.NumCellCentroid = Cell.n;
+           Set.NumTotalV=Set.NumMainV + Set.NumAuxV + Set.NumCellCentroid;
+           Cell.Centre_n = Cell.Centre;
+           
+           [remodellingCells, apicalLengths,basalLengths] = identifyEdgesToIntercalate(Cell, tetrahedra);
        end
-       Set = Setp;
-       Set.NumMainV=Y.n;
-       Set.NumAuxV=Cell.FaceCentres.n;
-       Set.NumCellCentroid = Cell.n;
-       Set.NumTotalV=Set.NumMainV + Set.NumAuxV + Set.NumCellCentroid;
-       Set.ReModel=true;
-       Cell.AssembleAll=true;
-       Yn=Y;
-       SCn=Cell.FaceCentres;         
-       Cell.Centre_n = Cell.Centre;
+       Set.ReModel=false;
+       Cell.AssembleAll=true;        
        if Set.VTK, PostProcessingVTK(X,Y,tetrahedra_.DataRow(1:tetrahedra_.n, :),Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end    
     end
 end

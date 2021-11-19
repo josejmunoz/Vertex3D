@@ -191,7 +191,7 @@ function [Cell,Y0, Y,Yn,SCn,tetrahedra_,X,Dofs,Cn, Tetrahedra_weights, Set] = si
            Set.NumTotalV=Set.NumMainV + Set.NumAuxV + Set.NumCellCentroid;
            Cell.Centre_n = Cell.Centre;
            
-           [remodellingCells, apicalLengths,basalLengths] = identifyEdgesToIntercalate(Cell, tetrahedra);
+           [remodellingCells, apicalLengths,basalLengths] = identifyEdgesToIntercalate(Cell, tetrahedra, Set);
        end
        Set.ReModel=false;
        Cell.AssembleAll=true;        

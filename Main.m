@@ -87,7 +87,7 @@ for numLine = 1:length(tlines)
             Set.WallPosition=Set.WallPosition-Set.dx/((Set.TStopBC-Set.TStartBC)/Set.dt);
             Set.prescribedBoundary = Set.WallPosition;
         end
-        [Dofs] = GetDOFs(Y,Cell,Set, isempty(Set.InputSegmentedImage) == 0, tetrahedra);
+        [Dofs] = GetDOFs(Y,Cell,Set, isempty(Set.InputSegmentedImage) == 0, tetrahedra.DataRow);
     else
         error('Invalid Input in Set.BC and Set.Substrate. \n')
     end

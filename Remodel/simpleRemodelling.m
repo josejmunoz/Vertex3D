@@ -37,7 +37,7 @@ function [Cell,Y0, Y,Yn,SCn,tetrahedra_,X,Dofs,Cn, Tetrahedra_weights, Set] = si
             basalEdgeLength(end+1) = basalArea / sum(Cell.EdgeLengths{numCell}(idShareEdges & Cell.EdgeLocation{numCell} == 2));
             
             if basalEdgeLength(end) > Set.MinEdgeLength || apicalEdgeLength(end) > Set.MinEdgeLength
-                remodellingCells(end+1, 1:2) = [numCell, neighbourCell];
+                remodellingCells(end+1, 1:4) = [numCell, neighbourCell, apicalEdgeLength(end), basalEdgeLength(end)];
             end
         end
         apicalLengths{numCell} = apicalEdgeLength;

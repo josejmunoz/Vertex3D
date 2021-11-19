@@ -21,8 +21,9 @@ else
 end
 
 %% prescribed and constraint vertices 
-pIDY=IDY(Y.DataRow(:,2) > prescribedBoundary & Y.NotEmpty);
-cIDY=IDY(Y.DataRow(:,2) < Set.VFixd & Y.NotEmpty);
+emptyVertices = ismember(tetrahedra, [0 0 0 0], 'rows');
+pIDY=IDY(Y.DataRow(:,2) > prescribedBoundary & Y.NotEmpty & ~emptyVertices);
+cIDY=IDY(Y.DataRow(:,2) < Set.VFixd & Y.NotEmpty & ~emptyVertices);
 if contrainBorderVertices
     constrainedBorderIDY = Cell.BorderVertices(Cell.BorderVertices>0)';
 else
@@ -51,8 +52,13 @@ Ydof([YdofC YdofP YdofCBorder])=[];
 Y_Dofs_Debris=3.*(kron(verticesDebris,[1 1 1])-1)+kron(ones(1,length(verticesDebris)),[1 2 3]);
 
 %% prescribed and constraint face centers
-pIDS=IDS(Cell.FaceCentres.DataRow(:,2) > prescribedBoundary & Cell.FaceCentres.NotEmpty);
-cIDS=IDS(Cell.FaceCentres.DataRow(:,2) < Set.VFixd & Cell.FaceCentres.NotEmpty);
+allFaces = [Cell.Faces{:}];
+usedIDFaces = unique(vertcat(allFaces.FaceCentresID));
+unusedIDFaces = ones(size(Cell.FaceCentres.DataRow, 1), 1);
+unusedIDFaces(ismember(1:max(usedIDFaces), usedIDFaces)) = 0;
+
+pIDS=IDS(Cell.FaceCentres.DataRow(:,2) > prescribedBoundary & Cell.FaceCentres.NotEmpty & unusedIDFaces == 0);
+cIDS=IDS(Cell.FaceCentres.DataRow(:,2) < Set.VFixd & Cell.FaceCentres.NotEmpty & unusedIDFaces == 0);
 if contrainBorderVertices
     constrainedBorderIDS = abs(Cell.BorderVertices(Cell.BorderVertices<0))';
 else

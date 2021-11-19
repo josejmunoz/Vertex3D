@@ -98,7 +98,7 @@ Set.cLateralCables = 0.33;
 Set.batchProcessing = 0;
 Set.diary = true;
 Set.MaxIter = 400;
-Set.tol=1e-10;
+Set.tol=1e-8;
 Set.Parallel = false;
 Set.Sparse = 1; %0: No sparse
                     %1: Sparse matlab

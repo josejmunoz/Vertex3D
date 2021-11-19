@@ -1,4 +1,4 @@
-function [Cell,Y,Yn,SCn,tetrahedra_,X,Dofs,Cn,Set] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, tetrahedra_, X, X_IDs, SCn, XgID, Cn, verticesInfo, neighboursNetwork, Dofs, Set)
+function [Cell,Y0, Y,Yn,SCn,tetrahedra_,X,Dofs,Cn,Set] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, tetrahedra_, X, X_IDs, SCn, XgID, Cn, verticesInfo, neighboursNetwork, Dofs, Set)
 %SIMPLEREMODELLING Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -154,30 +154,6 @@ function [Cell,Y,Yn,SCn,tetrahedra_,X,Dofs,Cn,Set] = simpleRemodelling(Cell, Y0,
                numPrev = numPrev + 1;
            end
            tetrahedra_ = tetrahedra_.Add(newTetsModified);
-           
-           %% REMOVE COMPLETELY THE IDS
-%            tetrahedra_ = tetrahedra_.RemoveCompletely(missingTets);
-%            Y = Y.RemoveCompletely(missingTets);
-%            Y0 = Y0.RemoveCompletely(missingTets);
-%            Yn = Yn.RemoveCompletely(missingTets);
-          
-          %Remove faces belonging to the cells in the intercalation
-           changedFaces = find(any(ismember(Cell.AllFaces.Nodes, unique(newTetsModified)), 2));
-           %Cell.FaceCentres.DataRow(faceToRemove, :) = [-100 -100 -100];
-%            Cell.AllFaces=Cell.AllFaces.RemoveCompletely(faceToRemove);
-%            SCn=SCn.RemoveCompletely(faceToRemove);
-%            Cell.FaceCentres=Cell.FaceCentres.RemoveCompletely(faceToRemove);
-           
-%            for numCellToChage = nodesToChange'
-%                currentFaces = Cell.Faces{numCellToChage};
-%                facesToRemove = ismember(currentFaces.FaceCentresID, faceToRemove);
-%                currentFaces.FaceCentresID(facesToRemove) = [];
-%                currentFaces.Tris(facesToRemove) = [];
-%                currentFaces.Vertices(facesToRemove) = [];
-%                currentFaces.nFaces = currentFaces.nFaces - sum(facesToRemove);
-%                Cell.Faces{numCellToChage} = currentFaces;
-%                Cell.cNodes{numCellToChage}(facesToRemove) = [];
-%            end
 
            %% Rebuild cells
            Cell.AssembleNodes=nodesToChange; %Cell.Int;

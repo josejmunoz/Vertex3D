@@ -106,7 +106,7 @@ for numLine = 1:length(tlines)
 
         % ----------- Remodel--------------------------------------------------
         if Set.Remodelling && Set.ReModel
-            [Cell,Y,Yn,SCn,tetrahedra,X,Dofs,Cn,Set] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, tetrahedra, X, X_IDs, SCn, XgID, Cn, verticesInfo, neighboursNetwork, Dofs, Set);
+            [Cell,Y0,Y,Yn,SCn,tetrahedra,X,Dofs,Cn,Set] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, tetrahedra, X, X_IDs, SCn, XgID, Cn, verticesInfo, neighboursNetwork, Dofs, Set);
             %[Cell,Y,Yn,SCn,tetrahedra,X,Dofs,Cn,Set]=Remodeling(Cell,Y,Yn,SCn,tetrahedra,X,Set,Dofs,Y0,XgID,CellInput);
         end
 

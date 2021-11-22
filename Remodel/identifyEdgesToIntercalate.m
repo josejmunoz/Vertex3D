@@ -33,7 +33,12 @@ function [remodellingCells, apicalLengths,basalLengths] = identifyEdgesToInterca
             basalEdgeLength(end+1) = basalArea / sum(Cell.EdgeLengths{numCell}(idShareEdges & Cell.EdgeLocation{numCell} == 2));
             
             if basalEdgeLength(end) > Set.MinEdgeLength || apicalEdgeLength(end) > Set.MinEdgeLength
-                remodellingCells(end+1, 1:4) = [numCell, neighbourCell, apicalEdgeLength(end), basalEdgeLength(end)];
+                tetsToChange = tetrahedra(sum(ismember(tetrahedra, [numCell neighbourCell]), 2) >=2, :);
+                verticesToChange = unique(tetsToChange);
+                nodesToChange = verticesToChange(ismember(verticesToChange, Cell.Int));
+                if sum(ismember(nodesToChange, find(Cell.DebrisCells))) <= 1
+                    remodellingCells(end+1, 1:4) = [numCell, neighbourCell, apicalEdgeLength(end), basalEdgeLength(end)];
+                end
             end
         end
         apicalLengths{numCell} = apicalEdgeLength;

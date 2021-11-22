@@ -1,4 +1,4 @@
-function [Cell,Y0, Y,Yn,SCn,tetrahedra_,X,Dofs,Cn, Tetrahedra_weights, Set] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, tetrahedra_, X, X_IDs, SCn, XgID, Cn, verticesInfo, neighboursNetwork, Dofs, Tetrahedra_weights, Set)
+function [Cell,Y0, Y,Yn,SCn,tetrahedra_,X,Dofs,Cn, Tetrahedra_weights, Set, verticesInfo, neighboursNetwork] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, tetrahedra_, X, X_IDs, SCn, XgID, Cn, verticesInfo, neighboursNetwork, Dofs, Tetrahedra_weights, Set)
 %SIMPLEREMODELLING Summary of this function goes here
 %   Detailed explanation goes here
 

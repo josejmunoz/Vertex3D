@@ -42,7 +42,7 @@ while 1
         IncreaseEta=false;
     elseif gr>Set.tol || dyr>Set.tol || any(isnan(g(Dofs.FreeDofs))) || any(isnan(dy(Dofs.FreeDofs))) || Set.nu/Set.nu0 ~=1
         % this should not take place
-        fprintf('Local Problem did not converge after %i iterations.\n',Set.iter);
+        error('Local Problem did not converge after %i iterations.\n',Set.iter);
         Set.MaxIter=Set.MaxIter0;
         DidNotConverge=true;
         Set.nu=original_nu;

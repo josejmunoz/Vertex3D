@@ -3,6 +3,8 @@ function [Cell,Y0, Y,Yn,SCn,tetrahedra_,X,Dofs,Cn, Tetrahedra_weights, Set, vert
 %   Detailed explanation goes here
 
     tetrahedra = tetrahedra_.DataRow;
+    allVerticesRemodelled = [];
+    allFacesRemodelled = [];
 
     %% Identify if any edge is shorter than it should
     [remodellingCells, apicalLengths,basalLengths] = identifyEdgesToIntercalate(Cell, tetrahedra, Set);
@@ -34,7 +36,7 @@ function [Cell,Y0, Y,Yn,SCn,tetrahedra_,X,Dofs,Cn, Tetrahedra_weights, Set, vert
            trianglesConnectivity_all = verticesInfo.connectedCells;
            trianglesConnectivity_all(all(ismember(trianglesConnectivity_all, nodesToChange), 2), :) = sort([repmat(newConnectedNodes', 2, 1), currentIntercalation'], 2);
            neighboursNetwork(all(ismember(neighboursNetwork, currentIntercalation), 2), :) = [newConnectedNodes(1) newConnectedNodes(2); newConnectedNodes(2) newConnectedNodes(1)];
-           
+           verticesInfo.connectedCells = trianglesConnectivity_all;
            % Remove vertices from edges
            vertices2DToChange = find(all(ismember(trianglesConnectivity_all, nodesToChange), 2));
            verticesConnectedToCells = [currentIntercalation(2) currentIntercalation(1)]; %% IT SHOULD BE DIFFERENT ORDER AS IN THE TRIANGULATION
@@ -75,7 +77,6 @@ function [Cell,Y0, Y,Yn,SCn,tetrahedra_,X,Dofs,Cn, Tetrahedra_weights, Set, vert
                verticesInfo.edges{numCellOriginal} = [verticesInfo.edges{numCellOriginal}(1:edgeToSplit-1, :); ...
                       newEdges; verticesInfo.edges{numCellOriginal}(edgeToSplit+1:end, :)];
            end
-           verticesInfo.connectedCells = trianglesConnectivity_all;
            
            [Twg_bottom] = createTetrahedra(trianglesConnectivity_all, neighboursNetwork, verticesInfo.edges, Cell.Int', X_IDs.bottomFaceIds, X_IDs.bottomVerticesIds);
            [Twg_top] = createTetrahedra(trianglesConnectivity_all, neighboursNetwork, verticesInfo.edges, Cell.Int', X_IDs.topFaceIds, X_IDs.topVerticesIds);
@@ -141,6 +142,7 @@ function [Cell,Y0, Y,Yn,SCn,tetrahedra_,X,Dofs,Cn, Tetrahedra_weights, Set, vert
                Cell.AllFaces=Cell.AllFaces.CheckInteriorFaces(XgID);
                [Cell]=ComputeCellVolume(Cell,Y);
                Cell = Cell.computeEdgeLengths(Y);
+               [Cell] = Cell.computeEdgeLocation(Y);
                for jj=1:Cell.n
                    Cell.SAreaTrin{jj}=Cell.SAreaTri{jj};
                    Cell.EdgeLengthsn{jj}=Cell.EdgeLengths{jj};
@@ -159,39 +161,52 @@ function [Cell,Y0, Y,Yn,SCn,tetrahedra_,X,Dofs,Cn, Tetrahedra_weights, Set, vert
            if Set.VTK, PostProcessingVTK(X,Y,tetrahedra_.DataRow(1:tetrahedra_.n, :),Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end
            
            %% Solve modelling step with only those vertices
-           Cell.RemodelledVertices=find(sum(ismember(tetrahedra_.Data, nodesToChange), 2) > 0);
-           changedFaces = find(any(ismember(Cell.AllFaces.Nodes, nodesToChange), 2));
-           remodelledFaces = setdiff([newFaces changedFaces'], unusedIDFaces);
-           
-           [Dofs] = GetDOFs(Y, Cell, Set, isempty(Set.InputSegmentedImage) == 0, tetrahedra_.DataRow);
-           [Dofs] = updateRemodelingDOFs(Dofs, Cell.RemodelledVertices, remodelledFaces, Y);
-           
-           maxSteps = 3;
-           Y0.DataRow(Cell.RemodelledVertices, :) = Y.DataRow(Cell.RemodelledVertices, :);
-           Cell.FaceCentres0.DataRow(remodelledFaces, :) = Cell.FaceCentres.DataRow(remodelledFaces, :);
-           SCn = Cell.FaceCentres;               
-           Cell.Centre_n = Cell.Centre;
-           for numStep = 1:maxSteps
-               [Set] = updateMechanicalParams(Set, Setp, maxSteps, numStep);
-               %Cell.Vol0 = Cell.Vol .* ((maxSteps - numStep + 1)/maxSteps) + Cellp.Vol0 .* ((numStep - 1)/maxSteps);
-               %Cell.Centre0 = Cell.Centre .* ((maxSteps - numStep + 1)/maxSteps) + Cellp.Centre0 .* ((numStep - 1)/maxSteps);
-               [Cell,Y,Yn,SCn,X,Dofs,Set,~,DidNotConverge]=SolveRemodelingStep(Cell,Y0,Y,X,Dofs,Set,Yn,SCn,CellInput);
-               
-               %if Set.VTK, PostProcessingVTK(X,Y,tetrahedra_.DataRow(1:tetrahedra_.n, :),Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr+numStep,Set); end
-               
-               Set.MaxIter=Set.MaxIter0;
-               Set.ApplyBC=true;
-           end
-           Set = Setp;
-           Yn=Y;
-           SCn=Cell.FaceCentres;
-           Set.NumMainV=Y.n;
-           Set.NumAuxV=Cell.FaceCentres.n;
-           Set.NumCellCentroid = Cell.n;
-           Set.NumTotalV=Set.NumMainV + Set.NumAuxV + Set.NumCellCentroid;
-           Cell.Centre_n = Cell.Centre;
+           allVerticesRemodelled{end+1} = nodesToChange;
+           allFacesRemodelled{end+1} = newFaces;
            
            [remodellingCells, apicalLengths,basalLengths] = identifyEdgesToIntercalate(Cell, tetrahedra, Set);
+           
+           if isempty(remodellingCells) == 0
+               invalidRemodellingCells = cellfun(@(x) find(sum(ismember(remodellingCells(:, 1:2), x), 2) == 2)', allVerticesRemodelled, 'UniformOutput', false);
+               invalidRemodellingCells = unique([invalidRemodellingCells{:}]);
+               remodellingCells(invalidRemodellingCells, :) = [];
+           end
+           if isempty(remodellingCells)
+               %if Set.VTK, PostProcessingVTK(X,Y,tetrahedra_.DataRow(1:tetrahedra_.n, :),Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr+1,Set); end
+               nodesToChange = unique([allVerticesRemodelled{:}]);
+               newFaces = unique([allFacesRemodelled{:}]);
+               Cell.RemodelledVertices=find(sum(ismember(tetrahedra_.Data, nodesToChange), 2) > 0);
+               changedFaces = find(any(ismember(Cell.AllFaces.Nodes, nodesToChange), 2));
+               remodelledFaces = setdiff([newFaces changedFaces'], unusedIDFaces);
+
+               [Dofs] = GetDOFs(Y, Cell, Set, isempty(Set.InputSegmentedImage) == 0, tetrahedra_.DataRow);
+               [Dofs] = updateRemodelingDOFs(Dofs, Cell.RemodelledVertices, remodelledFaces, Y);
+
+               maxSteps = 3;
+               Y0.DataRow(Cell.RemodelledVertices, :) = Y.DataRow(Cell.RemodelledVertices, :);
+               Cell.FaceCentres0.DataRow(remodelledFaces, :) = Cell.FaceCentres.DataRow(remodelledFaces, :);
+               SCn = Cell.FaceCentres;               
+               Cell.Centre_n = Cell.Centre;
+               for numStep = 1:maxSteps-1
+                   [Set] = updateMechanicalParams(Set, Setp, maxSteps, numStep);
+                   %Cell.Vol0 = Cell.Vol .* ((maxSteps - numStep + 1)/maxSteps) + Cellp.Vol0 .* ((numStep - 1)/maxSteps);
+                   %Cell.Centre0 = Cell.Centre .* ((maxSteps - numStep + 1)/maxSteps) + Cellp.Centre0 .* ((numStep - 1)/maxSteps);
+                   [Cell,Y,Yn,SCn,X,Dofs,Set,~,DidNotConverge]=SolveRemodelingStep(Cell,Y0,Y,X,Dofs,Set,Yn,SCn,CellInput);
+
+                   %if Set.VTK, PostProcessingVTK(X,Y,tetrahedra_.DataRow(1:tetrahedra_.n, :),Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr+numStep,Set); end
+
+                   Set.MaxIter=Set.MaxIter0;
+                   Set.ApplyBC=true;
+               end
+               Set = Setp;
+               Yn=Y;
+               SCn=Cell.FaceCentres;
+               Set.NumMainV=Y.n;
+               Set.NumAuxV=Cell.FaceCentres.n;
+               Set.NumCellCentroid = Cell.n;
+               Set.NumTotalV=Set.NumMainV + Set.NumAuxV + Set.NumCellCentroid;
+               Cell.Centre_n = Cell.Centre;
+           end
        end
        Set.ReModel=false;
        Cell.AssembleAll=true;        

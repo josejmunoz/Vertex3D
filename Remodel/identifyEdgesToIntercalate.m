@@ -6,15 +6,20 @@ function [remodellingCells, apicalLengths,basalLengths] = identifyEdgesToInterca
     basalLengths = {};
     for numCell = find(Cell.DebrisCells == 0)'
         currentEdgeVertices = Cell.Cv{numCell};
+        edgeLocation = Cell.EdgeLocation{numCell};
+        edgeLengths = Cell.EdgeLengths{numCell};
         
-        trianglesArea = Cell.SAreaTri{numCell};
-        apicalFaceCentres = abs(Cell.ApicalVertices{numCell}(Cell.ApicalVertices{numCell} < 0));
-        apicalTriangles = all(ismember(Cell.Tris{numCell}(:, 1:2), Cell.ApicalVertices{numCell}), 2) & ismember(Cell.Tris{numCell}(:, 3), apicalFaceCentres);
-        apicalArea = sum(trianglesArea(apicalTriangles));
+        apicalPerimeterCell = sum(edgeLengths(edgeLocation == 3));
+        basalPerimeterCell = sum(edgeLengths(edgeLocation == 2));
         
-        basalFaceCentres = abs(Cell.BasalVertices{numCell}(Cell.BasalVertices{numCell} < 0));
-        basalTriangles = all(ismember(Cell.Tris{numCell}(:, 1:2), Cell.BasalVertices{numCell}), 2) & ismember(Cell.Tris{numCell}(:, 3), basalFaceCentres);
-        basalArea = sum(trianglesArea(basalTriangles));
+%         trianglesArea = Cell.SAreaTri{numCell};
+%         apicalFaceCentres = abs(Cell.ApicalVertices{numCell}(Cell.ApicalVertices{numCell} < 0));
+%         apicalTriangles = all(ismember(Cell.Tris{numCell}(:, 1:2), Cell.ApicalVertices{numCell}), 2) & ismember(Cell.Tris{numCell}(:, 3), apicalFaceCentres);
+%         apicalArea = sum(trianglesArea(apicalTriangles));
+        
+%         basalFaceCentres = abs(Cell.BasalVertices{numCell}(Cell.BasalVertices{numCell} < 0));
+%         basalTriangles = all(ismember(Cell.Tris{numCell}(:, 1:2), Cell.BasalVertices{numCell}), 2) & ismember(Cell.Tris{numCell}(:, 3), basalFaceCentres);
+%         basalArea = sum(trianglesArea(basalTriangles));
         
         neighbours3D = unique(tetrahedra(any(ismember(tetrahedra, numCell), 2), :));
         neighbours3D = neighbours3D(ismember(neighbours3D, Cell.Int));
@@ -28,11 +33,19 @@ function [remodellingCells, apicalLengths,basalLengths] = identifyEdgesToInterca
             neighbourWoundEdges = vertcat(Cell.Cv{neighbourCell});
             idShareEdges = ismember(sort(currentEdgeVertices, 2), sort(neighbourWoundEdges, 2), 'rows');
             %% Apical edge
-            apicalEdgeLength(end+1) = apicalArea / sum(Cell.EdgeLengths{numCell}(idShareEdges & Cell.EdgeLocation{numCell} == 3));
+            apicalEdges = idShareEdges & Cell.EdgeLocation{numCell} == 3;
+            adjacentApicalEdges = any(ismember(currentEdgeVertices, unique(currentEdgeVertices(apicalEdges, :))), 2) & Cell.EdgeLocation{numCell} == 3 & ~apicalEdges;
+            adjacentApicalEdgesLength = sum(Cell.EdgeLengths{numCell}(adjacentApicalEdges));
+            apicalEdgeLength(end+1) = apicalPerimeterCell / (sum(Cell.EdgeLengths{numCell}(apicalEdges)) / adjacentApicalEdgesLength^2);
             %% Basal edge
-            basalEdgeLength(end+1) = basalArea / sum(Cell.EdgeLengths{numCell}(idShareEdges & Cell.EdgeLocation{numCell} == 2));
+            basalEdges = idShareEdges & Cell.EdgeLocation{numCell} == 2;
+            adjacentBasalEdges = any(ismember(currentEdgeVertices, unique(currentEdgeVertices(basalEdges, :))), 2) & Cell.EdgeLocation{numCell} == 2 & ~basalEdges;
+            adjacentBasalEdgesLength = sum(Cell.EdgeLengths{numCell}(adjacentBasalEdges));
+            basalEdgeLength(end+1) = basalPerimeterCell / (sum(Cell.EdgeLengths{numCell}(basalEdges)) / adjacentBasalEdgesLength^2);
             
-            if basalEdgeLength(end) > Set.MinEdgeLength || apicalEdgeLength(end) > Set.MinEdgeLength
+            %basalEdgeLength(end) = basalEdgeLength(end) * 
+            
+            if (basalEdgeLength(end) > Set.MinEdgeLength || apicalEdgeLength(end) > Set.MinEdgeLength) 
                 tetsToChange = tetrahedra(sum(ismember(tetrahedra, [numCell neighbourCell]), 2) >=2, :);
                 verticesToChange = unique(tetsToChange);
                 nodesToChange = verticesToChange(ismember(verticesToChange, Cell.Int));

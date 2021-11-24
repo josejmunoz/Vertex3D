@@ -11,7 +11,7 @@ function [Cell,Y0, Y,Yn,SCn,tetrahedra_,X,Dofs,Cn, Tetrahedra_weights, Set, vert
     
     while isempty(remodellingCells) == 0
        
-       [smallestEdge, idEdges] = max(remodellingCells(:, 3:4));
+       [smallestEdge, idEdges] = max(remodellingCells(:, 3:4), [], 1);
        [~, idSmallestEdge] = max(smallestEdge);
        remodellingCells = remodellingCells(idEdges(idSmallestEdge), :);
        
@@ -187,13 +187,13 @@ function [Cell,Y0, Y,Yn,SCn,tetrahedra_,X,Dofs,Cn, Tetrahedra_weights, Set, vert
                Cell.FaceCentres0.DataRow(remodelledFaces, :) = Cell.FaceCentres.DataRow(remodelledFaces, :);
                SCn = Cell.FaceCentres;               
                Cell.Centre_n = Cell.Centre;
-               for numStep = 1:maxSteps-1
+               for numStep = 1:maxSteps
                    [Set] = updateMechanicalParams(Set, Setp, maxSteps, numStep);
                    %Cell.Vol0 = Cell.Vol .* ((maxSteps - numStep + 1)/maxSteps) + Cellp.Vol0 .* ((numStep - 1)/maxSteps);
                    %Cell.Centre0 = Cell.Centre .* ((maxSteps - numStep + 1)/maxSteps) + Cellp.Centre0 .* ((numStep - 1)/maxSteps);
                    [Cell,Y,Yn,SCn,X,Dofs,Set,~,DidNotConverge]=SolveRemodelingStep(Cell,Y0,Y,X,Dofs,Set,Yn,SCn,CellInput);
 
-                   %if Set.VTK, PostProcessingVTK(X,Y,tetrahedra_.DataRow(1:tetrahedra_.n, :),Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr+numStep,Set); end
+                   if Set.VTK, PostProcessingVTK(X,Y,tetrahedra_.DataRow(1:tetrahedra_.n, :),Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr+numStep,Set); end
 
                    Set.MaxIter=Set.MaxIter0;
                    Set.ApplyBC=true;

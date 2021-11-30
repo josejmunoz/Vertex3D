@@ -24,10 +24,12 @@ ig=1;
 while (gr>Set.tol || dyr>Set.tol) && Set.iter<Set.MaxIter
     if remodelling
         dy(Dofs.Remodel)=-K(Dofs.Remodel,Dofs.Remodel)\g(Dofs.Remodel);
+        currentDofs = Dofs.Remodel;
     else
         dy(Dofs.FreeDofs)=-K(Dofs.FreeDofs,Dofs.FreeDofs)\g(Dofs.FreeDofs);
+        currentDofs = Dofs.FreeDofs;
     end
-    [alpha]=LineSearch(Cell,SCn,dy,g,Dofs.FreeDofs,Set,Y,Y0,Yn,CellInput);
+    [alpha]=LineSearch(Cell,SCn,dy,g,currentDofs,Set,Y,Y0,Yn,CellInput);
 
     %% Update mechanical nodes
     dy_reshaped = reshape(dy * alpha, 3, Set.NumTotalV)';

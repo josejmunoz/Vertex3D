@@ -27,13 +27,10 @@ Set.lambdaS1=10;
 % Cell-Cell 
 Set.lambdaS2=1;
 % Cell-substrate
-Set.lambdaS3=Set.lambdaS1;
-
-%---------- Line tension
-Set.cLineTension = 3.7;
+Set.lambdaS3=Set.lambdaS1/10;
 
 %---------- In plane elasticity
-Set.InPlaneElasticity = true;
+Set.InPlaneElasticity = 1;
 Set.mu_bulk = 3000; % Deformation restriction
 Set.lambda_bulk = 2000; %Volume restriction
 
@@ -85,19 +82,20 @@ Set.cellsToAblate = 1:15;
 Set.TInitAblation = 0.01; 
 Set.TEndAblation = 0.071; %40 minutes (30 after ablation)
 
+%---------- Line tension
+Set.cLineTension = 1.5;
 %% Contractility
 % 0: No contractility
 % 1: Lateral cables end-to-end
 % 2: Lateral surface contractility
 Set.Contractility = 1;
-Set.cPurseString = 14;
-Set.cLateralCables = 0.33;
+% Set.cPurseString = 14;
+% Set.cLateralCables = 0.33;
 
 %% Execution parameters
-Set.batchProcessing = true;
+Set.batchProcessing = 1;
 Set.diary = true;
 Set.MaxIter = 400;
-Set.tol=1e-10;
 Set.Parallel = false;
 Set.Sparse = 1; %0: No sparse
                     %1: Sparse matlab

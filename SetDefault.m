@@ -357,19 +357,19 @@ end
 %% ============================= Contractility ============================
 
 if ~isfield(Set, 'Contractility')
-    Set.Contractility = 0;
+    Set.Contractility = Set.cLineTension;
 end
 
 if ~isfield(Set, 'cPurseString')  % Contractility coefficient on the purse string
-    Set.cPurseString = 0;
+    Set.cPurseString = Set.cLineTension;
 end
 
 % Contractility coefficient values on the purse string during a period of time
 % defined by 'Contractility_TimeVariability_PurseString'
 if ~isfield(Set, 'Contractility_Variability_PurseString')
     %Set.Contractility_Variability_PurseString = [1 1]*Set.cPurseString;
-    Set.Contractility_Variability_PurseString = ([1 1 2.5 2.5] - 1) * Set.cPurseString;
-    %Set.Contractility_Variability_PurseString = ([1, 0.96, 1.087, 1.74, 2.37, 2.61, 2.487, 2.536, 2.46, 2.52, 2.606, 2.456, 2.387, 2.52, 2.31, 2.328, 2.134, 2.07, 2.055, 1.9, 1.9] - 1) * Set.cPurseString;
+    %Set.Contractility_Variability_PurseString = ([1 1 2.5 2.5] - 1) * Set.cPurseString;
+    Set.Contractility_Variability_PurseString = ([1, 0.96, 1.087, 1.74, 2.37, 2.61, 2.487, 2.536, 2.46, 2.52, 2.606, 2.456, 2.387, 2.52, 2.31, 2.328, 2.134, 2.07, 2.055, 1.9, 1.9]) * Set.cLineTension;
 end
 
 % Timepoints where differeent values of 'cPurseString' appear.
@@ -377,8 +377,8 @@ end
 % difference between each timepoint.
 if ~isfield(Set, 'Contractility_TimeVariability_PurseString')
     %Set.Contractility_TimeVariability_PurseString = [0 Set.tend];
-    Set.Contractility_TimeVariability_PurseString = [0 5 16 60]/60*(Set.TEndAblation - Set.TInitAblation);
-    %Set.Contractility_TimeVariability_PurseString = (0:3:60)/60*(Set.TEndAblation - Set.TInitAblation);
+    %Set.Contractility_TimeVariability_PurseString = [0 5 16 60]/60*(Set.TEndAblation - Set.TInitAblation);
+    Set.Contractility_TimeVariability_PurseString = (0:3:60)/60*(Set.TEndAblation - Set.TInitAblation);
 end
 
 if ~isfield(Set, 'cLateralCables') % Contractility coefficient on the lateral cables
@@ -389,8 +389,8 @@ end
 % time defined by 'Contractility_TimeVariability_PurseString'
 if ~isfield(Set, 'Contractility_Variability_LateralCables')
     %Set.Contractility_Variability_LateralCables = [1 1]*Set.cLateralCables;
-    Set.Contractility_Variability_LateralCables = ([0.5 0.5 1.4 1.4] - 0.5) * Set.cLateralCables; 
-    %Set.Contractility_Variability_LateralCables = ([0.45 0.53 0.76 1.15 1.28 1.22 1.38 1.33 1.28 1.4 1.25 1.298 1.45 1.31 1.29 1.42 1.31 1.41 1.42 1.37 1.28] - 0.45) * Set.cLateralCables;
+    %Set.Contractility_Variability_LateralCables = ([0.5 0.5 1.4 1.4] - 0.5) * Set.cLateralCables; 
+    Set.Contractility_Variability_LateralCables = ([0.45 0.53 0.76 1.15 1.28 1.22 1.38 1.33 1.28 1.4 1.25 1.298 1.45 1.31 1.29 1.42 1.31 1.41 1.42 1.37 1.28]) * Set.cLineTension;
 end
 
 % Timepoints where differeent values of 'cLateralCables' appear.
@@ -398,8 +398,8 @@ end
 % difference between each timepoint.
 if ~isfield(Set, 'Contractility_TimeVariability_LateralCables')
     %Set.Contractility_TimeVariability_LateralCables = [0 Set.tend];
-    Set.Contractility_TimeVariability_LateralCables = [0 1 16 60]/60*(Set.TEndAblation - Set.TInitAblation); 
-    %Set.Contractility_TimeVariability_LateralCables = (0:3:60)/60*(Set.TEndAblation - Set.TInitAblation);
+    %Set.Contractility_TimeVariability_LateralCables = [0 1 16 60]/60*(Set.TEndAblation - Set.TInitAblation); 
+    Set.Contractility_TimeVariability_LateralCables = (0:3:60)/60*(Set.TEndAblation - Set.TInitAblation);
 end
 %% ============================= PostProcessing ===========================
 

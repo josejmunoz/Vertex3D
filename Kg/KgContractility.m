@@ -64,7 +64,7 @@ for numCell = 1:ncell
             if ismember(numEdge, idShareEdges) % Wound edge
                 C = Set.cLateralCables;
             else
-                C = 0.00001;
+                C = Set.cLineTension/100;
             end
         else
             C = 0;

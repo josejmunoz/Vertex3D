@@ -40,6 +40,7 @@ for numCell = 1:ncell
     
     % Loop over Cell-face-triangles
     Tris=Cell.Tris{numCell};
+    apicoBasalVertices = union(Cell.ApicalVertices{numCell}, Cell.BasalVertices{numCell});
     for ntriangle=1:size(Tris,1)
         currentTet_ids=[Tris(ntriangle,:) numCell+Set.NumMainV+Set.NumAuxV];
         
@@ -66,6 +67,10 @@ for numCell = 1:ncell
         
         try
             [gB, KB, Energye] = KgBulkElem(currentTet, currentTet0, Set.mu_bulk, Set.lambda_bulk);
+
+            gB(3:3:end) = gB(3:3:end) * Set.lateral_bulk;
+            KB(3:3:end, :) = KB(3:3:end, :) * Set.lateral_bulk;
+            KB(:, 3:3:end) = KB(:, 3:3:end) * Set.lateral_bulk;
             
             Energy=Energy+Energye;
 

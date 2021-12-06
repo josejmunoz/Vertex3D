@@ -286,7 +286,7 @@ end
 %% ============================= Solution =================================
 % ------- Tolerance
 if ~isfield(Set,'tol')       % Convergence Tolerance for Newton-Raphson
-    Set.tol=1e-9;
+    Set.tol=1e-8;
 end 
 if ~isfield(Set,'MaxIter')   % Maximum Number of iteration for Newton Raphson
     Set.MaxIter=200;
@@ -417,7 +417,7 @@ if ~isfield(Set,'VTK_iter') % vtk file for each iteration
     Set.VTK_iter=false;
 end 
 if ~isfield(Set,'OutputFolder') || Set.batchProcessing
-    Set.OutputFolder = strcat('Result/cLineTensionApical_', num2str(Set.cLineTension),'_typeOfContractility_', num2str(Set.Contractility),'_cPurseString_', num2str(Set.cPurseString), '_cLateralCables_', num2str(Set.cLateralCables), '_lambdaV_', num2str(Set.lambdaV), '_lambdaS1_', num2str(Set.lambdaS1),'_lambda_S2_', num2str(Set.lambdaS2), '_KSubstrate_', num2str(Set.kSubstrate),'_Remodelling_', num2str(Set.Remodelling),'_confinedXYZ_OuterVertices_NCells_', num2str(Set.TotalCells), '_viscosity_', num2str(Set.nu), '_elasticity_mu_', num2str(Set.mu_bulk), '_elasticity_lambda_', num2str(Set.lambda_bulk));
+    Set.OutputFolder = strcat('Result/cLineTensionApical_', num2str(Set.cLineTension),'_typeOfContractility_', num2str(Set.Contractility), '_lateralRidigity_', num2str(Set.lateral_bulk), '_lambdaV_', num2str(Set.lambdaV), '_lambdaS1_', num2str(Set.lambdaS1),'_lambda_S2_', num2str(Set.lambdaS2), '_KSubstrate_', num2str(Set.kSubstrate),'_Remodelling_', num2str(Set.Remodelling),'_confinedXYZ_OuterVertices_NCells_', num2str(Set.TotalCells), '_viscosity_', num2str(Set.nu), '_elasticity_mu_', num2str(Set.mu_bulk), '_elasticity_lambda_', num2str(Set.lambda_bulk));
 end
 if ~isfield(Set,'SaveWorkspace') % Save Workspace at each time step
     Set.SaveWorkspace=false;   

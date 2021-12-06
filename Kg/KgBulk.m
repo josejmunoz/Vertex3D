@@ -67,7 +67,15 @@ for numCell = 1:ncell
         
         try
             [gB, KB, Energye] = KgBulkElem(currentTet, currentTet0, Set.mu_bulk, Set.lambda_bulk);
-
+            
+%             [gB_base, KB_base, Energye_base] = KgBulkElem(currentTet0, currentTet0, Set.mu_bulk*Set.lateral_bulk, Set.lambda_bulk*Set.lateral_bulk);
+%             
+%             currentTet(:, 1:2) = currentTet0(:, 1:2);
+%             
+%             [gB_OnlyZ, KB_OnlyZ, Energye_OnlyZ] = KgBulkElem(currentTet, currentTet0, Set.mu_bulk*Set.lateral_bulk, Set.lambda_bulk*Set.lateral_bulk);
+%             
+%             gB = gB + (gB_OnlyZ - gB_base);
+%             KB = KB + (KB_OnlyZ - KB_base);
             gB(3:3:end) = gB(3:3:end) * Set.lateral_bulk;
             KB(3:3:end, :) = KB(3:3:end, :) * Set.lateral_bulk;
             KB(:, 3:3:end) = KB(:, 3:3:end) * Set.lateral_bulk;

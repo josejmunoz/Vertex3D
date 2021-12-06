@@ -116,7 +116,7 @@ function [Cell,Y0, Y,Yn,SCn,tetrahedra_,X,Dofs,Cn, Tetrahedra_weights, Set, vert
                end
                oldTetCoords = mean(Yp.DataRow(previousIdTet, :), 1);
                newCoords = mean(X(tetrahedra(numTetrahedron, :), 1:3));
-               newCoords = newCoords.*0.4 + oldTetCoords .*0.6;
+               newCoords = newCoords.*0.8 + oldTetCoords .*0.2;
                newCoords(3) = oldTetCoords(3);
                Y = Y.Add(newCoords);
                Y0 = Y0.Add(newCoords);
@@ -158,7 +158,7 @@ function [Cell,Y0, Y,Yn,SCn,tetrahedra_,X,Dofs,Cn, Tetrahedra_weights, Set, vert
                error('Error rebuilding cells at remodelling');
            end
 
-           if Set.VTK, PostProcessingVTK(X,Y,tetrahedra_.DataRow(1:tetrahedra_.n, :),Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end
+           %if Set.VTK, PostProcessingVTK(X,Y,tetrahedra_.DataRow(1:tetrahedra_.n, :),Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end
            
            %% Solve modelling step with only those vertices
            allVerticesRemodelled{end+1} = nodesToChange;
@@ -172,7 +172,7 @@ function [Cell,Y0, Y,Yn,SCn,tetrahedra_,X,Dofs,Cn, Tetrahedra_weights, Set, vert
                remodellingCells(invalidRemodellingCells, :) = [];
            end
            if isempty(remodellingCells)
-               %if Set.VTK, PostProcessingVTK(X,Y,tetrahedra_.DataRow(1:tetrahedra_.n, :),Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr+1,Set); end
+               if Set.VTK, PostProcessingVTK(X,Y,tetrahedra_.DataRow(1:tetrahedra_.n, :),Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr+1,Set); end
                nodesToChange = unique([allVerticesRemodelled{:}]);
                newFaces = unique([allFacesRemodelled{:}]);
                Cell.RemodelledVertices=find(sum(ismember(tetrahedra_.Data, nodesToChange), 2) > 0);
@@ -182,21 +182,34 @@ function [Cell,Y0, Y,Yn,SCn,tetrahedra_,X,Dofs,Cn, Tetrahedra_weights, Set, vert
                [Dofs] = GetDOFs(Y, Cell, Set, isempty(Set.InputSegmentedImage) == 0, tetrahedra_.DataRow);
                [Dofs] = updateRemodelingDOFs(Dofs, Cell.RemodelledVertices, remodelledFaces, Y);
 
-               maxSteps = 3;
                Y0.DataRow(Cell.RemodelledVertices, :) = Y.DataRow(Cell.RemodelledVertices, :);
                Cell.FaceCentres0.DataRow(remodelledFaces, :) = Cell.FaceCentres.DataRow(remodelledFaces, :);
-               SCn = Cell.FaceCentres;               
-               Cell.Centre_n = Cell.Centre;
+               
+               maxSteps = 10;
+               Set.nu = Setp.nu * 100;
+               Set.nu0 = Setp.nu * 20;
                for numStep = 1:maxSteps
+                   numStep
+
+                   SCn = Cell.FaceCentres;
+                   Cell.Centre_n = Cell.Centre;                       
+                   Yn=Y;
+                   
                    [Set] = updateMechanicalParams(Set, Setp, maxSteps, numStep);
-                   %Cell.Vol0 = Cell.Vol .* ((maxSteps - numStep + 1)/maxSteps) + Cellp.Vol0 .* ((numStep - 1)/maxSteps);
-                   %Cell.Centre0 = Cell.Centre .* ((maxSteps - numStep + 1)/maxSteps) + Cellp.Centre0 .* ((numStep - 1)/maxSteps);
+                   Cell.Vol0 = Cell.Vol .* ((maxSteps - numStep + 1)/maxSteps) + Cellp.Vol0 .* ((numStep - 1)/maxSteps);
+                   Cell.Centre0 = Cell.Centre .* ((maxSteps - numStep + 1)/maxSteps) + Cellp.Centre0 .* ((numStep - 1)/maxSteps);
                    [Cell,Y,Yn,SCn,X,Dofs,Set,~,DidNotConverge]=SolveRemodelingStep(Cell,Y0,Y,X,Dofs,Set,Yn,SCn,CellInput);
 
-                   if Set.VTK, PostProcessingVTK(X,Y,tetrahedra_.DataRow(1:tetrahedra_.n, :),Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr+numStep,Set); end
+                   if Set.VTK, PostProcessingVTK(X,Y,tetrahedra_.DataRow(1:tetrahedra_.n, :),Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr+numStep+1,Set); end
 
                    Set.MaxIter=Set.MaxIter0;
                    Set.ApplyBC=true;
+                   if numStep >= 3
+                       [Dofs] = GetDOFs(Y, Cell, Set, isempty(Set.InputSegmentedImage) == 0, tetrahedra_.DataRow);
+                       Dofs.Remodel = Dofs.FreeDofs;
+                       Set.nu = Setp.nu * 1000;
+                       Set.nu0 = Setp.nu * ((20*maxSteps) - (20*(numStep)));
+                   end
                end
                Set = Setp;
                Yn=Y;
@@ -205,12 +218,14 @@ function [Cell,Y0, Y,Yn,SCn,tetrahedra_,X,Dofs,Cn, Tetrahedra_weights, Set, vert
                Set.NumAuxV=Cell.FaceCentres.n;
                Set.NumCellCentroid = Cell.n;
                Set.NumTotalV=Set.NumMainV + Set.NumAuxV + Set.NumCellCentroid;
-               Cell.Centre_n = Cell.Centre;
+               Y0.DataRow(Cell.RemodelledVertices, :) = Y.DataRow(Cell.RemodelledVertices, :);
+               Cell.FaceCentres0.DataRow(remodelledFaces, :) = Cell.FaceCentres.DataRow(remodelledFaces, :);
            end
        end
+       %Set.nu = Set.nu * 100;
        Set.ReModel=false;
        Cell.AssembleAll=true;        
-       if Set.VTK, PostProcessingVTK(X,Y,tetrahedra_.DataRow(1:tetrahedra_.n, :),Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end    
+       %if Set.VTK, PostProcessingVTK(X,Y,tetrahedra_.DataRow(1:tetrahedra_.n, :),Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end    
     end
 end
 

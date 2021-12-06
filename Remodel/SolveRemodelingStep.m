@@ -27,7 +27,8 @@ while 1
     
     dy=zeros(Set.NumTotalV*3);
     dyr=norm(dy(Dofs.Remodel));
-    gr=norm(g(Dofs.Remodel)); 
+    gr=norm(g(Dofs.Remodel));
+    
     fprintf('Local Problem ->Iter: %i, ||gr||= %.3e ||dyr||= %.3e  nu/nu0=%.3e  dt/dt0=%.3g \n',0,gr,dyr,Set.nu/Set.nu0,Set.dt/Set.dt0);
 
     [g,K,Cell, Y, Energy, Set, gr, dyr, dy] = newtonRaphson(Set, Cell, SCn, K, g, Dofs, Y, Y0, Yn, CellInput, -1, -1, 1);

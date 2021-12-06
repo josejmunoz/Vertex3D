@@ -69,7 +69,7 @@ Set.Nincr=Set.tend*1000;
 Set.Remodelling=true;
 Set.RemodelTol=.5e-2;
 Set.RemodelingFrequency=Set.tend/Set.Nincr;
-Set.MinEdgeLength = 0.25; %% Higher number, smaller edge
+Set.MinEdgeLength = 0.023; %% Higher number, smaller edges will appear
 
 %---------- EnergyBarrier
 Set.EnergyBarrier=true;

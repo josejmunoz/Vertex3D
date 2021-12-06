@@ -4,9 +4,17 @@ function [Set]=SetDefault(Set)
 %% ============================= geometry =================================
 
 %% Option 1: Obtaining from a number of seeds placed on a planar surface
-% Examples of cell centres  position
-if ~isfield(Set,'e')
-    Set.e=1;
+% Examples of cell centres  position (see Example.m)
+% Exemple=1 Stretching/Compression of 3 cells
+% Exemple=2 Sphere
+% Exemple=3 Cylinder
+% Exemple=4 3x3 cells
+% Exemple=5 Substrate extrussion, 3x3
+% Exemple=6 Stretching of 2 cells 
+% Exemple=16 3x3 monolyaer
+% Exemple=25 5x5 monolyaer
+if ~isfield(Set,'Exemple')
+    Set.Exemple=1;
 end 
 % Placement of boundary nodes
 % Seeding method==1 % Bounding box   
@@ -14,7 +22,6 @@ end
 if ~isfield(Set,'SeedingMethod')
     Set.SeedingMethod=1;
 end 
-
 % Size parameters
 if ~isfield(Set,'s')  % The average Cell size 
     Set.s=1.5;
@@ -22,8 +29,6 @@ end
 if ~isfield(Set,'f') % The distance of the free-boundary vertices from cell centre
     Set.f=Set.s/2;
 end
-
-
 % The Method to obtain X from Y 
 if ~isfield(Set,'ObtainX') 
     Set.ObtainX=0;
@@ -38,7 +43,6 @@ end
 %                        Interior nodes are placed in the centre of cells,
 %                        while exterior nodes are placed with a distance d (hard coded d=1 in Geo\GetXFromY.m)
 %                        form the cell centre in the direction of centre of the face.
-
 %% Option 2: A 2D input image to obtain the initial topology of the cells
 % Note that topology is the same in both apical and basal
 
@@ -46,17 +50,14 @@ end
 if ~isfield(Set,'InputSegmentedImage')
     Set.InputSegmentedImage = [];
 end
-
 % Aspect ratio: 'NumberOfPlanes a cell appears' / 'CellArea' measured in your 3D images
 if ~isfield(Set,'CellAspectRatio')
     Set.CellAspectRatio = 1;
 end
-
 % 'Voxel depth'/'Pixel width' in the images where you measure 'CellHeight'
 if ~isfield(Set,'zScale')
     Set.zScale = 1;
 end
-
 % Real cell height 
 if ~isfield(Set,'CellHeight')
     % Which can be interpolated from CellAspectRatio per ZScale
@@ -118,7 +119,6 @@ end
 %               - Set.LambdaS2CellFactor=[Cell_Number Factor];
 %          - Set.lambdaS3=1>0;    Tension coefficient for Cell-substrate faces
 %               - Set.LambdaS3CellFactor=[Cell_Number Factor];
-
 if ~isfield(Set,'SurfaceType')
     Set.SurfaceType=1;
     Set.A0eq0=true; 
@@ -135,7 +135,6 @@ end
 if ~isfield(Set,'lambdaS4') % Cell-Debris
     Set.lambdaS4=Set.lambdaS2;
 end 
-
 if ~isfield(Set,'LambdaS1CellFactor')
     Set.LambdaS1CellFactor=[];
 end 
@@ -148,8 +147,6 @@ end
 if ~isfield(Set,'LambdaS4CellFactor')
     Set.LambdaS4CellFactor=[];
 end 
-
-
 %---------- EnergyBarrier -------------------------------------------------
 % Energy Barrier for small Triangles 
 % Potential --->  WBexp = exp( Set.lambdaB*( 1 - Set.Beta*At/Set.BarrierTri0 ) )  (At: triangle area)
@@ -164,11 +161,9 @@ end
 if ~isfield(Set,'Beta') % for small triangle energy barreir
    Set.Beta=1;
 end 
-
 if ~isfield(Set,'BarrierTri0')
     Set.BarrierTri0=1e-3*Set.s;
 end 
-
 % Remark:  the value  of Set.BarrierTri0 is updated in Geo\InitializeGeometry3DVertex.m
 %          to Set.BarrierTri0=min(TriangleArea)/10;
 
@@ -177,7 +172,6 @@ end
 %             -> Set.BendingAreaDependent=0 : Wb=(1/2) lambdaBend* sum_edges( 1-cos(theta/2)^2
 %                       where  theta: the angle between the pair of triangles
 %                              At1 and At2 : the area of the triangles
-
 if ~isfield(Set,'Bending')    % Off/On on bending energy on surface
    Set.Bending=false;
 end
@@ -187,14 +181,11 @@ end
 if ~isfield(Set,'BendingAreaDependent')
     Set.BendingAreaDependent=true; % If tru include area weighting in bending (larger areas -> larger bending resistance.
 end 
-
-
 %--------Propulsion -------------------------------------------------------
 % Add random propulsion forces acting on bottom vertices  
 if ~isfield(Set,'Propulsion') % Off/On
     Set.Propulsion=false;    
 end 
-
 %-------- Confinement -----------------------------------------------------
 % Confinement is implemented as a change of  Set.lambdaS3 --> Set.lambdaS1
 % when ever the confined space is overpassed  
@@ -213,7 +204,6 @@ end
 if ~isfield(Set,'nu') % Global viscosity coefficient
     Set.nu=0.05;      % W=(1/2) nu/dt sum( (y-yn)^2 )
 end 
-
 %-------- Set.LocalViscosity On Edges -------------------------------------
 % Local viscous effect based on the length of the edges between vertices
 % Potential: -> Set.LocalViscosityOption=1 : W=(1/2) nu_Local/dt sum( ((L-Ln)/Ln)^2 )
@@ -230,8 +220,6 @@ end
 if ~isfield(Set,'LocalViscosityOption')
      Set.LocalViscosityOption=2;
 end 
-
-
 %-------- Set.LocalViscosity On Triangle ----------------------------------
 % Local viscous effect based on the Area of Triangles
 % Potential:  -> Set.LocalViscosityOption=1 -> W=(1/2) nu_Local/dt sum( ((At-Atn)/Atn)^2 )
@@ -247,7 +235,6 @@ end
 if ~isfield(Set,'LocalViscosityOption')
      Set.LocalViscosityOption=2;
 end 
-
 %% ============================= Remodelling ================================
 if ~isfield(Set,'Remodelling')  % Off/On
     Set.Remodelling=true;
@@ -287,7 +274,6 @@ if ~isfield(Set,'Sparse')  %
 end 
 
 %% ============================= Boundary Condition and loading setting ===
-
 % ------------- Stretch test  (Input Sample)  -----------------------------
 % Set.BC=1;  %  Stretch
 %     -Set.VFixd=-1.5;         % Vertices with y-coordinates > Set.VPrescribed are those to be prescribed (pulled)
@@ -295,7 +281,6 @@ end
 %     -Set.dx=1;               % Total displacement of prescribed vertices 
 %     -Set.TStartBC=20;        % The time at which boundary conditions start to be applied    
 %     -Set.TStopBC=100;        % The time at which boundary conditions are removed    
-
 % ------------- Compression test  (Input Sample)  -------------------------
 % Set.BC=2;  %  Compression
 %        -Set.VFixd=-1;         % Vertices with y-coordinates > Set.VPrescribed are those to be prescribed (pulled)
@@ -304,7 +289,6 @@ end
 %       -Set.TStopBC=100;       % The time at which boundary conditions are removed 
 
 % Set.BC =~ 1,2;  % Substrate
-
 % ------ Default setting ---------------------------------------------------
 if ~isfield(Set,'BC')
     Set.BC=1; % BC=1: Stretching, BC=2: Compression, BC=nan, substrate extrussion
@@ -313,44 +297,35 @@ if ~isfield(Set,'BC')
     Set.dx=2;
     Set.TStartBC=20;  %30  
     Set.TStopBC=100;
-end 
-       
+end      
 %% ============================= Ablation ===========================
 % Cells are ablated by becoming 'Debris'
 
 if ~isfield(Set,'Ablation') % Apply ablation (mechanical removal) of some cells
     Set.Ablation = false;
 end
-
 if ~isfield(Set,'TInitAblation') % Time at which ablation is performed
     Set.TInitAblation = 1;
 end
-
 % Time at which the ablated cell achieved the parameters of complete Debris (for instance, 'lambda_debris')
 if ~isfield(Set,'TEndAblation') 
     Set.TEndAblation = Set.tend;
 end
-
 % Cells IDs that will be ablated at TInitAblation
 if ~isfield(Set, 'cellsToAblate')
     Set.cellsToAblate = findCentralCells(Example(Set.e), 1);
 end
-
 % Cells IDs that will be ablated at TInitAblation
 if ~isfield(Set, 'LambdaSFactor_Debris')
     Set.LambdaSFactor_Debris = 0.001;
 end
-
 %% ============================= Contractility ============================
-
 if ~isfield(Set, 'Contractility')
     Set.Contractility = 0;
 end
-
 if ~isfield(Set, 'cPurseString')  % Contractility coefficient on the purse string
     Set.cPurseString = 0;
 end
-
 % Contractility coefficient values on the purse string during a period of time
 % defined by 'Contractility_TimeVariability_PurseString'
 if ~isfield(Set, 'Contractility_Variability_PurseString')
@@ -358,7 +333,6 @@ if ~isfield(Set, 'Contractility_Variability_PurseString')
     Set.Contractility_Variability_PurseString = ([1 1 2.5 2.5] - 1) * Set.cPurseString;
     %Set.Contractility_Variability_PurseString = ([1, 0.96, 1.087, 1.74, 2.37, 2.61, 2.487, 2.536, 2.46, 2.52, 2.606, 2.456, 2.387, 2.52, 2.31, 2.328, 2.134, 2.07, 2.055, 1.9, 1.9] - 1) * Set.cPurseString;
 end
-
 % Timepoints where differeent values of 'cPurseString' appear.
 % Intermediate values of 'cPurseString' are extrapolated considering the
 % difference between each timepoint.
@@ -367,11 +341,9 @@ if ~isfield(Set, 'Contractility_TimeVariability_PurseString')
     Set.Contractility_TimeVariability_PurseString = [0 5 16 60]/60*(Set.TEndAblation - Set.TInitAblation);
     %Set.Contractility_TimeVariability_PurseString = (0:3:60)/60*(Set.TEndAblation - Set.TInitAblation);
 end
-
 if ~isfield(Set, 'cLateralCables') % Contractility coefficient on the lateral cables
     Set.cLateralCables = 0;
 end
-
 % Contractility coefficient values on the lateral cables during a period of 
 % time defined by 'Contractility_TimeVariability_PurseString'
 if ~isfield(Set, 'Contractility_Variability_LateralCables')
@@ -379,7 +351,6 @@ if ~isfield(Set, 'Contractility_Variability_LateralCables')
     Set.Contractility_Variability_LateralCables = ([0.5 0.5 1.4 1.4] - 0.5) * Set.cLateralCables; 
     %Set.Contractility_Variability_LateralCables = ([0.45 0.53 0.76 1.15 1.28 1.22 1.38 1.33 1.28 1.4 1.25 1.298 1.45 1.31 1.29 1.42 1.31 1.41 1.42 1.37 1.28] - 0.45) * Set.cLateralCables;
 end
-
 % Timepoints where differeent values of 'cLateralCables' appear.
 % Intermediate values of 'cLateralCables' are extrapolated considering the
 % difference between each timepoint.
@@ -393,7 +364,9 @@ end
 if ~isfield(Set,'diary') % save log File   
     Set.diary=false;
 end
-
+if ~isfield(Set,'OutputRemove') % Remove files in output folder before simulation
+    Set.OutputRemove=true;
+end 
 if ~isfield(Set,'VTK') % Vtk files for each time step
     Set.VTK=true;
 end 
@@ -404,7 +377,22 @@ if ~isfield(Set,'VTK_iter') % vtk file for each iteration
     Set.VTK_iter=false;
 end 
 if ~isfield(Set,'OutputFolder') || Set.batchProcessing
-    Set.OutputFolder = strcat('Result/cLineTensionApical_', num2str(Set.cLineTension),'_typeOfContractility_', num2str(Set.Contractility),'_cPurseString_', num2str(Set.cPurseString), '_cLateralCables_', num2str(Set.cLateralCables), '_lambdaV_', num2str(Set.lambdaV), '_lambdaS1_', num2str(Set.lambdaS1),'_lambda_S2_', num2str(Set.lambdaS2), '_KSubstrate_', num2str(Set.kSubstrate),'_Remodelling_', num2str(Set.Remodelling),'_confinedXYZ_OuterVertices_NCells_', num2str(Set.TotalCells), '_viscosity_', num2str(Set.nu), '_elasticity_mu_', num2str(Set.mu_bulk), '_elasticity_lambda_', num2str(Set.lambda_bulk));
+    Set.OutputFolder = strcat('Result',Esc(),'cLTenA_', num2str(Set.cLineTension),...
+                              '_ContTy_', num2str(Set.Contractility),...
+                              '_cPStr_', num2str(Set.cPurseString),...
+                              '_cLateralCables_', num2str(Set.cLateralCables),...
+                              '_lV_', num2str(Set.lambdaV),...
+                              '_lS1_', num2str(Set.lambdaS1),...
+                              '_lS2_', num2str(Set.lambdaS2),...
+                              '_KSubs_', num2str(Set.kSubstrate),...
+                              '_Rem_', num2str(Set.Remodelling),...
+                              '_confXYZ_OutV_NCells_', num2str(Set.TotalCells),...
+                              '_vis_', num2str(Set.nu),...
+                              '_elas_mu_',num2str(Set.mu_bulk),...
+                              '_elas_lamb_', num2str(Set.lambda_bulk));
+end
+if ~isfield(Set,'analysisDir') % Directory for analysis data
+    Set.analysisDir = strcat(Set.OutputFolder,Esc,'Analysis',Esc);
 end
 if ~isfield(Set,'SaveWorkspace') % Save Workspace at each time step
     Set.SaveWorkspace=false;   

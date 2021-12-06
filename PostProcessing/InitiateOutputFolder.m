@@ -1,4 +1,4 @@
-function [alreadyPerformedSimulation] = InitiateOutputFolder(Set, batchProcessing)
+function [alreadyPerformedSimulation] = InitiateOutputFolder(Set)
 % Creates Output Folder and deletes old files if exsit
 
 fclose('all');
@@ -9,10 +9,11 @@ if exist(DirOutput, 'dir')
     if Set.batchProcessing
         alreadyPerformedSimulation = 1;
         return
+    elseif Set.OutputRemove
+        answer='y';
     else
         answer=input('Remove everything from output directory?[y]');
-    end
-    
+    end   
     if isempty(answer)
         answer='y';
     end
@@ -20,25 +21,20 @@ if exist(DirOutput, 'dir')
         % clean
         aux=fullfile(DirOutput,'LogFile.out');
         if exist(aux, 'file'), delete(aux); end
-        
         aux=fullfile(DirOutput,'Set.mat');
         if exist(aux, 'file'), delete(aux); end
-        
         if exist(fullfile(DirOutput,'ResultVTK'), 'dir')
             aux=fullfile(DirOutput,'ResultVTK');
             rmdir(aux,'s')
-        end
-        
+        end        
         if exist(fullfile(DirOutput,'ResultVTK_iter'), 'dir')
             aux=fullfile(DirOutput,'ResultVTK_iter');
             rmdir(aux,'s')
         end
-        
         if exist(fullfile(DirOutput,'Workspace'), 'dir')
             aux=fullfile(DirOutput,'Workspace');
             rmdir(aux,'s')
         end
-        
         if exist(fullfile(DirOutput, 'Analysis'), 'dir')
             aux=fullfile(DirOutput, 'Analysis');
             rmdir(aux,'s')
@@ -47,7 +43,7 @@ if exist(DirOutput, 'dir')
 else
     mkdir(DirOutput);
 end
-
+cpwd=pwd();
 cd(DirOutput);
 if Set.VTK && ~exist('ResultVTK','dir')
     mkdir('ResultVTK')
@@ -65,11 +61,11 @@ if Set.SaveSetting
     save('Set','Set')
 end
 
-if ~exist('Analysis','dir')
+if ~exist(strcat(Esc(),'Analysis'),'dir')
     mkdir('Analysis')
 end
 
-cd '..'
+cd(cpwd)
 
 for numDirs = 1:length(regexpi(Set.OutputFolder, '[\/]'))
     cd '..'

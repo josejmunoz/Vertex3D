@@ -82,7 +82,7 @@ function [Cell,Y0, Y,Yn,SCn,tetrahedra_,X,Dofs,Cn, Tetrahedra_weights, Set, vert
            [Twg_top] = createTetrahedra(trianglesConnectivity_all, neighboursNetwork, verticesInfo.edges, Cell.Int', X_IDs.topFaceIds, X_IDs.topVerticesIds);
            newTets = vertcat(Twg_top, Twg_bottom);
            newTets(all(ismember(newTets,XgID),2),:) = [];
-           [changedTets, Locb] = ismember(tetrahedra, newTets, 'rows');
+           changedTets = ismember(tetrahedra, newTets, 'rows');
            [changedTets_2, Locb] = ismember(newTets, tetrahedra, 'rows');
            tetIds = 1:tetrahedra_.n;
            missingTets = tetIds(ismember(tetIds, Locb) == 0);
@@ -130,7 +130,6 @@ function [Cell,Y0, Y,Yn,SCn,tetrahedra_,X,Dofs,Cn, Tetrahedra_weights, Set, vert
            %% Rebuild cells
            Cell.AssembleNodes=nodesToChange; %Cell.Int;
            [Cell, newFaces, SCn, flag]=ReBuildCells(Cell, tetrahedra_, Y, X, SCn);
-
            if ~flag
                allFaces = [Cell.Faces{:}];
                usedIDFaces = unique(vertcat(allFaces.FaceCentresID));

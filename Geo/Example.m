@@ -61,7 +61,7 @@ elseif e==4
     X=[X Y ones(length(X),1)+rand(length(X),1)*0];
     
 elseif e==5
-        X=0:2;
+    X=0:2;
     Y=0:2;
     [X,Y]=meshgrid(X,Y);
     X=reshape(X,size(X,1)*size(X,2),1);

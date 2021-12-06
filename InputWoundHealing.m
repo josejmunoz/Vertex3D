@@ -33,6 +33,7 @@ Set.lambdaS3=Set.lambdaS1/10;
 Set.InPlaneElasticity = 1;
 Set.mu_bulk = 3000; % Deformation restriction
 Set.lambda_bulk = 2000; %Volume restriction
+Set.lateral_bulk = 1.5;
 
 %--------- Bending 
 Set.Bending=false;
@@ -83,7 +84,7 @@ Set.TInitAblation = 0.01;
 Set.TEndAblation = 0.071; %40 minutes (30 after ablation)
 
 %---------- Line tension
-Set.cLineTension = 1.5;
+Set.cLineTension = 3.7;
 %% Contractility
 % 0: No contractility
 % 1: Lateral cables end-to-end

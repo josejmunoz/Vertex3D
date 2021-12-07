@@ -64,6 +64,13 @@ while (gr>Set.tol || dyr>Set.tol) && Set.iter<Set.MaxIter
     
     %if Set.VTK_iter, PostProcessingVTK(X,Y,T.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK_iter'),Set.iter,Set); end
     
+    if Set.nu > Set.nu0 &&  gr<Set.tol
+        Set.nu = max(Set.nu/2, Set.nu0);
+        [g,K,Cell,Energy]=KgGlobal(Cell, SCn, Y0, Y, Yn, Set, CellInput);
+        dyr=norm(dy(dfs));
+        gr=norm(g(dfs));
+    end
+    
     Set.iter=Set.iter+1;
     auxgr(ig+1)=gr;
     

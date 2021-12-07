@@ -6,9 +6,11 @@ dy=zeros(Set.NumTotalV*3, 1);
 if remodelling
     dyr=norm(dy(Dofs.Remodel));
     gr=norm(g(Dofs.Remodel));
+    dfs = Dofs.Remodel;
 else
     dyr=norm(dy(Dofs.FreeDofs));
     gr=norm(g(Dofs.FreeDofs));
+    dfs = Dofs.FreeDofs;
 end
 gr0=gr;
 if numStep > -1

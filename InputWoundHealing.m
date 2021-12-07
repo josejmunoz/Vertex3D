@@ -6,7 +6,7 @@ Set.zScale = 19.23; %MicronsXY-MicronsZ relation
 Set.EllipseFitDiameter = 1; %Microns of a fitted ellipsed in Rob's Wing Discs
 Set.AvgCellArea = pi * (Set.EllipseFitDiameter/2)^2; %Microns
 Set.CellHeight = (Set.CellHeight * Set.zScale) / Set.AvgCellArea;
-Set.TotalCells = 150; %Aim 225
+Set.TotalCells = 30; %Aim 225
 
 %Set.e=4;  % Example Number look in Geo\Example.m 
 Set.Method=1;
@@ -16,14 +16,14 @@ Set.f=Set.s/2;
 
 %%  Mechanics
 %---------- Volume
-Set.lambdaV=20;
+Set.lambdaV=30;
 Set.lambdaV_Debris=0.01;
 
 %---------- Surface
 % Set.SurfaceType=4 : Surface-Energy based on the whole cell area differential adhsion
 Set.SurfaceType=4;
 % external 
-Set.lambdaS1=10;
+Set.lambdaS1=50;
 % Cell-Cell 
 Set.lambdaS2=1;
 % Cell-substrate
@@ -33,7 +33,7 @@ Set.lambdaS3=Set.lambdaS1/10;
 Set.InPlaneElasticity = 1;
 Set.mu_bulk = 3000; % Deformation restriction
 Set.lambda_bulk = 2000; %Volume restriction
-Set.lateral_bulk = 1.5;
+Set.lateral_bulk = 1;
 
 %--------- Bending 
 Set.Bending=false;
@@ -59,7 +59,7 @@ Set.Substrate = true;
 Set.kSubstrate = 1200; % kSubstrate >=2000 does not converge
 
 %% time
-Set.tend=0.071; % 0.071 = 70 minutes (60 after ablation)
+Set.tend=0.03; % 0.071 = 70 minutes (60 after ablation)
 Set.Nincr=Set.tend*1000;
 
 
@@ -79,12 +79,12 @@ Set.BarrierTri0 = 5e-2; % CARE!! THIS IS OVERRIDE WITHIN THE CODE: INPUTIMAGE.M
 Set.Ablation = true;
 %Set.cellsToAblate = findCentralCells(Example(Set.e), 1);
 % Aim: Set.cellsToAblate = 1:15;
-Set.cellsToAblate = 1:15;
+Set.cellsToAblate = 1:3;
 Set.TInitAblation = 0.01; 
 Set.TEndAblation = 0.071; %40 minutes (30 after ablation)
 
 %---------- Line tension
-Set.cLineTension = 3.7;
+Set.cLineTension = 1;
 %% Contractility
 % 0: No contractility
 % 1: Lateral cables end-to-end
@@ -94,7 +94,7 @@ Set.Contractility = 1;
 % Set.cLateralCables = 0.33;
 
 %% Execution parameters
-Set.batchProcessing = 1;
+Set.batchProcessing = 0;
 Set.diary = true;
 Set.MaxIter = 400;
 Set.Parallel = false;

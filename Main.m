@@ -14,7 +14,9 @@ addpath(strcat(pwd,Esc,'Src'));
 %InputCompression
 %InputStretch2 % Example of 2 stretched cells
 % InputSubstrateExtrusion
-InputWoundHealing
+
+
+[predictedValues] = fminsearch(@vertexModel, [10 10 1000 1000 1]);
 
 if isfield(Set,'batchProcessing') && Set.batchProcessing
     fid = fopen('batchParameters.txt');

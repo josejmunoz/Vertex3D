@@ -176,6 +176,8 @@ Cell.AllFaces=Cell.AllFaces.ComputeAreaTri(Y.DataRow,Cell.FaceCentres.DataRow);
 [Cell, uniqueEdges] = Cell.computeEdgeLengths(Y);
 allEdges = vertcat(Cell.EdgeLengths{:});
 Cell.EdgeLengths0_average = mean(allEdges(uniqueEdges));
+allLocations = vertcat(Cell.EdgeLocation{:});
+Cell.EdgeLengths0_lateralAverage = mean(allEdges(allLocations == 1))/2;
 Cell.EdgeLengthsn = Cell.EdgeLengths;
 
 end

@@ -23,6 +23,7 @@ for numCell = 1:ncell
     
     edgeLengths = Cell.EdgeLengths{numCell};
     edgeLengths0_average = Cell.EdgeLengths0_average;
+    edgeLengths0_lateralAverage = Cell.EdgeLengths0_lateralAverage;
     
     
     edgeLocation = Cell.EdgeLocation{numCell};
@@ -44,7 +45,7 @@ for numCell = 1:ncell
     
     for numEdge = 1:length(edgeLengths)
         y_1 = Y.DataRow(edgeVertices(numEdge, 1), :);
-        
+        l_i0 = edgeLengths0_average;
         if  edgeVertices(numEdge, 2) > 0 %Vertex
             y_2 = Y.DataRow(edgeVertices(numEdge, 2), :);
         else %Face center
@@ -66,11 +67,10 @@ for numCell = 1:ncell
             else
                 C = Set.cLineTension/100;
             end
+            l_i0 = edgeLengths0_lateralAverage;
         else
             C = 0;
         end
-        
-        l_i0 = edgeLengths0_average;
         
         %% Calculate residual g
         g_current = computeGContractility(l_i0, y_1, y_2, C);

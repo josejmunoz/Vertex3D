@@ -41,7 +41,7 @@ classdef CellClass
         %--------------------------------------------------------------------
         EdgeLengths0_average         % -The Initial\reference length of Edges at the  (Type=cell-structure ,  Size={NumCells 1}):
         %                            Each cell (Cell.EdgeLengths0{i})is an array of size [nEdges 1] with the length of the edges between each two vertices.
-        
+        EdgeLengths0_lateralAverage
         %--------------------------------------------------------------------
         FaceCentres          %% -Face centres  (Type=array-structure ,  Size={1 NumFaces}):
         % the x-y-z coordinates of face centres
@@ -148,6 +148,7 @@ classdef CellClass
                 Cell.Edges=cell(nC,1);
                 Cell.EdgeLengths=cell(nC,1);
                 Cell.EdgeLengths0_average=-1;
+                Cell.EdgeLengths0_lateralAverage = -1;
                 Cell.EdgeLengthsn=cell(nC,1);
                 Cell.DebrisCells=false(nC, 1);
                 Cell.ContractileForces=cell(nC, 1);

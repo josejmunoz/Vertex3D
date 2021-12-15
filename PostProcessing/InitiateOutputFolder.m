@@ -49,7 +49,7 @@ else
 end
 
 cd(DirOutput);
-if Set.VTK && ~exist('ResultVTK','dir')
+if Set.VTK && ~exist(fullfile(pwd, 'ResultVTK'),'dir')
     mkdir('ResultVTK')
 end
 if Set.VTK_iter
@@ -65,7 +65,7 @@ if Set.SaveSetting
     save('Set','Set')
 end
 
-if ~exist('Analysis','dir')
+if ~exist(fullfile(pwd, 'Analysis'),'dir')
     mkdir('Analysis')
 end
 

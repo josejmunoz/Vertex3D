@@ -59,7 +59,7 @@ Set.Substrate = true;
 Set.kSubstrate = 1200; % kSubstrate >=2000 does not converge
 
 %% time
-Set.tend=0.03; % 0.071 = 70 minutes (60 after ablation)
+Set.tend=0.042; % 0.072 = 70 minutes (60 after ablation)
 Set.Nincr=Set.tend*1000;
 
 

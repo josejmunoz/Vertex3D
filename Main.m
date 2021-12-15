@@ -9,11 +9,12 @@ addpath(strcat(pwd,Esc,'Remodel'));
 addpath(strcat(pwd,Esc,'PostProcessing'));
 addpath(genpath(fullfile(pwd,'Kg')));
 addpath(strcat(pwd,Esc,'Src'));
-
+addpath(strcat(pwd,Esc,'Analysis'));
 
 %InputCompression
 %InputStretch2 % Example of 2 stretched cells
 % InputSubstrateExtrusion
+InputWoundHealing
 
 
 [predictedValues] = fminsearch(@vertexModel, [10 10 1000 1000 1]);

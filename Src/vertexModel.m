@@ -211,6 +211,6 @@ function [evaluatedFunction] = vertexModel(params)
             end
         end
     end
-    evaluatedFunction = sum([maxRecoilingT6 - 1.65, cellShorteningT30 - 0.023, apicalWoundAreaT30 - 0.52]);
+    evaluatedFunction = sum([(maxRecoilingT6 - 1.65)^2, (cellShorteningT30 - 0.023)^2, (apicalWoundAreaT30 - 0.52)^2]);
 end
 

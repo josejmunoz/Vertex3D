@@ -175,9 +175,9 @@ Cell.AllFaces=Cell.AllFaces.ComputeAreaTri(Y.DataRow,Cell.FaceCentres.DataRow);
 %% Contractility L_0: Only when builiding the cells to avoid issues in remodelling
 [Cell, uniqueEdges] = Cell.computeEdgeLengths(Y);
 allEdges = vertcat(Cell.EdgeLengths{:});
-Cell.EdgeLengths0_average = mean(allEdges(uniqueEdges));
 allLocations = vertcat(Cell.EdgeLocation{:});
-Cell.EdgeLengths0_lateralAverage = mean(allEdges(allLocations == 1))/2;
+Cell.EdgeLengths0_average = mean(allEdges(allLocations == 3 | allLocations == 2));
+Cell.EdgeLengths0_lateralAverage = mean(allEdges(allLocations == 1));
 Cell.EdgeLengthsn = Cell.EdgeLengths;
 
 end

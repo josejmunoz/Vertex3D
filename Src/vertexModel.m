@@ -10,9 +10,22 @@ function [evaluatedFunction] = vertexModel(params)
     Set.cLineTension = params(5);
     [Set]=SetDefault(Set);
     [skipSimulation] = InitiateOutputFolder(Set);
-%     if skipSimulation
-%         continue
-%     end
+    if skipSimulation
+        load(fullfile(Set.OutputFolder, 'Analysis/cellInfo_42.mat'))
+        nonWoundedIterations = find(cellfun(@isempty, woundFeatures));
+        startingTimePoint = nonWoundedIterations(end) + 1;
+        reference = woundFeatures{startingTimePoint};
+
+        currentWoundArea = woundFeatures{startingTimePoint + 6};
+        maxRecoilingT6 = currentWoundArea.wound2DApicalArea / reference.wound2DApicalArea;
+        
+        currentWoundArea = woundFeatures{startingTimePoint + 30};
+        apicalWoundAreaT30 = currentWoundArea.wound2DApicalArea / reference.wound2DApicalArea;
+        cellShorteningT30 = reference.apicalIndentionAvg - currentWoundArea.apicalIndentionAvg;
+        
+        evaluatedFunction = sum([(maxRecoilingT6 - 1.65)^2, (cellShorteningT30 - 0.023)^2, (apicalWoundAreaT30 - 0.52)^2]);
+        return
+    end
     
     %% Mesh generation
     if isempty(Set.InputSegmentedImage)

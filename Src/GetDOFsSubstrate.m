@@ -12,7 +12,6 @@ Ydof=unique([Ydof Ydofsub]);
 
 IDSsub=IDS(abs(Cell.FaceCentres.DataRow(1:Faces.n,3)-Set.SubstrateZ)<eps);
 IDS(abs(Cell.FaceCentres.DataRow(1:Faces.n,3)-Set.SubstrateZ)<eps... 
-            | Faces.V3(1:Faces.n)...
             | ~Cell.FaceCentres.NotEmpty(1:Faces.n))=[];
 
 Sdof=3.*(kron(IDS,[1 1 1])-1)+kron(ones(1,length(IDS)),[1 2 3]);

@@ -95,7 +95,7 @@ for numLine = 1:length(tlines)
         end
         [Dofs] = GetDOFs(Y,Cell,Set, isempty(Set.InputSegmentedImage) == 0);
     elseif Set.Substrate
-        [Dofs]=GetDOFsSubsrtate(Y,Cell,Set,Faces);
+        [Dofs]=GetDOFsSubstrate(Y,Cell,Set,Cell.AllFaces);
     else
         error('Invalid Input in Set.BC and Set.Substrate. \n')
     end

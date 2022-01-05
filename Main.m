@@ -49,6 +49,7 @@ for numLine = 1:length(tlines)
     if isempty(Set.InputSegmentedImage)
         [X]=Example(Set.e);
         [X, Y0, Y,~, tetrahedra,XgID,Cell,Cn,~,Yn,SCn,Set] = InitializeGeometry3DVertex(X,Set);
+        Tetrahedra_weights = [];
     else
         [X, Y0, Y,tetrahedra,Tetrahedra_weights, XgID,Cell,Cn,~,Yn,SCn,Set] = InputImage(Set);
     end
@@ -159,9 +160,10 @@ for numLine = 1:length(tlines)
             if Set.Contractility && (Set.cPurseString > 0 || Set.cLateralCables > 0)
                 EnergyC(numStep)=Energy.Ec;
             end
-            if Set.Substrate
-                EnergySub(numStep) = Energy.Esub;
-            end
+            
+%             if Set.Substrate
+%                 EnergySub(numStep) = Energy.Esub;
+%             end
 
             %% Save for next steps
             for ii=1:Cell.n

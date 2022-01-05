@@ -81,10 +81,11 @@ xInternal=1:size(X,1);
 xInternal(XgID)=[];
 [Cv,Cell]=BuildCells(Twg,Y,X,xInternal,Set.f, true);
 
-
 Set.NumMainV=Y.n;
 Set.NumAuxV=Cell.FaceCentres.n;
-Set.NumTotalV=Set.NumMainV+Set.NumAuxV;
+Set.NumCellCentroid = Cell.n;
+Set.NumTotalV=Set.NumMainV + Set.NumAuxV + Set.NumCellCentroid;
+Set.NumXs = size(X, 1);
 Cn=BuildCn(Twg);
 
 Cell.AllFaces=Cell.AllFaces.ComputeAreaTri(Y.DataRow,Cell.FaceCentres.DataRow);

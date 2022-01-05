@@ -94,6 +94,8 @@ for numLine = 1:length(tlines)
             Set.prescribedBoundary = Set.WallPosition;
         end
         [Dofs] = GetDOFs(Y,Cell,Set, isempty(Set.InputSegmentedImage) == 0);
+    elseif Set.Substrate
+        [Dofs]=GetDOFsSubsrtate(Y,Cell,Set,Faces);
     else
         error('Invalid Input in Set.BC and Set.Substrate. \n')
     end

@@ -92,6 +92,7 @@ Cell.AllFaces=Cell.AllFaces.CheckInteriorFaces(XgID);
 
 Yn=Y;
 SCn=Cell.FaceCentres;
+Cell.Centre_n = Cell.Centre;
 Yt=[Y.DataOrdered ;Cell.FaceCentres.DataOrdered];
 
 T=DynamicArray(ceil(size(Twg,1)*1.5),size(Twg,2));

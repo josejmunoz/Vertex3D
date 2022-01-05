@@ -2,6 +2,9 @@ close all
 clear
 clc
 
+% Check current path and add necessary paths 
+addpath(strcat(pwd,Esc,'.')); 
+addpath(strcat(pwd,Esc,'Input')); 
 addpath(strcat(pwd,Esc,'Geo'));
 addpath(strcat(pwd,Esc,'Build'));
 addpath(strcat(pwd,Esc,'Utilities'));
@@ -13,11 +16,11 @@ addpath(strcat(pwd,Esc,'Analysis'));
 
 %InputCompression
 %InputStretch2 % Example of 2 stretched cells
-% InputSubstrateExtrusion
-InputWoundHealing
+InputSubstrateExtrusion
+%InputWoundHealing
 
 
-[predictedValues] = fminsearch(@vertexModel, [10 10 1000 1000 1]);
+%[predictedValues] = fminsearch(@vertexModel, [10 10 1000 1000 1]);
 
 if isfield(Set,'batchProcessing') && Set.batchProcessing
     fid = fopen('batchParameters.txt');
@@ -45,7 +48,7 @@ for numLine = 1:length(tlines)
     %% Mesh generation
     if isempty(Set.InputSegmentedImage)
         [X]=Example(Set.e);
-        [X, Y0, Y,tetrahedra,XgID,Cell,Cn,~,Yn,SCn,Set] = InitializeGeometry3DVertex(X,Set);
+        [X, Y0, Y,~, tetrahedra,XgID,Cell,Cn,~,Yn,SCn,Set] = InitializeGeometry3DVertex(X,Set);
     else
         [X, Y0, Y,tetrahedra,Tetrahedra_weights, XgID,Cell,Cn,~,Yn,SCn,Set] = InputImage(Set);
     end

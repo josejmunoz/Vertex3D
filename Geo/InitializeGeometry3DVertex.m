@@ -1,4 +1,4 @@
-function [X,X0,Y,Yt,T,XgID,Cell,Faces,Cn,Cv,Yn,SCn,Set]=InitializeGeometry3DVertex(X,Set)
+function [X,X0,Y,Yt,T,XgID,Cell,Cn,Cv,Yn,SCn,Set]=InitializeGeometry3DVertex(X,Set)
 %% This function creates the initial geometry of cells and the initial data structure
 % SeedingMethod 1 :  The free boundary is obtained using bounding box 
 % SeedingMethod 2 :  The free boundary is obtained by computing distance function          

@@ -1,5 +1,5 @@
 %% geometry
-Set.e=4;  % Example Number look in Geo\Example.m 
+Set.e=6;  % Example Number look in Geo\Example.m 
 Set.Method=1;
 % Tuning parameters
 Set.s=1.5;

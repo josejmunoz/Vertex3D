@@ -86,17 +86,8 @@ for numLine = 1:length(tlines)
     Set.ApplyBC=true;
 
     % Dofs & Boundary
-    if Set.BC==1 || Set.BC==2
-        if Set.BC==1
-            Set.prescribedBoundary = Set.VPrescribed;
-        elseif Set.BC==2
-            Set.WallPosition=max(Y.DataRow(:,2))+0.2;
-            Set.WallPosition=Set.WallPosition-Set.dx/((Set.TStopBC-Set.TStartBC)/Set.dt);
-            Set.prescribedBoundary = Set.WallPosition;
-        end
+    if Set.BC==1 || Set.BC==2 || Set.Substrate
         [Dofs] = GetDOFs(Y,Cell,Set, isempty(Set.InputSegmentedImage) == 0);
-    elseif Set.Substrate
-        [Dofs]=GetDOFsSubstrate(Y,Cell,Set,Cell.AllFaces);
     else
         error('Invalid Input in Set.BC and Set.Substrate. \n')
     end

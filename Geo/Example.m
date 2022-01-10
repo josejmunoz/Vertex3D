@@ -75,7 +75,14 @@ elseif e==6
     X=reshape(X,size(X,1)*size(X,2),1);
     Y=reshape(Y,size(Y,1)*size(Y,2),1);
     X=[X Y zeros(length(X),1)+rand(length(X),1)*0];
-   
+elseif e == 10
+    %% ductal cells intercalation 
+    % Sphere with acinar cells
+    [X,Y,Z,~] = mySphere(40);
+    X=[X' Y' Z'].*1.5;
+    % Ductal cell
+    X(end+1, 1:3) = [0 -2 0];
+    X(end+1, 1:3) = [0 -2.5 0];
 elseif e==16
     X=0:3;
     Y=0:3;

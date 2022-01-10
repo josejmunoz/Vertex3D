@@ -428,7 +428,7 @@ if ~isfield(Set,'VTK_iter') % vtk file for each iteration
     Set.VTK_iter=false;
 end 
 if ~isfield(Set,'OutputFolder') || Set.batchProcessing
-    Set.OutputFolder = strcat('Result/cLineTensionApical_', num2str(Set.cLineTension),'_typeOfContractility_', num2str(Set.Contractility), '_lambdaV_', num2str(Set.lambdaV), '_lambdaS1_', num2str(Set.lambdaS1),'_lambda_S2_', num2str(Set.lambdaS2), '_KSubstrate_', num2str(Set.kSubstrate),'_Remodelling_', num2str(Set.Remodelling),'_confinedXYZ_OuterVertices_NCells_', num2str(Set.TotalCells), '_viscosity_', num2str(Set.nu), '_elasticity_mu_', num2str(Set.mu_bulk), '_elasticity_lambda_', num2str(Set.lambda_bulk));
+    Set.OutputFolder = strcat('Result/cLineTensionApical_', num2str(Set.cLineTension),'_typeOfContractility_', num2str(Set.Contractility), '_lambdaV_', num2str(Set.lambdaV), '_lambdaS1_', num2str(Set.lambdaS1),'_lambda_S2_', num2str(Set.lambdaS2), '_lambda_S3_', num2str(Set.lambdaS3), '_KSubstrate_', num2str(Set.kSubstrate),'_Remodelling_', num2str(Set.Remodelling),'_confinedXYZ_OuterVertices_NCells_', num2str(Set.TotalCells), '_viscosity_', num2str(Set.nu), '_elasticity_mu_', num2str(Set.mu_bulk), '_elasticity_lambda_', num2str(Set.lambda_bulk));
 end
 if ~isfield(Set,'SaveWorkspace') % Save Workspace at each time step
     Set.SaveWorkspace=false;   

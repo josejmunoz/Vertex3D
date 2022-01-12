@@ -6,7 +6,7 @@ Set.zScale = 19.23; %MicronsXY-MicronsZ relation
 Set.EllipseFitDiameter = 1; %Microns of a fitted ellipsed in Rob's Wing Discs
 Set.AvgCellArea = pi * (Set.EllipseFitDiameter/2)^2; %Microns
 Set.CellHeight = (Set.CellHeight * Set.zScale) / Set.AvgCellArea;
-Set.TotalCells = 40; %Aim 225
+Set.TotalCells = 100; %Aim 225
 
 %Set.e=4;  % Example Number look in Geo\Example.m 
 Set.Method=1;
@@ -16,23 +16,23 @@ Set.f=Set.s/2;
 
 %%  Mechanics
 %---------- Volume
-Set.lambdaV=10;
+Set.lambdaV=1;
 Set.lambdaV_Debris=0.001;
 
 %---------- Surface
 % Set.SurfaceType=4 : Surface-Energy based on the whole cell area differential adhsion
 Set.SurfaceType=4;
 % external 
-Set.lambdaS1=1;
+Set.lambdaS1=0.001;
 % Cell-Cell 
-Set.lambdaS2=1;
+Set.lambdaS2=0.001;
 % Cell-substrate
 Set.lambdaS3=Set.lambdaS1/10;
 
 %---------- In plane elasticity
 Set.InPlaneElasticity = 1;
-Set.mu_bulk = 3000; % Deformation restriction
-Set.lambda_bulk = 2000; %Volume restriction
+Set.mu_bulk = 30000; % Deformation restriction
+Set.lambda_bulk = 1000; %Volume restriction
 Set.lateral_bulk = 1;
 
 %--------- Bending 
@@ -79,12 +79,12 @@ Set.BarrierTri0 = 5e-2; % CARE!! THIS IS OVERRIDE WITHIN THE CODE: INPUTIMAGE.M
 Set.Ablation = true;
 %Set.cellsToAblate = findCentralCells(Example(Set.e), 1);
 % Aim: Set.cellsToAblate = 1:15;
-Set.cellsToAblate = 1:3;
+Set.cellsToAblate = 1:10;
 Set.TInitAblation = 0.01; 
 Set.TEndAblation = 0.071; %40 minutes (30 after ablation)
 
 %---------- Line tension
-Set.cLineTension = 1;
+Set.cLineTension = 4;
 %% Contractility
 % 0: No contractility
 % 1: Lateral cables end-to-end
@@ -94,7 +94,7 @@ Set.Contractility = 1;
 % Set.cLateralCables = 0.33;
 
 %% Execution parameters
-Set.batchProcessing = 0;
+Set.batchProcessing = 1;
 Set.diary = true;
 Set.MaxIter = 200;
 Set.Parallel = false;

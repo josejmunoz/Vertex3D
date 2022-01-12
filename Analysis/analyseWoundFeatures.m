@@ -18,16 +18,16 @@ function [woundData, paramsPerFile] = analyseWoundFeatures(dirToAnalyse)
         cellShorteningT30(numFile) = reference.apicalIndentionAvg - currentWoundArea.apicalIndentionAvg;
         
         load(strrep(allSetMat(numFile).folder, 'Analysis', 'set.mat'))
-        paramsPerFile(numFile, 1:5) = [Set.lambdaV, Set.lambdaS1, Set.mu_bulk, Set.lambda_bulk, Set.cLineTension];
+        paramsPerFile(numFile, 1:6) = [Set.lambdaV, Set.lambdaS1, Set.mu_bulk, Set.lambda_bulk, Set.cLineTension, numFile];
     end
     
     woundData = table(maxRecoilingT6(:), apicalWoundAreaT30(:), cellShorteningT30(:));
     woundData(end+1, :) = {1.65 0.52 0.023};
     woundData.Properties.VariableNames = {'maxRecoilingT6', 'apicalWoundAreaT30', 'cellShorteningT30'};
-    heatmap(woundData, 'cellShorteningT30', 'apicalWoundAreaT30', 'ColorVariable', 'maxRecoilingT6');
-    
+    woundData.error = ((woundData.maxRecoilingT6 - 1.63)/1.63).^2 + ((woundData.apicalWoundAreaT30 - 0.52)/0.52).^2;
+    %heatmap(woundData, 'cellShorteningT30', 'apicalWoundAreaT30', 'ColorVariable', 'maxRecoilingT6');
     %% Regression
-    paramsPerFile = array2table(paramsPerFile, 'VariableNames', {'lambdaV', 'lambdaS1', 'mu_bulk', 'lambda_bulk', 'cLineTension'});
+    paramsPerFile = array2table(paramsPerFile, 'VariableNames', {'lambdaV', 'lambdaS1', 'mu_bulk', 'lambda_bulk', 'cLineTension', 'id'});
     fitglm([paramsPerFile, woundData(1:end-1, 1)])
     fitglm([paramsPerFile, woundData(1:end-1, 2)])
     fitglm([paramsPerFile, woundData(1:end-1, 3)])

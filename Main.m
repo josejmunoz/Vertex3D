@@ -16,8 +16,8 @@ addpath(strcat(pwd,Esc,'Analysis'));
 
 %InputCompression
 %InputStretch2 % Example of 2 stretched cells
-InputSubstrateExtrusion
-%InputWoundHealing
+%InputSubstrateExtrusion
+InputWoundHealing
 
 %[predictedValues] = fminsearch(@vertexModel, 0.75, optimset('MaxFunEvals', 100, 'MaxIter', 100, 'Display', 'iter', 'TolX', 0.000001));
 

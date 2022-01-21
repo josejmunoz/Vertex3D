@@ -6,7 +6,7 @@ Set.zScale = 19.23; %MicronsXY-MicronsZ relation
 Set.EllipseFitDiameter = 1; %Microns of a fitted ellipsed in Rob's Wing Discs
 Set.AvgCellArea = pi * (Set.EllipseFitDiameter/2)^2; %Microns
 Set.CellHeight = (Set.CellHeight * Set.zScale) / Set.AvgCellArea;
-Set.TotalCells = 100; %Aim 225
+Set.TotalCells = 40; %Aim 225
 
 %Set.e=4;  % Example Number look in Geo\Example.m 
 Set.Method=1;
@@ -79,7 +79,7 @@ Set.BarrierTri0 = 5e-2; % CARE!! THIS IS OVERRIDE WITHIN THE CODE: INPUTIMAGE.M
 Set.Ablation = true;
 %Set.cellsToAblate = findCentralCells(Example(Set.e), 1);
 % Aim: Set.cellsToAblate = 1:15;
-Set.cellsToAblate = 1:10;
+Set.cellsToAblate = 1:3;
 Set.TInitAblation = 0.01; 
 Set.TEndAblation = 0.071; %40 minutes (30 after ablation)
 

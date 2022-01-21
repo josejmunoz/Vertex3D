@@ -112,20 +112,8 @@ for idFace = facesList
             fprintf('=>> Local problem did not converge -> 23 Flip rejected !! \n');
             break
         else
-%             figure, 
-%             %Previous tetrahedra
-%             tetramesh(Tp.DataRow(edgeToChange, :), Xp)
-%             hold on;
-%             %Previous edges to change
-%             plot3(Yp.DataRow(edgeToChange, 1), Yp.DataRow(edgeToChange, 2), Yp.DataRow(edgeToChange, 3), 'bo')
-%             
-%             figure,
-%             %New tetrahedra
-%             tetramesh(Tnew(1, :), X)
-%             hold on;
-%             %Previous edges to change
-%             plot3(Ynew(1, 1), Ynew(1, 2), Ynew(1, 3), 'bo')
-            
+            Cell.AllFaces=Cell.AllFaces.ComputeAreaTri(Y.DataRow,Cell.FaceCentres.DataRow);
+            Cell.AllFaces=Cell.AllFaces.ComputeEnergy(Set);
             Set.N_Accepted_Transfromation=Set.N_Accepted_Transfromation+1;
         end
     else

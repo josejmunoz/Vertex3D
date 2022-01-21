@@ -3,10 +3,17 @@ function [Set]=SetDefault(Set)
 
 %% ============================= geometry =================================
 
-%% Option 1: Obtaining from a number of seeds placed on a planar surface
-% Examples of cell centres  position
-if ~isfield(Set,'e')
-    Set.e=1;
+% Examples of cell centres  position (see Example.m) 
+% Exemple=1 Stretching/Compression of 3 cells 
+% Exemple=2 Sphere 
+% Exemple=3 Cylinder 
+% Exemple=4 3x3 cells 
+% Exemple=5 Substrate extrussion, 3x3 
+% Exemple=6 Stretching of 2 cells  
+% Exemple=16 3x3 monolyaer 
+% Exemple=25 5x5 monolyaer 
+if ~isfield(Set,'Exemple') 
+    Set.Exemple=1; 
 end 
 % Placement of boundary nodes
 % Seeding method==1 % Bounding box   
@@ -357,7 +364,11 @@ end
 %% ============================= Contractility ============================
 
 if ~isfield(Set, 'Contractility')
-    Set.Contractility = Set.cLineTension;
+    Set.Contractility = 0;
+end
+
+if ~isfield(Set, 'cLineTension')
+    Set.cLineTension = Set.lambdaS1;
 end
 
 if ~isfield(Set, 'cPurseString')  % Contractility coefficient on the purse string
@@ -382,7 +393,7 @@ if ~isfield(Set, 'Contractility_TimeVariability_PurseString')
 end
 
 if ~isfield(Set, 'cLateralCables') % Contractility coefficient on the lateral cables
-    Set.cLateralCables = 0;
+    Set.cLateralCables = Set.cLineTension;
 end
 
 % Contractility coefficient values on the lateral cables during a period of 
@@ -417,7 +428,7 @@ if ~isfield(Set,'VTK_iter') % vtk file for each iteration
     Set.VTK_iter=false;
 end 
 if ~isfield(Set,'OutputFolder') || Set.batchProcessing
-    Set.OutputFolder = strcat('Result/cLineTensionApical_', num2str(Set.cLineTension),'_typeOfContractility_', num2str(Set.Contractility), '_lateralRidigity_', num2str(Set.lateral_bulk), '_lambdaV_', num2str(Set.lambdaV), '_lambdaS1_', num2str(Set.lambdaS1),'_lambda_S2_', num2str(Set.lambdaS2), '_KSubstrate_', num2str(Set.kSubstrate),'_Remodelling_', num2str(Set.Remodelling),'_confinedXYZ_OuterVertices_NCells_', num2str(Set.TotalCells), '_viscosity_', num2str(Set.nu), '_elasticity_mu_', num2str(Set.mu_bulk), '_elasticity_lambda_', num2str(Set.lambda_bulk));
+    Set.OutputFolder = strcat('Result/cLineTensionApical_', num2str(Set.cLineTension),'_typeOfContractility_', num2str(Set.Contractility), '_lambdaV_', num2str(Set.lambdaV), '_lambdaS1_', num2str(Set.lambdaS1),'_lambda_S2_', num2str(Set.lambdaS2), '_lambda_S3_', num2str(Set.lambdaS3), '_KSubstrate_', num2str(Set.kSubstrate),'_Remodelling_', num2str(Set.Remodelling),'_confinedXYZ_OuterVertices_NCells_', num2str(Set.TotalCells), '_viscosity_', num2str(Set.nu), '_elasticity_mu_', num2str(Set.mu_bulk), '_elasticity_lambda_', num2str(Set.lambda_bulk));
 end
 if ~isfield(Set,'SaveWorkspace') % Save Workspace at each time step
     Set.SaveWorkspace=false;   

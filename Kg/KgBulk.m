@@ -76,9 +76,9 @@ for numCell = 1:ncell
 %             
 %             gB = gB + (gB_OnlyZ - gB_base);
 %             KB = KB + (KB_OnlyZ - KB_base);
-            gB(3:3:end) = gB(3:3:end) * Set.lateral_bulk;
-            KB(3:3:end, :) = KB(3:3:end, :) * Set.lateral_bulk;
-            KB(:, 3:3:end) = KB(:, 3:3:end) * Set.lateral_bulk;
+%             gB(3:3:end) = gB(3:3:end) * Set.lateral_bulk;
+%             KB(3:3:end, :) = KB(3:3:end, :) * Set.lateral_bulk;
+%             KB(:, 3:3:end) = KB(:, 3:3:end) * Set.lateral_bulk;
             
             Energy=Energy+Energye;
 

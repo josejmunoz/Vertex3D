@@ -63,6 +63,8 @@ for i=1:Cell.AllFaces.n
         [Cell, Y, Yn, SCn, T, X, Dofs, Set, Vnew] = backToPreviousStep(Cellp, Yp, Ynp, SCnp, Tp, Xp, Dofsp, Setp, Vnewp);
         fprintf('=>> Local problem did not converge -> 32 Flip rejected !! \n');
     else
+        Cell.AllFaces=Cell.AllFaces.ComputeAreaTri(Y.DataRow,Cell.FaceCentres.DataRow);
+        Cell.AllFaces=Cell.AllFaces.ComputeEnergy(Set);
         Set.N_Accepted_Transfromation=Set.N_Accepted_Transfromation+1;
     end
 end

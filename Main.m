@@ -2,6 +2,9 @@ close all
 clear
 clc
 
+% Check current path and add necessary paths 
+addpath(strcat(pwd,Esc,'.')); 
+addpath(strcat(pwd,Esc,'Input')); 
 addpath(strcat(pwd,Esc,'Geo'));
 addpath(strcat(pwd,Esc,'Build'));
 addpath(strcat(pwd,Esc,'Utilities'));
@@ -13,10 +16,12 @@ addpath(strcat(pwd,Esc,'Analysis'));
 
 %InputCompression
 %InputStretch2 % Example of 2 stretched cells
-% InputSubstrateExtrusion
-InputWoundHealing
+InputSubstrateExtrusion
+%InputWoundHealing
 
 %[predictedValues] = fminsearch(@vertexModel, 0.75, optimset('MaxFunEvals', 100, 'MaxIter', 100, 'Display', 'iter', 'TolX', 0.000001));
+
+%[predictedValues] = fminsearch(@vertexModel, [10 10 1000 1000 1]);
 
 if isfield(Set,'batchProcessing') && Set.batchProcessing
     fid = fopen('batchParameters.txt');
@@ -44,7 +49,8 @@ for numLine = 1:length(tlines)
     %% Mesh generation
     if isempty(Set.InputSegmentedImage)
         [X]=Example(Set.e);
-        [X, Y0, Y,tetrahedra,XgID,Cell,Cn,~,Yn,SCn,Set] = InitializeGeometry3DVertex(X,Set);
+        [X, Y0, Y,~, tetrahedra,XgID,Cell,Cn,~,Yn,SCn,Set] = InitializeGeometry3DVertex(X,Set);
+        Tetrahedra_weights = [];
     else
         [X, Y0, Y,tetrahedra,Tetrahedra_weights, XgID,Cell,Cn,~,Yn,SCn,Set] = InputImage(Set);
     end
@@ -81,14 +87,7 @@ for numLine = 1:length(tlines)
     Set.ApplyBC=true;
 
     % Dofs & Boundary
-    if Set.BC==1 || Set.BC==2
-        if Set.BC==1
-            Set.prescribedBoundary = Set.VPrescribed;
-        elseif Set.BC==2
-            Set.WallPosition=max(Y.DataRow(:,2))+0.2;
-            Set.WallPosition=Set.WallPosition-Set.dx/((Set.TStopBC-Set.TStartBC)/Set.dt);
-            Set.prescribedBoundary = Set.WallPosition;
-        end
+    if Set.BC==1 || Set.BC==2 || Set.Substrate
         [Dofs] = GetDOFs(Y,Cell,Set, isempty(Set.InputSegmentedImage) == 0);
     else
         error('Invalid Input in Set.BC and Set.Substrate. \n')
@@ -153,9 +152,10 @@ for numLine = 1:length(tlines)
             if Set.Contractility && (Set.cPurseString > 0 || Set.cLateralCables > 0)
                 EnergyC(numStep)=Energy.Ec;
             end
-            if Set.Substrate
-                EnergySub(numStep) = Energy.Esub;
-            end
+            
+%             if Set.Substrate
+%                 EnergySub(numStep) = Energy.Esub;
+%             end
 
             %% Save for next steps
             for ii=1:Cell.n

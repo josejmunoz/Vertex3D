@@ -16,8 +16,7 @@ addpath(strcat(pwd,Esc,'Analysis'));
 % InputSubstrateExtrusion
 InputWoundHealing
 
-
-[predictedValues] = fminsearch(@vertexModel, [10 10 1000 1000 1]);
+%[predictedValues] = fminsearch(@vertexModel, 0.75, optimset('MaxFunEvals', 100, 'MaxIter', 100, 'Display', 'iter', 'TolX', 0.000001));
 
 if isfield(Set,'batchProcessing') && Set.batchProcessing
     fid = fopen('batchParameters.txt');

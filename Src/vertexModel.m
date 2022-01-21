@@ -2,12 +2,7 @@ function [evaluatedFunction] = vertexModel(params)
 %VERTEXMODEL Summary of this function goes here
 %   Detailed explanation goes here
     InputWoundHealing
-    Set.lambdaV=params(1); 
-    Set.lambdaS1=params(2); 
-    Set.lambdaS3=Set.lambdaS1/10;
-    Set.mu_bulk = params(3);
-    Set.lambda_bulk = params(4);
-    Set.cLineTension = params(5);
+    Set.cLineTension = params(1)*10;
     [Set]=SetDefault(Set);
     [skipSimulation] = InitiateOutputFolder(Set);
     if skipSimulation
@@ -23,7 +18,7 @@ function [evaluatedFunction] = vertexModel(params)
         apicalWoundAreaT30 = currentWoundArea.wound2DApicalArea / reference.wound2DApicalArea;
         cellShorteningT30 = reference.apicalIndentionAvg - currentWoundArea.apicalIndentionAvg;
         
-        evaluatedFunction = sum([(maxRecoilingT6 - 1.65)^2, (cellShorteningT30 - 0.023)^2, (apicalWoundAreaT30 - 0.52)^2]);
+        evaluatedFunction = sum([(maxRecoilingT6 - 1.65)^2, (apicalWoundAreaT30 - 0.52)^2]);
         return
     end
     
@@ -224,6 +219,6 @@ function [evaluatedFunction] = vertexModel(params)
             end
         end
     end
-    evaluatedFunction = sum([(maxRecoilingT6 - 1.65)^2, (cellShorteningT30 - 0.023)^2, (apicalWoundAreaT30 - 0.52)^2]);
+    evaluatedFunction = sum([(maxRecoilingT6 - 1.65)^2, (apicalWoundAreaT30 - 0.52)^2]);
 end
 

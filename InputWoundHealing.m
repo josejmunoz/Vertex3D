@@ -17,7 +17,7 @@ Set.f=Set.s/2;
 %%  Mechanics
 %---------- Volume
 Set.lambdaV=1;
-Set.lambdaV_Debris=0.001;
+Set.lambdaV_Debris=eps;
 
 %---------- Surface
 % Set.SurfaceType=4 : Surface-Energy based on the whole cell area differential adhsion
@@ -95,6 +95,7 @@ Set.Contractility = 1;
 
 %% Execution parameters
 Set.batchProcessing = 1;
+Set.VTK = 0;
 Set.diary = true;
 Set.MaxIter = 200;
 Set.Parallel = false;

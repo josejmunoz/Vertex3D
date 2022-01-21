@@ -9,7 +9,7 @@ function [X]=GetXFromY(Cell,X,T,Y,XgID,Set, Y0, Tetrahedra_weights)
 %     X(Cell.Int(numCell),:)=centreOfMass;
 % end
 
-if Set.ObtainX == 0 && exist('Tetrahedra_weights', 'var')
+if Set.ObtainX == 0 && exist('Tetrahedra_weights', 'var') && isempty(Tetrahedra_weights) == 0
     
     X_Previous = X;
     YChange = Y.DataRow - Y0.DataRow;

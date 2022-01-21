@@ -25,7 +25,7 @@ for numCell = 1:ncell
         end
     end
     
-    if Cell.DebrisCells(numCell) %% Is this oK???
+    if Cell.DebrisCells(numCell)
         continue;
     end
     

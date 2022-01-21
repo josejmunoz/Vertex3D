@@ -7,7 +7,7 @@ if Set.Ablation == true && Set.TInitAblation <= t
         Cell = Cell.AblateCells(Set.cellsToAblate);
         Set.cellsToAblate = [];
         CellInput.LambdaS1Factor(Cell.DebrisCells) = Set.LambdaSFactor_Debris;
-        %CellInput.LambdaS2Factor(Cell.DebrisCells) = Set.LambdaSFactor_Debris;
+        CellInput.LambdaS2Factor(Cell.DebrisCells) = Set.LambdaSFactor_Debris;
         CellInput.LambdaS3Factor(Cell.DebrisCells) = Set.LambdaSFactor_Debris;
         
 %         %% Smaller time-steps

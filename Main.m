@@ -17,7 +17,7 @@ addpath(strcat(pwd,Esc,'Analysis'));
 InputWoundHealing
 
 
-[predictedValues] = fminsearch(@vertexModel, [10 10 1000 1000 1]);
+%[predictedValues] = fminsearch(@vertexModel, [10 10 1000 1000 1]);
 
 if isfield(Set,'batchProcessing') && Set.batchProcessing
     fid = fopen('batchParameters.txt');
@@ -174,10 +174,10 @@ for numLine = 1:length(tlines)
             % ----------- Ablation ------------------------------------------------
             [Cell, Set, CellInput] = performAblation(Cell, Set, CellInput, t);
 
-            tooSmallCells = Cell.Vol < (Cell.Vol0/1000);
-            if any(tooSmallCells) % Remove cell in the case is too small
-                [Cell, CellInput, XgID,nC,SCn,flag32, Dofs] = Cell.removeCell(CellInput, XgID, tetrahedra, Y, X, SCn, tooSmallCells, Set);
-            end
+%             tooSmallCells = Cell.Vol < (Cell.Vol0/1000);
+%             if any(tooSmallCells) % Remove cell in the case is too small
+%                 [Cell, CellInput, XgID,nC,SCn,flag32, Dofs] = Cell.removeCell(CellInput, XgID, tetrahedra, Y, X, SCn, tooSmallCells, Set);
+%             end
             
             %% Analise cells
             [~, cellFeatures{numStep}, woundFeatures{numStep}, woundEdgeFeatures{numStep}] = Cell.exportTableWithCellFeatures(tetrahedra.DataRow, Y, numStep, Set);

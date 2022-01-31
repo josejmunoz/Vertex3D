@@ -161,7 +161,7 @@ classdef FacesClass
                         % cell-cell face
                         obj.InterfaceType(numFace)=1;
                     else
-                        if Cell.FaceCentres(numFace, 3) >= 0
+                        if Cell.FaceCentres.DataRow(numFace, 3) >= 0
                             % external/apical face
                             obj.InterfaceType(numFace)=0;
                         else

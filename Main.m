@@ -14,6 +14,7 @@ addpath(genpath(fullfile(pwd,'Kg')));
 addpath(strcat(pwd,Esc,'Src'));
 addpath(strcat(pwd,Esc,'Analysis'));
 
+%InputBubblesSteadyState
 %InputCompression
 %InputStretch2 % Example of 2 stretched cells
 %InputSubstrateExtrusion
@@ -43,6 +44,12 @@ for numLine = 1:length(tlines)
     [Set]=SetDefault(Set);
     [skipSimulation] = InitiateOutputFolder(Set);
     if skipSimulation
+        clearvars -except 'tlines' 'numLine'
+        %InputCompression
+        %InputStretch2 % Example of 2 stretched cells
+        % InputSubstrateExtrusion
+        InputWoundHealing
+        %InputBubblesSteadyState
         continue
     end
     
@@ -225,11 +232,12 @@ for numLine = 1:length(tlines)
     end
     %% New simulation
     if Set.batchProcessing
-        clearvars -except 'tlines'
+        clearvars -except 'tlines' 'numLine'
         %InputCompression
         %InputStretch2 % Example of 2 stretched cells
         % InputSubstrateExtrusion
         InputWoundHealing
+        %InputBubblesSteadyState
     end
 end
 fprintf('Done!!\n')

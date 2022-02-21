@@ -1,4 +1,4 @@
-function [g,K,Cell,Energy] = KgSubstrate(Cell, SCn, Y, Yn, Set)
+function [g,K,Cell,Energy] = KgSubstrate(Cell, Y, Set)
 %KGSUBSTRATE Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -14,6 +14,9 @@ else
 end
 
 for numCell = 1:ncell
+    if numCell ~= 10 % Only ductal cell
+        break
+    end
     
 %     if Cell.DebrisCells(numCell)
 %         kSubstrate = 0;

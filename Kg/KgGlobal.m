@@ -128,11 +128,9 @@ if nargout>1
     
     %%  Substrate 
     if Set.Substrate && Set.kSubstrate > 0
-        [gSub,KSub,Cell,Energy.Esub]=KgSubstrate(Cell, SCn, Y, Yn, Set);
+        [gSub,KSub,Cell,Energy.Esub]=KgSubstrate(Cell, Y, Set);
         K=K+KSub; g=g+gSub;
     end
-    
-    
 else
     %% Compute the residual g solo (For LineSearch)
 
@@ -217,7 +215,7 @@ else
     
     %%  Substrate 
     if Set.Substrate && Set.kSubstrate > 0
-        [gSub]=KgSubstrate(Cell, SCn, Y, Yn, Set);
+        [gSub]=KgSubstrate(Cell, Y, Set);
         g=g+gSub;
     end
     

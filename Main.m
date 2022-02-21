@@ -14,11 +14,11 @@ addpath(genpath(fullfile(pwd,'Kg')));
 addpath(strcat(pwd,Esc,'Src'));
 addpath(strcat(pwd,Esc,'Analysis'));
 
-%InputBubblesSteadyState
+InputBubblesSteadyState
 %InputCompression
 %InputStretch2 % Example of 2 stretched cells
 %InputSubstrateExtrusion
-InputWoundHealing
+%InputWoundHealing
 
 %[predictedValues] = fminsearch(@vertexModel, 0.75, optimset('MaxFunEvals', 100, 'MaxIter', 100, 'Display', 'iter', 'TolX', 0.000001));
 

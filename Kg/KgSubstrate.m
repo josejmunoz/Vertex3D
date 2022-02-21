@@ -12,10 +12,10 @@ if nargout > 1
 else
     [g, Energy, ncell] = initializeKg(Cell, Set);
 end
-
+Set.z0Substrate = 4;
 for numCell = 1:ncell
     if numCell ~= 10 % Only ductal cell
-        break
+        continue
     end
     
 %     if Cell.DebrisCells(numCell)
@@ -35,8 +35,14 @@ for numCell = 1:ncell
     substrateForcesOfCell = Cell.SubstrateForce{numCell};
     numVertexElem = 0;
     %basalJunctionVertices = Cell.BasalBorderVertices{numCell};
-    for numVertex = Cell.BasalVertices{numCell}'
+    
+    currentEdgesOfCell = Cell.Cv{numCell};
+    uniqueCurrentVertices = unique(currentEdgesOfCell(currentEdgesOfCell > 0));
+    %distances = pdist2(Y.DataRow(uniqueCurrentVertices, :), [0 0 Set.z0Substrate], 'euclidean');
+    %normalizedDistances = (distances.^4)/max(distances.^4);
+    for numVertex = uniqueCurrentVertices'
         numVertexElem = numVertexElem + 1;
+        %currentWeight = normalizedDistances(numVertexElem);
 %         if basalJunctionVertices(numVertexElem) == 0
 %             continue;
 %         end
@@ -70,7 +76,6 @@ for numCell = 1:ncell
             %% Calculate energy
             Energy = Energy + computeEnergySubstrate(kSubstrate, currentVertex(:, 3), z0);
         end
-        
     end
     
     g = g + ge;

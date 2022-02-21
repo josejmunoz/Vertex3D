@@ -33,7 +33,6 @@ Set.lambdaS3=Set.lambdaS1/10;
 Set.InPlaneElasticity = 1;
 Set.mu_bulk = 30000; % Deformation restriction
 Set.lambda_bulk = 1000; %Volume restriction
-Set.lateral_bulk = 1;
 
 %--------- Bending 
 Set.Bending=false;

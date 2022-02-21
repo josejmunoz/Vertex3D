@@ -87,7 +87,7 @@ elseif e==7
     % Ductal cell in the middle of the epithelium
     ductalXs = mean(X, 1);
     ductalXs(:, 3) = min(X(:, 3)) - 1;
-    X = [X, ductalXs];
+    X = vertcat(X, ductalXs);
 elseif e==8
     % Acinar cells
     [X,Y,Z,~] = mySphere(40);
@@ -95,7 +95,7 @@ elseif e==8
     % Ductal cells comming from bottom
     ductalXs = mean(X, 1);
     ductalXs(:, 3) = min(X(:, 3)) - 1;
-    X = [X, ductalXs];
+    X = vertcat(X, ductalXs);
 elseif e==16
     X=0:3;
     Y=0:3;

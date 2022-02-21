@@ -56,6 +56,7 @@ for numLine = 1:length(tlines)
     %% Mesh generation
     if isempty(Set.InputSegmentedImage)
         [X]=Example(Set.e);
+        Set.TotalCells = size(X, 1);
         [X, Y0, Y,~, tetrahedra,XgID,Cell,Cn,~,Yn,SCn,Set] = InitializeGeometry3DVertex(X,Set);
         Tetrahedra_weights = [];
     else

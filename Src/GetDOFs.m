@@ -97,8 +97,8 @@ else
     freeIDS(ismember(freeIDS,[pIDS cIDS SdofCBorder]))=[];
 
     %% 'Mechanical' cell centres
-    pIDC=IDC(Cell.Centre > prescribedBoundary);
-    cIDC=IDC(Cell.Centre < Set.VFixd);
+    pIDC=IDC(Cell.Centre(:, 2) > prescribedBoundary);
+    cIDC=IDC(Cell.Centre(:, 2) < Set.VFixd);
 
     freeIDC=1:Cell.n;
     freeIDC(ismember(freeIDC,[pIDC cIDC]))=[];

@@ -213,7 +213,7 @@ Set.NumXs = size(X, 1);
 Cn=BuildCn(Twg);
 
 Cell.AllFaces=Cell.AllFaces.ComputeAreaTri(Y.DataRow,Cell.FaceCentres.DataRow);
-Cell.AllFaces=Cell.AllFaces.CheckInteriorFaces(XgID);
+Cell.AllFaces=Cell.AllFaces.CheckInteriorFaces(Cell);
 
 Yn = Y;
 Y0 = Y;

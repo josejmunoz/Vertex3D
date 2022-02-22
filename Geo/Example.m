@@ -86,7 +86,7 @@ elseif e==7
     X=[X Y ones(length(X),1)+rand(length(X),1)*0];
     % Ductal cell in the middle of the epithelium
     ductalXs = mean(X, 1);
-    ductalXs(:, 3) = min(X(:, 3)) - 3;
+    ductalXs(:, 3) = min(X(:, 3)) - 1;
     X = vertcat(X, ductalXs);
 elseif e==8
     % Acinar cells

@@ -34,7 +34,7 @@ if Set.SeedingMethod==1
     [XgID,X]=SeedWithBoundingBox(X,Set.s);
 elseif Set.SeedingMethod==2
     % Fast marching method  
-    [XgID,X]=SeedWithDistanceFunction(X,Set.s);
+    [XgID,X]=SeedWithDistanceFunction(X,Set.s); % Not on Github
 end
 
 

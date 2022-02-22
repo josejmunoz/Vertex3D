@@ -38,11 +38,11 @@ for numCell = 1:ncell
     
     currentEdgesOfCell = Cell.Cv{numCell};
     uniqueCurrentVertices = unique(currentEdgesOfCell(currentEdgesOfCell > 0));
-    %distances = pdist2(Y.DataRow(uniqueCurrentVertices, :), [0 0 Set.z0Substrate], 'euclidean');
-    %normalizedDistances = (distances.^4)/max(distances.^4);
+    distances = pdist2(Y.DataRow(uniqueCurrentVertices, :), [0 0 Set.z0Substrate], 'euclidean');
+    normalizedDistances = (distances.^4)/max(distances.^4);
     for numVertex = uniqueCurrentVertices'
         numVertexElem = numVertexElem + 1;
-        %currentWeight = normalizedDistances(numVertexElem);
+        currentWeight = normalizedDistances(numVertexElem);
 %         if basalJunctionVertices(numVertexElem) == 0
 %             continue;
 %         end
@@ -57,7 +57,7 @@ for numCell = 1:ncell
         end
 
         %% Calculate residual g
-        g_current = computeGSubstrate(kSubstrate, currentVertex(:, 3), z0);
+        g_current = computeGSubstrate(kSubstrate * currentWeight, currentVertex(:, 3), z0);
         ge = Assembleg(ge, g_current, vertexIndex);
         
         %% Save contractile forces (g) to output
@@ -68,13 +68,13 @@ for numCell = 1:ncell
             K_current = computeKSubstrate(kSubstrate);
 
             if Set.Sparse == 2
-                [si,sj,sv,sk] = AssembleKSparse(K_current, vertexIndex, si, sj, sv, sk);
+                [si,sj,sv,sk] = AssembleKSparse(K_current * currentWeight, vertexIndex, si, sj, sv, sk);
             else
                 K = AssembleK(K, K_current, vertexIndex);
             end
 
             %% Calculate energy
-            Energy = Energy + computeEnergySubstrate(kSubstrate, currentVertex(:, 3), z0);
+            Energy = Energy + computeEnergySubstrate(kSubstrate * currentWeight, currentVertex(:, 3), z0);
         end
     end
     

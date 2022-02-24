@@ -38,9 +38,12 @@ for numCell = 1:ncell
     
     currentEdgesOfCell = Cell.Cv{numCell};
     uniqueCurrentVertices = unique(currentEdgesOfCell(currentEdgesOfCell > 0));
-    distances = pdist2(Y.DataRow(uniqueCurrentVertices, :), [0 0 Set.z0Substrate], 'euclidean');
-    normalizedDistances = (distances.^4)/max(distances.^4);
-    for numVertex = uniqueCurrentVertices'
+    uniqueCurrentFaceCentres = unique(currentEdgesOfCell(currentEdgesOfCell <= 0));
+    distances = pdist2(vertcat(Y.DataRow(uniqueCurrentVertices, :), Cell.FaceCentres.DataRow(abs(uniqueCurrentFaceCentres), :)), [0 0 Set.z0Substrate], 'euclidean');
+    distances = distances.^50;
+    normalizedDistances = (distances)/max(distances);
+    normalizedDistances (normalizedDistances ~= 1) = normalizedDistances (normalizedDistances ~= 1).^2;
+    for numVertex = vertcat(uniqueCurrentVertices, uniqueCurrentFaceCentres)'
         numVertexElem = numVertexElem + 1;
         currentWeight = normalizedDistances(numVertexElem);
 %         if basalJunctionVertices(numVertexElem) == 0

@@ -12,18 +12,14 @@ if nargout > 1
 else
     [g, Energy, ncell] = initializeKg(Cell, Set);
 end
-Set.z0Substrate = 4;
-for numCell = 1:ncell
-    if numCell ~= 10 % Only ductal cell
-        continue
-    end
-    
-%     if Cell.DebrisCells(numCell)
-%         kSubstrate = 0;
-%     else
-%         kSubstrate = Set.kSubstrate;
-%     end
 
+for numCell = 1:ncell
+    %     if Cell.DebrisCells(numCell)
+    %         kSubstrate = 0;
+    %     else
+    %         kSubstrate = Set.kSubstrate;
+    %     end
+    
     if Set.Sparse > 0
         ge=sparse(size(g, 1), 1); % Local cell residual
     else
@@ -31,24 +27,15 @@ for numCell = 1:ncell
     end
     
     kSubstrate = Set.kSubstrate;
-
+    
     substrateForcesOfCell = Cell.SubstrateForce{numCell};
     numVertexElem = 0;
     %basalJunctionVertices = Cell.BasalBorderVertices{numCell};
-    
-    currentEdgesOfCell = Cell.Cv{numCell};
-    uniqueCurrentVertices = unique(currentEdgesOfCell(currentEdgesOfCell > 0));
-    uniqueCurrentFaceCentres = unique(currentEdgesOfCell(currentEdgesOfCell <= 0));
-    distances = pdist2(vertcat(Y.DataRow(uniqueCurrentVertices, :), Cell.FaceCentres.DataRow(abs(uniqueCurrentFaceCentres), :)), [0 0 Set.z0Substrate], 'euclidean');
-    distances = distances.^50;
-    normalizedDistances = (distances)/max(distances);
-    normalizedDistances (normalizedDistances ~= 1) = normalizedDistances (normalizedDistances ~= 1).^2;
-    for numVertex = vertcat(uniqueCurrentVertices, uniqueCurrentFaceCentres)'
+    for numVertex = Cell.BasalVertices{numCell}'
         numVertexElem = numVertexElem + 1;
-        currentWeight = normalizedDistances(numVertexElem);
-%         if basalJunctionVertices(numVertexElem) == 0
-%             continue;
-%         end
+        %         if basalJunctionVertices(numVertexElem) == 0
+        %             continue;
+        %         end
         
         z0 = Set.z0Substrate;
         if numVertex < 0 %% Face centre
@@ -58,9 +45,9 @@ for numCell = 1:ncell
             currentVertex = Y.DataRow(numVertex, :);
             vertexIndex = numVertex;
         end
-
+        
         %% Calculate residual g
-        g_current = computeGSubstrate(kSubstrate * currentWeight, currentVertex(:, 3), z0);
+        g_current = computeGSubstrate(kSubstrate, currentVertex(:, 3), z0);
         ge = Assembleg(ge, g_current, vertexIndex);
         
         %% Save contractile forces (g) to output
@@ -69,16 +56,17 @@ for numCell = 1:ncell
         if  nargout>1
             %% Calculate Jacobian
             K_current = computeKSubstrate(kSubstrate);
-
+            
             if Set.Sparse == 2
-                [si,sj,sv,sk] = AssembleKSparse(K_current * currentWeight, vertexIndex, si, sj, sv, sk);
+                [si,sj,sv,sk] = AssembleKSparse(K_current, vertexIndex, si, sj, sv, sk);
             else
                 K = AssembleK(K, K_current, vertexIndex);
             end
-
+            
             %% Calculate energy
-            Energy = Energy + computeEnergySubstrate(kSubstrate * currentWeight, currentVertex(:, 3), z0);
+            Energy = Energy + computeEnergySubstrate(kSubstrate, currentVertex(:, 3), z0);
         end
+        
     end
     
     g = g + ge;
@@ -95,7 +83,7 @@ function [kSubstrate] = computeKSubstrate(K)
 %COMPUTEGCONTRACTILITY Summary of this function goes here
 %   Detailed explanation goes here
 
-    kSubstrate(1:3, 1:3) = [0 0 0; 0 0 0; 0 0 K];
+kSubstrate(1:3, 1:3) = [0 0 0; 0 0 0; 0 0 K];
 
 end
 
@@ -112,4 +100,3 @@ function [energySubstrate] = computeEnergySubstrate(K, Yz, Yz0)
 energySubstrate = 1/2 * K * (Yz - Yz0)^2;
 
 end
-

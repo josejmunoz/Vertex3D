@@ -57,15 +57,15 @@ for numCell = 1:ncell
             if ismember(numEdge, idShareEdges) % Wound edge
                 C = Set.cPurseString;
             else
-                C = Set.cLineTension;
+                C = Set.cLineTensionApical;
             end
         elseif edgeLocation(numEdge) == 2 % Basal side
-            C = Set.cLineTension/100;
+            C = Set.cLineTensionBasal;
         elseif edgeLocation(numEdge) == 1  %lateralCables
             if ismember(numEdge, idShareEdges) % Wound edge
                 C = Set.cLateralCables;
             else
-                C = Set.cLineTension/100;
+                C = Set.cLineTensionLateral;
             end
             l_i0 = edgeLengths0_lateralAverage;
         else

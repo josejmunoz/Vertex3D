@@ -367,8 +367,16 @@ if ~isfield(Set, 'Contractility')
     Set.Contractility = 0;
 end
 
-if ~isfield(Set, 'cLineTension')
-    Set.cLineTension = Set.lambdaS1;
+if ~isfield(Set, 'cLineTensionApical')
+    Set.cLineTensionApical = 0;
+end
+
+if ~isfield(Set, 'cLineTensionBasal')
+    Set.cLineTensionBasal = 0;
+end
+
+if ~isfield(Set, 'cLineTensionLateral')
+    Set.cLineTensionLateral = 0;
 end
 
 if ~isfield(Set, 'cPurseString')  % Contractility coefficient on the purse string
@@ -380,7 +388,7 @@ end
 if ~isfield(Set, 'Contractility_Variability_PurseString')
     %Set.Contractility_Variability_PurseString = [1 1]*Set.cPurseString;
     %Set.Contractility_Variability_PurseString = ([1 1 2.5 2.5] - 1) * Set.cPurseString;
-    Set.Contractility_Variability_PurseString = ([1, 0.96, 1.087, 1.74, 2.37, 2.61, 2.487, 2.536, 2.46, 2.52, 2.606, 2.456, 2.387, 2.52, 2.31, 2.328, 2.134, 2.07, 2.055, 1.9, 1.9]) * Set.cLineTension;
+    Set.Contractility_Variability_PurseString = ([1, 0.96, 1.087, 1.74, 2.37, 2.61, 2.487, 2.536, 2.46, 2.52, 2.606, 2.456, 2.387, 2.52, 2.31, 2.328, 2.134, 2.07, 2.055, 1.9, 1.9]) * Set.cLineTensionApical;
 end
 
 % Timepoints where differeent values of 'cPurseString' appear.
@@ -401,7 +409,7 @@ end
 if ~isfield(Set, 'Contractility_Variability_LateralCables')
     %Set.Contractility_Variability_LateralCables = [1 1]*Set.cLateralCables;
     %Set.Contractility_Variability_LateralCables = ([0.5 0.5 1.4 1.4] - 0.5) * Set.cLateralCables; 
-    Set.Contractility_Variability_LateralCables = ([0.45 0.53 0.76 1.15 1.28 1.22 1.38 1.33 1.28 1.4 1.25 1.298 1.45 1.31 1.29 1.42 1.31 1.41 1.42 1.37 1.28]) * Set.cLineTension;
+    Set.Contractility_Variability_LateralCables = ([0.45 0.53 0.76 1.15 1.28 1.22 1.38 1.33 1.28 1.4 1.25 1.298 1.45 1.31 1.29 1.42 1.31 1.41 1.42 1.37 1.28]) * Set.cLineTensionApical;
 end
 
 % Timepoints where differeent values of 'cLateralCables' appear.

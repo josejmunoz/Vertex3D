@@ -104,7 +104,7 @@ if nargout>1
     %%  Contractility
     if Set.Contractility > 0
         if Set.Contractility == 1
-            if Set.cPurseString > 0 || Set.cLateralCables > 0 || Set.cLineTension >  0
+            if Set.cPurseString > 0 || Set.cLateralCables > 0 || Set.cLineTensionApical >  0 || Set.cLineTensionBasal >  0 || Set.cLineTensionLateral >  0
                 [gC,KC,Cell,Energy.Ec]=KgContractility(Cell,Y,Set);
                 K=K+KC; g=g+gC;
             end
@@ -192,7 +192,7 @@ else
     %%  Contractility
     if Set.Contractility > 0
         if Set.Contractility == 1
-            if Set.cPurseString > 0 || Set.cLateralCables > 0 || Set.cLineTension >  0
+            if Set.cPurseString > 0 || Set.cLateralCables > 0 || Set.cLineTensionApical >  0 || Set.cLineTensionBasal >  0 || Set.cLineTensionLateral >  0
                 [gc]=KgContractility(Cell,Y,Set);
                 g=g+gc;
             end

@@ -380,7 +380,7 @@ if ~isfield(Set, 'cLineTensionLateral')
 end
 
 if ~isfield(Set, 'cPurseString')  % Contractility coefficient on the purse string
-    Set.cPurseString = Set.cLineTension;
+    Set.cPurseString = Set.cLineTensionApical;
 end
 
 % Contractility coefficient values on the purse string during a period of time
@@ -401,7 +401,7 @@ if ~isfield(Set, 'Contractility_TimeVariability_PurseString')
 end
 
 if ~isfield(Set, 'cLateralCables') % Contractility coefficient on the lateral cables
-    Set.cLateralCables = Set.cLineTension;
+    Set.cLateralCables = Set.cLineTensionLateral;
 end
 
 % Contractility coefficient values on the lateral cables during a period of 
@@ -436,7 +436,7 @@ if ~isfield(Set,'VTK_iter') % vtk file for each iteration
     Set.VTK_iter=false;
 end 
 if ~isfield(Set,'OutputFolder') || Set.batchProcessing
-    Set.OutputFolder = strcat('Result/cLineTensionApical_', num2str(Set.cLineTension), '_lambdaV_', num2str(Set.lambdaV), '_lambdaS1_', num2str(Set.lambdaS1),'_lambda_S2_', num2str(Set.lambdaS2), '_lambda_S3_', num2str(Set.lambdaS3), '_KSubstrate_', num2str(Set.kSubstrate),'_Remodelling_', num2str(Set.Remodelling),'_NCells_', num2str(Set.TotalCells), '_viscosity_', num2str(Set.nu), '_elasticity_mu_', num2str(Set.mu_bulk), '_elasticity_lambda_', num2str(Set.lambda_bulk), '_ablatedCells_', num2str(max(Set.cellsToAblate)));
+    Set.OutputFolder = strcat('Result/LTApical_', num2str(Set.cLineTensionApical), 'LTBasal_', num2str(Set.cLineTensionBasal), 'LTLateral_', num2str(Set.cLineTensionLateral), '_lambdaV_', num2str(Set.lambdaV), '_lambdaS1_', num2str(Set.lambdaS1),'_lambda_S2_', num2str(Set.lambdaS2), '_lambda_S3_', num2str(Set.lambdaS3), '_KSubstrate_', num2str(Set.kSubstrate),'_Remodelling_', num2str(Set.Remodelling),'_NCells_', num2str(Set.TotalCells), '_viscosity_', num2str(Set.nu), '_elasticity_mu_', num2str(Set.mu_bulk), '_elasticity_lambda_', num2str(Set.lambda_bulk), '_ablatedCells_', num2str(max(Set.cellsToAblate)));
 end
 if ~isfield(Set,'SaveWorkspace') % Save Workspace at each time step
     Set.SaveWorkspace=false;   

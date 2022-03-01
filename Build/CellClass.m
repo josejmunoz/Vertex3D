@@ -497,6 +497,7 @@ classdef CellClass
                 notSharedVertices = setdiff(uniqueCurrentVertices, sharedVertices);
                 notSharedVerticesAndNeighbours = unique(currentEdgesOfCell(any(ismember(currentEdgesOfCell, notSharedVertices), 2), :));
                 notSharedVerticesAndNeighboursNotFaces = notSharedVerticesAndNeighbours(notSharedVerticesAndNeighbours > 0);
+                notSharedVerticesAndNeighboursFaces = notSharedVerticesAndNeighbours(notSharedVerticesAndNeighbours < 0);
                 
                 edgesToFaces = ismember(currentEdgesOfCell(:, 1), sharedVertices) & currentEdgesOfCell(:, 2) < 0;
                 [numElements, elements] = hist(currentEdgesOfCell(edgesToFaces, 2), unique(currentEdgesOfCell(edgesToFaces, 2)));
@@ -519,10 +520,12 @@ classdef CellClass
                 additionalLateralEdgesBool = ismember(currentEdgesOfCell, additionalLateralEdges, 'rows');
                 
                 %% Get all apical and basal vertices  
-                obj.ApicalVertices{numCell} = notSharedVerticesAndNeighbours(Y.DataRow(notSharedVerticesAndNeighbours, 3) > midZ);
+                facesCoordinates = obj.FaceCentres.DataRow(abs(notSharedVerticesAndNeighboursFaces), 3);
+                vertexCoordinates = Y.DataRow(notSharedVerticesAndNeighboursNotFaces, 3);
+                obj.ApicalVertices{numCell} = vertcat(notSharedVerticesAndNeighboursNotFaces(vertexCoordinates > mean(midZ)), notSharedVerticesAndNeighboursFaces(facesCoordinates > mean(midZ)));
                 obj.ApicalBorderVertices{numCell} = ismember(obj.ApicalVertices{numCell}, upperVerticesBorder);
                 
-                obj.BasalVertices{numCell} = notSharedVerticesAndNeighbours(Y.DataRow(notSharedVerticesAndNeighbours, 3) < midZ);
+                obj.BasalVertices{numCell} = vertcat(notSharedVerticesAndNeighboursNotFaces(vertexCoordinates < mean(midZ)), notSharedVerticesAndNeighboursFaces(facesCoordinates < mean(midZ)));
                 obj.BasalBorderVertices{numCell} = ismember(obj.BasalVertices{numCell}, bottomVerticesBorder);
                 
                 obj.SubstrateForce{numCell} = zeros(length(obj.BasalVertices{numCell}), 1);

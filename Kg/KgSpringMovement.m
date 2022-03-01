@@ -13,17 +13,7 @@ else
     [g, Energy, ncell] = initializeKg(Cell, Set);
 end
 Set.z0Substrate = 4;
-for numCell = 1:ncell
-    if numCell ~= 10 % Only ductal cell
-        continue
-    end
-    
-%     if Cell.DebrisCells(numCell)
-%         kSubstrate = 0;
-%     else
-%         kSubstrate = Set.kSubstrate;
-%     end
-
+for numCell = find(Cell.CellTypes == 2)
     if Set.Sparse > 0
         ge=sparse(size(g, 1), 1); % Local cell residual
     else
@@ -46,9 +36,6 @@ for numCell = 1:ncell
     for numVertex = vertcat(uniqueCurrentVertices, uniqueCurrentFaceCentres)'
         numVertexElem = numVertexElem + 1;
         currentWeight = normalizedDistances(numVertexElem);
-%         if basalJunctionVertices(numVertexElem) == 0
-%             continue;
-%         end
         
         z0 = Set.z0Substrate;
         if numVertex < 0 %% Face centre

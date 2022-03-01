@@ -131,6 +131,12 @@ if nargout>1
         [gSub,KSub,Cell,Energy.Esub]=KgSubstrate(Cell, Y, Set);
         K=K+KSub; g=g+gSub;
     end
+    
+    %%  Movement 
+    if Set.CellMovement && Set.MovementStrength > 0
+        [gMov,KMov,Cell,Energy.Emov]=KgSpringMovement(Cell, Y, Set);
+        K=K+KMov; g=g+gMov;
+    end
 else
     %% Compute the residual g solo (For LineSearch)
 
@@ -219,5 +225,10 @@ else
         g=g+gSub;
     end
     
+    %%  Movement
+    if Set.CellMovement && Set.MovementStrength > 0
+        [gMov]=KgSpringMovement(Cell, Y, Set);
+        g=g+gMov;
+    end
 end
 end

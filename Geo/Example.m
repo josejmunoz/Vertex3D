@@ -36,7 +36,7 @@ elseif e==2
     XX(:,[1 2])=XX(:,[1 2])+0*rand(size(XX(:,[1 2])))./190000;
     X=[X;XX];
 elseif e==3
-     n=20;
+    n=20;
     t = linspace(0,2*pi,n);
 
     r = ones(n,1)*3;

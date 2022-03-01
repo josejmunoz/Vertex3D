@@ -4,6 +4,8 @@ classdef CellClass
         Int           % - Cell nodes (array-structure ,  Size={1 NumCells}):
         %       IDs of internal nodes (Cell centres)
         %---------------------------------------------------------------------
+        CellTypes 
+        %---------------------------------------------------------------------
         Tris0
         Tris                  % -Cell-surface Triangulation (Type=cell-structure ,  Size={NumCells 1})
         %     Each cell is an array of size [ntris 3] with triangles defining cell surfaces.
@@ -163,6 +165,7 @@ classdef CellClass
                 Cell.Centre = zeros(nC, 3);
                 Cell.Centre0 = zeros(nC, 3);
                 Cell.AllFaces = []; 
+                Cell.CellTypes = ones(nC, 1);
             end
         end
         
@@ -473,88 +476,77 @@ classdef CellClass
         
         %%
         function [obj] = computeEdgeLocation(obj, Y)
-            for numCell=1:obj.n
+            %% NEED TO CHANGE TO BE APPLIED TO CURVE TISSUES
+            obj.CellTypes(end) = 2;
+            for numCell = 1:obj.n
                 currentEdgesOfCell = obj.Cv{numCell};
                 uniqueCurrentVertices = unique(currentEdgesOfCell(currentEdgesOfCell > 0));
+                uniqueCurrentFaces = unique(currentEdgesOfCell(currentEdgesOfCell < 0));
                 if obj.DebrisCells(numCell)
                     remainingEdges = vertcat(obj.Cv{setdiff(find(obj.DebrisCells == 0), numCell)});
                 else
-                    remainingEdges = vertcat(obj.Cv{setdiff(1:obj.n, numCell)});
+                    withoutDuctalCells = obj.Cv(obj.CellTypes == 1);
+                    remainingEdges = vertcat(withoutDuctalCells{setdiff(find(obj.CellTypes == 1), numCell)});
                 end
-                uniqueRemainingEdges = unique(remainingEdges(remainingEdges > 0));
+                uniqueRemainingFaces =  unique(remainingEdges(remainingEdges < 0));
+                uniqueRemainingVertices = unique(remainingEdges(remainingEdges > 0));
 
-                sharedVertices = uniqueCurrentVertices(ismember(uniqueCurrentVertices, uniqueRemainingEdges));
+                sharedFaces = uniqueCurrentFaces(ismember(uniqueCurrentFaces, uniqueRemainingFaces));
+                %sharedVertices = uniqueCurrentVertices(ismember(uniqueCurrentVertices, uniqueRemainingVertices));
+                sharedVertices = currentEdgesOfCell(any(ismember(currentEdgesOfCell, sharedFaces), 2), 1);
+                notSharedVertices = setdiff(uniqueCurrentVertices, sharedVertices);
+                notSharedVerticesAndNeighbours = unique(currentEdgesOfCell(any(ismember(currentEdgesOfCell, notSharedVertices), 2), :));
+                notSharedVerticesAndNeighboursNotFaces = notSharedVerticesAndNeighbours(notSharedVerticesAndNeighbours > 0);
                 
                 edgesToFaces = ismember(currentEdgesOfCell(:, 1), sharedVertices) & currentEdgesOfCell(:, 2) < 0;
                 [numElements, elements] = hist(currentEdgesOfCell(edgesToFaces, 2), unique(currentEdgesOfCell(edgesToFaces, 2)));
                 cellCellFaceCentres = elements(numElements > 3);
                 midZ = obj.FaceCentres.DataRow(abs(cellCellFaceCentres),3);
                 
-                if length(midZ) <= 3
-                    %It may be a border cell
-                end
+                apicalAndBasalVertices = Y.DataRow(notSharedVerticesAndNeighboursNotFaces,:);
+                upperVertices = notSharedVerticesAndNeighboursNotFaces(apicalAndBasalVertices(:, 3) > mean(midZ));
+                upperVerticesBorder = intersect(sharedVertices, upperVertices);
+                bottomVertices = notSharedVerticesAndNeighboursNotFaces(apicalAndBasalVertices(:, 3) < mean(midZ));
+                bottomVerticesBorder = intersect(sharedVertices, bottomVertices);
                 
-                apicoBasalVertices = Y.DataRow(sharedVertices,:);
-                upperVerticesBorder = sharedVertices(apicoBasalVertices(:, 3) > mean(midZ));
-                bottomVerticesBorder = sharedVertices(apicoBasalVertices(:, 3) < mean(midZ));
-                
-                apicalEdges = all(ismember(currentEdgesOfCell, upperVerticesBorder), 2);
-                basalEdges = all(ismember(currentEdgesOfCell, bottomVerticesBorder), 2);
+                apicalEdges = all(ismember(currentEdgesOfCell, upperVertices), 2);
+                basalEdges = all(ismember(currentEdgesOfCell, bottomVertices), 2);
                 lateralEdges = any(ismember(currentEdgesOfCell, upperVerticesBorder), 2) + any(ismember(currentEdgesOfCell, bottomVerticesBorder), 2) == 2;
                 
                 %Add two segment lines
                 edgesToFaceCentres = currentEdgesOfCell(ismember(currentEdgesOfCell(:, 2), cellCellFaceCentres), :);
                 additionalLateralEdges = edgesToFaceCentres(ismember(edgesToFaceCentres(:, 1), currentEdgesOfCell(lateralEdges, :)) == 0, :);
                 additionalLateralEdgesBool = ismember(currentEdgesOfCell, additionalLateralEdges, 'rows');
-                %% Get all apical and basal vertices
-                upperZMinimum = (mean(midZ) + mean(Y.DataRow(upperVerticesBorder, 3))/10);
-                bottomZMinimum = (mean(midZ) - mean(Y.DataRow(upperVerticesBorder, 3))/10);       
-
-                obj.ApicalVertices{numCell} = vertcat(uniqueCurrentVertices(Y.DataRow(uniqueCurrentVertices, 3) > upperZMinimum), - find(obj.FaceCentres.DataRow(1:obj.FaceCentres.n, 3) > upperZMinimum));
+                
+                %% Get all apical and basal vertices  
+                obj.ApicalVertices{numCell} = notSharedVerticesAndNeighbours(Y.DataRow(notSharedVerticesAndNeighbours, 3) > midZ);
                 obj.ApicalBorderVertices{numCell} = ismember(obj.ApicalVertices{numCell}, upperVerticesBorder);
                 
-                obj.BasalVertices{numCell} = vertcat(uniqueCurrentVertices(Y.DataRow(uniqueCurrentVertices, 3) < bottomZMinimum), - find(obj.FaceCentres.DataRow(1:obj.FaceCentres.n, 3) < bottomZMinimum));
+                obj.BasalVertices{numCell} = notSharedVerticesAndNeighbours(Y.DataRow(notSharedVerticesAndNeighbours, 3) < midZ);
                 obj.BasalBorderVertices{numCell} = ismember(obj.BasalVertices{numCell}, bottomVerticesBorder);
                 
                 obj.SubstrateForce{numCell} = zeros(length(obj.BasalVertices{numCell}), 1);
                 
                 %% Get apical and basal border vertices
-                if sum(apicalEdges) > size(upperVerticesBorder, 1)
-                    apicalVerticesIds = currentEdgesOfCell(apicalEdges, :);
-                    [numElements, elements] = hist(apicalVerticesIds(:), unique(currentEdgesOfCell(apicalEdges, :)));
-                    edgesToRemove = apicalVerticesIds(all(ismember(apicalVerticesIds, elements(numElements>2)), 2), :);
-                    apicalEdges(ismember(currentEdgesOfCell, edgesToRemove, 'row')) = 0;
-%                     apicalPixels = apicoBasalVertices(apicoBasalVertices(:, 3) > mean(midZ), :);
-%                     %[newEdges] = boundaryOfCell(apicalPixels(:, 1:2));
-%                     [newEdges] = boundaryOfCell(cmdscale(pdist(apicalPixels), 2));
-%                     apicalEdges = ismember(sort(currentEdgesOfCell, 2), sort(apicalVertices(newEdges), 2), 'rows');
-%                     
-%                     if sum(apicalEdges) ~= size(apicalVertices, 1)
-%                         error('CellClass:boundary issue');
-%                     end
-                end
+%                 if sum(apicalEdges) > size(upperVerticesBorder, 1)
+%                     apicalVerticesIds = currentEdgesOfCell(apicalEdges, :);
+%                     [numElements, elements] = hist(apicalVerticesIds(:), unique(currentEdgesOfCell(apicalEdges, :)));
+%                     edgesToRemove = apicalVerticesIds(all(ismember(apicalVerticesIds, elements(numElements>2)), 2), :);
+%                     apicalEdges(ismember(currentEdgesOfCell, edgesToRemove, 'row')) = 0;
+% %                     apicalPixels = apicoBasalVertices(apicoBasalVertices(:, 3) > mean(midZ), :);
+% %                     %[newEdges] = boundaryOfCell(apicalPixels(:, 1:2));
+% %                     [newEdges] = boundaryOfCell(cmdscale(pdist(apicalPixels), 2));
+% %                     apicalEdges = ismember(sort(currentEdgesOfCell, 2), sort(apicalVertices(newEdges), 2), 'rows');
+% %                     
+% %                     if sum(apicalEdges) ~= size(apicalVertices, 1)
+% %                         error('CellClass:boundary issue');
+% %                     end
+%                 end
                 
                 % 2:Basal 3:Apical 1:Lateral
                 obj.EdgeLocation{numCell} = lateralEdges + additionalLateralEdgesBool + 3*apicalEdges + 2*basalEdges;
                 
             end
-            
-%             % Contractility only applied to edges shared by 1 debris cell
-%             % and 2 regular cells
-%             for numCell = 1:obj.n
-%                 if obj.DebrisCells(numCell)
-%                     currentEdges = obj.Cv{numCell}(obj.EdgeLocation{numCell} == 1, :);
-%                     currentEdges_sorted = sort(currentEdges, 2);
-%                     repatedEdges = zeros(size(currentEdges, 1), 1);
-%                     for numCellAdjacent = 1:obj.n
-%                         if obj.DebrisCells(numCellAdjacent) == 0
-%                             currentEdgesAdjacent = sort(obj.Cv{numCellAdjacent}(obj.EdgeLocation{numCellAdjacent} == 1, :), 2);
-%                             repatedEdges = double(ismember(currentEdges_sorted, currentEdgesAdjacent, 'rows')) + repatedEdges;
-%                         end
-%                     end
-%                     obj.EdgeLocation{numCell}(obj.EdgeLocation{numCell} == 1 & ismember(obj.Cv{numCell}, currentEdges(repatedEdges == 1, :), 'rows')) = 0;
-%                 end
-%             end
         end
     end
 end

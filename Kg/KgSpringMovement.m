@@ -29,8 +29,8 @@ for numCell = find(Cell.CellTypes == 2)
     currentEdgesOfCell = Cell.Cv{numCell};
     uniqueCurrentVertices = unique(currentEdgesOfCell(currentEdgesOfCell > 0));
     uniqueCurrentFaceCentres = unique(currentEdgesOfCell(currentEdgesOfCell <= 0));
-    distances = pdist2(vertcat(Y.DataRow(uniqueCurrentVertices, :), Cell.FaceCentres.DataRow(abs(uniqueCurrentFaceCentres), :)), Set.DestinationPoint, 'euclidean');
-    distances = distances.^10;
+    distancesOriginal = pdist2(vertcat(Y.DataRow(uniqueCurrentVertices, :), Cell.FaceCentres.DataRow(abs(uniqueCurrentFaceCentres), :)), Set.DestinationPoint, 'euclidean');
+    distances = distancesOriginal.^10;
     normalizedDistances = (distances)/max(distances);
     normalizedDistances (normalizedDistances ~= 1) = normalizedDistances (normalizedDistances ~= 1).^10;
     for numVertex = vertcat(uniqueCurrentVertices, uniqueCurrentFaceCentres)'
@@ -46,22 +46,22 @@ for numCell = find(Cell.CellTypes == 2)
         end
 
         %% Calculate residual g
-        g_current = computeGMovement(movementStrength * currentWeight, currentVertex(:, 3), z0);
+        g_current = computeGMovement(currentVertex, Set.DestinationPoint, movementStrength * currentWeight);
         ge = Assembleg(ge, g_current, vertexIndex);
         
         %% AssembleK
         if  nargout>1
             %% Calculate Jacobian
-            K_current = computeKMovement(movementStrength);
+            K_current = computeKMovement(movementStrength * currentWeight);
 
             if Set.Sparse == 2
-                [si,sj,sv,sk] = AssembleKSparse(K_current * currentWeight, vertexIndex, si, sj, sv, sk);
+                [si,sj,sv,sk] = AssembleKSparse(K_current, vertexIndex, si, sj, sv, sk);
             else
                 K = AssembleK(K, K_current, vertexIndex);
             end
 
             %% Calculate energy
-            Energy = Energy + computeEnergyMovement(movementStrength * currentWeight, currentVertex(:, 3), z0);
+            Energy = Energy + computeEnergyMovement(currentVertex, Set.DestinationPoint, movementStrength * currentWeight);
         end
     end
     
@@ -74,25 +74,25 @@ end
 
 end
 
-function [kMovement] = computeKMovement(K)
+function [kMovement] = computeKMovement(C)
 %COMPUTEGCONTRACTILITY Summary of this function goes here
-%   Detailed explanation goes here
+%   Detailed explanation goes herea
 
-    kMovement(1:3, 1:3) = [0 0 0; 0 0 0; 0 0 K];
+kMovement(1:3, 1:3) = C * ones(3);
 
 end
 
-function [gMovement] = computeGMovement(K, Yz, Yz0)
+function [gMovement] = computeGMovement(Y, Y0, C)
 %COMPUTEGCONTRACTILITY Summary of this function goes here
 %   Detailed explanation goes here
 
-gMovement(1:3, 1) = [0 0 (K * (Yz - Yz0))];
+gMovement(1:3, 1) = C * (Y - Y0);
 
 end
 
-function [energyMovement] = computeEnergyMovement(K, Yz, Yz0)
+function [energyMovement] = computeEnergyMovement(Y, Y0, C)
 
-energyMovement = 1/2 * K * (Yz - Yz0)^2;
+energyMovement = 1/2 * C * pdist2(Y, Y0)^2;
 
 end
 

@@ -7,27 +7,37 @@ Set.f=Set.s/2;
 
 %%  Mechanics
 %% Volume
-Set.lambdaV=5;
+Set.lambdaV=20;
 
 %% Surface acinar cells
 % Set.SurfaceType=4 : Surface-Energy based on the whole cell area differential adhsion
 Set.SurfaceType=4;
 % external 
-Set.lambdaS1=1;
+Set.lambdaS1=2;
 % Cell-Cell 
-Set.lambdaS2=0.5;
+Set.lambdaS2=1;
 % Cell-substrate
-Set.lambdaS3=1;
+Set.lambdaS3=2;
+
+%Surface acinar cell to create inequality
+Set.LambdaS1CellFactor=[8 2];
+Set.LambdaS2CellFactor=[8 2];
+Set.LambdaS3CellFactor=[8 2];
 
 %% Surface ductal cells
-Set.LambdaS1CellFactor=[10 5];
-Set.LambdaS2CellFactor=[10 5];
-Set.LambdaS3CellFactor=[10 5];
+Set.LambdaS1CellFactor=[10 2];
+Set.LambdaS2CellFactor=[10 2];
+Set.LambdaS3CellFactor=[10 2];
 
-%% Substrate pulling
-Set.Substrate = true;
-Set.kSubstrate = 1;
-Set.z0Substrate = 3;
+%% Substrate
+Set.Substrate = false;
+% Set.kSubstrate = 0.01;
+% Set.z0Substrate = 3;
+
+%% Cell movement (ductal cell)
+Set.CellMovement = true;
+Set.MovementStrength = 0.01;
+Set.DestinationPoint = [0, 0, -10];
 
 %% EnergyBarrier
 Set.EnergyBarrier=true;
@@ -39,19 +49,22 @@ Set.Beta=1;
 Set.Bending=false;
 
 %% Viscosity
-Set.nu=0.05;   % this is eta
+Set.nu=0.1;   % this is eta
 
 %% Contractility
-Set.Contractility = 1; Set.cLineTension = 0;
-
-%% Remodeling
-Set.Remodelling=false;
-Set.RemodelTol=.5e-6;
-Set.RemodelingFrequency=2;
+Set.Contractility = 0; 
+Set.cLineTensionApical = 0.0001;
+Set.cLineTensionBasal = 0.0001;
+Set.cLineTensionLateral = 0.0001;
 
 %% time
 Set.tend=10;
-Set.Nincr=Set.tend*2;
+Set.Nincr=Set.tend*20;
+
+%% Remodeling
+Set.Remodelling=true;
+Set.RemodelTol=.5e-6;
+Set.RemodelingFrequency=Set.tend / Set.Nincr;
 
 %%  Boundary Displacement 
 Set.BC=2;  %  Compression

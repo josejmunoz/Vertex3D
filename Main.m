@@ -215,6 +215,7 @@ for numLine = 1:length(tlines)
 
             elseif Set.iter == Set.MaxIter && Set.iter > Set.MaxIter0 && Set.dt>Set.dt0/(2^6)
                 fprintf('Second strategy ---> Repeating the step with half step-size...\n');
+                break;
 
                 Set.MaxIter=Set.MaxIter0;
                 Set.nu=Set.nu0;

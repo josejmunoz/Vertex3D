@@ -1,4 +1,4 @@
-function [g,K,Cell,Energy] = KgSubstrate(Cell, Y, Set)
+function [g,K,Cell,Energy] = KgSpringMovement(Cell, Y, Set)
 %KGSUBSTRATE Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -13,31 +13,30 @@ else
     [g, Energy, ncell] = initializeKg(Cell, Set);
 end
 
-for numCell = 1:ncell
-    %     if Cell.DebrisCells(numCell)
-    %         kSubstrate = 0;
-    %     else
-    %         kSubstrate = Set.kSubstrate;
-    %     end
-    
+z0 = Set.DestinationPoint(3);
+for numCell = find(Cell.CellTypes == 2)
     if Set.Sparse > 0
         ge=sparse(size(g, 1), 1); % Local cell residual
     else
         ge=zeros(size(g, 1), 1);
     end
     
-    kSubstrate = Set.kSubstrate;
-    
-    substrateForcesOfCell = Cell.SubstrateForce{numCell};
+    movementStrength = Set.MovementStrength;
+
     numVertexElem = 0;
     %basalJunctionVertices = Cell.BasalBorderVertices{numCell};
-    for numVertex = Cell.BasalVertices{numCell}'
+    
+    currentEdgesOfCell = Cell.Cv{numCell};
+    uniqueCurrentVertices = unique(currentEdgesOfCell(currentEdgesOfCell > 0));
+    uniqueCurrentFaceCentres = unique(currentEdgesOfCell(currentEdgesOfCell <= 0));
+    distances = pdist2(vertcat(Y.DataRow(uniqueCurrentVertices, :), Cell.FaceCentres.DataRow(abs(uniqueCurrentFaceCentres), :)), Set.DestinationPoint, 'euclidean');
+    distances = distances.^10;
+    normalizedDistances = (distances)/max(distances);
+    normalizedDistances (normalizedDistances ~= 1) = normalizedDistances (normalizedDistances ~= 1).^10;
+    for numVertex = vertcat(uniqueCurrentVertices, uniqueCurrentFaceCentres)'
         numVertexElem = numVertexElem + 1;
-        %         if basalJunctionVertices(numVertexElem) == 0
-        %             continue;
-        %         end
+        currentWeight = normalizedDistances(numVertexElem);
         
-        z0 = Set.z0Substrate;
         if numVertex < 0 %% Face centre
             currentVertex = Cell.FaceCentres.DataRow(abs(numVertex), :);
             vertexIndex = abs(numVertex) + Set.NumMainV;
@@ -45,32 +44,28 @@ for numCell = 1:ncell
             currentVertex = Y.DataRow(numVertex, :);
             vertexIndex = numVertex;
         end
-        
+
         %% Calculate residual g
-        g_current = computeGSubstrate(kSubstrate, currentVertex(:, 3), z0);
+        g_current = computeGMovement(movementStrength * currentWeight, currentVertex(:, 3), z0);
         ge = Assembleg(ge, g_current, vertexIndex);
         
-        %% Save contractile forces (g) to output
-        substrateForcesOfCell(numVertexElem, 1) = g_current(3);
         %% AssembleK
         if  nargout>1
             %% Calculate Jacobian
-            K_current = computeKSubstrate(kSubstrate);
-            
+            K_current = computeKMovement(movementStrength);
+
             if Set.Sparse == 2
-                [si,sj,sv,sk] = AssembleKSparse(K_current, vertexIndex, si, sj, sv, sk);
+                [si,sj,sv,sk] = AssembleKSparse(K_current * currentWeight, vertexIndex, si, sj, sv, sk);
             else
                 K = AssembleK(K, K_current, vertexIndex);
             end
-            
+
             %% Calculate energy
-            Energy = Energy + computeEnergySubstrate(kSubstrate, currentVertex(:, 3), z0);
+            Energy = Energy + computeEnergyMovement(movementStrength * currentWeight, currentVertex(:, 3), z0);
         end
-        
     end
     
     g = g + ge;
-    Cell.SubstrateForce(numCell) = {substrateForcesOfCell};
 end
 
 if Set.Sparse == 2 && nargout>1
@@ -79,24 +74,25 @@ end
 
 end
 
-function [kSubstrate] = computeKSubstrate(K)
+function [kMovement] = computeKMovement(K)
 %COMPUTEGCONTRACTILITY Summary of this function goes here
 %   Detailed explanation goes here
 
-kSubstrate(1:3, 1:3) = [0 0 0; 0 0 0; 0 0 K];
+    kMovement(1:3, 1:3) = [0 0 0; 0 0 0; 0 0 K];
 
 end
 
-function [gSubstrate] = computeGSubstrate(K, Yz, Yz0)
+function [gMovement] = computeGMovement(K, Yz, Yz0)
 %COMPUTEGCONTRACTILITY Summary of this function goes here
 %   Detailed explanation goes here
 
-gSubstrate(1:3, 1) = [0 0 (K * (Yz - Yz0))];
+gMovement(1:3, 1) = [0 0 (K * (Yz - Yz0))];
 
 end
 
-function [energySubstrate] = computeEnergySubstrate(K, Yz, Yz0)
+function [energyMovement] = computeEnergyMovement(K, Yz, Yz0)
 
-energySubstrate = 1/2 * K * (Yz - Yz0)^2;
+energyMovement = 1/2 * K * (Yz - Yz0)^2;
 
 end
+

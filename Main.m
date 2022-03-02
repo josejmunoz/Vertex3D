@@ -14,11 +14,13 @@ addpath(genpath(fullfile(pwd,'Kg')));
 addpath(strcat(pwd,Esc,'Src'));
 addpath(strcat(pwd,Esc,'Analysis'));
 
+InputBubblesSteadyState
 %InputCompression
 %InputStretch2 % Example of 2 stretched cells
-InputSubstrateExtrusion
+%InputSubstrateExtrusion
 %InputWoundHealing
 
+%[predictedValues] = fminsearch(@vertexModel, 0.75, optimset('MaxFunEvals', 100, 'MaxIter', 100, 'Display', 'iter', 'TolX', 0.000001));
 
 %[predictedValues] = fminsearch(@vertexModel, [10 10 1000 1000 1]);
 
@@ -42,12 +44,19 @@ for numLine = 1:length(tlines)
     [Set]=SetDefault(Set);
     [skipSimulation] = InitiateOutputFolder(Set);
     if skipSimulation
+        clearvars -except 'tlines' 'numLine'
+        %InputCompression
+        %InputStretch2 % Example of 2 stretched cells
+        % InputSubstrateExtrusion
+        InputWoundHealing
+        %InputBubblesSteadyState
         continue
     end
     
     %% Mesh generation
     if isempty(Set.InputSegmentedImage)
         [X]=Example(Set.e);
+        Set.TotalCells = size(X, 1);
         [X, Y0, Y,~, tetrahedra,XgID,Cell,Cn,~,Yn,SCn,Set] = InitializeGeometry3DVertex(X,Set);
         Tetrahedra_weights = [];
     else
@@ -172,10 +181,10 @@ for numLine = 1:length(tlines)
             % ----------- Ablation ------------------------------------------------
             [Cell, Set, CellInput] = performAblation(Cell, Set, CellInput, t);
 
-            tooSmallCells = Cell.Vol < (Cell.Vol0/1000);
-            if any(tooSmallCells) % Remove cell in the case is too small
-                [Cell, CellInput, XgID,nC,SCn,flag32, Dofs] = Cell.removeCell(CellInput, XgID, tetrahedra, Y, X, SCn, tooSmallCells, Set);
-            end
+%             tooSmallCells = Cell.Vol < (Cell.Vol0/1000);
+%             if any(tooSmallCells) % Remove cell in the case is too small
+%                 [Cell, CellInput, XgID,nC,SCn,flag32, Dofs] = Cell.removeCell(CellInput, XgID, tetrahedra, Y, X, SCn, tooSmallCells, Set);
+%             end
             
             %% Analise cells
             [~, cellFeatures{numStep}, woundFeatures{numStep}, woundEdgeFeatures{numStep}] = Cell.exportTableWithCellFeatures(tetrahedra.DataRow, Y, numStep, Set);
@@ -224,11 +233,12 @@ for numLine = 1:length(tlines)
     end
     %% New simulation
     if Set.batchProcessing
-        clearvars -except 'tlines'
+        clearvars -except 'tlines' 'numLine'
         %InputCompression
         %InputStretch2 % Example of 2 stretched cells
         % InputSubstrateExtrusion
         InputWoundHealing
+        %InputBubblesSteadyState
     end
 end
 fprintf('Done!!\n')

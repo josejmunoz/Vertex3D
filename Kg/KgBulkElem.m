@@ -7,7 +7,7 @@ function [g, K, Energy] = KgBulkElem(x, x0, mu, lambda, Neo)
 %   Neo=1: Neo-Hookean elastic poential:
 %   W(E)=lambda ln(J)^2 + mu (tr(E)-ln(J))
 %
-%   Neo=0: Modififed Neo-Hookean for handling negative volumes (may happen in iterative process)
+%   Neo=2: Modififed Neo-Hookean for handling negative volumes (may happen in iterative process)
 %   W(E)=lambda ln(J^2)^2 + mu (tr(E)-ln(J^2))
 %   If no lambda is given, assumed to be zero (no volumetric stiffness)
 %   

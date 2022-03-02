@@ -34,7 +34,7 @@ if Set.SeedingMethod==1
     [XgID,X]=SeedWithBoundingBox(X,Set.s);
 elseif Set.SeedingMethod==2
     % Fast marching method  
-    [XgID,X]=SeedWithDistanceFunction(X,Set.s);
+    [XgID,X]=SeedWithDistanceFunction(X,Set.s); % Not on Github
 end
 
 
@@ -89,7 +89,7 @@ Set.NumXs = size(X, 1);
 Cn=BuildCn(Twg);
 
 Cell.AllFaces=Cell.AllFaces.ComputeAreaTri(Y.DataRow,Cell.FaceCentres.DataRow);
-Cell.AllFaces=Cell.AllFaces.CheckInteriorFaces(XgID);
+Cell.AllFaces=Cell.AllFaces.CheckInteriorFaces(Cell);
 
 Yn=Y;
 SCn=Cell.FaceCentres;

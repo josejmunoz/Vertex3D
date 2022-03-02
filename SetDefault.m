@@ -358,7 +358,7 @@ end
 
 % Cells IDs that will be ablated at TInitAblation
 if ~isfield(Set, 'LambdaSFactor_Debris')
-    Set.LambdaSFactor_Debris = 0.001;
+    Set.LambdaSFactor_Debris = eps;
 end
 
 %% ============================= Contractility ============================
@@ -367,12 +367,20 @@ if ~isfield(Set, 'Contractility')
     Set.Contractility = 0;
 end
 
-if ~isfield(Set, 'cLineTension')
-    Set.cLineTension = Set.lambdaS1;
+if ~isfield(Set, 'cLineTensionApical')
+    Set.cLineTensionApical = 0;
+end
+
+if ~isfield(Set, 'cLineTensionBasal')
+    Set.cLineTensionBasal = 0;
+end
+
+if ~isfield(Set, 'cLineTensionLateral')
+    Set.cLineTensionLateral = 0;
 end
 
 if ~isfield(Set, 'cPurseString')  % Contractility coefficient on the purse string
-    Set.cPurseString = Set.cLineTension;
+    Set.cPurseString = Set.cLineTensionApical;
 end
 
 % Contractility coefficient values on the purse string during a period of time
@@ -380,7 +388,7 @@ end
 if ~isfield(Set, 'Contractility_Variability_PurseString')
     %Set.Contractility_Variability_PurseString = [1 1]*Set.cPurseString;
     %Set.Contractility_Variability_PurseString = ([1 1 2.5 2.5] - 1) * Set.cPurseString;
-    Set.Contractility_Variability_PurseString = ([1, 0.96, 1.087, 1.74, 2.37, 2.61, 2.487, 2.536, 2.46, 2.52, 2.606, 2.456, 2.387, 2.52, 2.31, 2.328, 2.134, 2.07, 2.055, 1.9, 1.9]) * Set.cLineTension;
+    Set.Contractility_Variability_PurseString = ([1, 0.96, 1.087, 1.74, 2.37, 2.61, 2.487, 2.536, 2.46, 2.52, 2.606, 2.456, 2.387, 2.52, 2.31, 2.328, 2.134, 2.07, 2.055, 1.9, 1.9]) * Set.cLineTensionApical;
 end
 
 % Timepoints where differeent values of 'cPurseString' appear.
@@ -393,7 +401,7 @@ if ~isfield(Set, 'Contractility_TimeVariability_PurseString')
 end
 
 if ~isfield(Set, 'cLateralCables') % Contractility coefficient on the lateral cables
-    Set.cLateralCables = Set.cLineTension;
+    Set.cLateralCables = Set.cLineTensionLateral;
 end
 
 % Contractility coefficient values on the lateral cables during a period of 
@@ -401,7 +409,7 @@ end
 if ~isfield(Set, 'Contractility_Variability_LateralCables')
     %Set.Contractility_Variability_LateralCables = [1 1]*Set.cLateralCables;
     %Set.Contractility_Variability_LateralCables = ([0.5 0.5 1.4 1.4] - 0.5) * Set.cLateralCables; 
-    Set.Contractility_Variability_LateralCables = ([0.45 0.53 0.76 1.15 1.28 1.22 1.38 1.33 1.28 1.4 1.25 1.298 1.45 1.31 1.29 1.42 1.31 1.41 1.42 1.37 1.28]) * Set.cLineTension;
+    Set.Contractility_Variability_LateralCables = ([0.45 0.53 0.76 1.15 1.28 1.22 1.38 1.33 1.28 1.4 1.25 1.298 1.45 1.31 1.29 1.42 1.31 1.41 1.42 1.37 1.28]) * Set.cLineTensionApical;
 end
 
 % Timepoints where differeent values of 'cLateralCables' appear.
@@ -428,7 +436,7 @@ if ~isfield(Set,'VTK_iter') % vtk file for each iteration
     Set.VTK_iter=false;
 end 
 if ~isfield(Set,'OutputFolder') || Set.batchProcessing
-    Set.OutputFolder = strcat('Result/cLineTensionApical_', num2str(Set.cLineTension),'_typeOfContractility_', num2str(Set.Contractility), '_lambdaV_', num2str(Set.lambdaV), '_lambdaS1_', num2str(Set.lambdaS1),'_lambda_S2_', num2str(Set.lambdaS2), '_lambda_S3_', num2str(Set.lambdaS3), '_KSubstrate_', num2str(Set.kSubstrate),'_Remodelling_', num2str(Set.Remodelling),'_confinedXYZ_OuterVertices_NCells_', num2str(Set.TotalCells), '_viscosity_', num2str(Set.nu), '_elasticity_mu_', num2str(Set.mu_bulk), '_elasticity_lambda_', num2str(Set.lambda_bulk));
+    Set.OutputFolder = strcat('Result/LTApical_', num2str(Set.cLineTensionApical), 'LTBasal_', num2str(Set.cLineTensionBasal), 'LTLateral_', num2str(Set.cLineTensionLateral), '_lambdaV_', num2str(Set.lambdaV), '_lambdaS1_', num2str(Set.lambdaS1),'_lambda_S2_', num2str(Set.lambdaS2), '_lambda_S3_', num2str(Set.lambdaS3), '_KSubstrate_', num2str(Set.kSubstrate),'_Remodelling_', num2str(Set.Remodelling),'_NCells_', num2str(Set.TotalCells), '_viscosity_', num2str(Set.nu), '_elasticity_mu_', num2str(Set.mu_bulk), '_elasticity_lambda_', num2str(Set.lambda_bulk), '_ablatedCells_', num2str(max(Set.cellsToAblate)));
 end
 if ~isfield(Set,'SaveWorkspace') % Save Workspace at each time step
     Set.SaveWorkspace=false;   

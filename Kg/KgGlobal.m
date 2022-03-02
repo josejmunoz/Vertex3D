@@ -104,7 +104,7 @@ if nargout>1
     %%  Contractility
     if Set.Contractility > 0
         if Set.Contractility == 1
-            if Set.cPurseString > 0 || Set.cLateralCables > 0 || Set.cLineTension >  0
+            if Set.cPurseString > 0 || Set.cLateralCables > 0 || Set.cLineTensionApical >  0 || Set.cLineTensionBasal >  0 || Set.cLineTensionLateral >  0
                 [gC,KC,Cell,Energy.Ec]=KgContractility(Cell,Y,Set);
                 K=K+KC; g=g+gC;
             end
@@ -128,11 +128,15 @@ if nargout>1
     
     %%  Substrate 
     if Set.Substrate && Set.kSubstrate > 0
-        [gSub,KSub,Cell,Energy.Esub]=KgSubstrate(Cell, SCn, Y, Yn, Set);
+        [gSub,KSub,Cell,Energy.Esub]=KgSubstrate(Cell, Y, Set);
         K=K+KSub; g=g+gSub;
     end
     
-    
+    %%  Movement 
+    if Set.CellMovement && Set.MovementStrength > 0
+        [gMov,KMov,Cell,Energy.Emov]=KgSpringMovement(Cell, Y, Set);
+        K=K+KMov; g=g+gMov;
+    end
 else
     %% Compute the residual g solo (For LineSearch)
 
@@ -194,7 +198,7 @@ else
     %%  Contractility
     if Set.Contractility > 0
         if Set.Contractility == 1
-            if Set.cPurseString > 0 || Set.cLateralCables > 0 || Set.cLineTension >  0
+            if Set.cPurseString > 0 || Set.cLateralCables > 0 || Set.cLineTensionApical >  0 || Set.cLineTensionBasal >  0 || Set.cLineTensionLateral >  0
                 [gc]=KgContractility(Cell,Y,Set);
                 g=g+gc;
             end
@@ -217,9 +221,14 @@ else
     
     %%  Substrate 
     if Set.Substrate && Set.kSubstrate > 0
-        [gSub]=KgSubstrate(Cell, SCn, Y, Yn, Set);
+        [gSub]=KgSubstrate(Cell, Y, Set);
         g=g+gSub;
     end
     
+    %%  Movement
+    if Set.CellMovement && Set.MovementStrength > 0
+        [gMov]=KgSpringMovement(Cell, Y, Set);
+        g=g+gMov;
+    end
 end
 end

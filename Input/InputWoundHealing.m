@@ -16,23 +16,23 @@ Set.f=Set.s/2;
 
 %%  Mechanics
 %---------- Volume
-Set.lambdaV=10;
-Set.lambdaV_Debris=0.001;
+Set.lambdaV=1;
+Set.lambdaV_Debris=eps;
 
 %---------- Surface
 % Set.SurfaceType=4 : Surface-Energy based on the whole cell area differential adhsion
 Set.SurfaceType=4;
 % external 
-Set.lambdaS1=1;
+Set.lambdaS1=0.001;
 % Cell-Cell 
-Set.lambdaS2=1;
+Set.lambdaS2=0.001;
 % Cell-substrate
 Set.lambdaS3=Set.lambdaS1/10;
 
 %---------- In plane elasticity
 Set.InPlaneElasticity = 1;
-Set.mu_bulk = 3000; % Deformation restriction
-Set.lambda_bulk = 2000; %Volume restriction
+Set.mu_bulk = 30000; % Deformation restriction
+Set.lambda_bulk = 1000; %Volume restriction
 
 %--------- Bending 
 Set.Bending=false;
@@ -83,7 +83,7 @@ Set.TInitAblation = 0.01;
 Set.TEndAblation = 0.071; %40 minutes (30 after ablation)
 
 %---------- Line tension
-Set.cLineTension = 1;
+Set.cLineTension = 4;
 %% Contractility
 % 0: No contractility
 % 1: Lateral cables end-to-end
@@ -93,7 +93,8 @@ Set.Contractility = 1;
 % Set.cLateralCables = 0.33;
 
 %% Execution parameters
-Set.batchProcessing = 0;
+Set.batchProcessing = 1;
+Set.VTK = 0;
 Set.diary = true;
 Set.MaxIter = 200;
 Set.Parallel = false;

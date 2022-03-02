@@ -11,7 +11,7 @@ Vnew=Vnew.Add(newVertices);
 [Cell,nC,SCn, flag]=ReBuildCells(Cell,T,Y,X,SCn);
 
 if ~flag
-    Cell.AllFaces=Cell.AllFaces.CheckInteriorFaces(XgID);
+    Cell.AllFaces=Cell.AllFaces.CheckInteriorFaces(Cell);
     Set.NumMainV=Y.n;
     Set.NumAuxV=Cell.FaceCentres.n;
     Set.NumTotalV=Set.NumMainV+Set.NumAuxV+Set.NumCellCentroid;

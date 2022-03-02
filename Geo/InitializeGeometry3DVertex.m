@@ -1,4 +1,4 @@
-function [X,X0,Y,Yt,T,XgID,Cell,Cn,Cv,Yn,SCn,Set]=InitializeGeometry3DVertex(X,Set)
+function [X,Y0,Y,Yt,T,XgID,Cell,Cn,Cv,Yn,SCn,Set]=InitializeGeometry3DVertex(X,Set)
 %% This function creates the initial geometry of cells and the initial data structure
 % SeedingMethod 1 :  The free boundary is obtained using bounding box 
 % SeedingMethod 2 :  The free boundary is obtained by computing distance function          
@@ -67,8 +67,6 @@ end
 X=newX(1:aux2-1,:);
 XgID=newXgID(1:aux3-1);
 Twg=newTwg;
-X0 = X;
-
 %% Obtain Vertex-Position
 % [N]=GetN(Twg);
 Set.nodes=size(X,1);
@@ -92,6 +90,7 @@ Cell.AllFaces=Cell.AllFaces.ComputeAreaTri(Y.DataRow,Cell.FaceCentres.DataRow);
 Cell.AllFaces=Cell.AllFaces.CheckInteriorFaces(Cell);
 
 Yn=Y;
+Y0=Y;
 SCn=Cell.FaceCentres;
 Cell.Centre_n = Cell.Centre;
 Yt=[Y.DataOrdered ;Cell.FaceCentres.DataOrdered];

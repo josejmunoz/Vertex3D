@@ -38,9 +38,28 @@ for numCell = 1:ncell
     
     if any(Cell.DebrisCells)
         neighbourWoundEdges = vertcat(Cell.Cv{Cell.DebrisCells});
+        %WoundEdge
         idShareEdges = find(ismember(sort(edgeVertices, 2), sort(neighbourWoundEdges, 2), 'rows'));
+        
+        %FirstRow
+        cells1Row = Cell.Int(ismember(Cell.Int, neighbourWoundEdges));
+        neighbours1Row = vertcat(Cell.Cv{cells1Row});
+        idShare1Row = find(ismember(sort(edgeVertices, 2), sort(neighbours1Row, 2), 'rows'));
+        
+        %Second Row
+        cells2Row = Cell.Int(ismember(Cell.Int, neighbours1Row));
+        neighbours2Row = vertcat(Cell.Cv{cells2Row});
+        idShare2Row = find(ismember(sort(edgeVertices, 2), sort(neighbours2Row, 2), 'rows'));
+        
+        %Third Row
+        cells3Row = Cell.Int(ismember(Cell.Int, neighbours2Row));
+        neighbours3Row = vertcat(Cell.Cv{cells3Row});
+        idShare3Row = find(ismember(sort(edgeVertices, 2), sort(neighbours3Row, 2), 'rows'));
     else
         idShareEdges = [];
+        idShare1Row = [];
+        idShare2Row = [];
+        idShare3Row = [];
     end
     
     for numEdge = 1:length(edgeLengths)
@@ -62,10 +81,20 @@ for numCell = 1:ncell
         elseif edgeLocation(numEdge) == 2 % Basal side
             C = Set.cLineTension/100;
         elseif edgeLocation(numEdge) == 1  %lateralCables
-            if ismember(numEdge, idShareEdges) % Wound edge
-                C = Set.cLateralCables;
-            else
-                C = Set.cLineTension/100;
+            edgePosition = ismember(numEdge, idShareEdges) + ismember(numEdge, idShare1Row)...
+                 + ismember(numEdge, idShare2Row) + ...
+                 ismember(numEdge, idShare3Row);
+            switch (edgePosition)
+                case 0 %Away from wound
+                    C = Set.cLineTension/100;
+                case 4 % Wound edge
+                    C = Set.cLateralCables;
+                case 3 % First row
+                    C = Set.cLateralCables*3/4;
+                case 2 % Second row
+                    C = Set.cLateralCables*2/4;
+                case 1 % Third row
+                    C = Set.cLateralCables*1/4;
             end
             l_i0 = edgeLengths0_lateralAverage;
         else

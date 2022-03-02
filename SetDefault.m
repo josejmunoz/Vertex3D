@@ -381,6 +381,9 @@ if ~isfield(Set, 'Contractility_Variability_PurseString')
     %Set.Contractility_Variability_PurseString = [1 1]*Set.cPurseString;
     %Set.Contractility_Variability_PurseString = ([1 1 2.5 2.5] - 1) * Set.cPurseString;
     Set.Contractility_Variability_PurseString = ([1, 0.96, 1.087, 1.74, 2.37, 2.61, 2.487, 2.536, 2.46, 2.52, 2.606, 2.456, 2.387, 2.52, 2.31, 2.328, 2.134, 2.07, 2.055, 1.9, 1.9]) * Set.cLineTension;
+    if isfield(Set, 'PurseStringMultiplier')
+        Set.Contractility_Variability_PurseString = Set.Contractility_Variability_PurseString .^ Set.PurseStringMultiplier;
+    end
 end
 
 % Timepoints where differeent values of 'cPurseString' appear.
@@ -402,6 +405,13 @@ if ~isfield(Set, 'Contractility_Variability_LateralCables')
     %Set.Contractility_Variability_LateralCables = [1 1]*Set.cLateralCables;
     %Set.Contractility_Variability_LateralCables = ([0.5 0.5 1.4 1.4] - 0.5) * Set.cLateralCables; 
     Set.Contractility_Variability_LateralCables = ([0.45 0.53 0.76 1.15 1.28 1.22 1.38 1.33 1.28 1.4 1.25 1.298 1.45 1.31 1.29 1.42 1.31 1.41 1.42 1.37 1.28]) * Set.cLineTension;
+    if isfield(Set, 'LateralCablesMultiplier')
+        if Set.LateralCablesMultiplier == 0
+            Set.Contractility_Variability_LateralCables = (Set.Contractility_Variability_LateralCables .^ Set.LateralCablesMultiplier) .* Set.cLineTension ./ 100;
+        else
+            Set.Contractility_Variability_LateralCables = Set.Contractility_Variability_LateralCables .^ Set.LateralCablesMultiplier;
+        end
+    end
 end
 
 % Timepoints where differeent values of 'cLateralCables' appear.
@@ -426,9 +436,12 @@ if ~isfield(Set,'gVTK') % NOT YET! Vtk files of forces  (arrows)
 end 
 if ~isfield(Set,'VTK_iter') % vtk file for each iteration
     Set.VTK_iter=false;
-end 
+end
+if ~isfield(Set,'additionalFileNameInfo')
+    Set.additionalFileNameInfo = '';
+end
 if ~isfield(Set,'OutputFolder') || Set.batchProcessing
-    Set.OutputFolder = strcat('Result/cLineTensionApical_', num2str(Set.cLineTension), '_lambdaV_', num2str(Set.lambdaV), '_lambdaS1_', num2str(Set.lambdaS1),'_lambda_S2_', num2str(Set.lambdaS2), '_lambda_S3_', num2str(Set.lambdaS3), '_KSubstrate_', num2str(Set.kSubstrate),'_Remodelling_', num2str(Set.Remodelling),'_NCells_', num2str(Set.TotalCells), '_viscosity_', num2str(Set.nu), '_elasticity_mu_', num2str(Set.mu_bulk), '_elasticity_lambda_', num2str(Set.lambda_bulk), '_ablatedCells_', num2str(max(Set.cellsToAblate)));
+    Set.OutputFolder = strcat('Result/cLineTensionApical_', num2str(Set.cLineTension), '_lambdaV_', num2str(Set.lambdaV), '_lambdaS1_', num2str(Set.lambdaS1),'_lambda_S2_', num2str(Set.lambdaS2), '_lambda_S3_', num2str(Set.lambdaS3), '_KSubstrate_', num2str(Set.kSubstrate),'_Remodelling_', num2str(Set.Remodelling),'_NCells_', num2str(Set.TotalCells), '_viscosity_', num2str(Set.nu), '_elasticity_mu_', num2str(Set.mu_bulk), '_elasticity_lambda_', num2str(Set.lambda_bulk), '_ablatedCells_', num2str(max(Set.cellsToAblate)), '_', Set.additionalFileNameInfo);
 end
 if ~isfield(Set,'SaveWorkspace') % Save Workspace at each time step
     Set.SaveWorkspace=false;   

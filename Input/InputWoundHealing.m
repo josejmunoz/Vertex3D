@@ -6,7 +6,7 @@ Set.zScale = 19.23; %MicronsXY-MicronsZ relation
 Set.EllipseFitDiameter = 1; %Microns of a fitted ellipsed in Rob's Wing Discs
 Set.AvgCellArea = pi * (Set.EllipseFitDiameter/2)^2; %Microns
 Set.CellHeight = (Set.CellHeight * Set.zScale) / Set.AvgCellArea;
-Set.TotalCells = 40; %Aim 225
+Set.TotalCells = 150; %Aim 225
 
 %Set.e=4;  % Example Number look in Geo\Example.m 
 Set.Method=1;
@@ -16,7 +16,7 @@ Set.f=Set.s/2;
 
 %%  Mechanics
 %---------- Volume
-Set.lambdaV=1;
+Set.lambdaV=30;
 Set.lambdaV_Debris=eps;
 
 %---------- Surface
@@ -27,13 +27,13 @@ Set.lambdaS1=0.001;
 % Cell-Cell 
 Set.lambdaS2=0.001;
 % Cell-substrate
-Set.lambdaS3=Set.lambdaS1/10;
+Set.lambdaS3=Set.lambdaS1;
 
 %---------- In plane elasticity
 Set.InPlaneElasticity = 1;
-Set.mu_bulk = 30000; % Deformation restriction
-Set.lambda_bulk = 1000; %Volume restriction
-Set.lateral_bulk = 1;
+Set.mu_bulk = 5000; % Deformation restriction
+%Set.mu_bulk = Set.cLineTension*1664; 
+Set.lambda_bulk = 5000; %Volume restriction
 
 %--------- Bending 
 Set.Bending=false;
@@ -56,11 +56,12 @@ Set.BC=2; % BC=1: Stretching, BC=2: Compression, BC=nan, substrate extrussion
     
 %% Substrate
 Set.Substrate = true;
-Set.kSubstrate = 1200; % kSubstrate >=2000 does not converge
+Set.kSubstrate = 100; % kSubstrate >=2000 does not converge
 
 %% time
 Set.tend=0.042; % 0.072 = 70 minutes (60 after ablation)
-Set.Nincr=Set.tend*1000;
+%Set.Nincr=Set.tend*100000;
+Set.Nincr=Set.tend*500000;
 
 
 %% Remodeling
@@ -79,12 +80,17 @@ Set.BarrierTri0 = 5e-2; % CARE!! THIS IS OVERRIDE WITHIN THE CODE: INPUTIMAGE.M
 Set.Ablation = true;
 %Set.cellsToAblate = findCentralCells(Example(Set.e), 1);
 % Aim: Set.cellsToAblate = 1:15;
-Set.cellsToAblate = 1:3;
-Set.TInitAblation = 0.01; 
-Set.TEndAblation = 0.071; %40 minutes (30 after ablation)
+Set.cellsToAblate = 1:15;
+Set.TInitAblation = 0.0001;
+ablationDuration = 0.06;
+Set.TEndAblation = Set.TInitAblation + ablationDuration + Set.tend/Set.Nincr; %40 minutes (30 after ablation)
+
+Set.LateralCablesMultiplier = 2; 
+Set.PurseStringMultiplier = 2; 
+Set.additionalFileNameInfo = 'LateralContractiliyGradient_x2_PurseString_x2';
 
 %---------- Line tension
-Set.cLineTension = 4;
+Set.cLineTension = 1;
 %% Contractility
 % 0: No contractility
 % 1: Lateral cables end-to-end

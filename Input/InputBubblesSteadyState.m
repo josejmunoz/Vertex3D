@@ -13,11 +13,11 @@ Set.lambdaV=20;
 % Set.SurfaceType=4 : Surface-Energy based on the whole cell area differential adhsion
 Set.SurfaceType=4;
 % external 
-Set.lambdaS1=2;
+Set.lambdaS1=1.2;
 % Cell-Cell 
-Set.lambdaS2=1;
+Set.lambdaS2=2;
 % Cell-substrate
-Set.lambdaS3=2;
+Set.lambdaS3=1.2;
 
 %Surface acinar cell to create inequality
 Set.LambdaS1CellFactor=[8 2];
@@ -25,9 +25,9 @@ Set.LambdaS2CellFactor=[8 2];
 Set.LambdaS3CellFactor=[8 2];
 
 %% Surface ductal cells
-Set.LambdaS1CellFactor=[10 2];
+Set.LambdaS1CellFactor=[10 1];
 Set.LambdaS2CellFactor=[10 2];
-Set.LambdaS3CellFactor=[10 2];
+Set.LambdaS3CellFactor=[10 1];
 
 %% Substrate
 Set.Substrate = false;
@@ -36,8 +36,8 @@ Set.Substrate = false;
 
 %% Cell movement (ductal cell)
 Set.CellMovement = true;
-Set.MovementStrength = 0.01;
-Set.DestinationPoint = [0, 0, -10];
+Set.MovementStrength = 0.05;
+Set.DestinationPoint = [0, 0, 10];
 
 %% EnergyBarrier
 Set.EnergyBarrier=true;
@@ -48,13 +48,18 @@ Set.Beta=1;
 %% Bending 
 Set.Bending=false;
 
+%% In plane elasticity
+Set.InPlaneElasticity = 1;
+Set.mu_bulk = 100; % Deformation restriction
+Set.lambda_bulk = 100; %Volume restriction
+
 %% Viscosity
 Set.nu=0.1;   % this is eta
 
 %% Contractility
-Set.Contractility = 0; 
+Set.Contractility = 1; 
 Set.cLineTensionApical = 0.0001;
-Set.cLineTensionBasal = 0.0001;
+Set.cLineTensionBasal = 0.1;
 Set.cLineTensionLateral = 0.0001;
 
 %% time

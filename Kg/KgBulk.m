@@ -29,6 +29,10 @@ for numCell = 1:ncell
         continue;
     end
     
+    if Cell.CellTypes(numCell) == 2
+        continue;
+    end
+    
     if Set.Sparse > 0
         ge=sparse(size(g, 1), 1);
     else

@@ -72,6 +72,8 @@ for i=1:Cell.AllFaces.n
         fprintf('=>> Local problem did not converge -> 44 Flip rejected !! \n');
         Set.N_Rejected_Transfromation=Set.N_Rejected_Transfromation+1;
     else
+        Cell.AllFaces=Cell.AllFaces.ComputeAreaTri(Y.DataRow,Cell.FaceCentres.DataRow);
+        Cell.AllFaces=Cell.AllFaces.ComputeEnergy(Set);
         Set.N_Accepted_Transfromation=Set.N_Accepted_Transfromation+1;
     end
 end

@@ -69,8 +69,8 @@ Set.RemodelingFrequency=Set.tend/Set.Nincr;
 
 %---------- EnergyBarrier
 Set.EnergyBarrier=true;
-Set.lambdaB=1;
-Set.Beta=1;
+Set.lambdaB=2; % Lower more lineal, higher, more exponential behaviours
+Set.Beta=2; %Changes the sign of the function 
 Set.BarrierTri0 = 5e-2; % CARE!! THIS IS OVERRIDE WITHIN THE CODE: INPUTIMAGE.M
 % WBexp =exp( lambdaB*  ( 1 - Set.Beta*At/At0 )  );   
 

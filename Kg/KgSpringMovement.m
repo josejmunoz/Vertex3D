@@ -29,10 +29,10 @@ for numCell = find(Cell.CellTypes == 2)
     currentEdgesOfCell = Cell.Cv{numCell};
     uniqueCurrentVertices = unique(currentEdgesOfCell(currentEdgesOfCell > 0));
     uniqueCurrentFaceCentres = unique(currentEdgesOfCell(currentEdgesOfCell <= 0));
-    distancesOriginal = pdist2(vertcat(Y.DataRow(uniqueCurrentVertices, :), Cell.FaceCentres.DataRow(abs(uniqueCurrentFaceCentres), :)), Set.DestinationPoint, 'euclidean');
-    distances = distancesOriginal.^10;
+    distances = pdist2(vertcat(Y.DataRow(uniqueCurrentVertices, :), Cell.FaceCentres.DataRow(abs(uniqueCurrentFaceCentres), :)), Set.DestinationPoint, 'euclidean');
+    %distances = distances.^10;
     normalizedDistances = (distances)/max(distances);
-    normalizedDistances (normalizedDistances ~= 1) = normalizedDistances (normalizedDistances ~= 1).^10;
+    %normalizedDistances (normalizedDistances ~= 1) = normalizedDistances (normalizedDistances ~= 1).^10;
     for numVertex = vertcat(uniqueCurrentVertices, uniqueCurrentFaceCentres)'
         numVertexElem = numVertexElem + 1;
         currentWeight = normalizedDistances(numVertexElem);

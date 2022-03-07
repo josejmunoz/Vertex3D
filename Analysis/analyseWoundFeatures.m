@@ -8,14 +8,17 @@ function [woundData, paramsPerFile] = analyseWoundFeatures(dirToAnalyse, evoluti
         nameFiles = {};
         for numDir = 1:length(dirFiles)
             infoFiles = dir(fullfile(dirFiles(numDir).folder, dirFiles(numDir).name, '/Analysis/cellInfo_*'));
-            if length(infoFiles) < 25
+            if isempty(infoFiles)
                 continue
             end
             load(fullfile(dirFiles(numDir).folder, dirFiles(numDir).name, strcat('/Analysis/cellInfo_', num2str(length(infoFiles)), '.mat')));
-            woundedFeatures = woundFeatures(21:end);
-            woundedFeaturesOnly = vertcat(woundedFeatures{:});
-            apicalArea = woundedFeaturesOnly.wound2DApicalArea;
             load(fullfile(dirFiles(numDir).folder, dirFiles(numDir).name, 'set.mat'));
+            woundedFeatures = woundFeatures((Set.TInitAblation/Set.tend * Set.Nincr)+1:end);
+            woundedFeaturesOnly = vertcat(woundedFeatures{:});
+            if size(woundedFeaturesOnly, 1) < 7
+                continue
+            end
+            apicalArea = woundedFeaturesOnly.wound2DApicalArea;
             timePoints = (1:length(woundedFeaturesOnly.wound2DApicalArea))*(Set.tend/Set.Nincr*1000);
             plot(timePoints-timePoints(1), apicalArea/apicalArea(1))
             hold on;

@@ -7,26 +7,26 @@ Set.f=Set.s/2;
 
 %%  Mechanics
 %% Volume
-Set.lambdaV=20;
+Set.lambdaV=30;
 
 %% Surface acinar cells
 % Set.SurfaceType=4 : Surface-Energy based on the whole cell area differential adhsion
 Set.SurfaceType=4;
 % external 
-Set.lambdaS1=1.2;
+Set.lambdaS1=1;
 % Cell-Cell 
-Set.lambdaS2=2;
+Set.lambdaS2=0.5;
 % Cell-substrate
-Set.lambdaS3=1.2;
+Set.lambdaS3=1;
 
-%Surface acinar cell to create inequality
-Set.LambdaS1CellFactor=[8 2];
-Set.LambdaS2CellFactor=[8 2];
-Set.LambdaS3CellFactor=[8 2];
+% %Surface acinar cell to create inequality
+% Set.LambdaS1CellFactor=[8 2];
+% Set.LambdaS2CellFactor=[8 2];
+% Set.LambdaS3CellFactor=[8 2];
 
 %% Surface ductal cells
 Set.LambdaS1CellFactor=[10 1];
-Set.LambdaS2CellFactor=[10 2];
+Set.LambdaS2CellFactor=[10 3];
 Set.LambdaS3CellFactor=[10 1];
 
 %% Substrate
@@ -36,39 +36,39 @@ Set.Substrate = false;
 
 %% Cell movement (ductal cell)
 Set.CellMovement = true;
-Set.MovementStrength = 0.05;
-Set.DestinationPoint = [0, 0, 10];
+Set.MovementStrength = 0.02;
+Set.DestinationPoint = [-2, 10, -2];
 
 %% EnergyBarrier
 Set.EnergyBarrier=true;
-Set.lambdaB=5;
-Set.Beta=1;  
+Set.lambdaB=3;
+Set.Beta=0.5;
 % WBexp =exp( lambdaB*  ( 1 - Set.Beta*At/At0 )  );   
 
 %% Bending 
 Set.Bending=false;
 
 %% In plane elasticity
-Set.InPlaneElasticity = 1;
-Set.mu_bulk = 100; % Deformation restriction
-Set.lambda_bulk = 100; %Volume restriction
+Set.InPlaneElasticity = 0;
+Set.mu_bulk = 0; % Deformation restriction
+Set.lambda_bulk = 0; %Volume restriction
 
 %% Viscosity
 Set.nu=0.1;   % this is eta
 
 %% Contractility
 Set.Contractility = 1; 
-Set.cLineTensionApical = 0.0001;
-Set.cLineTensionBasal = 0.1;
+Set.cLineTensionApical = 0.01;
+Set.cLineTensionBasal = 0.01;
 Set.cLineTensionLateral = 0.0001;
 
 %% time
 Set.tend=10;
-Set.Nincr=Set.tend*20;
+Set.Nincr=Set.tend*30;
 
 %% Remodeling
 Set.Remodelling=true;
-Set.RemodelTol=.5e-6;
+Set.RemodelTol=.5e-6; % LOWER MORE INTERCALATIONS, BUT MORE WRONG INTERCALATIONS
 Set.RemodelingFrequency=Set.tend / Set.Nincr;
 
 %%  Boundary Displacement 
@@ -79,7 +79,8 @@ Set.BC=2;  %  Compression
     Set.TStopBC=200;
 
 Set.cellsToAblate = 0;
-    
+
+Set.additionalFileNameInfo = 'EnergyBarrier_3_0.5';
 %%
 Set.batchProcessing = 0;
 

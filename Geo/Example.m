@@ -78,15 +78,15 @@ elseif e==6
     X=[X Y zeros(length(X),1)+rand(length(X),1)*0];
 elseif e==7
     % Acinar cells
-    X=0:2;
-    Y=0:2;
+    X=0:4;
+    Y=0:4;
     [X,Y]=meshgrid(X,Y);
     X=reshape(X,size(X,1)*size(X,2),1);
     Y=reshape(Y,size(Y,1)*size(Y,2),1);
     X=[X Y ones(length(X),1)+rand(length(X),1)*0];
     % Ductal cell in the middle of the epithelium
     ductalXs = mean(X, 1);
-    ductalXs(:, 3) = min(X(:, 3)) - 2;
+    ductalXs(:, 3) = min(X(:, 3)) - 1;
     X = vertcat(X, ductalXs);
 elseif e==8
     % Acinar cells

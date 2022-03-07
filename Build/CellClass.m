@@ -485,6 +485,7 @@ classdef CellClass
                 if obj.DebrisCells(numCell)
                     remainingEdges = vertcat(obj.Cv{setdiff(find(obj.DebrisCells == 0), numCell)});
                 else
+                    %% We don't want to consider a face shared with a ductal cell as lateral
                     withoutDuctalCells = obj.Cv(obj.CellTypes == 1);
                     remainingEdges = vertcat(withoutDuctalCells{setdiff(find(obj.CellTypes == 1), numCell)});
                 end

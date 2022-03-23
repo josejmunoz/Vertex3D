@@ -1,4 +1,4 @@
-function [X]=GetXFromY(Cell,X,T,Y,XgID,Set, Y0, Tetrahedra_weights)
+function [X]=GetXFromY(Cell,X,T,Y,XgID,Set, Yn, Tetrahedra_weights)
 % Obtain X (nodal position) from given vertex (Y) Position
 
 
@@ -12,16 +12,12 @@ function [X]=GetXFromY(Cell,X,T,Y,XgID,Set, Y0, Tetrahedra_weights)
 if Set.ObtainX == 0 && exist('Tetrahedra_weights', 'var') && isempty(Tetrahedra_weights) == 0
     
     X_Previous = X;
-    YChange = Y.DataRow - Y0.DataRow;
+    YChange = Y.DataRow - Yn.DataRow;
     
     for numX = 1:size(X, 1)
         currentTetrahedra = any(ismember(T.DataRow, numX), 2);
         if any(currentTetrahedra)
-            if ismember(numX, Cell.Int)
-                changeOfSurroundingYs = mean(Tetrahedra_weights(currentTetrahedra, :) .* YChange(currentTetrahedra, :));
-            else
-                changeOfSurroundingYs = mean(YChange(currentTetrahedra, :));
-            end
+            changeOfSurroundingYs = mean(Tetrahedra_weights(currentTetrahedra, :) .* YChange(currentTetrahedra, :));
             X(numX, :) = X(numX, :) + changeOfSurroundingYs;
         end
     end

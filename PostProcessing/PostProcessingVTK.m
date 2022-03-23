@@ -1,6 +1,7 @@
 function PostProcessingVTK(X,Y,T,Cn,Cell,folder,TimeStep,Set)
 %% Create VTK files 
 Cell.AllFaces=Cell.AllFaces.ComputeAreaTri(Y.DataRow,Cell.FaceCentres.DataRow);
+Cell.AllFaces=Cell.AllFaces.ComputePerimeterTri(Y.DataRow,Cell.FaceCentres.DataRow);
 Cell.AllFaces=Cell.AllFaces.ComputeEnergy(Set);
 
 %Create Cell Volume

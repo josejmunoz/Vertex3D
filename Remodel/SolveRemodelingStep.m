@@ -1,4 +1,4 @@
-function [Cell,Y,Yn,SCn,X,Dofs,Set,Energy,DidNotConverge]=SolveRemodelingStep(Cell,Y0, Y,X,Dofs,Set,Yn,SCn,CellInput)
+function [Cell,Y,Yn,SCn,X,Dofs,Set,Energy,DidNotConverge]=SolveRemodelingStep(Cell,Y0, Y, X, Dofs, Set, Yn, SCn, CellInput)
 % This function solves local problem to obtain the position of the newly
 % remodeled vertices with prescribed settings (Set.***_LP), e.g.
 % Set.lambda_LP. 

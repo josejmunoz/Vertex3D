@@ -12,6 +12,7 @@ function [Cell,Y,Yn,SCn,Tetrahedra,X,Dofs,Cn,Set]=Remodeling(Cell,Y,Yn,SCn,Tetra
 Vnew=DynamicArray(100,1);
 
 Cell.AllFaces=Cell.AllFaces.ComputeAreaTri(Y.DataRow,Cell.FaceCentres.DataRow);
+Cell.AllFaces=Cell.AllFaces.ComputePerimeterTri(Y.DataRow,Cell.FaceCentres.DataRow);
 Cell.AllFaces=Cell.AllFaces.ComputeEnergy(Set);
 
 [Cell,Y,Yn,SCn,Tetrahedra,X,Dofs,Set, Vnew] = flip44(Cell,Y0, Y,Yn,SCn,Tetrahedra,X,Set,Dofs,XgID,CellInput, Vnew);

@@ -1,4 +1,4 @@
-function [X, Y0, Y,T, Tetrahedra_weights,XgID,Cell,Cn,Cv,Yn,SCn,Set] = InputImage(Set)
+function [X, Y0, Y,T, Tetrahedra_weights,XgID,Cell,Cn,Cv,Yn,SCn, X_IDs, Set] = InputImage(Set)
 %INPUTIMAGE Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -145,6 +145,10 @@ X_topFaceIds = X_topIds(1:size(XgTopFaceCentre, 1));
 X_topVerticesIds = X_topIds(size(XgTopFaceCentre, 1)+1:end);
 X = vertcat(X, X_topNodes);
 
+X_IDs.bottomVerticesIds = X_bottomVerticesIds;
+X_IDs.bottomFaceIds = X_bottomFaceIds;
+X_IDs.topVerticesIds = X_topVerticesIds;
+X_IDs.topFaceIds = X_topFaceIds;
 
 % Difference cell nodes and ghost nodes
 xInternal = find(nonEmptyCells);
@@ -213,7 +217,8 @@ Set.NumXs = size(X, 1);
 Cn=BuildCn(Twg);
 
 Cell.AllFaces=Cell.AllFaces.ComputeAreaTri(Y.DataRow,Cell.FaceCentres.DataRow);
-Cell.AllFaces=Cell.AllFaces.CheckInteriorFaces(Cell);
+Cell.AllFaces=Cell.AllFaces.ComputePerimeterTri(Y.DataRow,Cell.FaceCentres.DataRow);
+Cell.AllFaces=Cell.AllFaces.CheckInteriorFaces(XgID);
 
 Yn = Y;
 Y0 = Y;
@@ -228,11 +233,16 @@ T=T.Add(Twg);
 % figure,
 % tetramesh(T.DataRow(any(ismember(T.DataRow, 1), 2), :), XNew);
 
-Set.BarrierTri0=realmax; 
-for i=1:Cell.n
-    Set.BarrierTri0=min([Cell.SAreaTri{i}; Set.BarrierTri0]);
-end
-Set.BarrierTri0=Set.BarrierTri0/10;
+
+% Set.BarrierTri0=realmax; 
+% for i=1:Cell.n
+%     Set.BarrierTri0=min([Cell.SAreaTri{i}; Set.BarrierTri0]);
+% end
+% Set.BarrierTri0=Set.BarrierTri0/10;
+
+allPerimeters = vertcat(Cell.AllFaces.PerimeterTri{:});
+allAreas = vertcat(Cell.AllFaces.AreaTri{:});
+Set.BarrierTri0=min(allPerimeters .* allAreas)/2;
 
 [Cell,Y]=CheckOrderingOfTriangulaiton(Cell,Y,Set);
 

@@ -60,7 +60,7 @@ for numLine = 1:length(tlines)
         [X, Y0, Y,~, tetrahedra,XgID,Cell,Cn,~,Yn,SCn,Set] = InitializeGeometry3DVertex(X,Set);
         Tetrahedra_weights = [];
     else
-        [X, Y0, Y,tetrahedra,Tetrahedra_weights, XgID,Cell,Cn,~,Yn,SCn,Set] = InputImage(Set);
+        [X, Y0, Y,tetrahedra,Tetrahedra_weights, XgID,Cell,Cn,~,Yn,SCn,X_IDs, Set] = InputImage(Set);
     end
 
     if Set.VTK, PostProcessingVTK(X,Y,tetrahedra.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),0,Set); end
@@ -115,7 +115,8 @@ for numLine = 1:length(tlines)
 
         %% ----------- Remodel--------------------------------------------------
         if Set.Remodelling && Set.ReModel && abs(t-tr)>=Set.RemodelingFrequency
-            [Cell,Y,Yn,SCn,tetrahedra,X,Dofs,Cn,Set]=Remodeling(Cell,Y,Yn,SCn,tetrahedra,X,Set,Dofs,Y0,XgID,CellInput);
+            [Cell, Y] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, tetrahedra, Tetrahedra_weights, X, X_IDs, SCn, XgID, Cn, Set);
+            %[Cell,Y,Yn,SCn,tetrahedra,X,Dofs,Cn,Set]=Remodeling(Cell,Y,Yn,SCn,tetrahedra,X,Set,Dofs,Y0,XgID,CellInput);
             Set.ReModel=false;
             tr=t;
         end
@@ -144,7 +145,7 @@ for numLine = 1:length(tlines)
             fprintf('STEP %i has converged ...\n',Set.iIncr)
 
             %Update Nodes (X) from Vertices (Y)
-            [X]=GetXFromY(Cell,X,tetrahedra,Y,XgID,Set, Y0, Tetrahedra_weights);
+            [X]=GetXFromY(Cell,X,tetrahedra,Y,XgID,Set, Yn, Tetrahedra_weights);
 
             %% Post processing
             if Set.VTK, PostProcessingVTK(X,Y,tetrahedra.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK'),Set.iIncr,Set); end
@@ -189,7 +190,7 @@ for numLine = 1:length(tlines)
             %% Analise cells
             [~, cellFeatures{numStep}, woundFeatures{numStep}, woundEdgeFeatures{numStep}] = Cell.exportTableWithCellFeatures(tetrahedra.DataRow, Y, numStep, Set);
             analysisDir = strcat(Set.OutputFolder,Esc,'Analysis',Esc);
-            save(strcat(analysisDir, 'cellInfo_', num2str(Set.iIncr), '.mat'), 'Cell', 'Y', 'X', 'tetrahedra', 'cellFeatures', 'woundFeatures', 'woundEdgeFeatures');
+            save(strcat(analysisDir, 'cellInfo_', num2str(Set.iIncr), '.mat'), 'Cell', 'Y0', 'Y', 'Yn', 'Cn', 'X', 'SCn', 'Tetrahedra_weights', 'tetrahedra', 'XgID', 'CellInput', 'cellFeatures', 'woundFeatures', 'woundEdgeFeatures');
 
             if any(Cell.DebrisCells)
                 writetable(vertcat(woundEdgeFeatures{:}), strcat(analysisDir,'woundEdgeFeatures.csv'))

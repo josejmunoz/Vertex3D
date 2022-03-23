@@ -9,7 +9,9 @@ function [Cell,nC, SCn, flag]=ReBuildCells(Cell,T,Y,X,SCn)
 TetIDs=1:size(T.DataRow,1);
 nC=[];
 flag=false;
+includedX=false(size(Cell.Int, 2),1);
 for numCell = Cell.Int(ismember(Cell.Int,Cell.AssembleNodes))
+    includedX(numCell)=true;
     Copy_cNodes=Cell.cNodes{numCell};
     Copy_Surface=Cell.Faces{numCell};
     Cell.nTotalTris=Cell.nTotalTris-size(Cell.Tris{numCell},1);
@@ -81,11 +83,16 @@ for numCell = Cell.Int(ismember(Cell.Int,Cell.AssembleNodes))
         % (by cheking the corresponding Nodal connectivity )
         extrapolateFaceCentre = 0;
         numFaceCentresFaces = -1; % Change this to be the number of faceCentres faces (maybe Faces.n or idOppossedNode)
-        %[SurfVertices, previousSurfTet, faceCentrePos, oppNode, cID] = BuildFaceCentre(numCell, SurfAxes, Cell, X, Y, SurfVertices, Includedx, H, numFaceCentresFaces, extrapolateFaceCentre);
-        
+
         % check if the centre i already built
         oppNode = Copy_cNodes==SurfAxes(2);
-        idOppossedNode=Copy_Surface.FaceCentresID(oppNode);
+        
+        if find(oppNode) > length(Copy_Surface.FaceCentresID)
+            idOppossedNode = [];
+        else
+            idOppossedNode=Copy_Surface.FaceCentresID(oppNode);
+        end
+        
         opposedVertices=[];
         if isempty(idOppossedNode) && ~isempty(nC)
             % if it is not found check if it is already added by another cell

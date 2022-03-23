@@ -73,19 +73,23 @@ for idFace = facesList
     % filter ghost tets
     ghostNodes = ismember(Tnew,XgID);
     ghostNodes = all(ghostNodes,2);
-    if any(ghostNodes)
-        Tnew(ghostNodes,:)=[];
-        fprintf('=>> Flips 2-2 are not allowed for now\n');
-        return
-    end
+    Tnew(ghostNodes,:)=[];
    
-    % Check Convexity Condition
-    if CheckConvexityCondition(Tnew,Tetrahedra, X) == 0
-        fprintf('=>> 23 Flip.\n');
+    %% Check Convexity Condition
+    if CheckConvexityCondition(Tnew, Tetrahedra) == 0
+        if size(Tnew, 1) < 3
+            fprintf('=>> 2-2 Flip is not allowed for now\n');
+            %return
+        else
+            fprintf('=>> 2-3 Flip\n');
+        end
         Ynew=PerformFlip23(Y.DataRow(edgeToChange,:),X,n3);
         Ynew(ghostNodes,:)=[];
         
-        %% last param? should be 'i'? or just empty []? Face should be removed?
+        %% Double check here if the STD is too different
+        Ynew(:, 3) = mean(Y.DataRow(edgeToChange, 3));
+        
+        %% last param? should be 'idFace'? or just empty []? Face should be removed?
         [Tetrahedra, Y, Yn, SCn, Cell] = removeFaceInRemodelling(Tetrahedra, Y, Yn, SCn, Cell, edgeToChange, []); 
         
         [Tetrahedra, Y, Yn, Cell, nV, Vnew, nC, SCn, Set, flag] = addNewVerticesInRemodelling(Tetrahedra, Tnew, Y, Ynew, Yn, Cell, Vnew, X, SCn, XgID, Set);
@@ -103,13 +107,13 @@ for idFace = facesList
             Cell.RemodelledVertices = nV;
             [Cell,Y,Yn,SCn,X,Dofs,Set,~,didNotConverge]=SolveRemodelingStep(Cell,Y0,Y,X,Dofs,Set,Yn,SCn,CellInput);  
         else
-            fprintf('=>> Flip23 is is not compatible rejected !! \n');
+            fprintf('=>> 2-3 Flip is is not compatible rejected !! \n');
         end
 
         
         if  didNotConverge || flag
             [Cell, Y, Yn, SCn, Tetrahedra, X, Dofs, Set, Vnew] = backToPreviousStep(Cellp, Yp, Ynp, SCnp, Tp, Xp, Dofsp, Setp, Vnewp);
-            fprintf('=>> Local problem did not converge -> 23 Flip rejected !! \n');
+            fprintf('=>> Local problem did not converge -> 2-3 Flip rejected !! \n');
             break
         else
             Cell.AllFaces=Cell.AllFaces.ComputeAreaTri(Y.DataRow,Cell.FaceCentres.DataRow);

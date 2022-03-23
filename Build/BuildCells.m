@@ -168,6 +168,7 @@ for i=1:Cell.n
 end
 Cell.SAreaFace0=Cell.SAreaFace;
 Cell.AllFaces=Cell.AllFaces.ComputeAreaTri(Y.DataRow,Cell.FaceCentres.DataRow);
+Cell.AllFaces=Cell.AllFaces.ComputePerimeterTri(Y.DataRow,Cell.FaceCentres.DataRow);
 
 %% Apico-basal distinction
 [Cell] = Cell.computeEdgeLocation(Y);

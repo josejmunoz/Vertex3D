@@ -115,8 +115,8 @@ for numLine = 1:length(tlines)
 
         %% ----------- Remodel--------------------------------------------------
         if Set.Remodelling && Set.ReModel && abs(t-tr)>=Set.RemodelingFrequency
-            [Cell, Y] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, tetrahedra, Tetrahedra_weights, X, X_IDs, SCn, XgID, Cn, Set);
-            %[Cell,Y,Yn,SCn,tetrahedra,X,Dofs,Cn,Set]=Remodeling(Cell,Y,Yn,SCn,tetrahedra,X,Set,Dofs,Y0,XgID,CellInput);
+            %[Cell, Y] = simpleRemodelling(Cell, Y0, Yn, Y, CellInput, tetrahedra, Tetrahedra_weights, X, X_IDs, SCn, XgID, Cn, Set);
+            [Cell,Y,Yn,SCn,tetrahedra,X,Dofs,Cn,Set]=Remodeling(Cell,Y,Yn,SCn,tetrahedra,X,Set,Dofs,Y0,XgID,CellInput);
             Set.ReModel=false;
             tr=t;
         end

@@ -1,8 +1,6 @@
+Result
 
 *.vtk
-.DS_Store
-
-Notes/*
 *.m~
 *.avi
 *.ogv

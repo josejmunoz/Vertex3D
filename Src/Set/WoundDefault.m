@@ -1,4 +1,4 @@
-function DSet = woundDefault(DSet)
+function DSet = WoundDefault(DSet)
 	%% ============================== Ablation ============================
 	DSet.Ablation					= false;
 	DSet.TInitAblation				= 1;

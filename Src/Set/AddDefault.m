@@ -1,4 +1,4 @@
-function read_struct = addDefault(read_struct, default_struct)
+function read_struct = AddDefault(read_struct, default_struct)
     fields = fieldnames(default_struct);
     for f = 1:numel(fields)
         f_name = fields{f};

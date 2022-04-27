@@ -14,7 +14,7 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	%% Build nodal mesh 
-	X = BuildTopo(Geo.nx, Geo.ny, 0);
+    [X, X_Ids] = BuildTopo(Geo.nx, Geo.ny, Geo.nz, Geo.columnarCells);
 	Geo.nCells = size(X,1);
 
 	%% Centre Nodal position at (0,0)

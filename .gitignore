@@ -1,8 +1,7 @@
+Result
+*.DS_Store
 
 *.vtk
-.DS_Store
-
-Notes/*
 *.m~
 *.avi
 *.ogv
@@ -18,3 +17,4 @@ Notes/*
 *.fig
 
 *.xlsx
+*.xls

@@ -4,11 +4,13 @@ function [Geo, Set] = ablateCells(Geo, Set, t)
 if Set.Ablation == true && Set.TInitAblation <= t
     if isempty(Set.cellsToAblate) == 0
         disp('---- Performing ablation');
-        Cell = Cell.AblateCells(Set.cellsToAblate);
+        debrisCells = ismember(obj.Int, Set.cellsToAblate);
+        Geo.Cells(debrisCells).debris = true;
+        Geo.Cells(debrisCells).ExternalLambda = Set.LambdaSFactor_Debris;
+        Geo.Cells(debrisCells).InternalLambda = Set.LambdaSFactor_Debris;
+        Geo.Cells(debrisCells).SubstrateLambda = Set.LambdaSFactor_Debris;
+        
         Set.cellsToAblate = [];
-        Geo.Cells(DebrisCells).ExternalLambda = Set.LambdaSFactor_Debris;
-        Geo.Cells(DebrisCells).InternalLambda = Set.LambdaSFactor_Debris;
-        Geo.Cells(DebrisCells).SubstrateLambda = Set.LambdaSFactor_Debris;
     end
 end
 end

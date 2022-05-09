@@ -45,7 +45,7 @@ while t<=Set.tend
 	    Geo = UpdateMeasures(Geo);
         
         % Wounding
-        [Geo] = ablateCells(Geo, Set, t);
+        [Geo, Set] = ablateCells(Geo, Set, t);
         
 %         % Analise cells
 %         [~, cellFeatures{numStep}, woundFeatures{numStep}, woundEdgeFeatures{numStep}] = Cell.exportTableWithCellFeatures(tetrahedra.DataRow, Y, numStep, Set);

@@ -31,5 +31,7 @@ function Face = BuildFace(ci, cj, ncells, Cell, XgID, Set)
 	Face.Tris			= BuildEdges(Cell.T, face_ids, Face.Centre, Cell.X, Cell.Y);
     
 	[Face.Area, Face.TrisArea]  = ComputeFaceArea(Face, Cell.Y);
+    [Face.EdgeLengths] = ComputeFaceEdgeLengths(Face, Cell.Y);
     Face.Area0 = Face.Area;
+    Face.EdgeLengths0 = Face.EdgeLengths;
 end

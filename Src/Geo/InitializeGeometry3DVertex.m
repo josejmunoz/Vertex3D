@@ -54,7 +54,7 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 	% struct have. This works as a reference, so maybe it should go 
 	% somewhere else.
 	CellFields = ["X", "T", "Y", "Faces", "Vol", "Vol0", "Area", "Area0", "globalIds", "cglobalIds", "AliveStatus"];
-	FaceFields = ["ij", "Centre", "Tris", "globalIds", "InterfaceType", "Area", "Area0", "TrisArea"];
+	FaceFields = ["ij", "Centre", "Tris", "globalIds", "InterfaceType", "Area", "Area0", "TrisArea", "EdgeLengths", "EdgeLengths0"];
 	% Build the Cells struct Array
 	Geo.Cells = BuildStructArray(length(X), CellFields);
 	% Nodes and Tetrahedras    
@@ -79,16 +79,12 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 		Geo.Cells(c).Faces = BuildStructArray(length(Neigh_nodes), FaceFields);
         for j  = 1:length(Neigh_nodes)
 			cj    = Neigh_nodes(j);
-			CellJ = Geo.Cells(cj);
 			Geo.Cells(c).Faces(j) = BuildFace(c, cj, Geo.nCells, Geo.Cells(c), Geo.XgID, Set);
-            Geo.Cells(c).Faces(j).Area0 = Geo.Cells(c).Faces(j).Area;
         end
         Geo.Cells(c).Area  = ComputeCellArea(Geo.Cells(c));
         Geo.Cells(c).Area0 = Geo.Cells(c).Area;
         Geo.Cells(c).Vol   = ComputeCellVolume(Geo.Cells(c));
         Geo.Cells(c).Vol0  = Geo.Cells(c).Vol;
-        Geo.Cells(c).EdgeLengths = ComputeEdgeLengths(Geo.Cells(c));
-        Geo.Cells(c).EdgeLengths0 = Geo.Cells(c).EdgeLengths;
         Geo.Cells(c).ExternalLambda = 1;
 		Geo.Cells(c).InternalLambda = 1;
 		Geo.Cells(c).SubstrateLambda = 1;
@@ -133,8 +129,8 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
         Geo.Cells(numCell).AliveStatus = 1;
     end
     
-	% TODO FIXME bad
-	Geo.AssembleNodes = 1:Geo.nCells;
+	% TODO FIXME bad; PVM: better?
+	Geo.AssembleNodes = find(cellfun(@isempty, {Geo.Cells.AliveStatus})==0);
     %% Define BarrierTri0 
     Set.BarrierTri0=realmax; 
     for c = 1:Geo.nCells

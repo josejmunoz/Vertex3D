@@ -13,6 +13,7 @@ Substrate
 % Compress
 
 Set=SetDefault(Set);
+Set = AddDefault(Set, WoundDefault(Set));
 Set=InitiateOutputFolder(Set);
 Set.flog = fopen(Set.log, 'w+');
 
@@ -42,6 +43,19 @@ while t<=Set.tend
 	    Set.iIncr=numStep;
         [Geo, Dofs] = ApplyBoundaryCondition(t, Geo, Dofs, Set);
 	    Geo = UpdateMeasures(Geo);
+        
+        % Wounding
+        [Geo] = ablateCells(Geo, Set, t);
+        
+%         % Analise cells
+%         [~, cellFeatures{numStep}, woundFeatures{numStep}, woundEdgeFeatures{numStep}] = Cell.exportTableWithCellFeatures(tetrahedra.DataRow, Y, numStep, Set);
+%         analysisDir = strcat(Set.OutputFolder,Esc,'Analysis',Esc);
+%         save(strcat(analysisDir, 'cellInfo_', num2str(Set.iIncr), '.mat'), 'Cell', 'Y0', 'Y', 'Yn', 'Cn', 'X', 'SCn', 'Tetrahedra_weights', 'tetrahedra', 'XgID', 'CellInput', 'cellFeatures', 'woundFeatures', 'woundEdgeFeatures');
+%         
+%         if any(Cell.DebrisCells)
+%             writetable(vertcat(woundEdgeFeatures{:}), strcat(analysisDir,'woundEdgeFeatures.csv'))
+%             writetable(vertcat(woundFeatures{:}), strcat(analysisDir,'woundFeatures.csv'))
+%         end
     end
     
 	[g,K,E] = KgGlobal(Geo_0, Geo_n, Geo, Set); 

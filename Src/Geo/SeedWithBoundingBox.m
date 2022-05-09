@@ -1,7 +1,8 @@
 function [XgID,X]=SeedWithBoundingBox(X,s)
-    nCells = size(X,1); 
     % This funcrion seeds nodes in undesired entities (edges, faces and tetrahedrons) 
     % while cell-centers are bounded by ghost nodes. 
+    
+    nCells = size(X,1); 
     
     r0=mean(X);
     r=5*max(max(abs(X-r0)));

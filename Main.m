@@ -42,6 +42,8 @@ while t<=Set.tend
 	    Geo_b = Geo;
 	    Set.iIncr=numStep;
         [Geo, Dofs] = ApplyBoundaryCondition(t, Geo, Dofs, Set);
+        %IMPORTANT: Here it updates: Areas, Volumes, etc... Should be
+        %up-to-date
 	    Geo = UpdateMeasures(Geo);
         
         % Wounding

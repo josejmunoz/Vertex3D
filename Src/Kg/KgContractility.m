@@ -4,21 +4,21 @@ function [g,K,Cell,Energy] = KgContractility(Cell,Y,Set)
 %   g: is a vector
 %   K: is a matrix
 
-%% Initialize
-if nargout > 1
-    if Set.Sparse == 2 %Manual sparse
-        [g, Energy, ncell, K, si, sj, sk, sv] = initializeKg(Cell, Set);
-    else %Matlab sparse
-        [g, Energy, ncell, K] = initializeKg(Cell, Set);
-    end
-else
-    [g, Energy, ncell] = initializeKg(Cell, Set);
-end
-
-for numCell = 1:ncell
-    if Cell.DebrisCells(numCell)
-        continue
-    end
+    %% Initialize
+    [g, K] = initializeKg(Geo, Set); 
+	
+    %% Loop over Cells 
+	% Analytical residual g and Jacobian K
+	for numCell=1:Geo.nCells
+        if Geo.Remodelling
+			if ~ismember(numCell,Geo.AssembleNodes)
+        		continue
+			end
+        end
+        if Geo.Cells(numCell).AliveStatus ~= 1
+            continue
+        end
+        
     edgeVertices = Cell.Cv{numCell};
     
     edgeLengths = Cell.EdgeLengths{numCell};

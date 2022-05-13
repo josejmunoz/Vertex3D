@@ -1,10 +1,10 @@
 function [g,K,E] = KgGlobal(Geo_0, Geo_n, Geo, Set)
 	%% Surface Energy
-	[gs,Ks,ES]=KgSurfaceCellBasedAdhesion(Geo,Set);
+	[gs,Ks,ES] = KgSurfaceCellBasedAdhesion(Geo,Set);
 	%% Volume Energy
-    [gv,Kv,EV]=KgVolume(Geo,Set);	
+    [gv,Kv,EV] = KgVolume(Geo,Set);	
 	%% Viscous Energy
-	[gf,Kf,EN]=KgViscosity(Geo_n,Geo,Set);	
+	[gf,Kf,EN] = KgViscosity(Geo_n,Geo,Set);	
 	g = gv+gf+gs;
 	K = Kv+Kf+Ks;
 	E = EV+ES+EN;
@@ -19,7 +19,7 @@ function [g,K,E] = KgGlobal(Geo_0, Geo_n, Geo, Set)
 	% TODO
 	%% Triangle Energy Barrier
 	if Set.EnergyBarrier
-	    [gB,KB,EB]=KgTriEnergyBarrier(Geo, Set);
+	    [gB,KB,EB] = KgTriEnergyBarrier(Geo, Set);
         g = g + gB;
         K = K + KB;
         E = E + EB;
@@ -27,7 +27,12 @@ function [g,K,E] = KgGlobal(Geo_0, Geo_n, Geo, Set)
 	%% Propulsion Forces
 	% TODO
 	%% Contractility
-	% TODO
+    if Set.Contractility
+	    [gC,KC,EC] = KgContractility(Geo, Set);
+        g = g + gC;
+        K = K + KC;
+        E = E + EC;
+	end
 	%% Substrate
 	% TODO
 end

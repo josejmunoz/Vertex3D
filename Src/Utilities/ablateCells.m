@@ -1,4 +1,4 @@
-function [Geo, Set] = ablateCells(Geo, Set, t)
+function [Geo] = ablateCells(Geo, Set, t)
 %PERFORMABLATION Summary of this function goes here
 %   Detailed explanation goes here
 if Set.Ablation == true && Set.TInitAblation <= t

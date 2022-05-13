@@ -9,7 +9,7 @@ function [g,K,EnergyS]=KgSurfaceCellBasedAdhesion(Geo, Set)
 		end
 		Cell  = Geo.Cells(c);
 		Ys    = Geo.Cells(c).Y;
-		ge	  = zeros(size(g, 1), 1);
+		ge	  = sparse(size(g, 1), 1);
 		fact0 = 0;
 		for f=1:length(Cell.Faces)
 			face = Cell.Faces(f);

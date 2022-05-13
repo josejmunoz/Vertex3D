@@ -46,7 +46,7 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
  	conv(unique(Twg)) = 1:size(X);
  	Twg = conv(Twg);
     if Set.Substrate
-        XgSub=size(X,1);
+        XgSub=size(X,1); %%???
     end
 	%% Populate the Geo struct
 
@@ -54,7 +54,7 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 	% struct have. This works as a reference, so maybe it should go 
 	% somewhere else.
 	CellFields = ["X", "T", "Y", "Faces", "Vol", "Vol0", "Area", "Area0", "globalIds", "cglobalIds", "AliveStatus"];
-	FaceFields = ["ij", "Centre", "Tris", "globalIds", "InterfaceType", "Area", "Area0", "TrisArea", "EdgeLengths", "EdgeLengths0"];
+	FaceFields = ["ij", "Centre", "Tris", "globalIds", "InterfaceType", "Area", "Area0", "TrisArea", "EdgeLengths", "Tris_SharedByCells"];
 	% Build the Cells struct Array
 	Geo.Cells = BuildStructArray(length(X), CellFields);
 	% Nodes and Tetrahedras    
@@ -78,7 +78,7 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 		Neigh_nodes(Neigh_nodes==c)=[];
 		Geo.Cells(c).Faces = BuildStructArray(length(Neigh_nodes), FaceFields);
         for j  = 1:length(Neigh_nodes)
-			cj    = Neigh_nodes(j);
+			cj = Neigh_nodes(j);
 			Geo.Cells(c).Faces(j) = BuildFace(c, cj, Geo.nCells, Geo.Cells(c), Geo.XgID, Set);
         end
         Geo.Cells(c).Area  = ComputeCellArea(Geo.Cells(c));
@@ -88,7 +88,15 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
         Geo.Cells(c).ExternalLambda = 1;
 		Geo.Cells(c).InternalLambda = 1;
 		Geo.Cells(c).SubstrateLambda = 1;
-	end
+    end
+    
+    % Edge lengths 0 as average of all cells
+    % TODO: Divide by location
+    allFaces = [Geo.Cells.Faces];
+    allTris = vertcat(allFaces.Tris);
+    allEdgeLengths = vertcat(allFaces.EdgeLengths);
+    [~, orderedEdges] = unique(sort(allTris, 2), 'rows');
+    Geo.EdgeLengthsAvg_0 = mean(allEdgeLengths(orderedEdges));
 	
 	% Differential adhesion values
 	for l1 = 1:size(Set.lambdaS1CellFactor,1)
@@ -110,19 +118,20 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 	end
 	% Unique Ids for each point (vertex, node or face center) used in K
 	Geo = BuildGlobalIds(Geo);
-	if Set.Substrate
-    	% update the position of the surface centers on the substrate
-		for c = 1:Geo.nCells
-			for f = 1:length(Geo.Cells(c).Faces)
-				Face = Geo.Cells(c).Faces(f);
-				if Face.ij(2)==XgSub
-            		Geo.Cells(c).Faces(f).Centre(3)=Set.SubstrateZ;
-					Geo.Cells(c).Faces(f).InterfaceType	= BuildInterfaceType(Face.ij, Geo.XgID);
-				end
-			end
-		end
-		Geo = UpdateMeasures(Geo);
-    end 
+    	
+    for c = 1:Geo.nCells
+        allOtherCells = vertcat(Geo.Cells(setdiff(1:Geo.nCells, c)));
+        for f = 1:length(Geo.Cells(c).Faces)
+            Face = Geo.Cells(c).Faces(f);
+            Geo.Cells(c).Faces(f).InterfaceType	= BuildInterfaceType(Face.ij, Geo.XgID);
+            %Geo.Cells(c).Faces(f).Tris_CellEdges = 
+            if Set.Substrate && Face.ij(2)==XgSub
+                % update the position of the surface centers on the substrate
+                Geo.Cells(c).Faces(f).Centre(3)=Set.SubstrateZ;
+            end
+        end
+    end
+    Geo = UpdateMeasures(Geo);
     
     % Initialize status of cells: 1 = 'Alive', 0 = 'Ablated', [] = 'Dead'
     for numCell = 1:Geo.nCells

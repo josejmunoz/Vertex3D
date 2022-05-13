@@ -1,4 +1,4 @@
-function Face = BuildFace(ci, cj, ncells, Cell, XgID, Set)
+function Face = BuildFace(ci, cj, nCells, Cell, XgID, Set)
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	% BuildFace:										  
 	%   Completes a single Face struct with already but empty fields. 
@@ -27,11 +27,10 @@ function Face = BuildFace(ci, cj, ncells, Cell, XgID, Set)
 	Face.ij				= ij;
 	Face.globalIds		= -1;
 	Face.InterfaceType	= BuildInterfaceType(ij, XgID);
-	Face.Centre			= BuildFaceCentre(ij, ncells,  Cell.X, Cell.Y(face_ids,:), Set.f);
-	Face.Tris			= BuildEdges(Cell.T, face_ids, Face.Centre, Cell.X, Cell.Y);
+	Face.Centre			= BuildFaceCentre(ij, nCells,  Cell.X, Cell.Y(face_ids,:), Set.f);
+	[Face.Tris, Face.Tris_SharedByCells] = BuildEdges(Cell.T, face_ids, Face.Centre, Cell.X, Cell.Y, 1:nCells); %%TODO: IMPROVE TO ONLY GET 'NONDEADCELLS'
     
 	[Face.Area, Face.TrisArea]  = ComputeFaceArea(Face, Cell.Y);
     [Face.EdgeLengths] = ComputeFaceEdgeLengths(Face, Cell.Y);
     Face.Area0 = Face.Area;
-    Face.EdgeLengths0 = Face.EdgeLengths;
 end

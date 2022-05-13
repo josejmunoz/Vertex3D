@@ -1,4 +1,4 @@
-function edges = BuildEdges(Tets, FaceIds, FaceCentre, X, Ys)
+function [edges, edgesSharedbyCells] = BuildEdges(Tets, FaceIds, FaceCentre, X, Ys, nonDeadCells)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % BuildEdges:										  
     %   Obtain the local ids of the edges that define a Face. The order of 
@@ -74,10 +74,15 @@ function edges = BuildEdges(Tets, FaceIds, FaceCentre, X, Ys)
 	if Order<0 
 	    surf_ids=flip(surf_ids);
     end
-	%% Build edges
+	%% Build edges and identify the ones shared by different cells
 	edges = zeros(length(surf_ids), 2);
+    edgesSharedbyCells = zeros(length(surf_ids), 1);
 	for yf = 1:length(surf_ids)-1
 		edges(yf,:) = [surf_ids(yf) surf_ids(yf+1)];
+        %edges shared by different cells
+        edgesSharedbyCells(yf) = sum(ismember(Tets(edges(yf, 1) , :), nonDeadCells)) >= 2 & sum(ismember(Tets(edges(yf, 2) , :), nonDeadCells)) >= 2;
 	end
 	edges(end,:) = [surf_ids(end) surf_ids(1)];
+    edgesSharedbyCells(end) = sum(ismember(Tets(edges(end, 1) , :), nonDeadCells)) >= 2 & sum(ismember(Tets(edges(end, 2) , :), nonDeadCells)) >= 2;
+    
 end

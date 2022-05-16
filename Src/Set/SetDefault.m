@@ -14,8 +14,6 @@ function Set = SetDefault(Set)
     DSet.SeedingMethod				= 1;
     DSet.s							= 1.5;
     DSet.ObtainX					= 0;
-	DSet.Substrate                  = false;
-	DSet.SubstrateZ                 = 0;
     %% 2D input image to obtain  the initial topology of the cells
     DSet.InputSegmentedImage		= [];
     DSet.CellAspectRatio			= 1;
@@ -26,7 +24,7 @@ function Set = SetDefault(Set)
     DSet.kSubstrate					= 0;
     %% ============================ Time ==================================
     DSet.tend						= 200;
-    DSet.Nincr						= 200;
+    DSet.Nincr						= 400;
     %% ============================ Mechanics =============================
     DSet.lambdaV					= 1;
     DSet.lambdaV_Debris				= 0.001;
@@ -48,8 +46,11 @@ function Set = SetDefault(Set)
     DSet.Propulsion					= false;
     DSet.Confinement				= false;
 	DSet.InPlaneElasticity          = false;
+    DSet.Contractility              = false;
 	DSet.mu_bulk					= 3000; 
 	DSet.lambda_bulk				= 2000;
+	DSet.Substrate                  = false;
+	DSet.SubstrateZ                 = 0;
     %% ============================ Viscosity =============================
     DSet.nu							= 0.05;
     DSet.LocalViscosityEdgeBased	= false;

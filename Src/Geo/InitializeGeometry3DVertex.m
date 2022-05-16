@@ -25,7 +25,7 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 	%% Perform Delaunay
 	[Geo.XgID,X]=SeedWithBoundingBox(X,Set.s);
     if Set.Substrate == 1
-    	%% Add far node in the bottom
+    	%% Add far node in the bottom to be the 'substrate' node
     	Xg=X(Geo.XgID,:);
         X(Geo.XgID,:)=[];
     	Xg(Xg(:,3)<mean(X(:,3)),:)=[];
@@ -33,8 +33,8 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
     	X=[X;Xg;mean(X(:,1)), mean(X(:,2)), -50];
     end
 	Twg=delaunay(X);
+    
 	% Remove tetrahedras formed only by ghost nodes
-
 	Twg(all(ismember(Twg,Geo.XgID),2),:)=[];
 	% After removing ghost tetrahedras, some nodes become disconnected, 
 	% that is, not a part of any tetrahedra. Therefore, they should be 
@@ -46,7 +46,7 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
  	conv(unique(Twg)) = 1:size(X);
  	Twg = conv(Twg);
     if Set.Substrate == 1
-        XgSub=size(X,1); %%???
+        XgSub=size(X,1); % THE SUBSTRATE NODE
     end
 	%% Populate the Geo struct
 
@@ -120,7 +120,6 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 	Geo = BuildGlobalIds(Geo);
     	
     for c = 1:Geo.nCells
-        allOtherCells = vertcat(Geo.Cells(setdiff(1:Geo.nCells, c)));
         for f = 1:length(Geo.Cells(c).Faces)
             Face = Geo.Cells(c).Faces(f);
             Geo.Cells(c).Faces(f).InterfaceType	= BuildInterfaceType(Face.ij, Geo.XgID);

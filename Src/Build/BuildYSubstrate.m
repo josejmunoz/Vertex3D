@@ -1,4 +1,4 @@
-% TODO FIXME; this function seems to complex for what it does ?
+% TODO FIXME; this function seems too complex for what it does ?
 function Y=BuildYSubstrate(Cell, Cells, XgID, Set, XgSub)
 	Tets = Cell.T;
 	Y = Cell.Y;

@@ -19,7 +19,7 @@ Set.flog = fopen(Set.log, 'w+');
 
 [Geo, Set] = InitializeGeometry3DVertex(Geo, Set);
 % TODO FIXME, this is bad, should be joined somehow
-if ~Set.Substrate
+if Set.Substrate ~= 1
     Dofs = GetDOFs(Geo, Set);
 else
     Dofs = GetDOFsSubstrate(Geo, Set);

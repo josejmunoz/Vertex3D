@@ -24,7 +24,7 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 
 	%% Perform Delaunay
 	[Geo.XgID,X]=SeedWithBoundingBox(X,Set.s);
-    if Set.Substrate
+    if Set.Substrate == 1
     	%% Add far node in the bottom
     	Xg=X(Geo.XgID,:);
         X(Geo.XgID,:)=[];
@@ -45,7 +45,7 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
  	conv = zeros(size(X,1),1);
  	conv(unique(Twg)) = 1:size(X);
  	Twg = conv(Twg);
-    if Set.Substrate
+    if Set.Substrate == 1
         XgSub=size(X,1); %%???
     end
 	%% Populate the Geo struct
@@ -67,7 +67,7 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 		Geo.Cells(c).Y     = BuildYFromX(Geo.Cells(c), Geo.Cells, ...
 													Geo.XgID, Set);
     end
-    if Set.Substrate
+    if Set.Substrate == 1
     	for c = 1:Geo.nCells
 		    Geo.Cells(c).Y = BuildYSubstrate(Geo.Cells(c), Geo.Cells, Geo.XgID, Set, XgSub);
 	    end
@@ -125,7 +125,7 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
             Face = Geo.Cells(c).Faces(f);
             Geo.Cells(c).Faces(f).InterfaceType	= BuildInterfaceType(Face.ij, Geo.XgID);
             %Geo.Cells(c).Faces(f).Tris_CellEdges = 
-            if Set.Substrate && Face.ij(2)==XgSub
+            if Set.Substrate == 1 && Face.ij(2)==XgSub
                 % update the position of the surface centers on the substrate
                 Geo.Cells(c).Faces(f).Centre(3)=Set.SubstrateZ;
             end

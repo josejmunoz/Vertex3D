@@ -1,7 +1,6 @@
 function [g,K,EnergyV]=KgVolume(Geo, Set)
 	% The residual g and Jacobian K of Volume Energy 
 	% Energy W_s= sum_cell lambdaV ((V-V0)/V0)^2
-	
 	[g, K] = initializeKg(Geo, Set);
 	EnergyV = 0;
 	
@@ -18,7 +17,7 @@ function [g,K,EnergyV]=KgVolume(Geo, Set)
     	lambdaV=Set.lambdaV;
     	fact=lambdaV*(Cell.Vol-Cell.Vol0)/Cell.Vol0^2;
     	
-    	ge=zeros(size(g, 1), 1);
+    	ge=sparse(size(g, 1), 1);
 		for f = 1:length(Cell.Faces)
 			Tris = Cell.Faces(f).Tris;
 			for t=1:length(Tris)
@@ -54,7 +53,7 @@ function [g,K,EnergyV]=KgVolume(Geo, Set)
     	geMatrix = lambdaV*((ge)*(ge')/6/6/Cell.Vol0^2);
     	K=K+geMatrix;
     	EnergyV=EnergyV+lambdaV/2 *((Cell.Vol-Cell.Vol0)/Cell.Vol0)^2;    
-	end
+    end
 end
 %%
 % TODO FIXME: Move this to lib?

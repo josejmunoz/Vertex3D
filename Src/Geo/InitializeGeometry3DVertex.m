@@ -41,10 +41,26 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 	% removed from X
 
     %Re-number the surviving tets
- 	X    = X(unique(Twg),:);  % This doe snothing no ?
+    uniqueTets = unique(Twg);
+    Geo.XgID = Geo.nCells+1:length(uniqueTets);
+ 	X    = X(uniqueTets,:); 
  	conv = zeros(size(X,1),1);
- 	conv(unique(Twg)) = 1:size(X);
+ 	conv(uniqueTets) = 1:size(X);
  	Twg = conv(Twg);
+    
+    %% Identify bottom/top/substrate nodes
+    %%TODO: CONSIDER CURVATURE WHEN GETTING TOP/BOTTOM NODES
+    %planeFitOfXs = fit(X(1:Geo.nCells, 1:2), X(1:Geo.nCells, 3), 'poly11');
+    %normalOfPlane = cross(X(2, :) - X(1, :), X(3, :) - X(1, :));
+    %v = dot(Q - P, normalOfPlane);
+    %[Nx,Ny,Nz] = surfnorm(X(1:Geo.nCells, 1), X(1:Geo.nCells, 2), X(1:Geo.nCells, 3));
+    Xg=X(Geo.XgID,:);
+%     bottomDelaunay = delaunay([mean(X(:,1)), mean(X(:,2)), -50; Xg]);
+%     Geo.XgBottom = find(any(ismember(bottomDelaunay, 1), 2)) - 1;
+    
+    Geo.XgBottom = find(Xg(:,3)<mean(X(:,3)));
+    Geo.XgTop = find(Xg(:,3)>mean(X(:,3)));
+    
     if Set.Substrate == 1
         XgSub=size(X,1); % THE SUBSTRATE NODE
     end
@@ -54,8 +70,8 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 	% struct have. This works as a reference, so maybe it should go 
 	% somewhere else.
 	CellFields = ["X", "T", "Y", "Faces", "Vol", "Vol0", "Area", "Area0", "globalIds", "cglobalIds", "AliveStatus"];
-	FaceFields = ["ij", "Centre", "Tris", "globalIds", "InterfaceType", "Area", "Area0", "TrisArea", "EdgeLengths", "Tris_SharedByCells"];
-	% Build the Cells struct Array
+	FaceFields = ["ij", "Centre", "Tris", "globalIds", "InterfaceType", "Area", "Area0"];
+    % Build the Cells struct Array
 	Geo.Cells = BuildStructArray(length(X), CellFields);
 	% Nodes and Tetrahedras    
 	for c = 1:length(X)
@@ -79,7 +95,7 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 		Geo.Cells(c).Faces = BuildStructArray(length(Neigh_nodes), FaceFields);
         for j  = 1:length(Neigh_nodes)
 			cj = Neigh_nodes(j);
-			Geo.Cells(c).Faces(j) = BuildFace(c, cj, Geo.nCells, Geo.Cells(c), Geo.XgID, Set);
+			Geo.Cells(c).Faces(j) = BuildFace(c, cj, Geo.nCells, Geo.Cells(c), Geo.XgID, Set, Geo.XgTop, Geo.XgBottom);
         end
         Geo.Cells(c).Area  = ComputeCellArea(Geo.Cells(c));
         Geo.Cells(c).Area0 = Geo.Cells(c).Area;
@@ -118,15 +134,17 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 	end
 	% Unique Ids for each point (vertex, node or face center) used in K
 	Geo = BuildGlobalIds(Geo);
-    	
-    for c = 1:Geo.nCells
-        for f = 1:length(Geo.Cells(c).Faces)
-            Face = Geo.Cells(c).Faces(f);
-            Geo.Cells(c).Faces(f).InterfaceType	= BuildInterfaceType(Face.ij, Geo.XgID);
-            %Geo.Cells(c).Faces(f).Tris_CellEdges = 
-            if Set.Substrate == 1 && Face.ij(2)==XgSub
-                % update the position of the surface centers on the substrate
-                Geo.Cells(c).Faces(f).Centre(3)=Set.SubstrateZ;
+    
+    if Set.Substrate == 1 
+        for c = 1:Geo.nCells
+            for f = 1:length(Geo.Cells(c).Faces)
+                Face = Geo.Cells(c).Faces(f);
+                Geo.Cells(c).Faces(f).InterfaceType	= BuildInterfaceType(Face.ij, Geo.XgID);
+                %Geo.Cells(c).Faces(f).Tris_CellEdges = 
+                if Face.ij(2)==XgSub
+                    % update the position of the surface centers on the substrate
+                    Geo.Cells(c).Faces(f).Centre(3)=Set.SubstrateZ;
+                end
             end
         end
     end

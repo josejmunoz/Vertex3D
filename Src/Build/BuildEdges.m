@@ -1,4 +1,4 @@
-function [edges, edgesSharedbyCells] = BuildEdges(Tets, FaceIds, FaceCentre, X, Ys, nonDeadCells)
+function [Tris] = BuildEdges(Tets, FaceIds, FaceCentre, FaceInterfaceType, X, Ys, nonDeadCells)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % BuildEdges:										  
     %   Obtain the local ids of the edges that define a Face. The order of 
@@ -14,7 +14,10 @@ function [edges, edgesSharedbyCells] = BuildEdges(Tets, FaceIds, FaceCentre, X, 
     %	face. That is Geo.Cells(c).Y(edges(e,:),:) will give vertices
     %   defining the edge. Used also for triangle computation
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%	
-	FaceTets = Tets(FaceIds,:);
+	TrisFields = ["Edge", "Area", "EdgeLength", "SharedByCells", "Location"]; 
+    Tris = BuildStructArray(sum(FaceIds), TrisFields);
+    
+    FaceTets = Tets(FaceIds,:);
 	tet_order = zeros(length(FaceTets),1);
 	% TODO FIXME, initialize, there was a bug here. Is there a more
 	% clean way to write it ?
@@ -29,7 +32,6 @@ function [edges, edgesSharedbyCells] = BuildEdges(Tets, FaceIds, FaceCentre, X, 
 		    i = i & ~ismember(1:length(FaceTets),tet_order)';
 		    i = find(i);
             if isempty(i)
-                edges = [];
                 return
             end
 		    tet_order(yi) = i(1);
@@ -45,7 +47,6 @@ function [edges, edgesSharedbyCells] = BuildEdges(Tets, FaceIds, FaceCentre, X, 
     if length(surf_ids) < 3
 		% Something went really wrong in the simulation, or a flip being 
 		% tested would result in another face being just an edge.
-        edges = [];
         return
     end
 	surf_ids  = surf_ids(tet_order);
@@ -56,8 +57,8 @@ function [edges, edgesSharedbyCells] = BuildEdges(Tets, FaceIds, FaceCentre, X, 
 	% reordering.
 	if size(FaceTets,1) == 3
 		centre = sum(Ys(surf_ids,:))/3;
-	else
-		centre = FaceCentre;
+    else
+        centre = FaceCentre;
 	end
     Order=0;
     for iii=1:length(surf_ids)
@@ -74,15 +75,22 @@ function [edges, edgesSharedbyCells] = BuildEdges(Tets, FaceIds, FaceCentre, X, 
 	if Order<0 
 	    surf_ids=flip(surf_ids);
     end
-	%% Build edges and identify the ones shared by different cells
-	edges = zeros(length(surf_ids), 2);
-    edgesSharedbyCells = zeros(length(surf_ids), 1);
-	for yf = 1:length(surf_ids)-1
-		edges(yf,:) = [surf_ids(yf) surf_ids(yf+1)];
-        %edges shared by different cells
-        edgesSharedbyCells(yf) = sum(ismember(Tets(edges(yf, 1) , :), nonDeadCells)) >= 2 & sum(ismember(Tets(edges(yf, 2) , :), nonDeadCells)) >= 2;
-	end
-	edges(end,:) = [surf_ids(end) surf_ids(1)];
-    edgesSharedbyCells(end) = sum(ismember(Tets(edges(end, 1) , :), nonDeadCells)) >= 2 & sum(ismember(Tets(edges(end, 2) , :), nonDeadCells)) >= 2;
     
+	%% Build edges and identify the ones shared by different cells
+	for yf = 1:length(surf_ids)-1
+		Tris(yf).Edge = [surf_ids(yf) surf_ids(yf+1)];
+        %edges shared by different cells
+        Tris(yf).SharedByCells = sum(ismember(Tets(Tris(yf).Edge(1) , :), nonDeadCells)) >= 2 & sum(ismember(Tets(Tris(yf).Edge(2) , :), nonDeadCells)) >= 2;
+        Tris(yf).EdgeLength = norm(Ys(Tris(yf).Edge(1), :) - Ys(Tris(yf).Edge(2), :));
+	end
+	Tris(length(surf_ids)).Edge = [surf_ids(end) surf_ids(1)];
+    Tris(length(surf_ids)).SharedByCells = sum(ismember(Tets(Tris(length(surf_ids)).Edge(1), :), nonDeadCells)) >= 2 & sum(ismember(Tets(Tris(length(surf_ids)).Edge(2) , :), nonDeadCells)) >= 2;
+    Tris(length(surf_ids)).EdgeLength = norm(Ys(Tris(length(surf_ids)).Edge(1), :) - Ys(Tris(length(surf_ids)).Edge(2), :));
+    
+    % Compute Tris area
+    [~, triAreas] = ComputeFaceArea(vertcat(Tris.Edge), Ys, FaceCentre);
+    [Tris.Area] = triAreas{:};
+    
+    % Add edge location: 'Top/Bottom/Lateral'
+    [Tris.Location] = deal(FaceInterfaceType);
 end

@@ -1,19 +1,19 @@
-function [area, trisArea] = ComputeFaceArea(Face, Y)
+function [area, trisArea] = ComputeFaceArea(Tris, Y, FaceCentre)
 	area = 0;
-    trisArea = zeros(length(Face.Tris),1);
-	for t = 1:length(Face.Tris)
-		Tri = Face.Tris(t,:);
+    trisArea = cell(length(Tris),1);
+	for t = 1:length(Tris)
+		Tri = Tris(t,:);
 
-        if length(Face.Tris)==3
-            Y3 = Y(Face.Tris(t+1,2),:);
+        if length(Tris)==3
+            Y3 = Y(Tris(t+1,2),:); %% IS THIS GOING TO HAPPEN??? EVER?
         else
-            Y3 = Face.Centre;
+            Y3 = FaceCentre;
         end
 		YTri = [Y(Tri,:); Y3];
 		T=(1/2)*norm(cross(YTri(2,:)-YTri(1,:),YTri(1,:)-YTri(3,:)));
-        trisArea(t) = T;
+        trisArea{t} = T;
 		area = area + T;
-        if length(Face.Tris)==3
+        if length(Tris)==3
             break
         end
 	end

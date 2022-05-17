@@ -106,13 +106,15 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 		Geo.Cells(c).SubstrateLambda = 1;
     end
     
-    % Edge lengths 0 as average of all cells
-    % TODO: Divide by location
+    % Edge lengths 0 as average of all cells by location (Top, bottom or
+    % lateral)
+    Geo.EdgeLengthAvg_0 = [];
     allFaces = [Geo.Cells.Faces];
-    allTris = vertcat(allFaces.Tris);
-    allEdgeLengths = vertcat(allFaces.EdgeLengths);
-    [~, orderedEdges] = unique(sort(allTris, 2), 'rows');
-    Geo.EdgeLengthsAvg_0 = mean(allEdgeLengths(orderedEdges));
+    allFaceTypes = [allFaces.InterfaceType];
+    for faceType = unique(allFaceTypes)
+        currentTris = [allFaces(allFaceTypes == faceType).Tris];
+        Geo.EdgeLengthAvg_0(faceType+1) = mean([currentTris.EdgeLength]);
+    end
 	
 	% Differential adhesion values
 	for l1 = 1:size(Set.lambdaS1CellFactor,1)

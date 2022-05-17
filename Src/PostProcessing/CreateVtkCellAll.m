@@ -26,25 +26,21 @@ function CreateVtkCellAll(Geo, Set, Step)
 			points = points + sprintf(" %.8f %.8f %.8f\n",...
 								   Ys(yi,1),Ys(yi,2),Ys(yi,3));
 
-		end
-		nTriFaces = 0;
+        end
+        
 		for f = 1:length(Geo.Cells(c).Faces)
 			Face = Geo.Cells(c).Faces(f);
-			if length(Face.Tris)==3
-				n3 = Face.Tris(2,2)-1;
-				nTriFaces = nTriFaces + 1;
-			else
-				points = points + sprintf(" %.8f %.8f %.8f\n",...
-							Face.Centre(1),Face.Centre(2),Face.Centre(3));
-				n3 = f+length(Ys)-1-nTriFaces;
-			end
+            points = points + sprintf(" %.8f %.8f %.8f\n",...
+                Face.Centre(1),Face.Centre(2),Face.Centre(3));
+            n3 = f+length(Ys)-1;
+            
 		    for t = 1:length(Face.Tris)
 			    cells    = cells + sprintf("3 %d %d %d\n",...
-							    Face.Tris(t,1)-1+nverts, Face.Tris(t,2)-1+nverts, n3+nverts);
+							    Face.Tris(t).Edge(1)-1+nverts, Face.Tris(t).Edge(2)-1+nverts, n3+nverts);
 				totCells = totCells + 1;
 		    end
 		end
-		nverts = nverts + length(Ys) + length(Geo.Cells(c).Faces) - nTriFaces;
+		nverts = nverts + length(Ys) + length(Geo.Cells(c).Faces);
 	end
 	for numTries=1:totCells
     	cells_type = cells_type + sprintf('%d\n',5);

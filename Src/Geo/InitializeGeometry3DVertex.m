@@ -165,12 +165,7 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
         Cell = Geo.Cells(c);
         for f = 1:length(Geo.Cells(c).Faces)
             Face = Cell.Faces(f);
-			% TODO FIXME bad programming...
-			if length(Face.Tris)==3
-				Set.BarrierTri0=min([Face.TrisArea(1); Set.BarrierTri0]);
-			else
-				Set.BarrierTri0=min([Face.TrisArea; Set.BarrierTri0]);
-			end
+            Set.BarrierTri0=min([vertcat(Face.Tris.Area); Set.BarrierTri0]);
         end
     end
     Set.BarrierTri0=Set.BarrierTri0/10;

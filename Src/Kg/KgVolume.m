@@ -21,16 +21,16 @@ function [g,K,EnergyV]=KgVolume(Geo, Set)
 		for f = 1:length(Cell.Faces)
 			Tris = Cell.Faces(f).Tris;
 			for t=1:length(Tris)
-				y1 = Ys(Tris(t,1),:);
-				y2 = Ys(Tris(t,2),:);
+				y1 = Ys(Tris(t).Edge(1),:);
+				y2 = Ys(Tris(t).Edge(2),:);
 				if length(Tris) == 3
-					y3 = Ys(Tris(t+1,2),:);
-					n3 = Cell.globalIds(Tris(t+1,2));
+					y3 = Ys(Tris(t+1).Edge(2),:);
+					n3 = Cell.globalIds(Tris(t+1).Edge(2));
 				else
 					y3 = Cell.Faces(f).Centre;
 					n3 = Cell.Faces(f).globalIds;
 				end
-				nY = [Cell.globalIds(Tris(t,:))', n3];
+				nY = [Cell.globalIds(Tris(t).Edge)', n3];
 				if Geo.Remodelling
 					if ~any(ismember(nY,Geo.AssemblegIds))
                         if length(Tris) == 3

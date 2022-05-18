@@ -19,7 +19,7 @@ function Geo = Rebuild(Geo, Set)
 			end
 			if newFace
 				Geo.Cells(cc).Faces(j+1:length(Geo.Cells(cc).Faces)+1)=Geo.Cells(cc).Faces(j:length(Geo.Cells(cc).Faces));
-				Geo.Cells(cc).Faces(j)=BuildFace(cc, cj, Geo.nCells, Geo.Cells(cc), Geo.XgID, Set);
+				Geo.Cells(cc).Faces(j)=BuildFace(cc, cj, Geo.nCells, Geo.Cells(cc), Geo.XgID, Set, Geo.XgTop, Geo.XgBottom);
 				Geo.Cells(cc).Faces(j).Centre = sum(Geo.Cells(cc).Y(face_ids,:),1)/sum(face_ids);
 			else
 				% TODO FIXME, I think this is an unnecessary call most of the time...

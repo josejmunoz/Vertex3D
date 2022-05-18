@@ -6,7 +6,7 @@ function [Dofs, Geo] = GetRemodelDOFs(Tnew, Dofs, Geo)
 		for jj = 1:length(Geo.Cells(ccc).Faces)
 			Face_r = Geo.Cells(ccc).Faces(jj);
 			% TODO FIXME this seems not good...
-			FaceTets = Geo.Cells(ccc).T(unique(Face_r.Tris),:);
+			FaceTets = Geo.Cells(ccc).T(unique([Face_r.Tris.Edge]),:);
 			if all(ismember(FaceTets,Tnew))
 				remodelDofs(end+1,:) = Face_r.globalIds;
 			end

@@ -7,15 +7,15 @@ function [Geo_n, Geo, Dofs, Set, newYgIds] = Flip23(Geo_0, Geo_n, Geo, Dofs, Set
 			nrgs = ComputeTriEnergy(Face, Ys, Set);
 			Geo_backup = Geo; Geo_n_backup = Geo_n;
 			for t = 1:length(Face.Tris)
-				if ismember(Geo.Cells(c).globalIds(Face.Tris(t,1)),newYgIds)
+				if ismember(Geo.Cells(c).globalIds(Face.Tris(t).Edge(1)),newYgIds)
 					nrgs(t) = 0;
 				end
 			end
 			
 			[~,idVertex]=max(nrgs);
-			YsToChange = Face.Tris(idVertex,:);
+			YsToChange = Face.Tris(idVertex).Edge;
 			
-			if max(nrgs)<Set.RemodelTol || length(unique(Face.Tris)) == 3 || ...
+			if max(nrgs)<Set.RemodelTol || length(unique([Face.Tris.Edge])) == 3 || ...
 					CheckSkinnyTriangles(Ys(YsToChange(1),:),Ys(YsToChange(2),:),Face.Centre)
                 continue
 			end

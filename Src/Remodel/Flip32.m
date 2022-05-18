@@ -11,11 +11,11 @@ function [Geo_n, Geo, Dofs, Set, newYgIds] = Flip32(Geo_0, Geo_n, Geo, Dofs, Set
 			nrgs = ComputeTriEnergy(Face, Ys, Set);
 			Geo_backup = Geo; Geo_n_backup = Geo_n;
 
-            if max(nrgs)<Set.RemodelTol || length(unique(Face.Tris)) ~= 3 || ismember(Face.globalIds, newYgIds)
+            if max(nrgs)<Set.RemodelTol || length(unique([Face.Tris.Edge])) ~= 3 || ismember(Face.globalIds, newYgIds)
             	continue
             end
 
-			YsToChange=[Face.Tris(1,1); Face.Tris(2,1); Face.Tris(3,1)];
+			YsToChange=[Face.Tris(1).Edge(1); Face.Tris(2).Edge(1); Face.Tris(3).Edge(1)];
             [Ynew, Tnew] = YFlip32(Ys, Ts, YsToChange, Geo);
 
             targetTets = Geo.Cells(c).T(YsToChange,:);

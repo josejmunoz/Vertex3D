@@ -23,10 +23,10 @@ function Geo = Rebuild(Geo, Set)
 				Geo.Cells(cc).Faces(j).Centre = sum(Geo.Cells(cc).Y(face_ids,:),1)/sum(face_ids);
 			else
 				% TODO FIXME, I think this is an unnecessary call most of the time...
-				Geo.Cells(cc).Faces(j).Tris	= BuildEdges(Geo.Cells(cc).T, face_ids, Geo.Cells(cc).Faces(j).Centre, Geo.Cells(cc).X, Geo.Cells(cc).Y, 1:Geo.nCells);
-            	Geo.Cells(cc).Faces(j).InterfaceType	= BuildInterfaceType(ij, Geo.XgID);
+                [Face.Tris] = BuildEdges(Geo.Cells(cc).T, face_ids, Geo.Cells(cc).Faces(j).Centre, Geo.Cells(cc).Faces(j).InterfaceType, Geo.Cells(cc).X, Geo.Cells(cc).Y, 1:Geo.nCells);
+            	Geo.Cells(cc).Faces(j).InterfaceType	= BuildInterfaceType(ij, Geo.XgID, Geo.XgTop, Geo.XgBottom);
                 Geo.Cells(cc).Faces(j).ij = ij;
-				[Geo.Cells(cc).Faces(j).Area, Geo.Cells(cc).Faces(j).TrisArea] = ComputeFaceArea(Geo.Cells(cc).Faces(j), Geo.Cells(cc).Y);	
+				[Geo.Cells(cc).Faces(j).Area] = ComputeFaceArea(vertcat(Geo.Cells(cc).Faces(j).Tris.Edge), Geo.Cells(cc).Y, Geo.Cells(cc).Faces(j).Centre);	
 			end
 		end
 		Geo.Cells(cc).Area  = ComputeCellArea(Geo.Cells(cc));

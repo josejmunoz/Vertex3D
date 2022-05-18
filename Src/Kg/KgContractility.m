@@ -10,59 +10,65 @@ function [g, K, energy] = KgContractility(Geo, Set)
     energy = 0;
     %% Loop over Cells 
 	% Analytical residual g and Jacobian K
-	for numCell = 1:Geo.nCells
+	for currentCell = Geo.Cells
         if Geo.Remodelling
-			if ~ismember(numCell,Geo.AssembleNodes)
+			if ~ismember(currentCell.ID, Geo.AssembleNodes)
         		continue
 			end
         end
-        if Geo.Cells(numCell).AliveStatus ~= 1
+        if isempty(currentCell.AliveStatus) || currentCell.AliveStatus ~= 1
             continue
         end
         
         ge=sparse(size(g, 1), 1);
         
-        currentCell = Geo.Cells(numCell);
-        
-        [uniqueEdges, uniqueOrder] = unique(vertcat(currentCell.Faces.Tris), 'rows');
-        
-        edgesLength = vertcat(currentCell.Faces.EdgeLengths);
-        edgesLengthOrdered = edgesLength(uniqueOrder);
-        
-        trisSharedByCells = vertcat(currentCell.Faces.Tris_SharedByCells);
-        trisSharedByCells_ordered = trisSharedByCells(uniqueOrder);
-        %TODO: GET INFORMATION OF LOCATION OF EDGE (APICAL/BASAL/LATERAL)
-        numEdge = 1;
-        for currentEdge = uniqueEdges'
-            if trisSharedByCells_ordered(numEdge)
-                l_i0 = Geo.EdgeLengthsAvg_0;
-                y_1 = currentCell.Y(currentEdge(1), :);
-                y_2 = currentCell.Y(currentEdge(2), :);
-
-                C = Set.cLineTension;
-
-                %% Calculate residual g
-                g_current = computeGContractility(l_i0, y_1, y_2, C);
-                ge = Assembleg(ge, g_current, currentCell.globalIds(currentEdge));
-
-                %% Save contractile forces (g) to output
-                % TODO
-                %contractileForcesOfCell(numEdge, 1) = norm(g_current(1:3));
-
-                %% Calculate Jacobian
-                K_current = computeKContractility(l_i0, y_1, y_2, C);
-
-                K = AssembleK(K, K_current, currentCell.globalIds(currentEdge));
-
-
-                %% Calculate energy
-                energy = energy + computeEnergyContractility(l_i0, norm(y_1 - y_2), C);
+        for currentFace = currentCell.Faces
+            faceConnections = currentFace.ij;
+            faceConnections(ismember(faceConnections, Geo.AssembleNodes) == 0) = [];
+            
+            switch (currentFace.InterfaceType)
+                case 0
+                    if any([Geo.Cells(faceConnections).AliveStatus] == 0)
+                        C = eps;
+                    else
+                        C = Set.cLineTension;
+                    end
+                case 1
+                    C = Set.cLineTension/100;
+                case 2
+                    C = Set.cLineTension/100;
+                otherwise
+                    C = Set.cLineTension;
             end
-            numEdge = numEdge + 1;
+            
+            l_i0 = Geo.EdgeLengthAvg_0(currentFace.InterfaceType+1);
+            
+            for currentTri = currentFace.Tris
+                if currentTri.SharedByCells
+                    y_1 = currentCell.Y(currentTri.Edge(1), :);
+                    y_2 = currentCell.Y(currentTri.Edge(2), :);
+
+                    %% Calculate residual g
+                    g_current = computeGContractility(l_i0, y_1, y_2, C);
+                    ge = Assembleg(ge, g_current, currentCell.globalIds(currentTri.Edge));
+
+                    %% Save contractile forces (g) to output
+                    % TODO
+                    %contractileForcesOfCell(numEdge, 1) = norm(g_current(1:3));
+
+                    %% Calculate Jacobian
+                    K_current = computeKContractility(l_i0, y_1, y_2, C);
+
+                    K = AssembleK(K, K_current, currentCell.globalIds(currentTri.Edge));
+
+                    %% Calculate energy
+                    energy = energy + computeEnergyContractility(l_i0, norm(y_1 - y_2), C);
+                end
+            end
         end
         
         g = g + ge;
-
+        
         % TODO:
         %Cell.ContractileForces{numCell} = contractileForcesOfCell;
     end

@@ -69,12 +69,13 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 	% TODO FIXME Fields that structs in the Cells array and Faces in a Cell 
 	% struct have. This works as a reference, so maybe it should go 
 	% somewhere else.
-	CellFields = ["X", "T", "Y", "Faces", "Vol", "Vol0", "Area", "Area0", "globalIds", "cglobalIds", "AliveStatus"];
+	CellFields = ["ID", "X", "T", "Y", "Faces", "Vol", "Vol0", "Area", "Area0", "globalIds", "cglobalIds", "AliveStatus"];
 	FaceFields = ["ij", "Centre", "Tris", "globalIds", "InterfaceType", "Area", "Area0"];
     % Build the Cells struct Array
 	Geo.Cells = BuildStructArray(length(X), CellFields);
 	% Nodes and Tetrahedras    
 	for c = 1:length(X)
+        Geo.Cells(c).ID    = c;
 		Geo.Cells(c).X     = X(c,:);
 		Geo.Cells(c).T     = Twg(any(ismember(Twg,c),2),:);
 	end

@@ -16,31 +16,18 @@ function CreateVtkFaceCentres(Geo, Set, Step)
 		header = header + "ASCII\n";
 		header = header + "DATASET UNSTRUCTURED_GRID\n";
 
-		% TODO FIXME, not good...
-		nTris = 0;
-		for ft = 1:length(Geo.Cells(c).Faces)
-			ntris = length(Geo.Cells(c).Faces(ft).Tris);
-			if ntris == 3
-                nTris = nTris + 1;
-                continue;
-			end
-		end
-		counter = 0;
-		points = sprintf("POINTS %d float\n", ...
-					length(Geo.Cells(c).Faces)-nTris);
-		cells  = sprintf("CELLS %d %d\n",length(Geo.Cells(c).Faces)-nTris,2*(length(Geo.Cells(c).Faces)-nTris));
-		for f = 1:length(Geo.Cells(c).Faces)
-			face = Geo.Cells(c).Faces(f);
-			if length(Geo.Cells(c).Faces(f).Tris)~=3
-			    points = points + sprintf(" %.8f %.8f %.8f\n",...
-								       face.Centre(1),face.Centre(2),face.Centre(3));
-				cells    = cells + sprintf("1 %d \n",counter);
-				counter = counter + 1;
-						
-			end
-		end
-		cells_type = sprintf("CELL_TYPES %d \n", length(Geo.Cells(c).Faces)-nTris);
-    	for numTries=1:(length(Geo.Cells(c).Faces)-nTris)
+		points = sprintf("POINTS %d float\n", length(Geo.Cells(c).Faces));
+		cells  = sprintf("CELLS %d %d\n",length(Geo.Cells(c).Faces),2*(length(Geo.Cells(c).Faces)));
+		
+        for f = 1:length(Geo.Cells(c).Faces)
+            face = Geo.Cells(c).Faces(f);
+            points = points + sprintf(" %.8f %.8f %.8f\n",...
+                face.Centre(1),face.Centre(2),face.Centre(3));
+            cells    = cells + sprintf("1 %d \n",f-1);
+        end
+
+		cells_type = sprintf("CELL_TYPES %d \n", length(Geo.Cells(c).Faces));
+    	for numTries=1:(length(Geo.Cells(c).Faces))
         	cells_type = cells_type + sprintf('%d\n',1);
     	end
 

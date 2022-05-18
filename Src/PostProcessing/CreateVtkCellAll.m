@@ -17,15 +17,13 @@ function CreateVtkCellAll(Geo, Set, Step)
 	header = header + "DATASET UNSTRUCTURED_GRID\n";
 	points = ""; cells = ""; cells_type = "";
 
-	totCells = 0; nverts = 0;
+	nTris = 0; nverts = 0;
 
 	for c = 1:Geo.nCells
 		Ys = Geo.Cells(c).Y;
 		
 		for yi = 1:length(Ys)
-			points = points + sprintf(" %.8f %.8f %.8f\n",...
-								   Ys(yi,1),Ys(yi,2),Ys(yi,3));
-
+			points = points + sprintf(" %.8f %.8f %.8f\n", Ys(yi,1),Ys(yi,2),Ys(yi,3));
         end
         
 		for f = 1:length(Geo.Cells(c).Faces)
@@ -37,17 +35,17 @@ function CreateVtkCellAll(Geo, Set, Step)
 		    for t = 1:length(Face.Tris)
 			    cells    = cells + sprintf("3 %d %d %d\n",...
 							    Face.Tris(t).Edge(1)-1+nverts, Face.Tris(t).Edge(2)-1+nverts, n3+nverts);
-				totCells = totCells + 1;
+				nTris = nTris + 1;
 		    end
 		end
 		nverts = nverts + length(Ys) + length(Geo.Cells(c).Faces);
 	end
-	for numTries=1:totCells
+	for numTries=1:nTris
     	cells_type = cells_type + sprintf('%d\n',5);
 	end
 	points = sprintf("POINTS %d float\n", nverts) + points;
-	cells  = sprintf("CELLS %d %d\n",totCells,4*totCells) + cells;
-	cells_type = sprintf("CELL_TYPES %d \n", totCells) + cells_type;
+	cells  = sprintf("CELLS %d %d\n",nTris,4*nTris) + cells;
+	cells_type = sprintf("CELL_TYPES %d \n", nTris) + cells_type;
 
 	fprintf(fout, header + points + cells + cells_type);
 % 	fprintf(fout, header + points);

@@ -33,16 +33,12 @@ function CreateVtkCell(Geo, Set, Step)
 		
 		cells  = sprintf("CELLS %d %d\n",totTris,4*totTris);
 		for f = 1:length(Geo.Cells(c).Faces)
+            face = Geo.Cells(c).Faces(f);
+            points = points + sprintf(" %.8f %.8f %.8f\n", face.Centre(1),face.Centre(2),face.Centre(3));
             
-			face = Geo.Cells(c).Faces(f);
-            if length(Geo.Cells(c).Faces(f).Tris)~=3
-			    points = points + sprintf(" %.8f %.8f %.8f\n", face.Centre(1),face.Centre(2),face.Centre(3));
-
-			    for t = 1:length(face.Tris)
-				    cells = cells + sprintf("3 %d %d %d\n", face.Tris(t).Edge(1)-1, face.Tris(t).Edge(2)-1, f+length(Ys)-1);
-                end
+            for t = 1:length(face.Tris)
+                cells = cells + sprintf("3 %d %d %d\n", face.Tris(t).Edge(1)-1, face.Tris(t).Edge(2)-1, f+length(Ys)-1);
             end
-			
 		end
 		
 		cells_type = sprintf("CELL_TYPES %d \n", totTris);

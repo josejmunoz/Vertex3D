@@ -14,11 +14,11 @@ function [Geo_n, Geo, Dofs, Set, newYgIds] = Flip44(Geo_0, Geo_n, Geo, Dofs, Set
 			% The last ismember condition is necessary if a previous 44 flip
 			% happens, as the new remodelled and approximated face might 
 			% be in a cell not yet reviewed.
-			if max(nrgs)<Set.RemodelTol || min(nrgs)<Set.RemodelTol*1e-4 || length(unique(Face.Tris))~=4 || ismember(Face.globalIds, newYgIds)
+			if max(nrgs)<Set.RemodelTol || min(nrgs)<Set.RemodelTol*1e-4 || length(unique([Face.Tris.Edge]))~=4 || ismember(Face.globalIds, newYgIds)
                 continue
 			end
 			
-			YsToChange=[Face.Tris(1,1); Face.Tris(2,1); Face.Tris(3,1); Face.Tris(4,1)];
+			YsToChange=[Face.Tris(1).Edge(1); Face.Tris(2).Edge(1); Face.Tris(3).Edge(1); Face.Tris(4).Edge(1)];
             [Ynew, Tnew] = YFlip44(Ys, Ts, YsToChange, Face, Geo);
 				
             targetTets = Geo.Cells(c).T(YsToChange,:);

@@ -50,26 +50,19 @@ function [Tris] = BuildEdges(Tets, FaceIds, FaceCentre, FaceInterfaceType, X, Ys
         return
     end
 	surf_ids  = surf_ids(tet_order);
-    % TODO FIXME IS THIS ACCEPTABLE?
-%     if size(FaceTets,1) > 3
 	%% Vertices ordering
 	% The clockwise ordering might be incorrect for some cases, which need
 	% reordering.
-	if size(FaceTets,1) == 3
-		centre = sum(Ys(surf_ids,:))/3;
-    else
-        centre = FaceCentre;
-	end
     Order=0;
     for iii=1:length(surf_ids)
 	    if iii==length(surf_ids)
-		    v1=Ys(surf_ids(iii),:)-centre;
-		    v2=Ys(surf_ids(1),:)-centre;
-		    Order=Order+dot(cross(v1,v2),centre-X)/length(surf_ids);
+		    v1=Ys(surf_ids(iii),:)-FaceCentre;
+		    v2=Ys(surf_ids(1),:)-FaceCentre;
+		    Order=Order+dot(cross(v1,v2),FaceCentre-X)/length(surf_ids);
 	    else
-		    v1=Ys(surf_ids(iii),:)-centre;
-		    v2=Ys(surf_ids(iii+1),:)-centre;
-		    Order=Order+dot(cross(v1,v2),centre-X)/length(surf_ids);
+		    v1=Ys(surf_ids(iii),:)-FaceCentre;
+		    v2=Ys(surf_ids(iii+1),:)-FaceCentre;
+		    Order=Order+dot(cross(v1,v2),FaceCentre-X)/length(surf_ids);
 	    end
     end
 	if Order<0 

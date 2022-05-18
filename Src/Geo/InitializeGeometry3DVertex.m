@@ -60,10 +60,6 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
     
     Geo.XgBottom = find(Xg(:,3)<mean(X(:,3)));
     Geo.XgTop = find(Xg(:,3)>mean(X(:,3)));
-    
-    if Set.Substrate == 1
-        XgSub=size(X,1); % THE SUBSTRATE NODE
-    end
 	
     [Geo] = BuildCells(Geo, Set, X, Twg);
     

@@ -20,6 +20,7 @@ function [Geo] = BuildCells(Geo, Set, X, Twg)
 													Geo.XgID, Set);
     end
     if Set.Substrate == 1
+        XgSub=size(X,1); % THE SUBSTRATE NODE
     	for c = 1:Geo.nCells
 		    Geo.Cells(c).Y = BuildYSubstrate(Geo.Cells(c), Geo.Cells, Geo.XgID, Set, XgSub);
 	    end

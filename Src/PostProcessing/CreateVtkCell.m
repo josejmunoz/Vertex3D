@@ -18,23 +18,11 @@ function CreateVtkCell(Geo, Set, Step)
 		header = header + "ASCII\n";
 		header = header + "DATASET UNSTRUCTURED_GRID\n";
 
-		% TODO FIXME, not good...
-		totTris = 0;
-        nTris = 0;
-		for ft = 1:length(Geo.Cells(c).Faces)
-			ntris = length(Geo.Cells(c).Faces(ft).Tris);
-            if ntris == 3
-                totTris = totTris + 1;
-                nTris = nTris + 1;
-                continue;
-            end
-			for t = 1:ntris
-				totTris = totTris + 1;
-			end
-		end
+        allFaces = vertcat(Geo.Cells(c).Faces);
+        totTris = length([allFaces.Tris]);
 
 		points = sprintf("POINTS %d float\n", ...
-					length(Ys)+length(Geo.Cells(c).Faces)-nTris);
+					length(Ys)+length(Geo.Cells(c).Faces));
 % 		points = sprintf("POINTS %d float\n", ...
 % 					length(Ys)+1);		
 		for yi = 1:length(Ys)

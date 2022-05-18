@@ -5,9 +5,7 @@ function Geo = UpdateVertices(Geo, Set, dy_reshaped)
 		dYc = dy_reshaped(Geo.Cells(c).cglobalIds,:); 
 		Geo.Cells(c).X = Geo.Cells(c).X + dYc; 
         for f = 1:length(Geo.Cells(c).Faces)
-            if length(Geo.Cells(c).Faces(f).Tris) ~= 3
-			    Geo.Cells(c).Faces(f).Centre = Geo.Cells(c).Faces(f).Centre + dy_reshaped(Geo.Cells(c).Faces(f).globalIds,:);
-            end
+            Geo.Cells(c).Faces(f).Centre = Geo.Cells(c).Faces(f).Centre + dy_reshaped(Geo.Cells(c).Faces(f).globalIds,:);
         end
     end
 end

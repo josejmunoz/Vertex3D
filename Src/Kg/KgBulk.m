@@ -22,26 +22,16 @@ function [g,K,EnergyBulk]=KgBulk(Geo_0, Geo, Set)
 				y1   = Ys(Tris(t,1),:); 
 				y1_0 = Ys_0(Tris(t,1),:); 
 				y2   = Ys(Tris(t,2),:); 
-				y2_0 = Ys_0(Tris(t,2),:); 
-				if length(Tris) == 3 
-					y3 = Ys(Tris(t+1,2),:); 
-					y3_0 = Ys_0(Tris(t+1,2),:); 
-					n3 = Geo.Cells(c).globalIds(Tris(t+1,2)); 
-				else 
-					y3 = Geo.Cells(c).Faces(f).Centre; 
-					y3_0 = Geo_0.Cells(c).Faces(f).Centre; 
-					n3 = Geo.Cells(c).Faces(f).globalIds; 
-				end 
+				y2_0 = Ys_0(Tris(t,2),:);
+                y3 = Geo.Cells(c).Faces(f).Centre;
+                y3_0 = Geo_0.Cells(c).Faces(f).Centre;
+                n3 = Geo.Cells(c).Faces(f).globalIds;
 				currentTet     = [y1; y2; y3; cellNuclei]; 
 				currentTet0    = [y1_0; y2_0; y3_0; cellNuclei0]; 
 				currentTet_ids = [Geo.Cells(c).globalIds(Tris(t,:))', n3, Geo.Cells(c).cglobalIds]; 
 				if Geo.Remodelling 
 					if ~any(ismember(currentTet_ids,Geo.AssemblegIds)) 
-                        if length(Tris) == 3 
-                            break 
-                        else 
-                		    continue 
-                        end 
+                        continue
 					end 
 				end 
 				try 
@@ -55,10 +45,7 @@ function [g,K,EnergyBulk]=KgBulk(Geo_0, Geo, Set)
 					else 
 						ME.rethrow(); 
 					end 
-				end 
-				if length(Tris) == 3 
-					break 
-				end 
+                end
 			end 
 		end 
 		g=g+ge; 

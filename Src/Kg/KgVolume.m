@@ -23,30 +23,18 @@ function [g,K,EnergyV]=KgVolume(Geo, Set)
 			for t=1:length(Tris)
 				y1 = Ys(Tris(t).Edge(1),:);
 				y2 = Ys(Tris(t).Edge(2),:);
-				if length(Tris) == 3
-					y3 = Ys(Tris(t+1).Edge(2),:);
-					n3 = Cell.globalIds(Tris(t+1).Edge(2));
-				else
-					y3 = Cell.Faces(f).Centre;
-					n3 = Cell.Faces(f).globalIds;
-				end
+                y3 = Cell.Faces(f).Centre;
+                n3 = Cell.Faces(f).globalIds;
 				nY = [Cell.globalIds(Tris(t).Edge)', n3];
 				if Geo.Remodelling
 					if ~any(ismember(nY,Geo.AssemblegIds))
-                        if length(Tris) == 3
-                            break
-                        else
-                		    continue
-                        end
+                        continue
 					end
 				end
 				[gs,Ks]=gKDet(y1, y2, y3); 
 				ge=Assembleg(ge,gs,nY); 
 % 				fprintf("%.15f %.2f %.2f %.2f %d %d %d \n", norm(g), y3, c, f, t);
 				K = AssembleK(K,Ks*fact/6,nY);
-				if length(Tris) == 3
-					break
-				end
 			end
 		end
     	g=g+ge*fact/6; % Volume contribution of each triangle is det(Y1,Y2,Y3)/6

@@ -13,17 +13,9 @@ function v=ComputeCellVolume(Cell)
 		for t=1:length(face.Tris)
 			y1 = Cell.Y(face.Tris(t).Edge(1),:);
 			y2 = Cell.Y(face.Tris(t).Edge(2),:);
-
-            if length(face.Tris)==3
-                y3 = Cell.Y(face.Tris(t+1).Edge(2),:);
-            else
-                y3 = face.Centre;
-            end
+            y3 = face.Centre;
 			Ytri = [y1; y2; y3];
 			v = v + det(Ytri)/6;
-            if length(face.Tris)==3
-                break
-            end
 		end
     end
 end 

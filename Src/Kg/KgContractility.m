@@ -23,23 +23,8 @@ function [g, K, energy] = KgContractility(Geo, Set)
         ge=sparse(size(g, 1), 1);
         
         for currentFace = currentCell.Faces
-            faceConnections = currentFace.ij;
-            faceConnections(ismember(faceConnections, Geo.AssembleNodes) == 0) = [];
             
-            switch (currentFace.InterfaceType)
-                case 0
-                    if any([Geo.Cells(faceConnections).AliveStatus] == 0)
-                        C = eps;
-                    else
-                        C = Set.cLineTension;
-                    end
-                case 1
-                    C = Set.cLineTension/100;
-                case 2
-                    C = Set.cLineTension/100;
-                otherwise
-                    C = Set.cLineTension;
-            end
+            C = getContractilityBasedOnLocation(currentFace, Geo, Set);
             
             l_i0 = Geo.EdgeLengthAvg_0(currentFace.InterfaceType+1);
             

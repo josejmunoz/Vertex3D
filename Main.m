@@ -33,6 +33,7 @@ numStep = 1; relaxingNu = false;
 
 PostProcessingVTK(Geo, Set, numStep)
 while t<=Set.tend
+    Set.currentT = t;
 	if Set.Remodelling && abs(t-tr)>=Set.RemodelingFrequency
         [Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Set);
         tr    = t;

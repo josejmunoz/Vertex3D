@@ -35,7 +35,7 @@ function [Geo, g,K,Energy, Set, gr, dyr, dy] = NewtonRaphson(Geo_0, Geo_n, Geo, 
 
     	Set.iter=Set.iter+1;
 		auxgr(ig+1)=gr;
-		% TODO FIXME, what even is this ?!
+		% TODO FIXME, what even is this ?! PVM: In other words, WTF!?
     	if ig ==2
         	ig=0;
     	else

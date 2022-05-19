@@ -1,4 +1,4 @@
-function [contractilityValue] = getContractilityBasedOnLocation(currentFace, Geo, Set)
+function [contractilityValue] = getContractilityBasedOnLocation(currentFace, currentTri, Geo, Set)
 %GETCONTRACTILITYBASEDONLOCATION Summary of this function goes here
 %   Detailed explanation goes here
     
@@ -13,14 +13,14 @@ function [contractilityValue] = getContractilityBasedOnLocation(currentFace, Geo
     
     switch (currentFace.InterfaceType)
         case 0 % Top
-            if any([Geo.Cells(faceConnections).AliveStatus] == 0)
+            if any([Geo.Cells(currentTri.SharedByCells).AliveStatus] == 0)
                 contractilityValue = Set.Contractility_Variability_PurseString(indicesOfClosestTimePoints(1)) * closestTimePointsDistance(1) + ...
                     Set.Contractility_Variability_PurseString(indicesOfClosestTimePoints(2)) * closestTimePointsDistance(2);
             else
                 contractilityValue = Set.cLineTension;
             end
         case 1 % Lateral
-            if any([Geo.Cells(faceConnections).AliveStatus] == 0)
+            if any([Geo.Cells(currentTri.SharedByCells).AliveStatus] == 0)
                 contractilityValue = Set.Contractility_Variability_LateralCables(indicesOfClosestTimePoints(1)) * closestTimePointsDistance(1) + ...
                     Set.Contractility_Variability_LateralCables(indicesOfClosestTimePoints(2)) * closestTimePointsDistance(2);
             else

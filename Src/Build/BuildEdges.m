@@ -86,7 +86,9 @@ function [Tris] = BuildEdges(Tets, FaceIds, FaceCentre, FaceInterfaceType, X, Ys
         Tris(yf).EdgeLength = norm(Ys(Tris(yf).Edge(1), :) - Ys(Tris(yf).Edge(2), :));
 	end
 	Tris(length(surf_ids)).Edge = [surf_ids(end) surf_ids(1)];
-    Tris(length(surf_ids)).SharedByCells = sum(ismember(Tets(Tris(length(surf_ids)).Edge(1), :), nonDeadCells)) >= 2 & sum(ismember(Tets(Tris(length(surf_ids)).Edge(2) , :), nonDeadCells)) >= 2;
+    currentTris_1 = Tets(Tris(length(surf_ids)).Edge(1), :);
+    currentTris_2 = Tets(Tris(length(surf_ids)).Edge(2), :);
+    Tris(length(surf_ids)).SharedByCells = intersect(currentTris_1(ismember(currentTris_1, nonDeadCells)), currentTris_2(ismember(currentTris_2, nonDeadCells)));
     Tris(length(surf_ids)).EdgeLength = norm(Ys(Tris(length(surf_ids)).Edge(1), :) - Ys(Tris(length(surf_ids)).Edge(2), :));
     
     % Compute Tris area

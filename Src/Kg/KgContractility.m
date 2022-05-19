@@ -23,13 +23,12 @@ function [g, K, energy] = KgContractility(Geo, Set)
         ge=sparse(size(g, 1), 1);
         
         for currentFace = currentCell.Faces
-            
             C = getContractilityBasedOnLocation(currentFace, Geo, Set);
             
             l_i0 = Geo.EdgeLengthAvg_0(currentFace.InterfaceType+1);
             
             for currentTri = currentFace.Tris
-                if currentTri.SharedByCells
+                if length(currentTri.SharedByCells) > 1
                     y_1 = currentCell.Y(currentTri.Edge(1), :);
                     y_2 = currentCell.Y(currentTri.Edge(2), :);
 

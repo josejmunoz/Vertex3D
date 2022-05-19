@@ -80,7 +80,9 @@ function [Tris] = BuildEdges(Tets, FaceIds, FaceCentre, FaceInterfaceType, X, Ys
 	for yf = 1:length(surf_ids)-1
 		Tris(yf).Edge = [surf_ids(yf) surf_ids(yf+1)];
         %edges shared by different cells
-        Tris(yf).SharedByCells = sum(ismember(Tets(Tris(yf).Edge(1) , :), nonDeadCells)) >= 2 & sum(ismember(Tets(Tris(yf).Edge(2) , :), nonDeadCells)) >= 2;
+        currentTris_1 = Tets(Tris(yf).Edge(1), :);
+        currentTris_2 = Tets(Tris(yf).Edge(2), :);
+        Tris(yf).SharedByCells = intersect(currentTris_1(ismember(currentTris_1, nonDeadCells)), currentTris_2(ismember(currentTris_2, nonDeadCells)));
         Tris(yf).EdgeLength = norm(Ys(Tris(yf).Edge(1), :) - Ys(Tris(yf).Edge(2), :));
 	end
 	Tris(length(surf_ids)).Edge = [surf_ids(end) surf_ids(1)];

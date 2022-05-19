@@ -9,7 +9,12 @@ function [g,K,EnergyB]=KgTriEnergyBarrier(Geo,Set)
 			if ~ismember(c,Geo.AssembleNodes)
         		continue
 			end
-		end
+        end
+        
+        if isempty(Geo.Cells(c).AliveStatus) || Geo.Cells(c).AliveStatus ~= 1
+            continue
+        end
+        
 		Cell = Geo.Cells(c);
 		Ys = Cell.Y;
 		lambdaB=Set.lambdaB;

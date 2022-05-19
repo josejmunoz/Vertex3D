@@ -10,7 +10,12 @@ function [g,K,EnergyBulk]=KgBulk(Geo_0, Geo, Set)
 			if ~ismember(c,Geo.AssembleNodes) 
         		continue 
 			end 
-		end 
+        end 
+        
+        if isempty(Geo.Cells(c).AliveStatus) || Geo.Cells(c).AliveStatus ~= 1
+            continue
+        end
+        
 		ge=zeros(size(g, 1), 1); 
 		cellNuclei  = Geo.Cells(c).X; 
 		cellNuclei0 = Geo_0.Cells(c).X; 

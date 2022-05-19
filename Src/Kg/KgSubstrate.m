@@ -1,62 +1,54 @@
-function [g,K,Cell,Energy] = KgSubstrate(Cell, SCn, Y, Yn, Set)
+function [g, K, energy] = KgSubstrate(Geo, Set)
 %KGSUBSTRATE Summary of this function goes here
 %   Detailed explanation goes here
 
     %% Initialize
     [g, K] = initializeKg(Geo, Set); 
-
-    for numCell = 1:ncell
-
-        if Set.Sparse > 0
-            ge=sparse(size(g, 1), 1); % Local cell residual
-        else
-            ge=zeros(size(g, 1), 1);
+    
+    energy = 0;
+    
+    kSubstrate = Set.kSubstrate;
+    
+    %% Loop over Cells 
+	% Analytical residual g and Jacobian K
+	for currentCell = Geo.Cells
+        if Geo.Remodelling
+			if ~ismember(currentCell.ID, Geo.AssembleNodes)
+        		continue
+			end
         end
+        if isempty(currentCell.AliveStatus) || currentCell.AliveStatus ~= 1
+            continue
+        end
+        
+        ge=sparse(size(g, 1), 1);
 
-        kSubstrate = Set.kSubstrate;
-
-        substrateForcesOfCell = Cell.SubstrateForce{numCell};
-        numVertexElem = 0;
-        %basalJunctionVertices = Cell.BasalBorderVertices{numCell};
-        for numVertex = Cell.BasalVertices{numCell}'
-            numVertexElem = numVertexElem + 1;
-    %         if basalJunctionVertices(numVertexElem) == 0
-    %             continue;
-    %         end
-
-            z0 = Set.z0Substrate;
-            if numVertex < 0 %% Face centre
-                currentVertex = Cell.FaceCentres.DataRow(abs(numVertex), :);
-                vertexIndex = abs(numVertex) + Set.NumMainV;
-            else %% Regular Vertex
-                currentVertex = Y.DataRow(numVertex, :);
-                vertexIndex = numVertex;
+        for currentFace = currentCell.Face
+            if currentFace.InterfaceType ~= 2
+                continue
             end
+            for currentVertex = unique([currentFace.Tris.Edge])
+                z0 = Set.SubstrateZ;
+                currentVertexYs = currentCell.Y.DataRow(numVertex, :);
 
-            %% Calculate residual g
-            g_current = computeGSubstrate(kSubstrate, currentVertex(:, 3), z0);
-            ge = Assembleg(ge, g_current, vertexIndex);
+                %% Calculate residual g
+                g_current = computeGSubstrate(kSubstrate, currentVertexYs(:, 3), z0);
+                ge = Assembleg(ge, g_current, Cell.globalIds(currentVertex));
 
-            %% Save contractile forces (g) to output
-            substrateForcesOfCell(numVertexElem, 1) = g_current(3);
-            %% AssembleK
-            if  nargout>1
+                %%TODO: Save contractile forces (g) to output
+                %substrateForcesOfCell(numVertexElem, 1) = g_current(3);
+
                 %% Calculate Jacobian
                 K_current = computeKSubstrate(kSubstrate);
-
-                if Set.Sparse == 2
-                    [si,sj,sv,sk] = AssembleKSparse(K_current, vertexIndex, si, sj, sv, sk);
-                else
-                    K = AssembleK(K, K_current, vertexIndex);
-                end
+                K = AssembleK(K, K_current, Cell.globalIds(currentVertex));
 
                 %% Calculate energy
-                Energy = Energy + computeEnergySubstrate(kSubstrate, currentVertex(:, 3), z0);
+                Energy = Energy + computeEnergySubstrate(kSubstrate, currentVertexYs(:, 3), z0);
             end
-
         end
 
         g = g + ge;
+        %%TODO
         Cell.SubstrateForce(numCell) = {substrateForcesOfCell};
     end
 end

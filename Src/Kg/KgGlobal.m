@@ -34,5 +34,10 @@ function [g,K,E] = KgGlobal(Geo_0, Geo_n, Geo, Set)
         E = E + EC;
 	end
 	%% Substrate
-	% TODO
+    if Set.Substrate == 2
+        [gSub, KSub, ESub] = KgSubstrate(Geo, Set);
+        g = g + gSub;
+        K = K + KSub;
+        E = E + ESub;
+    end
 end

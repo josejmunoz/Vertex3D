@@ -23,8 +23,7 @@ function CreateVtkCell(Geo, Set, Step)
 
 		points = sprintf("POINTS %d float\n", ...
 					length(Ys)+length(Geo.Cells(c).Faces));
-% 		points = sprintf("POINTS %d float\n", ...
-% 					length(Ys)+1);		
+	
 		for yi = 1:length(Ys)
 			points = points + sprintf(" %.8f %.8f %.8f\n",...
 								   Ys(yi,1),Ys(yi,2),Ys(yi,3));
@@ -43,10 +42,38 @@ function CreateVtkCell(Geo, Set, Step)
 		
 		cells_type = sprintf("CELL_TYPES %d \n", totTris);
     	for numTries=1:totTris
-        	cells_type = cells_type + sprintf('%d\n',5);
-    	end
-		
-		fprintf(fout, header + points + cells + cells_type);
+        	cells_type = cells_type + sprintf('%d\n', 5);
+        end
+        
+        %% Add different colormaps based on cell/face/tris properties
+        idCell = sprintf("CELL_DATA %d \n", totTris);
+        idCell = idCell + "SCALARS IDs double\n";
+        idCell = idCell + "LOOKUP_TABLE default\n";
+        for f = 1:length(Geo.Cells(c).Faces)
+            for t = 1:length(Geo.Cells(c).Faces(f).Tris)
+                idCell = idCell + sprintf("%i\n", Geo.Cells(c).ID);
+            end
+        end
+        
+        %% Add forces and measurements to display by triangle (Tri)
+        % Relative volume change
+        volumeChange = "SCALARS RelVolChange double\n";
+        volumeChange = volumeChange + "LOOKUP_TABLE default\n";
+        for f = 1:length(Geo.Cells(c).Faces)
+            for t = 1:length(Geo.Cells(c).Faces(f).Tris)
+                volumeChange = volumeChange + sprintf("%f\n", (Geo.Cells(c).Vol - Geo.Cells(c).Vol)/Geo.Cells(c).Vol);
+            end
+        end
+        
+        % Relative surface area change
+        surfaceAreaChange = "SCALARS RelSurfAreaChange double\n";
+        surfaceAreaChange = surfaceAreaChange + "LOOKUP_TABLE default\n";
+        for f = 1:length(Geo.Cells(c).Faces)
+            for t = 1:length(Geo.Cells(c).Faces(f).Tris)
+                surfaceAreaChange = surfaceAreaChange + sprintf("%f\n", (Geo.Cells(c).Faces(f).Area - Geo.Cells(c).Faces(f).Area)/Geo.Cells(c).Faces(f).Area);
+            end
+        end
+		fprintf(fout, header + points + cells + cells_type + idCell + volumeChange + surfaceAreaChange);
 		fclose(fout);
 	end
 end

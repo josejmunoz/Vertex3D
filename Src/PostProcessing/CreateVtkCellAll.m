@@ -18,6 +18,9 @@ function CreateVtkCellAll(Geo, Set, Step)
 	points = ""; cells = ""; cells_type = "";
 
 	nTris = 0; nverts = 0;
+    
+    %%TODO: IT SHOULD USE 'CREATEVKTCELL' FOR EACH CELL AND PUT THEM
+    %%TOGETHER HERE
 
 	for c = 1:Geo.nCells
 		Ys = Geo.Cells(c).Y;
@@ -48,7 +51,5 @@ function CreateVtkCellAll(Geo, Set, Step)
 	cells_type = sprintf("CELL_TYPES %d \n", nTris) + cells_type;
 
 	fprintf(fout, header + points + cells + cells_type);
-% 	fprintf(fout, header + points);
-
 	fclose(fout);
 end

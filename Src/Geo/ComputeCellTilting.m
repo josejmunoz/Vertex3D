@@ -7,6 +7,8 @@ function [tiltingFaces] = ComputeCellTilting(Cell)
             if length(tris.SharedByCells) > 2 && tris.Location == 'Cell-Cell'
                 v1 = Cell.Y(tris.Edge(1), :) - Cell.Y(tris.Edge(2), :); % realEdge
                 fixedVertex = [Cell.Y(tris.Edge(1), 1:2), Cell.Y(tris.Edge(2), 3)];
+                %TODO: CHECK IF THIS IS CORRECT
+                %TODO: Improve perpendicular edge for curve tissues
                 v2 = Cell.Y(tris.Edge(1), :) - fixedVertex;% Perpendicular edge
                 % Calculate the angle between the perpendicular edge and
                 % the real one.
@@ -15,4 +17,3 @@ function [tiltingFaces] = ComputeCellTilting(Cell)
         end
     end
 end
-

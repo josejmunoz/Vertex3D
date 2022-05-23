@@ -56,13 +56,11 @@ function CreateVtkCell(Geo, Geo0, Set, Step)
         end
         
         %% Add forces and measurements to display by triangle (Tri)
-        % TODO: DO IT GENERAL FOR EACH MEASURE
         % TODO: ADD MORE MEASUREMENTS
-        % Relative volume change
         [features] = ComputeCellFeatures(Geo.Cells(c));
         [features0] = ComputeCellFeatures(Geo0.Cells(c));
         
-        featuresToDisplay = fieldnames(features); %{'Vol', 'Area'};
+        featuresToDisplay = fieldnames(features);
         
         measurementsToDisplay = '';
         for feature = featuresToDisplay'

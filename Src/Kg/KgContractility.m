@@ -23,7 +23,7 @@ function [g, K, energy] = KgContractility(Geo, Set)
         ge=sparse(size(g, 1), 1);
         
         for currentFace = currentCell.Faces
-            l_i0 = Geo.EdgeLengthAvg_0(currentFace.InterfaceType+1);
+            l_i0 = Geo.EdgeLengthAvg_0(double(currentFace.InterfaceType)+1);
             
             for currentTri = currentFace.Tris
                 if length(currentTri.SharedByCells) > 1

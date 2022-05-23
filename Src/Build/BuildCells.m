@@ -50,7 +50,7 @@ function [Geo] = BuildCells(Geo, Set, X, Twg)
     allFaceTypes = [allFaces.InterfaceType];
     for faceType = unique(allFaceTypes)
         currentTris = [allFaces(allFaceTypes == faceType).Tris];
-        Geo.EdgeLengthAvg_0(faceType+1) = mean([currentTris.EdgeLength]);
+        Geo.EdgeLengthAvg_0(double(faceType)+1) = mean([currentTris.EdgeLength]);
     end
 	
 	% Differential adhesion values

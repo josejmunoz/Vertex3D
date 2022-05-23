@@ -10,7 +10,7 @@ function [tiltingFaces] = ComputeCellTilting(Cell)
                 v2 = Cell.Y(tris.Edge(1), :) - fixedVertex;% Perpendicular edge
                 % Calculate the angle between the perpendicular edge and
                 % the real one.
-                tiltingFaces = [tiltingFaces, atan2(norm(cross(v1,v2)),dot(v1,v2))];
+                tiltingFaces = [tiltingFaces, atan2(norm(cross(v1,v2)),dot(v1,v2)) * 100];
             end
         end
     end

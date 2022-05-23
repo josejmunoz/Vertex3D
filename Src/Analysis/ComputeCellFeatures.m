@@ -14,9 +14,13 @@ function [features] = ComputeCellFeatures(Cells)
         ComputeCellArea(cell, 'Top');
         ComputeCellArea(cell, 'Bottom');
         ComputeCellArea(cell, 'Cell-Cell');
-        ComputeCellNeighbours(cell)
-        ComputeCellNeighbours(cell, 'Top')
+        ComputeCellNeighbours(cell);
+        ComputeCellNeighbours(cell, 'Top');
+        ComputeCellNeighbours(cell, 'Bottom');
+        ComputeCellTilting(cell)
         
+        %TODO: Other cell measurements
+        %ComputeCellCircularity
         
         % Compute different measurements from the WOUND
         

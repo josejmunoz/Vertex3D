@@ -1,4 +1,4 @@
-function CreateVtkCellAll(Geo, Set, Step)
+function CreateVtkCellAll(Geo, Geo0, Set, Step)
 	%% ============================= INITIATE =============================
 	str0=Set.OutputFolder;                          % First Name of the file 
 	fileExtension='.vtk';                            % extension
@@ -40,8 +40,29 @@ function CreateVtkCellAll(Geo, Set, Step)
 							    Face.Tris(t).Edge(1)-1+nverts, Face.Tris(t).Edge(2)-1+nverts, n3+nverts);
 				nTris = nTris + 1;
 		    end
-		end
+        end
+        
 		nverts = nverts + length(Ys) + length(Geo.Cells(c).Faces);
+        
+        [features] = ComputeCellFeatures(Geo.Cells(c));
+        [features0] = ComputeCellFeatures(Geo0.Cells(c));
+        
+        %% NOT WORKING PROPERLY
+        featuresToDisplay = fieldnames(features); %{'Vol', 'Area'};
+        
+        measurementsToDisplay = struct();
+        for feature = featuresToDisplay'
+            if isfield(measurementsToDisplay, feature{1}) == 0
+                measurementsToDisplay.(feature{1}) = "SCALARS " + feature + "Change double\n";
+                measurementsToDisplay.(feature{1}) = measurementsToDisplay.(feature{1}) + "LOOKUP_TABLE default\n";
+            end
+            
+            for f = 1:length(Geo.Cells(c).Faces)
+                for t = 1:length(Geo.Cells(c).Faces(f).Tris)
+                    measurementsToDisplay.(feature{1}) = measurementsToDisplay.(feature{1}) + sprintf("%f\n", (features.(feature{1})  - features0.(feature{1})) / features0.(feature{1}));
+                end
+            end
+        end
 	end
 	for numTries=1:nTris
     	cells_type = cells_type + sprintf('%d\n',5);
@@ -49,7 +70,13 @@ function CreateVtkCellAll(Geo, Set, Step)
 	points = sprintf("POINTS %d float\n", nverts) + points;
 	cells  = sprintf("CELLS %d %d\n",nTris,4*nTris) + cells;
 	cells_type = sprintf("CELL_TYPES %d \n", nTris) + cells_type;
-
-	fprintf(fout, header + points + cells + cells_type);
+    idCell = sprintf("CELL_DATA %d \n", nTris);
+    
+    measurementTxt = '';
+    for measurement = fieldnames(measurementsToDisplay)'
+        measurementTxt = measurementTxt + measurementsToDisplay.(measurement{1});
+    end
+    
+	fprintf(fout, header + points + cells + cells_type + idCell + measurementTxt);
 	fclose(fout);
 end

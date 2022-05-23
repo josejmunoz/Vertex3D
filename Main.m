@@ -31,7 +31,7 @@ Geo_0   = Geo;
 Geo_n   = Geo;
 numStep = 1; relaxingNu = false;
 
-PostProcessingVTK(Geo, Set, numStep)
+PostProcessingVTK(Geo, Geo_0, Set, numStep)
 while t<=Set.tend
     Set.currentT = t;
 	if Set.Remodelling && abs(t-tr)>=Set.RemodelingFrequency
@@ -77,7 +77,7 @@ while t<=Set.tend
 	        Set.ApplyBC=true;
             numStep=numStep+1;
             Geo_n = Geo;
-            PostProcessingVTK(Geo, Set, numStep)
+            PostProcessingVTK(Geo, Geo_0, Set, numStep)
             relaxingNu = false;
         else
             Set.nu = max(Set.nu/2, Set.nu0);

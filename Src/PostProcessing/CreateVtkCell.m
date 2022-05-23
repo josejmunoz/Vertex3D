@@ -65,7 +65,7 @@ function CreateVtkCell(Geo, Geo0, Set, Step)
         featuresToDisplay = fieldnames(features); %{'Vol', 'Area'};
         
         measurementsToDisplay = '';
-        for feature = featuresToDisplay
+        for feature = featuresToDisplay'
             measurementsToDisplay = measurementsToDisplay + "SCALARS " + feature + "Change double\n";
             measurementsToDisplay = measurementsToDisplay + "LOOKUP_TABLE default\n";
             for f = 1:length(Geo.Cells(c).Faces)

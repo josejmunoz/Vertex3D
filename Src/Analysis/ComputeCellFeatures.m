@@ -9,9 +9,9 @@ function [features] = ComputeCellFeatures(cell)
     features.Area_Top = ComputeCellArea(cell, 'Top');
     features.Area_Bottom = ComputeCellArea(cell, 'Bottom');
     features.Area_CellCell = ComputeCellArea(cell, 'Cell-Cell');
-    features.Neighbours = ComputeCellNeighbours(cell);
-    features.Neighbours_Top = ComputeCellNeighbours(cell, 'Top');
-    features.Neighbours_Bottom = ComputeCellNeighbours(cell, 'Bottom');
+    features.Neighbours = length(ComputeCellNeighbours(cell));
+    features.Neighbours_Top = length(ComputeCellNeighbours(cell, 'Top'));
+    features.Neighbours_Bottom = length(ComputeCellNeighbours(cell, 'Bottom'));
     features.Tilting = ComputeCellTilting(cell);
 
     %TODO: Other cell measurements

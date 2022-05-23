@@ -58,8 +58,8 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 %     bottomDelaunay = delaunay([mean(X(:,1)), mean(X(:,2)), -50; Xg]);
 %     Geo.XgBottom = find(any(ismember(bottomDelaunay, 1), 2)) - 1;
     
-    Geo.XgBottom = find(Xg(:,3)<mean(X(:,3)));
-    Geo.XgTop = find(Xg(:,3)>mean(X(:,3)));
+    Geo.XgBottom = Geo.XgID(Xg(:,3)<mean(X(:,3)));
+    Geo.XgTop = Geo.XgID(Xg(:,3)>mean(X(:,3)));
 	
     [Geo] = BuildCells(Geo, Set, X, Twg);
     

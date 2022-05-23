@@ -1,7 +1,12 @@
-function a = ComputeCellArea(Cell)
-    a = 0;
+function totalArea = ComputeCellArea(Cell, locationFilter)
+    totalArea = 0;
     for f = 1:length(Cell.Faces)
-	    Cell.Faces(f).Area0 = Cell.Faces(f).Area;
-	    a = a + Cell.Faces(f).Area0;
+        if exist('locationFilter', 'var') 
+            if Cell.Faces(f).InterfaceType == locationFilter
+                totalArea = totalArea + Cell.Faces(f).Area;
+            end
+        else
+            totalArea = totalArea + Cell.Faces(f).Area;
+        end
     end
 end

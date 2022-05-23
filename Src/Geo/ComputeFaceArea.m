@@ -5,7 +5,7 @@ function [area, trisArea] = ComputeFaceArea(Tris, Y, FaceCentre)
 		Tri = Tris(t,:);
 
         if length(Tris)==3
-            Y3 = Y(Tris(t+1,2),:); %% IS THIS GOING TO HAPPEN??? EVER?
+            Y3 = Y(Tris(t+1,2),:);
         else
             Y3 = FaceCentre;
         end

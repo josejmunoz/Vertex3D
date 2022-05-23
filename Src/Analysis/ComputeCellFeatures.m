@@ -1,29 +1,23 @@
-function [features] = ComputeCellFeatures(Cells)
+function [features] = ComputeCellFeatures(cell)
 %COMPUTECELLFEATURES Summary of this function goes here
 %   Detailed explanation goes here
+    features = struct();
+    % Compute different measurements from the CELLS
+    features.Area = ComputeCellArea(cell);
+    features.Vol = ComputeCellVolume(cell);
+    features.Height = ComputeCellHeight(cell);
+    features.Area_Top = ComputeCellArea(cell, 'Top');
+    features.Area_Bottom = ComputeCellArea(cell, 'Bottom');
+    features.Area_CellCell = ComputeCellArea(cell, 'Cell-Cell');
+    features.Neighbours = ComputeCellNeighbours(cell);
+    features.Neighbours_Top = ComputeCellNeighbours(cell, 'Top');
+    features.Neighbours_Bottom = ComputeCellNeighbours(cell, 'Bottom');
+    features.Tilting = ComputeCellTilting(cell);
 
-    for cell = Cells
-        if isempty(cell.Area)
-            continue
-        end
-        
-        % Compute different measurements from the CELLS
-        ComputeCellArea(cell);
-        ComputeCellVolume(cell);
-        ComputeCellHeight(cell);
-        ComputeCellArea(cell, 'Top');
-        ComputeCellArea(cell, 'Bottom');
-        ComputeCellArea(cell, 'Cell-Cell');
-        ComputeCellNeighbours(cell);
-        ComputeCellNeighbours(cell, 'Top');
-        ComputeCellNeighbours(cell, 'Bottom');
-        ComputeCellTilting(cell)
-        
-        %TODO: Other cell measurements
-        %ComputeCellCircularity
-        
-        % Compute different measurements from the WOUND
-        
-    end
+    %TODO: Other cell measurements
+    %ComputeCellCircularity
+
+    % Compute different measurements from the WOUND
+
 end
 

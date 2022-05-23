@@ -1,4 +1,4 @@
-function CreateVtkCell(Geo, Set, Step)
+function CreateVtkCell(Geo, Geo0, Set, Step)
 	%% ============================= INITIATE =============================
 	str0=Set.OutputFolder;                          % First Name of the file 
 	fileExtension='.vtk';                            % extension
@@ -56,24 +56,26 @@ function CreateVtkCell(Geo, Set, Step)
         end
         
         %% Add forces and measurements to display by triangle (Tri)
+        % TODO: DO IT GENERAL FOR EACH MEASURE
+        % TODO: ADD MORE MEASUREMENTS
         % Relative volume change
-        volumeChange = "SCALARS RelVolChange double\n";
-        volumeChange = volumeChange + "LOOKUP_TABLE default\n";
-        for f = 1:length(Geo.Cells(c).Faces)
-            for t = 1:length(Geo.Cells(c).Faces(f).Tris)
-                volumeChange = volumeChange + sprintf("%f\n", (Geo.Cells(c).Vol - Geo.Cells(c).Vol)/Geo.Cells(c).Vol);
+        [features] = ComputeCellFeatures(Geo.Cells(c));
+        [features0] = ComputeCellFeatures(Geo0.Cells(c));
+        
+        featuresToDisplay = fieldnames(features); %{'Vol', 'Area'};
+        
+        measurementsToDisplay = '';
+        for feature = featuresToDisplay
+            measurementsToDisplay = measurementsToDisplay + "SCALARS " + feature + "Change double\n";
+            measurementsToDisplay = measurementsToDisplay + "LOOKUP_TABLE default\n";
+            for f = 1:length(Geo.Cells(c).Faces)
+                for t = 1:length(Geo.Cells(c).Faces(f).Tris)
+                    measurementsToDisplay = measurementsToDisplay + sprintf("%f\n", (features.(feature{1})  - features0.(feature{1})) / features0.(feature{1}));
+                end
             end
         end
         
-        % Relative surface area change
-        surfaceAreaChange = "SCALARS RelSurfAreaChange double\n";
-        surfaceAreaChange = surfaceAreaChange + "LOOKUP_TABLE default\n";
-        for f = 1:length(Geo.Cells(c).Faces)
-            for t = 1:length(Geo.Cells(c).Faces(f).Tris)
-                surfaceAreaChange = surfaceAreaChange + sprintf("%f\n", (Geo.Cells(c).Faces(f).Area - Geo.Cells(c).Faces(f).Area)/Geo.Cells(c).Faces(f).Area);
-            end
-        end
-		fprintf(fout, header + points + cells + cells_type + idCell + volumeChange + surfaceAreaChange);
+		fprintf(fout, header + points + cells + cells_type + idCell + measurementsToDisplay);
 		fclose(fout);
 	end
 end

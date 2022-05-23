@@ -14,6 +14,8 @@ function [features] = ComputeCellFeatures(Cells)
         ComputeCellArea(cell, 'Top');
         ComputeCellArea(cell, 'Bottom');
         ComputeCellArea(cell, 'Cell-Cell');
+        ComputeCellNeighbours(cell)
+        ComputeCellNeighbours(cell, 'Top')
         
         
         % Compute different measurements from the WOUND

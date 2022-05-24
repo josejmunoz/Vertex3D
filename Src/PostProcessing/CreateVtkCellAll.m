@@ -23,6 +23,8 @@ function CreateVtkCellAll(Geo, Geo0, Set, Step)
     nTris = sum(cellfun(@(x) length(regexp(x, '[\n]')), cells_type));
     nverts = cellfun(@(x, y) length(x) + length(y), {Geo.Cells.Y}, {Geo.Cells.Faces});
     
+    %% This needs to be recalculated here since ids are global here and
+    %  local in 'VtkCell'
     cells = '';
     for c = 1:Geo.nCells
         lastId = sum(nverts(1:c-1));

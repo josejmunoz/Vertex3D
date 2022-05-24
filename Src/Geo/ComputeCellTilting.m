@@ -4,7 +4,7 @@ function [tiltingFaces] = ComputeCellTilting(Cell)
     tiltingFaces = [];
     for face = Cell.Faces
         for tris = face.Tris
-            if length(tris.SharedByCells) > 2 && tris.Location == 'Cell-Cell'
+            if length(tris.SharedByCells) > 2 && tris.Location == 'CellCell'
                 v1 = Cell.Y(tris.Edge(1), :) - Cell.Y(tris.Edge(2), :); % realEdge
                 fixedVertex = [Cell.Y(tris.Edge(1), 1:2), Cell.Y(tris.Edge(2), 3)];
                 %TODO: CHECK IF THIS IS CORRECT

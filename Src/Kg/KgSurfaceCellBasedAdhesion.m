@@ -19,7 +19,7 @@ function [g,K,EnergyS]=KgSurfaceCellBasedAdhesion(Geo, Set)
 			face = Cell.Faces(f);
 			if face.InterfaceType == 'Top'
 				Lambda=Set.lambdaS1*Cell.ExternalLambda;
-			elseif face.InterfaceType == 'Cell-Cell'
+			elseif face.InterfaceType == 'CellCell'
 				Lambda=Set.lambdaS2*Cell.InternalLambda;
 			elseif face.InterfaceType == 'Bottom'
 				Lambda=Set.lambdaS3*Cell.SubstrateLambda;
@@ -34,7 +34,7 @@ function [g,K,EnergyS]=KgSurfaceCellBasedAdhesion(Geo, Set)
 			Tris=Cell.Faces(f).Tris;
 			if face.InterfaceType == 'Top'
 				Lambda=Set.lambdaS1*Cell.ExternalLambda;
-			elseif face.InterfaceType == 'Cell-Cell'
+			elseif face.InterfaceType == 'CellCell'
 				Lambda=Set.lambdaS2*Cell.InternalLambda;
 			elseif face.InterfaceType == 'Bottom'
 				Lambda=Set.lambdaS3*Cell.SubstrateLambda;

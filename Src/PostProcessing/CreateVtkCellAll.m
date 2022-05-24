@@ -46,10 +46,12 @@ function CreateVtkCellAll(Geo, Geo0, Set, Step)
     allMeasurements = [measurementsToDisplay{:}];
     measurementTxt = '';
     for measurement = fieldnames(allMeasurements)'
-        measurementTxt = measurementTxt + "SCALARS " + measurement{1} + "Change double\nLOOKUP_TABLE default\n";
-        for currentMeasurement = allMeasurements
-            measurementTxt = measurementTxt + currentMeasurement.(measurement{1});
-        end
+        %if contains(measurement, '_') == 0
+            measurementTxt = measurementTxt + "SCALARS " + measurement{1} + " double\nLOOKUP_TABLE default\n";
+            for currentMeasurement = allMeasurements
+                measurementTxt = measurementTxt + currentMeasurement.(measurement{1});
+            end
+        %end
     end
     
 	fprintf(fout, header + points + cells + cells_type + idCell + measurementTxt);

@@ -20,7 +20,7 @@ function [contractilityValue] = getContractilityBasedOnLocation(currentFace, cur
             else
                 contractilityValue = Set.cLineTension;
             end
-        case 'Cell-Cell' % Lateral
+        case 'CellCell' % Lateral
             if any([Geo.Cells(currentTri.SharedByCells).AliveStatus] == 0)
                 contractilityValue = Set.Contractility_Variability_LateralCables(indicesOfClosestTimePoints(1)) * closestTimePointsDistance(1) + ...
                     Set.Contractility_Variability_LateralCables(indicesOfClosestTimePoints(2)) * closestTimePointsDistance(2);

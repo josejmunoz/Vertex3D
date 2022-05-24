@@ -63,8 +63,8 @@ function [points, cells_localIDs, cells_type, idCell, measurementsToDisplay] = C
         
         featuresToDisplay = fieldnames(features);
         
-        featuresToDisplay{end+1} = 'AreaByLocation';
-        featuresToDisplay{end+1} = 'NeighboursByLocation';
+        featuresToDisplay = vertcat({'AreaByLocation'}, featuresToDisplay);
+        featuresToDisplay = vertcat({'NeighboursByLocation'}, featuresToDisplay);
         
         measurementsToDisplay_Header = struct();
         measurementsToDisplay{c} = struct();
@@ -76,10 +76,9 @@ function [points, cells_localIDs, cells_type, idCell, measurementsToDisplay] = C
                 %Divide by location when required
                 if endsWith(feature{1}, 'ByLocation')
                     baseFeature = strrep(feature{1}, 'ByLocation', '');
-                    
                     currentFeature = strcat(baseFeature, '_', string(Geo.Cells(c).Faces(f).InterfaceType));
                     
-                    if ~isfield(featuresToDisplay, currentFeature)
+                    if all(~contains(featuresToDisplay, currentFeature))
                         currentFeature = baseFeature;
                     end
                 else % Otherwise, we use the same feature
@@ -90,20 +89,20 @@ function [points, cells_localIDs, cells_type, idCell, measurementsToDisplay] = C
                     %Print the values of the feature regarding the
                     %triangle/edge
                     if isfield(measurementsToDisplay{c}, feature{1})
-                        measurementsToDisplay{c}.(feature{1}) = measurementsToDisplay{c}.(feature{1}) + sprintf("%f\n", (features.(currentFeature)  - features0.(currentFeature)));
+                        measurementsToDisplay{c}.(feature{1}) = measurementsToDisplay{c}.(feature{1}) + sprintf("%f\n", (features.(currentFeature)  - features0.(currentFeature)) / features0.(currentFeature));
                     else
-                        measurementsToDisplay{c}.(feature{1}) = sprintf("%f\n", (features.(currentFeature) - features0.(currentFeature)));
+                        measurementsToDisplay{c}.(feature{1}) = sprintf("%f\n", (features.(currentFeature) - features0.(currentFeature)) / features0.(currentFeature));
                     end
                 end
             end
         end
         
-        
-
         measurementsTxt = '';
-        for measurement = fieldnames(measurementsToDisplay_Header)'
-            measurementsTxt = measurementsTxt + measurementsToDisplay_Header.(measurement{1});
-            measurementsTxt = measurementsTxt + measurementsToDisplay{c}.(measurement{1});
+        for measurement = fieldnames(measurementsToDisplay_Header)'    
+            %if contains(measurement, '_') == 0
+                measurementsTxt = measurementsTxt + measurementsToDisplay_Header.(measurement{1});
+                measurementsTxt = measurementsTxt + measurementsToDisplay{c}.(measurement{1});
+            %end
         end
         
 		fprintf(fout, header + points_header + points{c} + cells_header + ...

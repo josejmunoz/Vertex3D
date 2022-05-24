@@ -1,6 +1,6 @@
 function ftype = BuildInterfaceType(ij, XgID, XgTop, XgBottom)
     valueset = 0:2;
-    catnames = {'Top' 'Cell-Cell' 'Bottom'};
+    catnames = {'Top' 'CellCell' 'Bottom'};
     categoricalValues = categorical(0:2, valueset,catnames,'Ordinal',true);
 
 	if any(ismember(ij, XgID)) %External: either top or bottom

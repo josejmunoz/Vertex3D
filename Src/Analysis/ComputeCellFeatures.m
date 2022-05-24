@@ -8,11 +8,11 @@ function [features] = ComputeCellFeatures(cell)
     features.Height = ComputeCellHeight(cell);
     features.Area_Top = ComputeCellArea(cell, 'Top');
     features.Area_Bottom = ComputeCellArea(cell, 'Bottom');
-    features.Area_CellCell = ComputeCellArea(cell, 'Cell-Cell');
+    features.Area_CellCell = ComputeCellArea(cell, 'CellCell');
     features.Neighbours = length(ComputeCellNeighbours(cell));
     features.Neighbours_Top = length(ComputeCellNeighbours(cell, 'Top'));
     features.Neighbours_Bottom = length(ComputeCellNeighbours(cell, 'Bottom'));
-    features.Tilting = ComputeCellTilting(cell);
+    features.Tilting = mean(ComputeCellTilting(cell));
 
     %TODO: Other cell measurements
     %ComputeCellCircularity

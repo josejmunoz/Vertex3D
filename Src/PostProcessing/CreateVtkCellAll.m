@@ -41,13 +41,17 @@ function CreateVtkCellAll(Geo, Geo0, Set, Step)
 	points = sprintf("POINTS %d float\n", sum(nverts)) + strcat(points{:});
 	cells  = sprintf("CELLS %d %d\n",nTris,4*nTris) + cells;
 	cells_type = sprintf("CELL_TYPES %d \n", nTris) + strcat(cells_type{:});
-    idCell = sprintf("CELL_DATA %d \n", nTris) + strcat(idCell{:});
+    idCell = sprintf("CELL_DATA %d \n", nTris) + "SCALARS IDs double\nLOOKUP_TABLE default\n" + strcat(idCell{:});
     
-%     measurementTxt = '';
-%     for measurement = fieldnames(measurementsToDisplay)'
-%         measurementTxt = measurementTxt + measurementsToDisplay.(measurement{1});
-%     end
+    allMeasurements = [measurementsToDisplay{:}];
+    measurementTxt = '';
+    for measurement = fieldnames(allMeasurements)'
+        measurementTxt = measurementTxt + "SCALARS " + measurement{1} + "Change double\nLOOKUP_TABLE default\n";
+        for currentMeasurement = allMeasurements
+            measurementTxt = measurementTxt + currentMeasurement.(measurement{1});
+        end
+    end
     
-	fprintf(fout, header + points + cells + cells_type + idCell);
+	fprintf(fout, header + points + cells + cells_type + idCell + measurementTxt);
 	fclose(fout);
 end

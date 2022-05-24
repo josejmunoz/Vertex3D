@@ -1,4 +1,4 @@
-function [points, cells, cells_type, idCell, measurementsToDisplay] = CreateVtkCell(Geo, Geo0, Set, Step)
+function [points, cells_localIDs, cells_type, idCell, measurementsToDisplay] = CreateVtkCell(Geo, Geo0, Set, Step)
 	%% ============================= INITIATE =============================
 	str0=Set.OutputFolder;                          % First Name of the file 
 	fileExtension='.vtk';                            % extension
@@ -32,14 +32,14 @@ function [points, cells, cells_type, idCell, measurementsToDisplay] = CreateVtkC
 		end
 		
 		cells_header  = sprintf("CELLS %d %d\n",totTris,4*totTris);
-        cells{c} = '';
+        cells_localIDs{c} = '';
         idCell{c} = '';
 		for f = 1:length(Geo.Cells(c).Faces)
             face = Geo.Cells(c).Faces(f);
             points{c} = points{c} + sprintf(" %.8f %.8f %.8f\n", face.Centre(1),face.Centre(2),face.Centre(3));
             
             for t = 1:length(face.Tris)
-                cells{c} = cells{c} + sprintf("3 %d %d %d\n", face.Tris(t).Edge(1)-1, face.Tris(t).Edge(2)-1, f+length(Ys)-1);
+                cells_localIDs{c} = cells_localIDs{c} + sprintf("3 %d %d %d\n", face.Tris(t).Edge(1)-1, face.Tris(t).Edge(2)-1, f+length(Ys)-1);
                 idCell{c} = idCell{c} + sprintf("%i\n", Geo.Cells(c).ID);
             end
 		end
@@ -87,7 +87,7 @@ function [points, cells, cells_type, idCell, measurementsToDisplay] = CreateVtkC
         end
         
 		fprintf(fout, header + points_header + points{c} + cells_header + ...
-            cells{c} + cells_type_header + cells_type{c} + idCell_header + idCell{c} + ...
+            cells_localIDs{c} + cells_type_header + cells_type{c} + idCell_header + idCell{c} + ...
             measurementsTxt);
 		fclose(fout);
 	end

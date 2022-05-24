@@ -1,4 +1,4 @@
-function CreateVtkCell(Geo, Geo0, Set, Step)
+function [points, cells, cells_type, idCell, measurementsToDisplay] = CreateVtkCell(Geo, Geo0, Set, Step)
 	%% ============================= INITIATE =============================
 	str0=Set.OutputFolder;                          % First Name of the file 
 	fileExtension='.vtk';                            % extension
@@ -21,39 +21,40 @@ function CreateVtkCell(Geo, Geo0, Set, Step)
         allFaces = vertcat(Geo.Cells(c).Faces);
         totTris = length([allFaces.Tris]);
 
-		points = sprintf("POINTS %d float\n", ...
+		points_header = sprintf("POINTS %d float\n", ...
 					length(Ys)+length(Geo.Cells(c).Faces));
 	
+        points{c} = '';
 		for yi = 1:length(Ys)
-			points = points + sprintf(" %.8f %.8f %.8f\n",...
+			points{c} = points{c} + sprintf(" %.8f %.8f %.8f\n",...
 								   Ys(yi,1),Ys(yi,2),Ys(yi,3));
 
 		end
 		
-		cells  = sprintf("CELLS %d %d\n",totTris,4*totTris);
+		cells_header  = sprintf("CELLS %d %d\n",totTris,4*totTris);
+        cells{c} = '';
+        idCell{c} = '';
 		for f = 1:length(Geo.Cells(c).Faces)
             face = Geo.Cells(c).Faces(f);
-            points = points + sprintf(" %.8f %.8f %.8f\n", face.Centre(1),face.Centre(2),face.Centre(3));
+            points{c} = points{c} + sprintf(" %.8f %.8f %.8f\n", face.Centre(1),face.Centre(2),face.Centre(3));
             
             for t = 1:length(face.Tris)
-                cells = cells + sprintf("3 %d %d %d\n", face.Tris(t).Edge(1)-1, face.Tris(t).Edge(2)-1, f+length(Ys)-1);
+                cells{c} = cells{c} + sprintf("3 %d %d %d\n", face.Tris(t).Edge(1)-1, face.Tris(t).Edge(2)-1, f+length(Ys)-1);
+                idCell{c} = idCell{c} + sprintf("%i\n", Geo.Cells(c).ID);
             end
 		end
 		
-		cells_type = sprintf("CELL_TYPES %d \n", totTris);
+		cells_type_header = sprintf("CELL_TYPES %d \n", totTris);
+        cells_type{c} = "";
     	for numTries=1:totTris
-        	cells_type = cells_type + sprintf('%d\n', 5);
+        	cells_type{c} = cells_type{c} + sprintf('%d\n', 5);
         end
         
         %% Add different colormaps based on cell/face/tris properties
-        idCell = sprintf("CELL_DATA %d \n", totTris);
-        idCell = idCell + "SCALARS IDs double\n";
-        idCell = idCell + "LOOKUP_TABLE default\n";
-        for f = 1:length(Geo.Cells(c).Faces)
-            for t = 1:length(Geo.Cells(c).Faces(f).Tris)
-                idCell = idCell + sprintf("%i\n", Geo.Cells(c).ID);
-            end
-        end
+        idCell_header = sprintf("CELL_DATA %d \n", totTris);
+        idCell_header = idCell_header + "SCALARS IDs double\n";
+        idCell_header = idCell_header + "LOOKUP_TABLE default\n";
+
         
         %% Add forces and measurements to display by triangle (Tri)
         % TODO: ADD MORE MEASUREMENTS
@@ -62,18 +63,32 @@ function CreateVtkCell(Geo, Geo0, Set, Step)
         
         featuresToDisplay = fieldnames(features);
         
-        measurementsToDisplay = '';
+        measurementsToDisplay_Header = struct();
+        measurementsToDisplay{c} = struct();
         for feature = featuresToDisplay'
-            measurementsToDisplay = measurementsToDisplay + "SCALARS " + feature + "Change double\n";
-            measurementsToDisplay = measurementsToDisplay + "LOOKUP_TABLE default\n";
+            measurementsToDisplay_Header.(feature{1}) = "SCALARS " + feature{1} + "Change double\n";
+            measurementsToDisplay_Header.(feature{1}) = measurementsToDisplay_Header.(feature{1}) + "LOOKUP_TABLE default\n";
+            
             for f = 1:length(Geo.Cells(c).Faces)
                 for t = 1:length(Geo.Cells(c).Faces(f).Tris)
-                    measurementsToDisplay = measurementsToDisplay + sprintf("%f\n", (features.(feature{1})  - features0.(feature{1})) / features0.(feature{1}));
+                    if isfield(measurementsToDisplay{c}, feature{1})
+                        measurementsToDisplay{c}.(feature{1}) = measurementsToDisplay{c}.(feature{1}) + sprintf("%f\n", (features.(feature{1})  - features0.(feature{1})) / features0.(feature{1}));
+                    else
+                        measurementsToDisplay{c}.(feature{1}) = sprintf("%f\n", (features.(feature{1})  - features0.(feature{1})) / features0.(feature{1}));
+                    end
                 end
             end
         end
+
+        measurementsTxt = '';
+        for measurement = fieldnames(measurementsToDisplay_Header)'
+            measurementsTxt = measurementsTxt + measurementsToDisplay_Header.(measurement{1});
+            measurementsTxt = measurementsTxt + measurementsToDisplay{c}.(measurement{1});
+        end
         
-		fprintf(fout, header + points + cells + cells_type + idCell + measurementsToDisplay);
+		fprintf(fout, header + points_header + points{c} + cells_header + ...
+            cells{c} + cells_type_header + cells_type{c} + idCell_header + idCell{c} + ...
+            measurementsTxt);
 		fclose(fout);
 	end
 end

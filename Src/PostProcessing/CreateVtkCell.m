@@ -72,9 +72,9 @@ function [points, cells_localIDs, cells_type, idCell, measurementsToDisplay] = C
             for f = 1:length(Geo.Cells(c).Faces)
                 for t = 1:length(Geo.Cells(c).Faces(f).Tris)
                     if isfield(measurementsToDisplay{c}, feature{1})
-                        measurementsToDisplay{c}.(feature{1}) = measurementsToDisplay{c}.(feature{1}) + sprintf("%f\n", (features.(feature{1})  - features0.(feature{1})) / features0.(feature{1}));
+                        measurementsToDisplay{c}.(feature{1}) = measurementsToDisplay{c}.(feature{1}) + sprintf("%f\n", (features.(feature{1})  - features0.(feature{1})));
                     else
-                        measurementsToDisplay{c}.(feature{1}) = sprintf("%f\n", (features.(feature{1})  - features0.(feature{1})) / features0.(feature{1}));
+                        measurementsToDisplay{c}.(feature{1}) = sprintf("%f\n", (features.(feature{1}) - features0.(feature{1})));
                     end
                 end
             end

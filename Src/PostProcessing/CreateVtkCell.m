@@ -63,8 +63,8 @@ function [points, cells_localIDs, cells_type, idCell, measurementsToDisplay] = C
         
         featuresToDisplay = fieldnames(features);
         
-        featuresToDisplay = vertcat({'AreaByLocation'}, featuresToDisplay);
-        featuresToDisplay = vertcat({'NeighboursByLocation'}, featuresToDisplay);
+        featuresToDisplay{end+1} = {'AreaByLocation'};
+        featuresToDisplay{end+1} = {'NeighboursByLocation'};
         
         measurementsToDisplay_Header = struct();
         measurementsToDisplay{c} = struct();
@@ -98,11 +98,9 @@ function [points, cells_localIDs, cells_type, idCell, measurementsToDisplay] = C
         end
         
         measurementsTxt = '';
-        for measurement = fieldnames(measurementsToDisplay_Header)'    
-            %if contains(measurement, '_') == 0
-                measurementsTxt = measurementsTxt + measurementsToDisplay_Header.(measurement{1});
-                measurementsTxt = measurementsTxt + measurementsToDisplay{c}.(measurement{1});
-            %end
+        for measurement = fieldnames(measurementsToDisplay_Header)'
+            measurementsTxt = measurementsTxt + measurementsToDisplay_Header.(measurement{1});
+            measurementsTxt = measurementsTxt + measurementsToDisplay{c}.(measurement{1});
         end
         
 		fprintf(fout, header + points_header + points{c} + cells_header + ...

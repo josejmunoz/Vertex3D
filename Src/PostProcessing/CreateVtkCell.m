@@ -88,10 +88,15 @@ function [points, cells_localIDs, cells_type, idCell, measurementsToDisplay] = C
                 for t = 1:length(Geo.Cells(c).Faces(f).Tris)
                     %Print the values of the feature regarding the
                     %triangle/edge
-                    if isfield(measurementsToDisplay{c}, feature{1})
-                        measurementsToDisplay{c}.(feature{1}) = measurementsToDisplay{c}.(feature{1}) + sprintf("%f\n", (features.(currentFeature)  - features0.(currentFeature)) / features0.(currentFeature));
+                    if contains(feature{1}, "Tilting")
+                        result = features.(currentFeature);
                     else
-                        measurementsToDisplay{c}.(feature{1}) = sprintf("%f\n", (features.(currentFeature) - features0.(currentFeature)) / features0.(currentFeature));
+                        result = (features.(currentFeature) - features0.(currentFeature)) / features0.(currentFeature);
+                    end
+                    if isfield(measurementsToDisplay{c}, feature{1})
+                        measurementsToDisplay{c}.(feature{1}) = measurementsToDisplay{c}.(feature{1}) + sprintf("%f\n", result);
+                    else
+                        measurementsToDisplay{c}.(feature{1}) = sprintf("%f\n", result);
                     end
                 end
             end

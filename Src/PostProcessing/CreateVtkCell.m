@@ -63,13 +63,13 @@ function [points, cells_localIDs, cells_type, idCell, measurementsToDisplay] = C
         
         featuresToDisplay = fieldnames(features);
         
-        featuresToDisplay{end+1} = {'AreaByLocation'};
-        featuresToDisplay{end+1} = {'NeighboursByLocation'};
+        featuresToDisplay(end+1) = {'AreaByLocation'};
+        featuresToDisplay(end+1) = {'NeighboursByLocation'};
         
         measurementsToDisplay_Header = struct();
         measurementsToDisplay{c} = struct();
         for feature = featuresToDisplay'
-            measurementsToDisplay_Header.(feature{1}) = "SCALARS " + feature{1} + "Change double\n";
+            measurementsToDisplay_Header.(feature{1}) = "SCALARS " + feature{1} + " double\n";
             measurementsToDisplay_Header.(feature{1}) = measurementsToDisplay_Header.(feature{1}) + "LOOKUP_TABLE default\n";
             
             for f = 1:length(Geo.Cells(c).Faces)
@@ -99,8 +99,10 @@ function [points, cells_localIDs, cells_type, idCell, measurementsToDisplay] = C
         
         measurementsTxt = '';
         for measurement = fieldnames(measurementsToDisplay_Header)'
-            measurementsTxt = measurementsTxt + measurementsToDisplay_Header.(measurement{1});
-            measurementsTxt = measurementsTxt + measurementsToDisplay{c}.(measurement{1});
+            if ~contains(measurement{1}, '_')
+                measurementsTxt = measurementsTxt + measurementsToDisplay_Header.(measurement{1});
+                measurementsTxt = measurementsTxt + measurementsToDisplay{c}.(measurement{1});
+            end
         end
         
 		fprintf(fout, header + points_header + points{c} + cells_header + ...

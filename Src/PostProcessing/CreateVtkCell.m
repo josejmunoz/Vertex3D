@@ -57,50 +57,17 @@ function [points, cells_localIDs, cells_type, idCell, measurementsToDisplay] = C
 
         
         %% Add forces and measurements to display by triangle (Tri)
-        % TODO: ADD MORE MEASUREMENTS
         [features] = ComputeCellFeatures(Geo.Cells(c));
         [features0] = ComputeCellFeatures(Geo0.Cells(c));
         
+        features = repmat(features, 1, totTris);
+        features0 = repmat(features0, 1, totTris);
         featuresToDisplay = fieldnames(features);
         
         featuresToDisplay(end+1) = {'AreaByLocation'};
         featuresToDisplay(end+1) = {'NeighboursByLocation'};
         
-        measurementsToDisplay_Header = struct();
-        measurementsToDisplay{c} = struct();
-        for feature = featuresToDisplay'
-            measurementsToDisplay_Header.(feature{1}) = "SCALARS " + feature{1} + " double\n";
-            measurementsToDisplay_Header.(feature{1}) = measurementsToDisplay_Header.(feature{1}) + "LOOKUP_TABLE default\n";
-            
-            for f = 1:length(Geo.Cells(c).Faces)
-                %Divide by location when required
-                if endsWith(feature{1}, 'ByLocation')
-                    baseFeature = strrep(feature{1}, 'ByLocation', '');
-                    currentFeature = strcat(baseFeature, '_', string(Geo.Cells(c).Faces(f).InterfaceType));
-                    
-                    if all(~contains(featuresToDisplay, currentFeature))
-                        currentFeature = baseFeature;
-                    end
-                else % Otherwise, we use the same feature
-                    currentFeature = feature{1};
-                end
-                
-                for t = 1:length(Geo.Cells(c).Faces(f).Tris)
-                    %Print the values of the feature regarding the
-                    %triangle/edge
-                    if contains(feature{1}, "Tilting")
-                        result = features.(currentFeature);
-                    else
-                        result = (features.(currentFeature) - features0.(currentFeature)) / features0.(currentFeature);
-                    end
-                    if isfield(measurementsToDisplay{c}, feature{1})
-                        measurementsToDisplay{c}.(feature{1}) = measurementsToDisplay{c}.(feature{1}) + sprintf("%f\n", result);
-                    else
-                        measurementsToDisplay{c}.(feature{1}) = sprintf("%f\n", result);
-                    end
-                end
-            end
-        end
+        [measurementsToDisplay_Header, measurementsToDisplay] = displayFeatures(Geo, features, features0, c, featuresToDisplay);
         
         measurementsTxt = '';
         for measurement = fieldnames(measurementsToDisplay_Header)'

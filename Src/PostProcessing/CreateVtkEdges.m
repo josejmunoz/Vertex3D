@@ -32,7 +32,6 @@ function CreateVtkEdges(Geo, Set, Step)
             face = cell.Faces(f);
             for t = 1:length(face.Tris)
                 [currentFeatures] = ComputeEdgeFeatures(face.Tris(t), cell.Y);
-                [currentFeatures] = ComputeEdgeFeatures(face.Tris(t), cell.Y);
                 if isempty(features)
                     features = currentFeatures;
                 else
@@ -43,7 +42,7 @@ function CreateVtkEdges(Geo, Set, Step)
             end
         end
         
-        [measurementsToDisplay_Header, measurementsToDisplay] = displayFeatures(Geo, features, features0, cell.ID, featuresToDisplay);
+        [measurementsToDisplay_Header, measurementsToDisplay] = displayFeatures(Geo, features, [], cell.ID, featuresToDisplay);
         
         totEdges = length(orderEdges);
         cells_type = cells_type + sprintf('%d\n', 3);

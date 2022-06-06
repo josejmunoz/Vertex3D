@@ -8,74 +8,82 @@ function CreateVtkEdges(Geo, Set, Step)
 	str0=Set.OutputFolder;                          % First Name of the file 
 	fileExtension='.vtk';                            % extension
 	
-	newSubFolder = fullfile(pwd, str0, 'Cells');
+	newSubFolder = fullfile(pwd, str0, 'Edges');
 	if ~exist(newSubFolder, 'dir')
     	mkdir(newSubFolder);
     end
-       
-    nameout=fullfile(newSubFolder, ['Cell_Edges_t', num2str(Step, '%04d'), fileExtension]);
-	fout=fopen(nameout,'w');
-
-	header = "# vtk DataFile Version 3.98\n";
-	header = header + "Delaunay_vtk\n";
-	header = header + "ASCII\n";
-	header = header + "DATASET UNSTRUCTURED_GRID\n";
-    
-    points = ''; cells_type = '';
 
     totEdges = 0;
     features = [];
-    for cell = Geo.Cells
-        points = points + sprintf(" %.8f %.8f %.8f\n", cell.Y);
+    for numCell = [Geo.Cells.ID]
+        if isempty(Geo.Cells(numCell).AliveStatus)
+            continue
+        end
+        nameout=fullfile(newSubFolder, ['Cell_Edges_', num2str(numCell, '%04d'), '_t', num2str(Step, '%04d'), fileExtension]);
+        fout=fopen(nameout,'w');
         
-		for f = 1:length(cell.Faces)
-            face = cell.Faces(f);
+        header = "# vtk DataFile Version 3.98\n";
+        header = header + "Delaunay_vtk\n";
+        header = header + "ASCII\n";
+        header = header + "DATASET UNSTRUCTURED_GRID\n";
+        
+        
+        Ys = Geo.Cells(numCell).Y;
+        
+        points_header = sprintf("POINTS %d float\n", ...
+            length(Ys)+length(Geo.Cells(numCell).Faces));
+        
+        points{numCell} = '';
+		for yi = 1:length(Ys)
+			points{numCell} = points{numCell} + sprintf(" %.8f %.8f %.8f\n",...
+								   Ys(yi,1),Ys(yi,2),Ys(yi,3));
+        end
+        
+        cells_localIDs{numCell} = '';
+        idCell{numCell} = '';
+		for f = 1:length(Geo.Cells(numCell).Faces)
+            face = Geo.Cells(numCell).Faces(f);
             for t = 1:length(face.Tris)
-                [currentFeatures] = ComputeEdgeFeatures(face.Tris(t), cell.Y);
+                [currentFeatures] = ComputeEdgeFeatures(face.Tris(t), Geo.Cells(numCell).Y);
                 if isempty(features)
                     features = currentFeatures;
                 else
                     features = [features, currentFeatures];
                 end
-                cells_localIDs{c} = cells_localIDs{c} + sprintf("3 %d %d %d\n", face.Tris(t).Edge(1)-1, face.Tris(t).Edge(2)-1, f+length(Ys)-1);
-                idCell{c} = idCell{c} + sprintf("%i\n", Geo.Cells(c).ID);
+                
+                cells_localIDs{numCell} = cells_localIDs{numCell} + sprintf("2 %d %d\n", face.Tris(t).Edge(1)-1, face.Tris(t).Edge(2)-1);
+                idCell{numCell} = idCell{numCell} + sprintf("%i\n", Geo.Cells(numCell).ID);
             end
         end
         
-        [measurementsToDisplay_Header, measurementsToDisplay] = displayFeatures(Geo, features, [], cell.ID, featuresToDisplay);
+        [measurementsToDisplay_Header, measurementsToDisplay] = displayFeatures(Geo, features, [], Geo.Cells(numCell).ID, fieldnames(features));
         
-        totEdges = length(orderEdges);
-        cells_type = cells_type + sprintf('%d\n', 3);
+        totEdges = length([Geo.Cells(numCell).Faces.Tris]);
+        
+        cells_header  = sprintf("CELLS %d %d\n",totEdges,totEdges*(2+1));
+        cells_type_header = sprintf("CELL_TYPES %d \n", totEdges);
+        cells_type{numCell} = "";
+    	for numTries=1:totEdges
+        	cells_type{numCell} = cells_type{numCell} + sprintf('%d\n', 3);
+        end
+        
+        %% Add different colormaps based on cell/face/tris properties
+        idCell_header = sprintf("CELL_DATA %d \n", totEdges);
+        idCell_header = idCell_header + "SCALARS IDs double\n";
+        idCell_header = idCell_header + "LOOKUP_TABLE default\n";
+        
+        measurementsTxt = '';
+        for measurement = fieldnames(measurementsToDisplay_Header)'
+            if ~contains(measurement{1}, '_')
+                measurementsTxt = measurementsTxt + measurementsToDisplay_Header.(measurement{1});
+                measurementsTxt = measurementsTxt + measurementsToDisplay{numCell}.(measurement{1});
+            end
+        end
+        
+		fprintf(fout, header + points_header + points{numCell} + cells_header + ...
+            cells_localIDs{numCell} + cells_type_header + cells_type{numCell} + idCell_header + idCell{numCell} + ...
+            measurementsTxt);
+		fclose(fout);
     end
-    
-    cells_header  = sprintf("CELLS %d %d\n",totEdges,4*totEdges);
-    
-    %% Add different colormaps based on cell/face/tris properties
-    idCell_header = sprintf("CELL_DATA %d \n", totalEdges);
-    idCell_header = idCell_header + "SCALARS IDs double\n";
-    idCell_header = idCell_header + "LOOKUP_TABLE default\n";
-    for i=1:size(connectivity,1)
-        fprintf(file,'%f\n',edgeValue(i));
-    end
-    
-    fprintf(fout, header + points + cells + cells_type);
-	fclose(fout);
-
-%% ------- Write connectivity ---------------------------------------------
-nT1=size(connectivity,1);
-nT2=2;
-
-fprintf(file,'%s %d %d\n','CELLS',nT1,nT1*(nT2+1));
-TT=connectivity-1;
-for j=1:nT1
-    fprintf(file,'%d %d %d\n',2, TT(j,1),TT(j,2));
-end
-fprintf(file,'%s %d\n','CELL_TYPES',nT1);
-for j=1:nT1
-    fprintf(file,'%d\n',3);
-end
-
-
-
 end
 

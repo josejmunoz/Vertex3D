@@ -26,7 +26,7 @@ function [g,K,EnergyB]=KgTriEnergyBarrier(Geo,Set)
 				                    exp(lambdaB*(1-Set.Beta*Face.Tris(t).Area/Set.BarrierTri0));
 				fact2=fact*-((lambdaB*Set.Beta)/Set.BarrierTri0);
 				y1 = Ys(Tris(t).Edge(1),:);
-            y2 = Ys(Tris(t).Edge(2),:);
+                y2 = Ys(Tris(t).Edge(2),:);
                 y3 = Cell.Faces(f).Centre;
                 n3 = Cell.Faces(f).globalIds;
 				nY = [Cell.globalIds(Tris(t).Edge)', n3];

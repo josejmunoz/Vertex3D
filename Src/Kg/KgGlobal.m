@@ -26,6 +26,7 @@ function [g, K, E, Geo] = KgGlobal(Geo_0, Geo_n, Geo, Set)
 	end
 	%% Propulsion Forces
 	% TODO
+    
 	%% Contractility
     if Set.Contractility
 	    [gC, KC, EC, Geo] = KgContractility(Geo, Set);

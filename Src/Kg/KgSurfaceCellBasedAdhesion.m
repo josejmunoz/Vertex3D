@@ -23,8 +23,6 @@ function [g,K,EnergyS]=KgSurfaceCellBasedAdhesion(Geo, Set)
 				Lambda=Set.lambdaS2*Cell.InternalLambda;
 			elseif face.InterfaceType == 'Bottom'
 				Lambda=Set.lambdaS3*Cell.SubstrateLambda;
-            else
-                disp('ERROR');
 			end
 			fact0=fact0+Lambda*face.Area;
 		end

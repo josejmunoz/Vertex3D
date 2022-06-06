@@ -29,20 +29,27 @@ function [g, K, energy, Geo] = KgSubstrate(Geo, Set)
             if ~isequal(currentFace.InterfaceType, 'Bottom')
                 continue
             end
-            for currentVertex = unique([currentFace.Tris.Edge])
+            for currentVertex = unique([currentFace.Tris.Edge currentFace.globalIds])
                 z0 = Set.SubstrateZ;
-                currentVertexYs = currentCell.Y(currentVertex, :);
+                
+                if currentVertex <= length(Geo.Cells(numCell).globalIds)
+                    currentVertexYs = currentCell.Y(currentVertex, :);
+                    currentGlobalID = Geo.Cells(numCell).globalIds(currentVertex);
+                else
+                    currentVertexYs = currentFace.Centre;
+                    currentGlobalID = currentVertex;
+                end
 
                 %% Calculate residual g
                 g_current = computeGSubstrate(kSubstrate, currentVertexYs(:, 3), z0);
-                ge = Assembleg(ge, g_current, Geo.Cells(numCell).globalIds(currentVertex));
+                ge = Assembleg(ge, g_current, currentGlobalID);
 
                 %% Save contractile forces (g) to output
                 Geo.Cells(numCell).SubstrateG(currentVertex) = g_current(3);
 
                 %% Calculate Jacobian
                 K_current = computeKSubstrate(kSubstrate);
-                K = AssembleK(K, K_current, Geo.Cells(numCell).globalIds(currentVertex));
+                K = AssembleK(K, K_current, currentGlobalID);
 
                 %% Calculate energy
                 energy = energy + computeEnergySubstrate(kSubstrate, currentVertexYs(:, 3), z0);

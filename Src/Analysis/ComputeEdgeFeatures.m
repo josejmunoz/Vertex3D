@@ -8,4 +8,3 @@ function [features] = ComputeEdgeFeatures(edge, Y)
     features.Tilting = ComputeEdgeTilting(edge, Y);
     features.ContractileG = edge.ContractileG;
 end
-

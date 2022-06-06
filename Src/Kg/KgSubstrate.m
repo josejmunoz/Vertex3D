@@ -1,4 +1,4 @@
-function [g, K, energy] = KgSubstrate(Geo, Set)
+function [g, K, energy, Geo] = KgSubstrate(Geo, Set)
 %KGSUBSTRATE Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -11,7 +11,8 @@ function [g, K, energy] = KgSubstrate(Geo, Set)
     
     %% Loop over Cells 
 	% Analytical residual g and Jacobian K
-	for currentCell = Geo.Cells
+	for numCell = [Geo.Cells.ID]
+        currentCell = Geo.Cells(numCell);
         if Geo.Remodelling
 			if ~ismember(currentCell.ID, Geo.AssembleNodes)
         		continue
@@ -23,33 +24,31 @@ function [g, K, energy] = KgSubstrate(Geo, Set)
         
         ge=sparse(size(g, 1), 1);
 
-        for currentFace = currentCell.Face
-            if currentFace.InterfaceType ~= 2
+        for numFace = 1:length(currentCell.Faces)
+            currentFace = Geo.Cells(numCell).Faces(numFace);
+            if ~isequal(currentFace.InterfaceType, 'Bottom')
                 continue
             end
             for currentVertex = unique([currentFace.Tris.Edge])
                 z0 = Set.SubstrateZ;
-                currentVertexYs = currentCell.Y.DataRow(numVertex, :);
+                currentVertexYs = currentCell.Y(currentVertex, :);
 
                 %% Calculate residual g
                 g_current = computeGSubstrate(kSubstrate, currentVertexYs(:, 3), z0);
-                ge = Assembleg(ge, g_current, Cell.globalIds(currentVertex));
+                ge = Assembleg(ge, g_current, Geo.Cells(numCell).globalIds(currentVertex));
 
-                %%TODO: Save contractile forces (g) to output
-                %substrateForcesOfCell(numVertexElem, 1) = g_current(3);
+                %% Save contractile forces (g) to output
+                Geo.Cells(numCell).SubstrateG(currentVertex) = g_current(3);
 
                 %% Calculate Jacobian
                 K_current = computeKSubstrate(kSubstrate);
-                K = AssembleK(K, K_current, Cell.globalIds(currentVertex));
+                K = AssembleK(K, K_current, Geo.Cells(numCell).globalIds(currentVertex));
 
                 %% Calculate energy
-                Energy = Energy + computeEnergySubstrate(kSubstrate, currentVertexYs(:, 3), z0);
+                energy = energy + computeEnergySubstrate(kSubstrate, currentVertexYs(:, 3), z0);
             end
         end
-
         g = g + ge;
-        %%TODO
-        Cell.SubstrateForce(numCell) = {substrateForcesOfCell};
     end
 end
 

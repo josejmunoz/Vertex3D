@@ -8,9 +8,6 @@ function [Dofs]=GetDOFsSubstrate(Geo, Set)
         gIDsY = Geo.Cells(c).globalIds;
         for f = 1:length(Geo.Cells(c).Faces)
             Face = Geo.Cells(c).Faces(f);
-            if length(Face.Tris) == 3
-                continue
-            end
             if Face.Centre(3) <= Set.SubstrateZ
             	gconstrained(dim*(Face.globalIds-1)+3) = 1;
             end

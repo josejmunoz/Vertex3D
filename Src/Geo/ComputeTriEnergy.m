@@ -9,8 +9,5 @@ function [nrgs]=ComputeTriEnergy(Face, Ys, Set)
         area = (1/2)*norm(cross(YTri(2,:)-YTri(1,:),YTri(1,:)-YTri(3,:)));
         nrg  = exp(Set.lambdaB*(1-Set.Beta*area/Set.BarrierTri0));
         nrgs(end+1) = nrg;
-        if length(Face.Tris)==3
-            break
-        end
 	end
 end

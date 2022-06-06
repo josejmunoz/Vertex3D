@@ -7,9 +7,6 @@ function Geo = UpdateDOFsStretch(FixP, Geo, Set)
 		for gn = 1:length(FixP)
 			for f = 1:length(Geo.Cells(c).Faces)
 				Face = Geo.Cells(c).Faces(f);
-				if length(Face.Tris)==3
-					continue
-				end
 				if FixP(gn)==Face.globalIds
 					Geo.Cells(c).Faces(f).Centre(2) = Geo.Cells(c).Faces(f).Centre(2) + Set.dx/((Set.TStopBC-Set.TStartBC)/Set.dt);
 				end

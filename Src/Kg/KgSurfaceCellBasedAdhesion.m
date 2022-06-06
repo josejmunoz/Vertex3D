@@ -42,21 +42,12 @@ function [g,K,EnergyS]=KgSurfaceCellBasedAdhesion(Geo, Set)
             for t = 1:length(Tris)
 				y1 = Ys(Tris(t).Edge(1),:);
 				y2 = Ys(Tris(t).Edge(2),:);
-                if length(Tris) == 3
-					y3 = Ys(Tris(t+1).Edge(2),:);
-					n3 = Cell.globalIds(Tris(t+1).Edge(2));
-				else
-					y3 = Cell.Faces(f).Centre;
-					n3 = Cell.Faces(f).globalIds;
-                end
+				y3 = Cell.Faces(f).Centre;
+				n3 = Cell.Faces(f).globalIds;
 				nY = [Cell.globalIds(Tris(t).Edge)', n3];
 				if Geo.Remodelling
 					if ~any(ismember(nY,Geo.AssemblegIds))
-                        if length(Tris) == 3
-                            break
-                        else
-                		    continue
-                        end
+                        continue
 					end
 				end
 				[gs,Ks,Kss]=gKSArea(y1,y2,y3);
@@ -64,9 +55,6 @@ function [g,K,EnergyS]=KgSurfaceCellBasedAdhesion(Geo, Set)
             	ge=Assembleg(ge,gs,nY);
 				Ks=fact*Lambda*(Ks+Kss);
 				K = AssembleK(K,Ks,nY);
-				if length(Tris) == 3
-					break
-				end
             end
         end
 		g=g+ge*fact;

@@ -16,7 +16,7 @@ function [g,K,EnergyF]=KgViscosity(Geo_n, Geo, Set)
 		for f = 1:length(Cell.Faces)
 			Face = Cell.Faces(f);
 			Face_n = Cell_n.Faces(f);
-            if length(Face.Tris) ~= 3 && ~isstring(Face.Centre) && ~isstring(Face_n.Centre)
+            if ~isstring(Face.Centre) && ~isstring(Face_n.Centre)
 			    dY(Face.globalIds,:) = (Face.Centre-Face_n.Centre);
             end
 		end

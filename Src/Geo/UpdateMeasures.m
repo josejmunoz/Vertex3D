@@ -5,7 +5,11 @@ function Geo = UpdateMeasures(Geo)
             [Geo.Cells(c).Faces(f).Tris.Area] = triAreas{:};
             [edgeLengths] = ComputeFaceEdgeLengths(Geo.Cells(c).Faces(f), Geo.Cells(c).Y);
             [Geo.Cells(c).Faces(f).Tris.EdgeLength] = edgeLengths{:};
+            
+            %% Reset gradient/forces
+            [Geo.Cells(c).Faces(f).Tris.ContractileG] = deal(0);
 		end
 		Geo.Cells(c).Area  = ComputeCellArea(Geo.Cells(c));
     	Geo.Cells(c).Vol   = ComputeCellVolume(Geo.Cells(c));
+    end
 end

@@ -13,12 +13,11 @@ function CreateVtkEdges(Geo, Set, Step)
     	mkdir(newSubFolder);
     end
 
-    totEdges = 0;
-    features = [];
     for numCell = [Geo.Cells.ID]
         if isempty(Geo.Cells(numCell).AliveStatus)
             continue
         end
+        features = [];
         nameout=fullfile(newSubFolder, ['Cell_Edges_', num2str(numCell, '%04d'), '_t', num2str(Step, '%04d'), fileExtension]);
         fout=fopen(nameout,'w');
         

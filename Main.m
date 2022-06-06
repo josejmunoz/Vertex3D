@@ -61,7 +61,7 @@ while t<=Set.tend
 %         end
     end
     
-	[g,K,E] = KgGlobal(Geo_0, Geo_n, Geo, Set); 
+	[g, K, E, Geo] = KgGlobal(Geo_0, Geo_n, Geo, Set); 
 	[Geo, g, K, Energy, Set, gr, dyr, dy] = NewtonRaphson(Geo_0, Geo_n, Geo, Dofs, Set, K, g, numStep, t);
 
     if gr<Set.tol && dyr<Set.tol && all(isnan(g(Dofs.Free)) == 0) && all(isnan(dy(Dofs.Free)) == 0) 

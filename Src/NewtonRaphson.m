@@ -28,7 +28,7 @@ function [Geo, g,K,Energy, Set, gr, dyr, dy] = NewtonRaphson(Geo_0, Geo_n, Geo, 
 		Geo = UpdateMeasures(Geo);
 
     	%% ----------- Compute K, g ---------------------------------------
-    	[g,K,Energy]=KgGlobal(Geo_0, Geo_n, Geo, Set);
+    	[g, K, Energy, Geo] = KgGlobal(Geo_0, Geo_n, Geo, Set);
     	dyr=norm(dy(dof)); gr=norm(g(dof));
     	fprintf('Step: % i,Iter: %i, Time: %g ||gr||= %.3e ||dyr||= %.3e alpha= %.3e  nu/nu0=%.3g \n',numStep,Set.iter,t,gr,dyr,alpha,Set.nu/Set.nu0);
 		fprintf(Set.flog,'Step: % i,Iter: %i, Time: %g ||gr||= %.3e ||dyr||= %.3e alpha= %.3e  nu/nu0=%.3g \n',numStep,Set.iter,t,gr,dyr,alpha,Set.nu/Set.nu0);

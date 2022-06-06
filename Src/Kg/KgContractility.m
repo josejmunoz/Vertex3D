@@ -40,7 +40,7 @@ function [g, K, energy, Geo] = KgContractility(Geo, Set)
                     ge = Assembleg(ge, g_current, currentCell.globalIds(currentTri.Edge));
 
                     %% Save contractile forces (g) to output
-                    Geo.Cells(numCell).Faces(numFace).Tris(numTri).ContractileGradient = norm(g_current(1:3));
+                    Geo.Cells(numCell).Faces(numFace).Tris(numTri).ContractileG = norm(g_current(1:3));
 
                     %% Calculate Jacobian
                     K_current = computeKContractility(l_i0, y_1, y_2, C);
@@ -54,9 +54,6 @@ function [g, K, energy, Geo] = KgContractility(Geo, Set)
         end
         
         g = g + ge;
-        
-        % TODO:
-        %Cell.ContractileForces{numCell} = contractileForcesOfCell;
     end
 end
 

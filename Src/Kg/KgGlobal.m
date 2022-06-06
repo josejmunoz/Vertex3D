@@ -1,4 +1,4 @@
-function [g,K,E] = KgGlobal(Geo_0, Geo_n, Geo, Set)
+function [g, K, E, Geo] = KgGlobal(Geo_0, Geo_n, Geo, Set)
 	%% Surface Energy
 	[gs,Ks,ES] = KgSurfaceCellBasedAdhesion(Geo,Set);
 	%% Volume Energy
@@ -28,7 +28,7 @@ function [g,K,E] = KgGlobal(Geo_0, Geo_n, Geo, Set)
 	% TODO
 	%% Contractility
     if Set.Contractility
-	    [gC,KC,EC] = KgContractility(Geo, Set);
+	    [gC, KC, EC, Geo] = KgContractility(Geo, Set);
         g = g + gC;
         K = K + KC;
         E = E + EC;

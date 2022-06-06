@@ -14,7 +14,7 @@ function [Tris] = BuildEdges(Tets, FaceIds, FaceCentre, FaceInterfaceType, X, Ys
     %	face. That is Geo.Cells(c).Y(edges(e,:),:) will give vertices
     %   defining the edge. Used also for triangle computation
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%	
-	TrisFields = ["Edge", "Area", "EdgeLength", "SharedByCells", "Location"]; 
+	TrisFields = ["Edge", "Area", "EdgeLength", "SharedByCells", "Location", "ContractileG"]; 
     Tris = BuildStructArray(sum(FaceIds), TrisFields);
     
     FaceTets = Tets(FaceIds,:);
@@ -97,4 +97,7 @@ function [Tris] = BuildEdges(Tets, FaceIds, FaceCentre, FaceInterfaceType, X, Ys
     
     % Add edge location: 'Top/Bottom/Lateral'
     [Tris.Location] = deal(FaceInterfaceType);
+    
+    % Initialize forces
+    [Tris.ContractileG] = deal(0);
 end

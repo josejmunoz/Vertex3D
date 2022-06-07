@@ -27,6 +27,10 @@ function [heightLateral, distanceFacesTopBottom] = ComputeCellHeight(Cell)
             end
         end
     end
-    heightLateral = mean(lateralEdgesLength);
+    if ~isempty(lateralEdgesLength)
+        heightLateral = mean(lateralEdgesLength);
+    else
+        heightLateral = distanceFacesTopBottom;
+    end
 end
 

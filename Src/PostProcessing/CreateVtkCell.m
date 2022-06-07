@@ -62,17 +62,14 @@ function [points, cells_localIDs, cells_type, idCell, measurementsToDisplay] = C
         %% Add forces and measurements to display by triangle (Tri)
         [features] = ComputeCellFeatures(Geo.Cells(c));
         [features0] = ComputeCellFeatures(Geo0.Cells(c));
+        [featuresTri] = ComputeCellTriFeatures(Geo.Cells(c), Set);
         
         features = repmat(features, 1, totTris);
         features0 = repmat(features0, 1, totTris);
         
-        [featuresTri] = ComputeCellTriFeatures(Geo.Cells(c), Set);
-        [featuresTri0] = ComputeCellTriFeatures(Geo0.Cells(c), Set);
-        
-        % Merge both structs
+        % Merge Tri struct with 'features'
         features = cell2struct([struct2cell(features); struct2cell(featuresTri)], [fieldnames(features); fieldnames(featuresTri)], 1);
-        features0 = cell2struct([struct2cell(features0); struct2cell(featuresTri0)], [fieldnames(features0); fieldnames(featuresTri0)], 1);
-        
+
         featuresToDisplay = fieldnames(features);
         
         featuresToDisplay(end+1) = {'AreaByLocation'};

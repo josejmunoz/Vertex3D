@@ -24,7 +24,7 @@ function [measurementsToDisplay_Header, measurementsToDisplay] = displayFeatures
             for t = 1:length(Geo.Cells(c).Faces(f).Tris)
                 %Print the values of the feature regarding the
                 %triangle/edge
-                if contains(feature{1}, "Tilting") || isempty(features0) % Contains 0s at the beggining and then we get Inf and NaNs
+                if contains(feature{1}, "Tilting") || contains(feature{1}, "Tris") || isempty(features0) % Contains 0s at the beggining and then we get Inf and NaNs
                     result = features(numTris).(currentFeature);
                 else
                     result = (features(numTris).(currentFeature) - features0(numTris).(currentFeature)) / features0(numTris).(currentFeature);

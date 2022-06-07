@@ -9,4 +9,7 @@ function [tiltingFaces] = ComputeCellTilting(Cell)
             end
         end
     end
+    if isempty(tiltingFaces)
+        tiltingFaces = -1;
+    end
 end

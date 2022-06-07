@@ -69,6 +69,10 @@ function [points, cells_localIDs, cells_type, idCell, measurementsToDisplay] = C
         [featuresTri] = ComputeCellTriFeatures(Geo.Cells(c), Set);
         [featuresTri0] = ComputeCellTriFeatures(Geo0.Cells(c), Set);
         
+        % Merge both structs
+        features = cell2struct([struct2cell(features); struct2cell(featuresTri)], [fieldnames(features); fieldnames(featuresTri)], 1);
+        features0 = cell2struct([struct2cell(features0); struct2cell(featuresTri0)], [fieldnames(features0); fieldnames(featuresTri0)], 1);
+        
         featuresToDisplay = fieldnames(features);
         
         featuresToDisplay(end+1) = {'AreaByLocation'};

@@ -4,18 +4,20 @@ function [features] = ComputeCellTriFeatures(cell, Set)
     features = struct();
     
     % Compute different measurements from the CELLS.Tris
-    numFace = 1;
-    energyTris = {};
-    trisArea = {};
-    trisPerimeter = {};
+    totalTris = 1;
     for face = cell.Faces
-        [energyTris{numFace}] = ComputeTriEnergy(face, cell.Y, Set);
-        [~, trisArea{numFace}] = ComputeFaceArea(vertcat(face.Tris.Edge), cell.Y, face.Centre);
-        [~, trisPerimeter{numFace}] = ComputeFacePerimeter(vertcat(face.Tris.Edge), cell.Y, face.Centre);
-        numFace = numFace + 1;
+        [energyTris] = ComputeTriEnergy(face, cell.Y, Set);
+        [~, areaTris] = ComputeFaceArea(vertcat(face.Tris.Edge), cell.Y, face.Centre);
+        [~, perimeterTris] = ComputeFacePerimeter(vertcat(face.Tris.Edge), cell.Y, face.Centre);
+        
+        for numTris = 1:length(face.Tris)
+            features(totalTris).energyTris = energyTris(numTris);
+            features(totalTris).areaTris = areaTris{numTris};
+            features(totalTris).perimeterTris = perimeterTris{numTris};
+            
+            totalTris = totalTris + 1;
+        end
+        
     end
-    features.energyTris = [energyTris{:}];
-    features.areaTris = [trisArea{:}];
-    features.perimeterTris = [trisPerimeter{:}];
 end
 

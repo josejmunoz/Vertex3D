@@ -65,6 +65,10 @@ function [points, cells_localIDs, cells_type, idCell, measurementsToDisplay] = C
         
         features = repmat(features, 1, totTris);
         features0 = repmat(features0, 1, totTris);
+        
+        [featuresTri] = ComputeCellTriFeatures(Geo.Cells(c), Set);
+        [featuresTri0] = ComputeCellTriFeatures(Geo0.Cells(c), Set);
+        
         featuresToDisplay = fieldnames(features);
         
         featuresToDisplay(end+1) = {'AreaByLocation'};

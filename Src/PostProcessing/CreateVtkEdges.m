@@ -13,6 +13,8 @@ function CreateVtkEdges(Geo, Set, Step)
     	mkdir(newSubFolder);
     end
 
+    measurementsToDisplay = cell(1, Geo.nCells);
+    
     for numCell = [Geo.Cells.ID]
         if isempty(Geo.Cells(numCell).AliveStatus)
             continue
@@ -55,7 +57,7 @@ function CreateVtkEdges(Geo, Set, Step)
             end
         end
         
-        [measurementsToDisplay_Header, measurementsToDisplay] = displayFeatures(Geo, features, [], Geo.Cells(numCell).ID, fieldnames(features));
+        [measurementsToDisplay_Header, measurementsToDisplay{numCell}] = displayFeatures(Geo, features, [], Geo.Cells(numCell).ID, fieldnames(features));
         
         totEdges = length([Geo.Cells(numCell).Faces.Tris]);
         

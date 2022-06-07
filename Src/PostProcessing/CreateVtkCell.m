@@ -6,7 +6,10 @@ function [points, cells_localIDs, cells_type, idCell, measurementsToDisplay] = C
 	newSubFolder = fullfile(pwd, str0, 'Cells');
 	if ~exist(newSubFolder, 'dir')
     	mkdir(newSubFolder);
-	end
+    end
+    
+    measurementsToDisplay = cell(1, Geo.nCells);
+    
 	for c = 1:Geo.nCells
 		Ys = Geo.Cells(c).Y;
 
@@ -67,7 +70,7 @@ function [points, cells_localIDs, cells_type, idCell, measurementsToDisplay] = C
         featuresToDisplay(end+1) = {'AreaByLocation'};
         featuresToDisplay(end+1) = {'NeighboursByLocation'};
         
-        [measurementsToDisplay_Header, measurementsToDisplay] = displayFeatures(Geo, features, features0, c, featuresToDisplay);
+        [measurementsToDisplay_Header, measurementsToDisplay{c}] = displayFeatures(Geo, features, features0, c, featuresToDisplay);
         
         measurementsTxt = '';
         for measurement = fieldnames(measurementsToDisplay_Header)'

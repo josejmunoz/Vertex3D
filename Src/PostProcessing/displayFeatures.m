@@ -2,7 +2,7 @@ function [measurementsToDisplay_Header, measurementsToDisplay] = displayFeatures
 %DISPLAYFEATURES Summary of this function goes here
 %   Detailed explanation goes here
     measurementsToDisplay_Header = struct();
-    measurementsToDisplay{c} = struct();
+    measurementsToDisplay = struct();
     
     for feature = featuresToDisplay'
         numTris = 1;
@@ -30,10 +30,10 @@ function [measurementsToDisplay_Header, measurementsToDisplay] = displayFeatures
                     result = (features(numTris).(currentFeature) - features0(numTris).(currentFeature)) / features0(numTris).(currentFeature);
                 end
 
-                if isfield(measurementsToDisplay{c}, feature{1})
-                    measurementsToDisplay{c}.(feature{1}) = measurementsToDisplay{c}.(feature{1}) + sprintf("%f\n", result);
+                if isfield(measurementsToDisplay, feature{1})
+                    measurementsToDisplay.(feature{1}) = measurementsToDisplay.(feature{1}) + sprintf("%f\n", result);
                 else
-                    measurementsToDisplay{c}.(feature{1}) = sprintf("%f\n", result);
+                    measurementsToDisplay.(feature{1}) = sprintf("%f\n", result);
                 end
                 
                 numTris = numTris + 1;

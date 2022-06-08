@@ -15,7 +15,7 @@ function [Geo_n, Geo, Dofs, Set, newYgIds] = Flip23(Geo_0, Geo_n, Geo, Dofs, Set
 			[~,idVertex]=max(nrgs);
 			YsToChange = Face.Tris(idVertex).Edge;
 			
-			if max(nrgs)<Set.RemodelTol || length(unique([Face.Tris.Edge])) == 3 || ...
+			if max(nrgs)<Set.RemodelTol || length(Face.Tris) == 3 || ...
 					CheckSkinnyTriangles(Ys(YsToChange(1),:),Ys(YsToChange(2),:),Face.Centre)
                 continue
 			end

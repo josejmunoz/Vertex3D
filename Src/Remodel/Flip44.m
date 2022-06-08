@@ -14,6 +14,9 @@ function [Geo_n, Geo, Dofs, Set, newYgIds] = Flip44(Geo_0, Geo_n, Geo, Dofs, Set
 			% The last ismember condition is necessary if a previous 44 flip
 			% happens, as the new remodelled and approximated face might 
 			% be in a cell not yet reviewed.
+            % TODO: WHY THE RANGE OF REMODELING IS SET?
+            % THAT MEANS THE 4-4 IS IN THE SAME FACE? SO NO 4-4 ARE ALLOWED
+            % BETWEEN FACES?
 			if max(nrgs)<Set.RemodelTol || min(nrgs)<Set.RemodelTol*1e-4 || length(unique([Face.Tris.Edge]))~=4 || ismember(Face.globalIds, newYgIds)
                 continue
 			end

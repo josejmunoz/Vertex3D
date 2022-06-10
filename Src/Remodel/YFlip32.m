@@ -1,13 +1,12 @@
 function [Ynew, Tnew] = YFlip32(Ys, Ts, YsToChange, Geo)
-	oV = YsToChange;
-	n=intersect(intersect(Ts(oV(1),:),Ts(oV(2),:)),Ts(oV(3),:));
-	N=unique(Ts(oV,:)); % all nodes
+	n=intersect(intersect(Ts(YsToChange(1),:),Ts(YsToChange(2),:)),Ts(YsToChange(3),:));
+	N=unique(Ts(YsToChange,:)); % all nodes
 	N=N(~ismember(N,n));
 
-	N3=N(~ismember(N,Ts(oV(1),:)));
-	Tnew1=Ts(oV(1),:); Tnew2=Tnew1;
-	Tnew1(ismember(Ts(oV(1),:),n(2)))=N3;
-	Tnew2(ismember(Ts(oV(1),:),n(1)))=N3;
+	N3=N(~ismember(N,Ts(YsToChange(1),:)));
+	Tnew1=Ts(YsToChange(1),:); Tnew2=Tnew1;
+	Tnew1(ismember(Ts(YsToChange(1),:),n(2)))=N3;
+	Tnew2(ismember(Ts(YsToChange(1),:),n(1)))=N3;
 	Tnew=[Tnew1;Tnew2];
 
 	% The new vertices 
@@ -15,5 +14,5 @@ function [Ynew, Tnew] = YFlip32(Ys, Ts, YsToChange, Geo)
 	for ni = 1:length(n)
 		Xs(ni,:) = Geo.Cells(n(ni)).X;
 	end
-	Ynew=DoFlip32(Ys(oV,:),Xs);
+	Ynew=DoFlip32(Ys(YsToChange,:),Xs);
 end

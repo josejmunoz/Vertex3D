@@ -1,4 +1,4 @@
-function [isConvex, tetID]=CheckConvexityCondition(Tnew,Geo)
+function [isConvex, tetID]=CheckConvexity(Tnew,Geo)
 	%CHECKCONVEXITYCONDITION Summary of this function goes here
 	%   Check if the tetrahedron:
 	%   - is already created

@@ -1,4 +1,4 @@
-function Y = BuildYFromX(Cell, Cells, XgID, Set)
+function Y = BuildYFromX(Cell, Cells, Set)
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	% BuildYFromX:										  
 	%   Computes the positions of vertices for a cell using its nodal 
@@ -20,19 +20,7 @@ function Y = BuildYFromX(Cell, Cells, XgID, Set)
 		T = Tets(i,:);
 		x = [Cells(T(1)).X; Cells(T(2)).X; Cells(T(3)).X; Cells(T(4)).X];
 
-		% Condition for the case where 3 nodes are ghost nodes,
-		% i.e. external vertex
-		if abs(sum(ismember(T,XgID))-3)<eps 
-    		Center=(sum(x,1))/4;
-    		vc=Center-Cell.X;
-    		dir=vc/norm(vc);
-    		offset=Set.f*dir;
-    		Y(i,:)=Cell.X+offset;	
-		else 
-    		for n=1:size(x,1)
-         		Y(i,:)=Y(i,:)+x(n,:)/4;
-    		end
-		end 
+        Y(i,:) = ComputeY(x, Cell.X, Set.f, length(Cells(T).AliveStatus) > 1);
 	end
 end
 

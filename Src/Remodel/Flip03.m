@@ -33,9 +33,8 @@ for c = 1:Geo.nCells
             tetsToShrink = Geo.Cells(c).T(Face.Tris(numTris).Edge, :);
             commonNodes = intersect(tetsToShrink(1, :), tetsToShrink(2, :));
             nodesToCombine = setxor(tetsToShrink(1, :), tetsToShrink(2, :));
-            if isempty([Geo.Cells(nodesToCombine).AliveStatus]) %% All of them need to be ghost nodes
-                CellsToCombine = [Geo.Cells(nodesToCombine)];
-            end
+            
+            [Geo] = CombineTwoGhostNodes(Geo, nodesToCombine);
         else  %% 1 gNodes -> 2 gNode
             %% Add node
             disp('Flip 0-3');

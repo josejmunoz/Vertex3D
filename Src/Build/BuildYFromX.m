@@ -20,7 +20,7 @@ function Y = BuildYFromX(Cell, Cells, Set)
 		T = Tets(i,:);
 		x = [Cells(T(1)).X; Cells(T(2)).X; Cells(T(3)).X; Cells(T(4)).X];
 
-        Y(i,:) = ComputeY(x, Cell.X, Set.f, length(Cells(T).AliveStatus) > 1);
+        Y(i,:) = ComputeY(x, Cell.X, length([Cells(T).AliveStatus]) > 1, Set);
 	end
 end
 

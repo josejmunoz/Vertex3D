@@ -9,15 +9,19 @@ function [Geo] = BuildCells(Geo, Set, X, Twg)
     % Build the Cells struct Array
 	Geo.Cells = BuildStructArray(length(X), CellFields);
 	% Nodes and Tetrahedras    
+    Set.TotalCells = Geo.nx * Geo.ny * Geo.nz;
 	for c = 1:length(X)
         Geo.Cells(c).ID    = c;
 		Geo.Cells(c).X     = X(c,:);
 		Geo.Cells(c).T     = Twg(any(ismember(Twg,c),2),:);
+        % Initialize status of cells: 1 = 'Alive', 0 = 'Ablated', [] = 'Dead'
+        if c <= Set.TotalCells
+            Geo.Cells(c).AliveStatus = 1;
+        end
 	end
 	% Cell vertices
     for c = 1:Geo.nCells
-		Geo.Cells(c).Y     = BuildYFromX(Geo.Cells(c), Geo.Cells, ...
-													Geo.XgID, Set);
+		Geo.Cells(c).Y     = BuildYFromX(Geo.Cells(c), Geo.Cells, Set);
     end
     if Set.Substrate == 1
         XgSub=size(X,1); % THE SUBSTRATE NODE
@@ -88,9 +92,4 @@ function [Geo] = BuildCells(Geo, Set, X, Twg)
         end
     end
     Geo = UpdateMeasures(Geo);
-    
-    % Initialize status of cells: 1 = 'Alive', 0 = 'Ablated', [] = 'Dead'
-    for numCell = 1:Geo.nCells
-        Geo.Cells(numCell).AliveStatus = 1;
-    end
 end

@@ -25,7 +25,7 @@ function [Geo] = CombineTwoGhostNodes(Geo, nodesToCombine)
                 
                 % Recalculate Ys
                 for idTet = find(any(replacedTets, 2))
-                    Geo.Cells(numCell).Y(idTet, :) = ComputeY(vertcat(Geo.Cells(currentTets(idTet, :).X), newCell.X, -1, false);
+                    Geo.Cells(numCell).Y(idTet, :) = ComputeY(vertcat(Geo.Cells(currentTets(idTet, :).X)), newCell.X, -1, false);
                 end
                 
                 % IDs are not ordered in the same way for different cells

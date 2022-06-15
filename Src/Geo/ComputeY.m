@@ -1,4 +1,4 @@
-function [newY] = ComputeY(x, cellCentre, threeGhostNodes)
+function [newY] = ComputeY(x, cellCentre, threeGhostNodes, Set)
 %COMPUTEY Summary of this function goes here
 %   Detailed explanation goes here
     % Condition for the case where 3 nodes are ghost nodes,
@@ -10,7 +10,7 @@ function [newY] = ComputeY(x, cellCentre, threeGhostNodes)
         offset=Set.f*dir;
         newY = cellCentre+offset;
     else
-        newY = mean(x, [], 2);
+        newY = mean(x);
     end
 end
 

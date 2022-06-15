@@ -3,7 +3,7 @@ function [newY] = ComputeY(x, cellCentre, threeGhostNodes, Set)
 %   Detailed explanation goes here
     % Condition for the case where 3 nodes are ghost nodes,
     % i.e. external vertex
-    if threeGhostNodes
+    if ~threeGhostNodes
         Center=(sum(x,1))/4;
         vc=Center-cellCentre;
         dir=vc/norm(vc);

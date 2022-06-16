@@ -1,4 +1,4 @@
-function [Geo] = CombineTwoGhostNodes(Geo, nodesToCombine)
+function [Geo] = CombineTwoGhostNodes(Geo, Set, nodesToCombine)
 %COMBINETWOGHOSTNODES Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -24,17 +24,20 @@ function [Geo] = CombineTwoGhostNodes(Geo, nodesToCombine)
                 Geo.Cells(numCell).T(replacedTets) = nodesToCombine(1);
                 
                 % Recalculate Ys
-                for idTet = find(any(replacedTets, 2))
-                    Geo.Cells(numCell).Y(idTet, :) = ComputeY(vertcat(Geo.Cells(currentTets(idTet, :).X)), newCell.X, -1, false);
+                if ~isempty(Geo.Cells(numCell).Y)
+                    for idTet = find(any(replacedTets, 2))'
+                        Geo.Cells(numCell).Y(idTet, :) = ComputeY(vertcat(Geo.Cells(currentTets(idTet, :)).X), newCell.X, length([Geo.Cells(currentTets(idTet, :)).AliveStatus]) > 1, Set);
+                    end
                 end
                 
+                %% Remove repeated Tets
                 % IDs are not ordered in the same way for different cells
                 % but same Tet
                 checkRepeatedTets = ismember(sort(currentTets, 2), sort(removedTets, 2), 'rows');
                 Geo.Cells(numCell).T(checkRepeatedTets, :) = [];
-                Geo.Cells(numCell).Y(checkRepeatedTets, :) = [];
-                
-
+                if ~isempty(Geo.Cells(numCell).Y)
+                    Geo.Cells(numCell).Y(checkRepeatedTets, :) = [];
+                end
             end
         end
         

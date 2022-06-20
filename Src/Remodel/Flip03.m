@@ -34,7 +34,51 @@ for c = 1:Geo.nCells
             commonNodes = intersect(tetsToShrink(1, :), tetsToShrink(2, :));
             nodesToCombine = setxor(tetsToShrink(1, :), tetsToShrink(2, :));
             
-            [Geo] = CombineTwoGhostNodes(Geo, Set, nodesToCombine);
+            [Geo, Tnew] = CombineTwoGhostNodes(Geo, Set, nodesToCombine);
+            [Geo_n] = CombineTwoGhostNodes(Geo_n, Set, nodesToCombine);
+            
+            %% All this, goes together when remodel occurs. TODO: PUT TOGETHER AS A FUNCTION
+            Geo   = Rebuild(Geo, Set);
+            Geo_n = Rebuild(Geo_n, Set);
+
+            Geo   = BuildGlobalIds(Geo);
+            Geo_n = BuildGlobalIds(Geo_n);
+
+            Geo   = UpdateMeasures(Geo);
+            Geo_n = UpdateMeasures(Geo_n);
+            %% ----------------------------
+
+            targetTets = tetsToShrink;
+            if ~CheckConvexity(Tnew,Geo_backup) && CheckTris(Geo)
+                fprintf('=>> 30 Flip.\n');
+                Dofs = GetDOFs(Geo, Set);
+                [Dofs, Geo]  = GetRemodelDOFs(Tnew, Dofs, Geo);
+                [Geo, Set, DidNotConverge] = SolveRemodelingStep(Geo_0, Geo_n, Geo, Dofs, Set);
+                if DidNotConverge
+                    Geo   = Geo_backup;
+                    Geo_n = Geo_n_backup;
+                    fprintf('=>> 32-Flip rejected: did not converge\n');
+                    continue
+                end
+
+                targetNodes = unique(targetTets);
+                for n_i = 1:length(unique(targetTets))
+                    tNode = targetNodes(n_i);
+                    news = find(sum(ismember(Tnew,tNode)==1,2));
+                    if ~ismember(tNode, Geo.XgID)
+                        Geo_n.Cells(tNode).Y(end-length(news)+1:end,:) = Geo.Cells(tNode).Y(end-length(news)+1:end,:);
+                    end
+                end
+                newYgIds = unique([newYgIds; Geo.AssemblegIds]);
+                Geo   = UpdateMeasures(Geo);
+                Geo_n = UpdateMeasures(Geo_n);
+                %         	    return
+            else
+                Geo   = Geo_backup;
+                Geo_n = Geo_n_backup;
+                fprintf('=>> 32-Flip rejected: is not compatible\n');
+                continue
+            end
         else  %% 1 gNodes -> 2 gNode
 %             %% Add node
 %             disp('Flip 0-3');

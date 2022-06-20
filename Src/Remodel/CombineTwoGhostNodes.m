@@ -1,4 +1,4 @@
-function [Geo] = CombineTwoGhostNodes(Geo, Set, nodesToCombine)
+function [Geo, Tnew, removedTets, replacedTets] = CombineTwoGhostNodes(Geo, Set, nodesToCombine)
 %COMBINETWOGHOSTNODES Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -11,21 +11,24 @@ function [Geo] = CombineTwoGhostNodes(Geo, Set, nodesToCombine)
         newCell.T = vertcat(CellsToCombine.T);
         
         %Replace old for new ID
-        newCell.T(ismember(newCell.T, CellsToCombine(2).ID)) = newCell.ID;
+        replacingTets = ismember(newCell.T, CellsToCombine(2).ID);
+        replacedTets = newCell.T(any(replacingTets, 2), :);
+        newCell.T(replacingTets) = newCell.ID;
         [~, nonRepeatIDs] = unique(sort(newCell.T, 2), 'rows');
         removedTets = newCell.T(setdiff(1:size(newCell.T, 1), nonRepeatIDs), :);
+        Tnew = newCell.T(any(replacingTets(sort(nonRepeatIDs), :), 2), :);
         newCell.T = newCell.T(nonRepeatIDs, :);
         
         for numCell = [Geo.Cells.ID]
             currentTets = Geo.Cells(numCell).T;
             if any(any(ismember(currentTets, nodesToCombine(2))))
                 %% Replace 'old' cell by 'new' cell
-                replacedTets = ismember(currentTets, nodesToCombine(2));
-                Geo.Cells(numCell).T(replacedTets) = nodesToCombine(1);
+                replacingTets = ismember(currentTets, nodesToCombine(2));
+                Geo.Cells(numCell).T(replacingTets) = nodesToCombine(1);
                 
                 % Recalculate Ys
                 if ~isempty(Geo.Cells(numCell).Y)
-                    for idTet = find(any(replacedTets, 2))'
+                    for idTet = find(any(replacingTets, 2))'
                         Geo.Cells(numCell).Y(idTet, :) = ComputeY(vertcat(Geo.Cells(currentTets(idTet, :)).X), newCell.X, length([Geo.Cells(currentTets(idTet, :)).AliveStatus]) > 1, Set);
                     end
                 end
@@ -45,7 +48,9 @@ function [Geo] = CombineTwoGhostNodes(Geo, Set, nodesToCombine)
         Geo.Cells(nodesToCombine(1)) = newCell;
         %Remove the 'old' cell
         Geo.Cells(nodesToCombine(2)).X = []; 
-        Geo.Cells(nodesToCombine(2)).T = []; 
+        Geo.Cells(nodesToCombine(2)).T = [];
+        
+        
     end
 end
 

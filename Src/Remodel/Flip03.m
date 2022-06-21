@@ -3,7 +3,11 @@ function [Geo_n, Geo, Dofs, Set, newYgIds] = Flip03(Geo_0, Geo_n, Geo, Dofs, Set
 %   Detailed explanation goes here
 
 for c = 1:Geo.nCells
-    for f = 1:length(Geo.Cells(c).Faces)
+    f = 0;
+    %CARE: Number of faces change within this loop, so it should be a while
+    while f < length(Geo.Cells(c).Faces)
+        f = f + 1;
+        
         Ys = Geo.Cells(c).Y;
         Ts = Geo.Cells(c).T;
 

@@ -98,6 +98,8 @@ for c = 1:Geo.nCells
                 Geo   = UpdateMeasures(Geo);
                 Geo_n = UpdateMeasures(Geo_n);
                 %         	    return
+                
+                %PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1)
             else
                 Geo   = Geo_backup;
                 Geo_n = Geo_n_backup;

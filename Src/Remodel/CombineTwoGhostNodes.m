@@ -1,7 +1,7 @@
 function [Geo, Tnew, removedTets, replacedTets] = CombineTwoGhostNodes(Geo, Set, nodesToCombine)
 %COMBINETWOGHOSTNODES Summary of this function goes here
 %   Detailed explanation goes here
-
+    Tnew = [];
     if isempty([Geo.Cells(nodesToCombine).AliveStatus]) %% All of them need to be ghost nodes
         CellsToCombine = [Geo.Cells(nodesToCombine)];
 

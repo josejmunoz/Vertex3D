@@ -29,7 +29,6 @@ for c = 1:Geo.nCells
 
         if avgEdgesToFaceCentre > edgeLenghts(trisToChange) %% 2 gNodes -> 1 gNode
             %% Remove 1 node
-            disp('Flip 3-0');
             tetsToShrink = Geo.Cells(c).T(Face.Tris(numTris).Edge, :);
             commonNodes = intersect(tetsToShrink(1, :), tetsToShrink(2, :));
             firstNodeAlive = Geo.Cells(Face.ij(1)).AliveStatus;
@@ -47,6 +46,13 @@ for c = 1:Geo.nCells
                 testToSubstitute = unique(sort(oldTets(sum(ismember(vertcat(Geo.Cells(:).T), commonNodes), 2) > 1, :), 2), 'row');
                 
                 [Geo, Tnew] = CombineTwoGhostNodes(Geo, Set, commonNodes);
+                
+                if isempty(Tnew)
+                    Geo   = Geo_backup;
+                    Geo_n = Geo_n_backup;
+                    fprintf('=>> 30-Flip rejected: is not compatible\n');
+                end
+                
                 [Geo_n] = CombineTwoGhostNodes(Geo_n, Set, commonNodes);
             else
                 continue
@@ -72,18 +78,18 @@ for c = 1:Geo.nCells
                 if DidNotConverge
                     Geo   = Geo_backup;
                     Geo_n = Geo_n_backup;
-                    fprintf('=>> 32-Flip rejected: did not converge\n');
+                    fprintf('=>> 30-Flip rejected: did not converge\n');
                     continue
                 end
 
-                targetNodes = unique(targetTets);
-                for n_i = 1:length(unique(targetTets))
-                    tNode = targetNodes(n_i);
-                    news = find(sum(ismember(Tnew,tNode)==1,2));
-                    if ~ismember(tNode, Geo.XgID)
-                        Geo_n.Cells(tNode).Y(end-length(news)+1:end,:) = Geo.Cells(tNode).Y(end-length(news)+1:end,:);
-                    end
-                end
+%                 targetNodes = unique(targetTets);
+%                 for n_i = 1:length(unique(targetTets))
+%                     tNode = targetNodes(n_i);
+%                     news = find(sum(ismember(Tnew,tNode)==1,2));
+%                     if ~ismember(tNode, Geo.XgID)
+%                         Geo_n.Cells(tNode).Y(end-length(news)+1:end,:) = Geo.Cells(tNode).Y(end-length(news)+1:end,:);
+%                     end
+%                 end
                 newYgIds = unique([newYgIds; Geo.AssemblegIds]);
                 Geo   = UpdateMeasures(Geo);
                 Geo_n = UpdateMeasures(Geo_n);
@@ -91,7 +97,7 @@ for c = 1:Geo.nCells
             else
                 Geo   = Geo_backup;
                 Geo_n = Geo_n_backup;
-                fprintf('=>> 32-Flip rejected: is not compatible\n');
+                fprintf('=>> 30-Flip rejected: is not compatible\n');
                 continue
             end
         else  %% 1 gNodes -> 2 gNode

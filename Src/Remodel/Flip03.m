@@ -19,7 +19,7 @@ for c = 1:Geo.nCells
             continue
         end
 
-        trisToChange = find(nrgs > Set.RemodelTol);
+        trisToChange = find(nrgs >= Set.RemodelTol);
         trisToChange = trisToChange(1); %% For now! TODO: CHECK AGAIN FOR OTHER TRIS IN THE SAME FACE
 
         [~, perimeterTris] = ComputeFacePerimeter(vertcat(Face.Tris.Edge), Geo.Cells(c).Y, Face.Centre);
@@ -108,9 +108,45 @@ for c = 1:Geo.nCells
             end
         else  %% 1 gNodes -> 2 gNode
             %% Add node
-            tetsToExpand = Geo.Cells(c).T(Face.Tris(numTris).Edge, :);   
+            tetsToExpand = Geo.Cells(c).T(Face.Tris(trisToChange).Edge, :);   
             commonNodes = intersect(tetsToExpand(1, :), tetsToExpand(2, :));
-            
+            firstNodeAlive = Geo.Cells(Face.ij(1)).AliveStatus;
+            secondNodeAlive = Geo.Cells(Face.ij(2)).AliveStatus;
+            if xor(isempty(firstNodeAlive), isempty(secondNodeAlive))
+                %% Pick the Ghost node
+                if ~isempty(firstNodeAlive)
+                    mainNode = Face.ij(1);
+                    commonNodes(commonNodes == Face.ij(1)) = [];
+                else
+                    mainNode = Face.ij(2);
+                    commonNodes(commonNodes == Face.ij(2)) = [];
+                end
+                
+                % Node to expand:
+                % TODO: NEED TO FIND A WAY OF SELECTING 1 NODE FROM THIS
+                % TUPLE
+                nodeToExpand = commonNodes(1);
+                
+                % We will use the common nodes to create the two new nodes
+                % from the old one and perpendicular to the edge created by
+                % the commonNodes
+                A = Geo.Cells(nodeToExpand).X;
+                B = Geo.Cells(commonNodes(commonNodes~=nodeToExpand)).X;
+                % Regarding the cell centre
+                % https://stackoverflow.com/questions/28994044/find-a-point-on-a-line-perpendicular-and-through-the-middle-of-another-line/28994344#28994344
+                O = Geo.Cells(mainNode).X;
+                normalize = @(X) X/norm(X);
+                normalVector = normalize(cross(B-A, O-A));
+                perpendicularVector = cross(normalVector, B-A);
+                unitVector = normalize(perpendicularVector);
+                
+                % Get two nodes based on the perpendicular from the node to
+                % be splitted at a quarter of the distance
+                % (avgEdgesToFaceCentre).
+                % https://math.stackexchange.com/questions/175896/finding-a-point-along-a-line-a-certain-distance-away-from-another-point
+                newNode1 = A + unitVector*(avgEdgesToFaceCentre)/4;
+                newNode2 = A - unitVector*(avgEdgesToFaceCentre)/4;
+            end
         end
         
         

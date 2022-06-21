@@ -32,10 +32,25 @@ for c = 1:Geo.nCells
             disp('Flip 3-0');
             tetsToShrink = Geo.Cells(c).T(Face.Tris(numTris).Edge, :);
             commonNodes = intersect(tetsToShrink(1, :), tetsToShrink(2, :));
-            nodesToCombine = setxor(tetsToShrink(1, :), tetsToShrink(2, :));
-            
-            [Geo, Tnew] = CombineTwoGhostNodes(Geo, Set, nodesToCombine);
-            [Geo_n] = CombineTwoGhostNodes(Geo_n, Set, nodesToCombine);
+            firstNodeAlive = Geo.Cells(Face.ij(1)).AliveStatus;
+            secondNodeAlive = Geo.Cells(Face.ij(2)).AliveStatus;
+            if xor(isempty(firstNodeAlive), isempty(secondNodeAlive))
+                %% Pick the Ghost node
+                if ~isempty(firstNodeAlive)
+                    commonNodes(commonNodes == Face.ij(1)) = [];
+                else
+                    commonNodes(commonNodes == Face.ij(2)) = [];
+                end
+                
+                % Check which tets overlap between the two 'commonNodes'
+                oldTets = vertcat(Geo.Cells(:).T);
+                testToSubstitute = unique(sort(oldTets(sum(ismember(vertcat(Geo.Cells(:).T), commonNodes), 2) > 1, :), 2), 'row');
+                
+                [Geo, Tnew] = CombineTwoGhostNodes(Geo, Set, commonNodes);
+                [Geo_n] = CombineTwoGhostNodes(Geo_n, Set, commonNodes);
+            else
+                continue
+            end
             
             %% All this, goes together when remodel occurs. TODO: PUT TOGETHER AS A FUNCTION
             Geo   = Rebuild(Geo, Set);
@@ -48,8 +63,8 @@ for c = 1:Geo.nCells
             Geo_n = UpdateMeasures(Geo_n);
             %% ----------------------------
 
-            targetTets = tetsToShrink;
-            if ~CheckConvexity(Tnew,Geo_backup) && CheckTris(Geo)
+            targetTets = testToSubstitute;
+            if CheckTris(Geo) %%&& ~CheckConvexity(Tnew,Geo_backup)
                 fprintf('=>> 30 Flip.\n');
                 Dofs = GetDOFs(Geo, Set);
                 [Dofs, Geo]  = GetRemodelDOFs(Tnew, Dofs, Geo);

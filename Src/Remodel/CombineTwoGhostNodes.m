@@ -18,6 +18,9 @@ function [Geo, Tnew, removedTets, replacedTets] = CombineTwoGhostNodes(Geo, Set,
         removedTets = newCell.T(setdiff(1:size(newCell.T, 1), nonRepeatIDs), :);
         Tnew = newCell.T(any(replacingTets(sort(nonRepeatIDs), :), 2), :);
         newCell.T = newCell.T(nonRepeatIDs, :);
+        %Removing Tets with the same cell twice or more
+        newCell.T(sum(ismember(newCell.T, nodesToCombine(1)), 2) > 1, :) = [];
+        Tnew(sum(ismember(Tnew, nodesToCombine(1)), 2) > 1, :) = [];
         
         for numCell = [Geo.Cells.ID]
             currentTets = Geo.Cells(numCell).T;
@@ -25,6 +28,7 @@ function [Geo, Tnew, removedTets, replacedTets] = CombineTwoGhostNodes(Geo, Set,
                 %% Replace 'old' cell by 'new' cell
                 replacingTets = ismember(currentTets, nodesToCombine(2));
                 Geo.Cells(numCell).T(replacingTets) = nodesToCombine(1);
+                currentTets = Geo.Cells(numCell).T;
                 
                 % Recalculate Ys
                 if ~isempty(Geo.Cells(numCell).Y)
@@ -37,9 +41,10 @@ function [Geo, Tnew, removedTets, replacedTets] = CombineTwoGhostNodes(Geo, Set,
                 % IDs are not ordered in the same way for different cells
                 % but same Tet
                 checkRepeatedTets = ismember(sort(currentTets, 2), sort(removedTets, 2), 'rows');
-                Geo.Cells(numCell).T(checkRepeatedTets, :) = [];
+                checkRepatedCells = sum(ismember(currentTets, nodesToCombine(1)), 2) > 1;
+                Geo.Cells(numCell).T(checkRepeatedTets | checkRepatedCells, :) = [];
                 if ~isempty(Geo.Cells(numCell).Y)
-                    Geo.Cells(numCell).Y(checkRepeatedTets, :) = [];
+                    Geo.Cells(numCell).Y(checkRepeatedTets | checkRepatedCells, :) = [];
                 end
             end
         end
@@ -49,8 +54,6 @@ function [Geo, Tnew, removedTets, replacedTets] = CombineTwoGhostNodes(Geo, Set,
         %Remove the 'old' cell
         Geo.Cells(nodesToCombine(2)).X = []; 
         Geo.Cells(nodesToCombine(2)).T = [];
-        
-        
     end
 end
 

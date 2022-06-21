@@ -3,10 +3,7 @@ function [Geo_n, Geo, Dofs, Set, newYgIds] = Flip32(Geo_0, Geo_n, Geo, Dofs, Set
 		for f = 1:length(Geo.Cells(c).Faces)
     	    Ys = Geo.Cells(c).Y;
     	    Ts = Geo.Cells(c).T;
-			% TODO FIXME, this should be a while? What happens with flip23?
-			if f > length(Geo.Cells(c).Faces)
-				break
-			end
+
 			Face = Geo.Cells(c).Faces(f);
 			nrgs = ComputeTriEnergy(Face, Ys, Set);
 			Geo_backup = Geo; Geo_n_backup = Geo_n;
@@ -25,6 +22,7 @@ function [Geo_n, Geo, Dofs, Set, newYgIds] = Flip32(Geo_0, Geo_n, Geo, Dofs, Set
             Geo   = RemoveFaces(f, Face.ij, Geo);
             Geo_n = RemoveFaces(f, Face.ij, Geo_n);
 
+            %% All this, goes together when remodel occurs. TODO: PUT TOGETHER AS A FUNCTION
 			Geo   = Rebuild(Geo, Set);
 			Geo_n = Rebuild(Geo_n, Set);
 
@@ -33,6 +31,7 @@ function [Geo_n, Geo, Dofs, Set, newYgIds] = Flip32(Geo_0, Geo_n, Geo, Dofs, Set
 
 			Geo   = UpdateMeasures(Geo);
 			Geo_n = UpdateMeasures(Geo_n);
+            %% ----------------------------
 
             if ~CheckConvexity(Tnew,Geo_backup) && CheckTris(Geo)
     			fprintf('=>> 32 Flip.\n');

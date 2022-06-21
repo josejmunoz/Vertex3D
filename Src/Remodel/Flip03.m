@@ -33,7 +33,7 @@ for c = 1:Geo.nCells
 
         if avgEdgesToFaceCentre > edgeLenghts(trisToChange) %% 2 gNodes -> 1 gNode
             %% Remove 1 node
-            tetsToShrink = Geo.Cells(c).T(Face.Tris(numTris).Edge, :);
+            tetsToShrink = Geo.Cells(c).T(Face.Tris(trisToChange).Edge, :);
             commonNodes = intersect(tetsToShrink(1, :), tetsToShrink(2, :));
             firstNodeAlive = Geo.Cells(Face.ij(1)).AliveStatus;
             secondNodeAlive = Geo.Cells(Face.ij(2)).AliveStatus;
@@ -107,16 +107,9 @@ for c = 1:Geo.nCells
                 continue
             end
         else  %% 1 gNodes -> 2 gNode
-%             %% Add node
-%             disp('Flip 0-3');
-%             tetsToExpand = Geo.Cells(c).T(Face.Tris(numTris).Edge, :);
-%             nodesToExp = intersect(tetsToExpand(1, :), tetsToExpand(2, :));
-%             externalNodes = setxor(tetsToExpand(1, :), tetsToExpand(2, :));
-%             
-%             allNodesTets = vertcat(Geo.Cells(unique(tetsToExpand)).X);
-%             
-%             newNode = mean(vertcat(Geo.Cells(nodesToExp).X)); %% TODO: IMPROVE TO FALL WITHIN THE LINE OF THE EXTERNAL NODES
-            
+            %% Add node
+            tetsToExpand = Geo.Cells(c).T(Face.Tris(numTris).Edge, :);   
+            commonNodes = intersect(tetsToExpand(1, :), tetsToExpand(2, :));
             
         end
         

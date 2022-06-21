@@ -110,6 +110,7 @@ for c = 1:Geo.nCells
             %% Add node
             tetsToExpand = Geo.Cells(c).T(Face.Tris(trisToChange).Edge, :);   
             commonNodes = intersect(tetsToExpand(1, :), tetsToExpand(2, :));
+            opposingNodes = setxor(tetsToExpand(1, :), tetsToExpand(2, :));
             firstNodeAlive = Geo.Cells(Face.ij(1)).AliveStatus;
             secondNodeAlive = Geo.Cells(Face.ij(2)).AliveStatus;
             if xor(isempty(firstNodeAlive), isempty(secondNodeAlive))
@@ -132,6 +133,7 @@ for c = 1:Geo.nCells
                 % the commonNodes
                 A = Geo.Cells(nodeToExpand).X;
                 B = Geo.Cells(commonNodes(commonNodes~=nodeToExpand)).X;
+                
                 % Regarding the cell centre
                 % https://stackoverflow.com/questions/28994044/find-a-point-on-a-line-perpendicular-and-through-the-middle-of-another-line/28994344#28994344
                 O = Geo.Cells(mainNode).X;
@@ -144,8 +146,18 @@ for c = 1:Geo.nCells
                 % be splitted at a quarter of the distance
                 % (avgEdgesToFaceCentre).
                 % https://math.stackexchange.com/questions/175896/finding-a-point-along-a-line-a-certain-distance-away-from-another-point
-                newNode1 = A + unitVector*(avgEdgesToFaceCentre)/4;
-                newNode2 = A - unitVector*(avgEdgesToFaceCentre)/4;
+                newNode1 = A + unitVector*(avgEdgesToFaceCentre*2);
+                newNode2 = A - unitVector*(avgEdgesToFaceCentre*2);
+                Geo.Cells(nodeToExpand).X = newNode1;
+                Geo.Cells(length(Geo.Cells)+1).X = newNode2;
+                
+                %% Assign nodes to tets
+                oldTets = Geo.Cells(nodeToExpand).T;
+                [~, assignedNode] = pdist2(vertcat(newNode1, newNode2), vertcat(Geo.Cells(opposingNodes(1)).X), 'euclidean', 'Smallest', 1);
+                % OpposingNodes(1) and assignNode should be together on the
+                % Tets and OpposingNodes(2) and the other that is not
+                % assignNode too.
+                
             end
         end
         

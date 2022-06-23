@@ -166,10 +166,10 @@ for c = 1:Geo.nCells
                     % opposingNodes(1) and assignNode should be together on the
                     % Tets and opposingNodes(2) and the other that is not
                     % assignNode too.
-                    Geo.Cells(newNodeIDs(assignedNode)).T = oldTets(any(ismember(oldTets, opposingNodes(1)), 2), :);
-                    oldTets(any(ismember(oldTets, opposingNodes(1)), 2), :) = [];
-                    Geo.Cells(newNodeIDs(setdiff(1:2, assignedNode))).T = oldTets(any(ismember(oldTets, opposingNodes(2)), 2), :);
-                    oldTets(any(ismember(oldTets, opposingNodes(2)), 2), :) = [];
+                    Geo.Cells(newNodeIDs(assignedNode)).T = oldTets(sum(ismember(oldTets, [opposingNodes(1) connectedToNodeToExpand]), 2) > 1, :);
+                    oldTets(sum(ismember(oldTets, [opposingNodes(1) connectedToNodeToExpand]), 2) > 1, :) = [];
+                    Geo.Cells(newNodeIDs(setdiff(1:2, assignedNode))).T = oldTets(sum(ismember(oldTets, [opposingNodes(2) connectedToNodeToExpand]), 2) > 1, :);
+                    oldTets(sum(ismember(oldTets, [opposingNodes(2) connectedToNodeToExpand]), 2) > 1, :) = [];
 
                     % Substitute old IDs for new IDs
                     Geo.Cells(newNodeIDs(assignedNode)).T(ismember(Geo.Cells(newNodeIDs(assignedNode)).T, nodeToExpand)) = newNodeIDs(assignedNode);

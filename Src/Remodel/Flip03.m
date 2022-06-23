@@ -127,7 +127,9 @@ for c = 1:Geo.nCells
                 % TODO: NEED TO FIND A WAY OF SELECTING 1 NODE FROM THIS
                 % TUPLE
                 nodeToExpand = commonNodes(1);
+                newNodeIDs = [nodeToExpand length(Geo.Cells)+1];
                 connectedToNodeToExpand = commonNodes(commonNodes~=nodeToExpand);
+                
                 
                 % We will use the common nodes to create the two new nodes
                 % from the old one and perpendicular to the edge created by
@@ -150,31 +152,49 @@ for c = 1:Geo.nCells
                 newNode1 = A + unitVector*(avgEdgesToFaceCentre*2);
                 newNode2 = A - unitVector*(avgEdgesToFaceCentre*2);
                 
-                newNodeIDs = [nodeToExpand length(Geo.Cells)+1];
+                
                 Geo.Cells(nodeToExpand).X = newNode1;
                 Geo.Cells(length(Geo.Cells)+1).X = newNode2;
                 
                 %% Assign nodes to tets
+                originalTets = Geo.Cells(nodeToExpand).T;
                 oldTets = Geo.Cells(nodeToExpand).T;
-                [~, assignedNode] = pdist2(vertcat(newNode1, newNode2), vertcat(Geo.Cells(opposingNodes(1)).X), 'euclidean', 'Smallest', 1);
-                % opposingNodes(1) and assignNode should be together on the
-                % Tets and opposingNodes(2) and the other that is not
-                % assignNode too.
-                Geo.Cells(newNodeIDs(assignedNode)).T = oldTets(any(ismember(oldTets, opposingNodes(1)), 2), :);
-                oldTets(any(ismember(oldTets, opposingNodes(1)), 2), :) = [];
-                Geo.Cells(newNodeIDs(setdiff(1:2, assignedNode))).T = oldTets(any(ismember(oldTets, opposingNodes(2)), 2), :);
-                oldTets(any(ismember(oldTets, opposingNodes(2)), 2), :) = [];
                 
-                % Substitute old IDs for new IDs
-                Geo.Cells(newNodeIDs(assignedNode)).T(ismember(Geo.Cells(newNodeIDs(assignedNode)).T, nodeToExpand)) = newNodeIDs(assignedNode);
-                Geo.Cells(newNodeIDs(setdiff(1:2, assignedNode))).T(ismember(Geo.Cells(newNodeIDs(setdiff(1:2, assignedNode))).T, nodeToExpand)) = newNodeIDs(setdiff(1:2, assignedNode));
-                
-                % Create the new tets connecting the newNodes and added it
-                % to both cells tets
-                %%%%%%TODO: ORDER PROPERLY
-                newTet = [newNodeIDs, connectedToNodeToExpand, mainNode];
-                Geo.Cells(newNodeIDs(assignedNode)).T(end+1, :) = newTet;
-                Geo.Cells(newNodeIDs(setdiff(1:2, assignedNode))).T(end+1, :) = newTet;
+                %%%HERE THE 'FOR'/'WHILE' SHOULD START
+                while ~isempty(oldTets)
+                    [~, assignedNode] = pdist2(vertcat(newNode1, newNode2), vertcat(Geo.Cells(opposingNodes(1)).X), 'euclidean', 'Smallest', 1);
+                    % opposingNodes(1) and assignNode should be together on the
+                    % Tets and opposingNodes(2) and the other that is not
+                    % assignNode too.
+                    Geo.Cells(newNodeIDs(assignedNode)).T = oldTets(any(ismember(oldTets, opposingNodes(1)), 2), :);
+                    oldTets(any(ismember(oldTets, opposingNodes(1)), 2), :) = [];
+                    Geo.Cells(newNodeIDs(setdiff(1:2, assignedNode))).T = oldTets(any(ismember(oldTets, opposingNodes(2)), 2), :);
+                    oldTets(any(ismember(oldTets, opposingNodes(2)), 2), :) = [];
+
+                    % Substitute old IDs for new IDs
+                    Geo.Cells(newNodeIDs(assignedNode)).T(ismember(Geo.Cells(newNodeIDs(assignedNode)).T, nodeToExpand)) = newNodeIDs(assignedNode);
+                    Geo.Cells(newNodeIDs(setdiff(1:2, assignedNode))).T(ismember(Geo.Cells(newNodeIDs(setdiff(1:2, assignedNode))).T, nodeToExpand)) = newNodeIDs(setdiff(1:2, assignedNode));
+
+                    % Create the new tets connecting the newNodes and added it
+                    % to both cells tets
+                    %%%%%%TODO: ORDER PROPERLY
+                    newTet = [newNodeIDs, connectedToNodeToExpand, mainNode];
+                    Geo.Cells(newNodeIDs(assignedNode)).T(end+1, :) = newTet;
+                    Geo.Cells(newNodeIDs(setdiff(1:2, assignedNode))).T(end+1, :) = newTet;
+
+                    u = unique(oldTets(:));
+                    newOpossingNodes = u(histc(oldTets(:),u)==1);
+                    
+                    opposingNodes = newOpossingNodes(1);
+                    newTetToChange = oldTets(any(ismember(oldTets, opposingNodes(1)), 2), :);
+                    
+                    tetsToExpand = oldTets(sum(ismember(oldTets, newTetToChange), 2) > 2, :);
+                    opposingNodes = setxor(tetsToExpand(1, :), tetsToExpand(2, :)); 
+                    commonNodes = intersect(tetsToExpand(1, :), tetsToExpand(2, :));
+                    mainNode = commonNodes(~cellfun(@isempty, {Geo.Cells(commonNodes).AliveStatus}));
+                    commonNodes = commonNodes(cellfun(@isempty, {Geo.Cells(commonNodes).AliveStatus}));
+                    connectedToNodeToExpand = commonNodes(commonNodes ~= nodeToExpand);
+                end
                 
                 %%%%%% REPEAT THIS PROCESS FOR THE REMAINING OLDTETS: THERE
                 %%%%%% YOU SHOULD ADD THE TETS SPLITTED AND 1 COMMON FACE

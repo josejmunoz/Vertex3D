@@ -179,7 +179,9 @@ for c = 1:Geo.nCells
                         for numNode = removingTet'
                             idToRemove = ismember(sort(Geo.Cells(numNode).T, 2), sort(removingTet', 2), 'rows');
                             Geo.Cells(numNode).T(idToRemove, :) = [];
-                            Geo.Cells(numNode).Y(idToRemove, :) = [];
+                            if ~isempty(Geo.Cells(numNode).AliveStatus)
+                                Geo.Cells(numNode).Y(idToRemove, :) = [];
+                            end
                         end
                     end
 
@@ -197,7 +199,9 @@ for c = 1:Geo.nCells
                     for newTet = newTets'
                         for numNode = newTet'
                             Geo.Cells(numNode).T(end+1, :) = newTet;
-                            Geo.Cells(numNode).Y(end+1, :) = ComputeY(vertcat(Geo.Cells(newTet).X), Geo.Cells(numNode).X, length([Geo.Cells(newTet).AliveStatus]) > 1, Set);
+                            if ~isempty(Geo.Cells(numNode).AliveStatus)
+                                Geo.Cells(numNode).Y(end+1, :) = ComputeY(vertcat(Geo.Cells(newTet).X), Geo.Cells(numNode).X, length([Geo.Cells(newTet).AliveStatus]) > 1, Set);
+                            end
                         end
                     end
 

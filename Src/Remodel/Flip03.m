@@ -166,8 +166,8 @@ for c = 1:Geo.nCells
                 oldTets(any(ismember(oldTets, opposingNodes(2)), 2), :) = [];
                 
                 % Substitute old IDs for new IDs
-                Geo.Cells(newNodeIDs(assignedNode)).T(ismember(Geo.Cells(newNodeIDs(assignedNode)).T, opposingNodes(1))) = newNodeIDs(assignedNode);
-                Geo.Cells(newNodeIDs(setdiff(1:2, assignedNode))).T(ismember(Geo.Cells(newNodeIDs(setdiff(1:2, assignedNode))).T, opposingNodes(2))) = newNodeIDs(assignedNode);
+                Geo.Cells(newNodeIDs(assignedNode)).T(ismember(Geo.Cells(newNodeIDs(assignedNode)).T, nodeToExpand)) = newNodeIDs(assignedNode);
+                Geo.Cells(newNodeIDs(setdiff(1:2, assignedNode))).T(ismember(Geo.Cells(newNodeIDs(setdiff(1:2, assignedNode))).T, nodeToExpand)) = newNodeIDs(setdiff(1:2, assignedNode));
                 
                 % Create the new tets connecting the newNodes and added it
                 % to both cells tets

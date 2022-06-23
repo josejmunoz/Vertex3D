@@ -187,23 +187,18 @@ for c = 1:Geo.nCells
                     assignedNodeTets(ismember(assignedNodeTets, nodeToExpand)) = newNodeIDs(assignedNode);
                     notAssignedNodeTets(ismember(notAssignedNodeTets, nodeToExpand)) = newNodeIDs(setdiff(1:2, assignedNode));
 
-                    % Add Tets
-                    newTets = [assignedNodeTets; assignedNodeTets];
-                    for newTet = newTets'
-                        for numNode = newTet'
-                            idToRemove = ismember(sort(Geo.Cells(numNode).T, 2), sort(newTet', 2), 'rows');
-                            Geo.Cells(numNode).T(idToRemove, :) = [];
-                            Geo.Cells(numNode).Y(idToRemove, :) = [];
-                        end
-                    end
-                    
                     
                     % Create the new tets connecting the newNodes and added it
                     % to both cells tets
                     %%%%%%TODO: ORDER PROPERLY
-                    newTet = [newNodeIDs, connectedToNodeToExpand, mainNode];
-                    for numNode = newTet
-                        Geo.Cells(numNode).T(end+1, :) = newTet;
+                    newTetConnecting = [newNodeIDs, connectedToNodeToExpand, mainNode];
+                    % Add Tets
+                    newTets = [assignedNodeTets; notAssignedNodeTets; newTetConnecting];
+                    for newTet = newTets'
+                        for numNode = newTet'
+                            Geo.Cells(numNode).T(end+1, :) = newTet;
+                            Geo.Cells(numNode).Y(end+1, :) = ComputeY(vertcat(Geo.Cells(newTet).X), Geo.Cells(numNode).X, length([Geo.Cells(newTet).AliveStatus]) > 1, Set);
+                        end
                     end
 
                     if isempty(oldTets)
@@ -221,6 +216,51 @@ for c = 1:Geo.nCells
                     mainNode = commonNodes(~cellfun(@isempty, {Geo.Cells(commonNodes).AliveStatus}));
                     commonNodes = commonNodes(cellfun(@isempty, {Geo.Cells(commonNodes).AliveStatus}));
                     connectedToNodeToExpand = commonNodes(commonNodes ~= nodeToExpand);
+                end
+                
+                %% All this, goes together when remodel occurs. TODO: PUT TOGETHER AS A FUNCTION
+                Geo   = Rebuild(Geo, Set);
+                Geo_n = Rebuild(Geo_n, Set);
+
+                Geo   = BuildGlobalIds(Geo);
+                Geo_n = BuildGlobalIds(Geo_n);
+
+                Geo   = UpdateMeasures(Geo);
+                Geo_n = UpdateMeasures(Geo_n);
+                %% ----------------------------
+
+                %targetTets = testToSubstitute;
+                if CheckTris(Geo) %%&& ~CheckConvexity(Tnew,Geo_backup)
+                    fprintf('=>> 03 Flip.\n');
+                    Dofs = GetDOFs(Geo, Set);
+                    [Dofs, Geo]  = GetRemodelDOFs(Tnew, Dofs, Geo);
+                    [Geo, Set, DidNotConverge] = SolveRemodelingStep(Geo_0, Geo_n, Geo, Dofs, Set);
+                    if DidNotConverge
+                        Geo   = Geo_backup;
+                        Geo_n = Geo_n_backup;
+                        fprintf('=>> 30-Flip rejected: did not converge\n');
+                        continue
+                    end
+
+    %                 targetNodes = unique(targetTets);
+    %                 for n_i = 1:length(unique(targetTets))
+    %                     tNode = targetNodes(n_i);
+    %                     news = find(sum(ismember(Tnew,tNode)==1,2));
+    %                     if ~ismember(tNode, Geo.XgID)
+    %                         Geo_n.Cells(tNode).Y(end-length(news)+1:end,:) = Geo.Cells(tNode).Y(end-length(news)+1:end,:);
+    %                     end
+    %                 end
+                    newYgIds = unique([newYgIds; Geo.AssemblegIds]);
+                    Geo   = UpdateMeasures(Geo);
+                    Geo_n = UpdateMeasures(Geo_n);
+                    %         	    return
+
+                    %PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1)
+                else
+                    Geo   = Geo_backup;
+                    Geo_n = Geo_n_backup;
+                    fprintf('=>> 30-Flip rejected: is not compatible\n');
+                    continue
                 end
             end
         end

@@ -32,7 +32,9 @@ function [Tris] = BuildEdges(Tets, FaceIds, FaceCentre, FaceInterfaceType, X, Ys
 		    i = i & ~ismember(1:length(FaceTets),tet_order)';
 		    i = find(i);
             if isempty(i)
-                return
+                ME = MException('BuildEdges:TetrahedraOrdering', ... 
+                    'Cannot create a face with these tetrahedra');
+                throw(ME);
             end
 		    tet_order(yi) = i(1);
 		    prev_tet = FaceTets(i(1),:);
@@ -47,7 +49,9 @@ function [Tris] = BuildEdges(Tets, FaceIds, FaceCentre, FaceInterfaceType, X, Ys
     if length(surf_ids) < 3
 		% Something went really wrong in the simulation, or a flip being 
 		% tested would result in another face being just an edge.
-        return
+        ME = MException('BuildEdges:TetrahedraMinSize', ...
+            'Length of the face is lower than 3');
+        throw(ME);
     end
 	surf_ids  = surf_ids(tet_order);
 	%% Vertices ordering

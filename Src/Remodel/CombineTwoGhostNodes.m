@@ -52,7 +52,7 @@ function [Geo, Tnew, removedTets, replacedTets] = CombineTwoGhostNodes(Geo, Set,
         %Update the 'new' cell
         Geo.Cells(nodesToCombine(1)) = newCell;
         %Remove the 'old' cell
-        Geo.Cells(nodesToCombine(2)).X = []; 
+        %Geo.Cells(nodesToCombine(2)).X = []; 
         Geo.Cells(nodesToCombine(2)).T = [];
     end
 end

@@ -3,14 +3,22 @@ function [convexTet] = CheckConvexityTets(nodeTets, newTets, Geo, nodeItShouldBe
 %   Detailed explanation goes here
 
 %Combine the two new tets created
-uniqueNewAssigned = unique([nodeTets; newTets]);
-%Obtain the convex shape connecting the tets
-shp_newAssigned = uniqueNewAssigned(boundary(vertcat(Geo.Cells(uniqueNewAssigned).X), 0));
+uniqueNodes = unique([nodeTets; newTets]);
+%Obtain the CONCAVE shape connecting the tets (this is to allow concave
+%shapes between different tets)
+shapeBoundary = boundary(vertcat(Geo.Cells(uniqueNodes).X), 1);
+uniqueConnectedNodes = uniqueNodes(shapeBoundary);
 %Obtain how they are connected
-neighbours_Assigned = unique(shp_newAssigned(any(ismember(shp_newAssigned, nodeItShouldBeConnected), 2), :));
+neighbours = unique(uniqueConnectedNodes(any(ismember(uniqueConnectedNodes, nodeItShouldBeConnected), 2), :));
+
+
+%Visualize if it is correct
+% allNodes = vertcat(Geo.Cells.X);
+% figure, trisurf(uniqueConnectedNodes, allNodes(:, 1), allNodes(:, 2), allNodes(:, 3))
+% text(allNodes(uniqueNodes, 1), allNodes(uniqueNodes, 2), allNodes(uniqueNodes, 3), cellfun(@num2str, num2cell(uniqueNodes), 'UniformOutput', false),'VerticalAlignment','bottom','HorizontalAlignment','right')
 
 %It would be convex if the connections correspond to their assigned node
 %(nodeTets)
-convexTet = all(ismember(nodeTets, neighbours_Assigned));
+convexTet = all(ismember(nodeTets, neighbours));
 end
 

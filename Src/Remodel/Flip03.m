@@ -193,8 +193,13 @@ for c = 1:Geo.nCells
                         newTets = [assignedNodeTets; notAssignedNodeTets; newTetConnecting];
                         figure, subplot(1, 2, 1);
                         tetramesh(newTets, vertcat(Geo.Cells.X))
+                        uniqueNodes = unique(newTets);
+                        text(allNodes(uniqueNodes, 1), allNodes(uniqueNodes, 2), allNodes(uniqueNodes, 3), cellfun(@num2str, num2cell(uniqueNodes), 'UniformOutput', false),'VerticalAlignment','bottom','HorizontalAlignment','right')
+
                         subplot(1, 2, 2);
                         tetramesh(removingTets, vertcat(Geo.Cells.X))
+                        uniqueNodes = unique(removingTets);
+                        text(allNodes(uniqueNodes, 1), allNodes(uniqueNodes, 2), allNodes(uniqueNodes, 3), cellfun(@num2str, num2cell(uniqueNodes), 'UniformOutput', false),'VerticalAlignment','bottom','HorizontalAlignment','right')
                         
                         % Need to change connectivity
                         assignedNodeTets(ismember(assignedNodeTets, newNodeIDs(assignedNode))) = newNodeIDs(setdiff(1:2, assignedNode));

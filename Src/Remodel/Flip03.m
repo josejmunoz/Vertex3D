@@ -188,24 +188,14 @@ for c = 1:Geo.nCells
                     newTetConnecting = [newNodeIDs, connectedToNodeToExpand, mainNode];
                     
                     % Check if connections are OK
-                    uniqueAssignedNodeTets = unique(assignedNodeTets);
-                    shp1 = uniqueAssignedNodeTets(boundary(vertcat(Geo.Cells(uniqueAssignedNodeTets).X), 1));
-                    uniqueNotAssignedNodeTets = unique(notAssignedNodeTets);
-                    shp2 = uniqueNotAssignedNodeTets(boundary(vertcat(Geo.Cells(uniqueNotAssignedNodeTets).X), 1));
-                    
-                    uniqueNewAssigned = unique([assignedNodeTets; newTetConnecting]);
-                    shp_newAssigned = uniqueNewAssigned(boundary(vertcat(Geo.Cells(uniqueNewAssigned).X), 1));
-                    uniqueNotNewAssigned = unique([notAssignedNodeTets; newTetConnecting]);
-                    shp_newNotAssigned = uniqueNotNewAssigned(boundary(vertcat(Geo.Cells(uniqueNotNewAssigned).X), 1));
-
-                    % Visualize the changes
-                    newTets = [assignedNodeTets; notAssignedNodeTets; newTetConnecting];
-                    figure, subplot(1, 2, 1);
-                    tetramesh(newTets, vertcat(Geo.Cells.X))
-                    subplot(1, 2, 2);
-                    tetramesh(removingTets, vertcat(Geo.Cells.X))
-                    
-                    if all(ismember(sort(shp1, 2), sort(shp_newAssigned, 2), 'rows'))  || all(ismember(sort(shp2, 2), sort(shp_newNotAssigned, 2), 'rows')) 
+                    if ~CheckConvexityTets(notAssignedNodeTets, newTetConnecting, Geo, newNodeIDs(setdiff(1:2, assignedNode))) || ~CheckConvexityTets(assignedNodeTets, newTetConnecting, Geo, newNodeIDs(assignedNode))
+                        % Visualize the changes
+                        newTets = [assignedNodeTets; notAssignedNodeTets; newTetConnecting];
+                        figure, subplot(1, 2, 1);
+                        tetramesh(newTets, vertcat(Geo.Cells.X))
+                        subplot(1, 2, 2);
+                        tetramesh(removingTets, vertcat(Geo.Cells.X))
+                        
                         % Need to change connectivity
                         assignedNodeTets(ismember(assignedNodeTets, newNodeIDs(assignedNode))) = newNodeIDs(setdiff(1:2, assignedNode));
                         notAssignedNodeTets(ismember(notAssignedNodeTets, newNodeIDs(setdiff(1:2, assignedNode)))) = newNodeIDs(assignedNode);

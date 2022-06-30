@@ -189,18 +189,18 @@ for c = 1:Geo.nCells
                     
                     % Check if connections are OK
                     if ~CheckConvexityTets(notAssignedNodeTets, newTetConnecting, Geo, newNodeIDs(setdiff(1:2, assignedNode))) || ~CheckConvexityTets(assignedNodeTets, newTetConnecting, Geo, newNodeIDs(assignedNode))
-                        % Visualize the changes
-                        newTets = [assignedNodeTets; notAssignedNodeTets; newTetConnecting];
-                        figure, subplot(1, 2, 1);
-                        tetramesh(newTets, vertcat(Geo.Cells.X))
-                        uniqueNodes = unique(newTets);
-                        text(allNodes(uniqueNodes, 1), allNodes(uniqueNodes, 2), allNodes(uniqueNodes, 3), cellfun(@num2str, num2cell(uniqueNodes), 'UniformOutput', false),'VerticalAlignment','bottom','HorizontalAlignment','right')
-
-                        subplot(1, 2, 2);
-                        tetramesh(removingTets, vertcat(Geo.Cells.X))
-                        uniqueNodes = unique(removingTets);
-                        text(allNodes(uniqueNodes, 1), allNodes(uniqueNodes, 2), allNodes(uniqueNodes, 3), cellfun(@num2str, num2cell(uniqueNodes), 'UniformOutput', false),'VerticalAlignment','bottom','HorizontalAlignment','right')
-                        
+%                         % Visualize the changes
+%                         allNodes = vertcat(Geo.Cells.X);
+%                         newTets = [assignedNodeTets; notAssignedNodeTets; newTetConnecting];
+%                         figure, subplot(1, 2, 1);
+%                         tetramesh(newTets, vertcat(Geo.Cells.X))
+%                         uniqueNodes = unique(newTets);
+%                         text(allNodes(uniqueNodes, 1), allNodes(uniqueNodes, 2), allNodes(uniqueNodes, 3), cellfun(@num2str, num2cell(uniqueNodes), 'UniformOutput', false),'VerticalAlignment','bottom','HorizontalAlignment','right')
+% 
+%                         subplot(1, 2, 2);
+%                         tetramesh(removingTets, vertcat(Geo.Cells.X))
+%                         uniqueNodes = unique(removingTets);
+%                         text(allNodes(uniqueNodes, 1), allNodes(uniqueNodes, 2), allNodes(uniqueNodes, 3), cellfun(@num2str, num2cell(uniqueNodes), 'UniformOutput', false),'VerticalAlignment','bottom','HorizontalAlignment','right')                         
                         % Need to change connectivity
                         assignedNodeTets(ismember(assignedNodeTets, newNodeIDs(assignedNode))) = newNodeIDs(setdiff(1:2, assignedNode));
                         notAssignedNodeTets(ismember(notAssignedNodeTets, newNodeIDs(setdiff(1:2, assignedNode)))) = newNodeIDs(assignedNode);
@@ -221,7 +221,7 @@ for c = 1:Geo.nCells
                     tetsToExpand = oldTets(sum(ismember(oldTets, newTetToChange), 2) > 2, :);
                     
                     if size(oldTets, 1) < 2
-                        %TODO: DO SOMETHING WHEN THERE IS ONLY 1 TET
+                        %CHECK: IS THIS OK?
                         newTet = oldTets;
                         newTet(ismember(newTet, nodeToExpand)) = newNodeIDs(2);
                         [Geo] = AddTetrahedra(Geo, newTet, Set);

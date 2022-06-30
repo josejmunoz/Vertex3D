@@ -156,91 +156,39 @@ for c = 1:Geo.nCells
                 
                 Geo.Cells(nodeToExpand).X = newNode1;
                 Geo.Cells(length(Geo.Cells)+1).X = newNode2;
+                Geo_n.Cells(nodeToExpand).X = newNode1;
+                Geo_n.Cells(length(Geo_n.Cells)+1).X = newNode2;
                 
                 %% Assign nodes to tets
                 originalTets = Geo.Cells(nodeToExpand).T;
                 oldTets = Geo.Cells(nodeToExpand).T;
                 
-                %%%%%% REPEAT THIS PROCESS FOR THE REMAINING OLDTETS: THERE
-                %%%%%% YOU SHOULD ADD THE TETS SPLITTED AND 1 COMMON FACE
-                %%%%%% IT SHOULD A FUNCTION OF THE ABOVE
-                while true
-                    [~, assignedNode] = pdist2(vertcat(newNode1, newNode2), vertcat(Geo.Cells(opposingNodes(1)).X), 'euclidean', 'Smallest', 1);
-                    % opposingNodes(1) and assignNode should be together on the
-                    % Tets and opposingNodes(2) and the other that is not
-                    % assignNode too.
-                    assignedNodeTets = oldTets(sum(ismember(oldTets, [opposingNodes(1) connectedToNodeToExpand mainNode]), 2) > 2, :);
-                    oldTets(sum(ismember(oldTets, [opposingNodes(1) connectedToNodeToExpand mainNode]), 2) > 2, :) = [];
-                    notAssignedNodeTets = oldTets(sum(ismember(oldTets, [opposingNodes(2) connectedToNodeToExpand mainNode]), 2) > 2, :);
-                    oldTets(sum(ismember(oldTets, [opposingNodes(2) connectedToNodeToExpand mainNode]), 2) > 2, :) = [];
-                    
-                    % Remove Tets
-                    removingTets = [assignedNodeTets; notAssignedNodeTets];
-                    [Geo] = RemoveTetrahedra(Geo, removingTets);
-
-                    % Substitute old IDs for new IDs
-                    assignedNodeTets(ismember(assignedNodeTets, nodeToExpand)) = newNodeIDs(assignedNode);
-                    notAssignedNodeTets(ismember(notAssignedNodeTets, nodeToExpand)) = newNodeIDs(setdiff(1:2, assignedNode));
-                    
-                    % Create the new tets connecting the newNodes and added it
-                    % to both cells tets
-                    % Add Tets
-                    newTetConnecting = [newNodeIDs, connectedToNodeToExpand, mainNode];
-                    
-                    % Check if connections are OK
-                    if ~CheckConvexityTets(notAssignedNodeTets, newTetConnecting, Geo) || ~CheckConvexityTets(assignedNodeTets, newTetConnecting, Geo)
-%                         % Visualize the changes
-%                         allNodes = vertcat(Geo.Cells.X);
-%                         newTets = [assignedNodeTets; notAssignedNodeTets; newTetConnecting];
-%                         figure, subplot(1, 2, 1);
-%                         tetramesh(newTets, vertcat(Geo.Cells.X))
-%                         uniqueNodes = unique(newTets);
-%                         text(allNodes(uniqueNodes, 1), allNodes(uniqueNodes, 2), allNodes(uniqueNodes, 3), cellfun(@num2str, num2cell(uniqueNodes), 'UniformOutput', false),'VerticalAlignment','bottom','HorizontalAlignment','right')
-% 
-%                         subplot(1, 2, 2);
-%                         tetramesh(removingTets, vertcat(Geo.Cells.X))
-%                         uniqueNodes = unique(removingTets);
-%                         text(allNodes(uniqueNodes, 1), allNodes(uniqueNodes, 2), allNodes(uniqueNodes, 3), cellfun(@num2str, num2cell(uniqueNodes), 'UniformOutput', false),'VerticalAlignment','bottom','HorizontalAlignment','right')                         
-                        % Need to change connectivity
-                        assignedNodeTets(ismember(assignedNodeTets, newNodeIDs(assignedNode))) = newNodeIDs(setdiff(1:2, assignedNode));
-                        notAssignedNodeTets(ismember(notAssignedNodeTets, newNodeIDs(setdiff(1:2, assignedNode)))) = newNodeIDs(assignedNode);
+                nodesToChange = [unique(originalTets); newNodeIDs(2)]; 
+                newTets = nodesToChange(delaunayn(vertcat(Geo.Cells(nodesToChange).X)));
+                %TODO: REMOVE THE TETS THAT ADD NEW NODES TO THE CELLS
+                newTets_removedNotInvolved = newTets;
+                
+                numNewTetToRemove = [];
+                for numTet = 1:size(newTets, 1)
+                    currentTet = newTets(numTet, :);
+                    currentTet(currentTet == newNodeIDs(2)) = [];
+                    for numCell = currentTet
+                        if ~isempty(Geo.Cells(numCell).AliveStatus) && ~all(ismember(currentTet, Geo.Cells(numCell).T))
+                            numNewTetToRemove(end+1) = numTet;
+                            currentTet
+                            break;
+                        end
                     end
-                    
-                    newTets = [assignedNodeTets; notAssignedNodeTets; newTetConnecting];
-                    [Geo] = AddTetrahedra(Geo, newTets, Set);
-                    
-                    if isempty(oldTets)
-                        break
-                    end
-                    
-                    u = unique(oldTets(:));
-                    newOpossingNodes = u(histc(oldTets(:),u)==1);
-                    
-                    opposingNodes = newOpossingNodes(1);
-                    newTetToChange = oldTets(any(ismember(oldTets, opposingNodes(1)), 2), :);
-                    tetsToExpand = oldTets(sum(ismember(oldTets, newTetToChange), 2) > 2, :);
-                    
-                    if size(oldTets, 1) < 2
-                        %CHECK: IS THIS OK?
-                        newTet = oldTets;
-                        newTet(ismember(newTet, nodeToExpand)) = newNodeIDs(2);
-                        [Geo] = AddTetrahedra(Geo, newTet, Set);
-                        break
-                    end
-                    
-                    opposingNodes = setxor(tetsToExpand(1, :), tetsToExpand(2, :)); 
-                    commonNodes = intersect(tetsToExpand(1, :), tetsToExpand(2, :));
-                    mainNode = commonNodes(~cellfun(@isempty, {Geo.Cells(commonNodes).AliveStatus}));
-                    commonNodes = commonNodes(cellfun(@isempty, {Geo.Cells(commonNodes).AliveStatus}));
-                    connectedToNodeToExpand = commonNodes(commonNodes ~= nodeToExpand);
                 end
                 
-                tets = Geo.Cells(1).T(any(ismember(Geo.Cells(1).T, newNodeIDs), 2), :);
-                allNodes = vertcat(Geo.Cells.X);
-                figure, tetramesh(tets, vertcat(Geo.Cells.X))
-                uniqueNodes = unique(tets);
-                text(allNodes(uniqueNodes, 1), allNodes(uniqueNodes, 2), allNodes(uniqueNodes, 3), cellfun(@num2str, num2cell(uniqueNodes), 'UniformOutput', false),'VerticalAlignment','bottom','HorizontalAlignment','right')
-
+                newTets_removedNotInvolved(numNewTetToRemove, :) = [];
+                
+                [Geo] = RemoveTetrahedra(Geo, oldTets);
+                [Geo_n] = RemoveTetrahedra(Geo_n, oldTets);
+                [Geo] = AddTetrahedra(Geo, newTets_removedNotInvolved, Set);
+                [Geo_n] = AddTetrahedra(Geo_n, newTets_removedNotInvolved, Set);
+                
+                %visualizeTets(Geo_n.Cells(1).T, Geo_n)
                 
                 %% All this, goes together when remodel occurs. TODO: PUT TOGETHER AS A FUNCTION
                 Geo   = Rebuild(Geo, Set);
@@ -257,12 +205,12 @@ for c = 1:Geo.nCells
                 if CheckTris(Geo) %%&& ~CheckConvexity(Tnew,Geo_backup)
                     fprintf('=>> 03 Flip.\n');
                     Dofs = GetDOFs(Geo, Set);
-                    [Dofs, Geo]  = GetRemodelDOFs(Tnew, Dofs, Geo);
+                    [Dofs, Geo]  = GetRemodelDOFs(newTets_removedNotInvolved, Dofs, Geo);
                     [Geo, Set, DidNotConverge] = SolveRemodelingStep(Geo_0, Geo_n, Geo, Dofs, Set);
                     if DidNotConverge
                         Geo   = Geo_backup;
                         Geo_n = Geo_n_backup;
-                        fprintf('=>> 30-Flip rejected: did not converge\n');
+                        fprintf('=>> 03-Flip rejected: did not converge\n');
                         continue
                     end
 
@@ -283,7 +231,7 @@ for c = 1:Geo.nCells
                 else
                     Geo   = Geo_backup;
                     Geo_n = Geo_n_backup;
-                    fprintf('=>> 30-Flip rejected: is not compatible\n');
+                    fprintf('=>> 03-Flip rejected: is not compatible\n');
                     continue
                 end
             end

@@ -7,6 +7,7 @@ for newTet = newTets'
             Geo.Cells(numNode).T(end+1, :) = newTet';
             if ~isempty(Geo.Cells(numNode).AliveStatus)
                 Geo.Cells(numNode).Y(end+1, :) = ComputeY(vertcat(Geo.Cells(newTet).X), Geo.Cells(numNode).X, length([Geo.Cells(newTet).AliveStatus]) > 1, Set);
+                Geo.numY = Geo.numY + 1;
             end
         end
     end

@@ -7,6 +7,7 @@ for removingTet = removingTets'
         Geo.Cells(numNode).T(idToRemove, :) = [];
         if ~isempty(Geo.Cells(numNode).AliveStatus)
             Geo.Cells(numNode).Y(idToRemove, :) = [];
+            Geo.numY = Geo.numY - 1;
         end
     end
 end

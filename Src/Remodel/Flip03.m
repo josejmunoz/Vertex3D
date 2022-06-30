@@ -188,7 +188,7 @@ for c = 1:Geo.nCells
                     newTetConnecting = [newNodeIDs, connectedToNodeToExpand, mainNode];
                     
                     % Check if connections are OK
-                    if ~CheckConvexityTets(notAssignedNodeTets, newTetConnecting, Geo, newNodeIDs(setdiff(1:2, assignedNode))) || ~CheckConvexityTets(assignedNodeTets, newTetConnecting, Geo, newNodeIDs(assignedNode))
+                    if ~CheckConvexityTets(notAssignedNodeTets, newTetConnecting, Geo) || ~CheckConvexityTets(assignedNodeTets, newTetConnecting, Geo)
 %                         % Visualize the changes
 %                         allNodes = vertcat(Geo.Cells.X);
 %                         newTets = [assignedNodeTets; notAssignedNodeTets; newTetConnecting];
@@ -234,6 +234,13 @@ for c = 1:Geo.nCells
                     commonNodes = commonNodes(cellfun(@isempty, {Geo.Cells(commonNodes).AliveStatus}));
                     connectedToNodeToExpand = commonNodes(commonNodes ~= nodeToExpand);
                 end
+                
+                tets = Geo.Cells(1).T(any(ismember(Geo.Cells(1).T, newNodeIDs), 2), :);
+                allNodes = vertcat(Geo.Cells.X);
+                figure, tetramesh(tets, vertcat(Geo.Cells.X))
+                uniqueNodes = unique(tets);
+                text(allNodes(uniqueNodes, 1), allNodes(uniqueNodes, 2), allNodes(uniqueNodes, 3), cellfun(@num2str, num2cell(uniqueNodes), 'UniformOutput', false),'VerticalAlignment','bottom','HorizontalAlignment','right')
+
                 
                 %% All this, goes together when remodel occurs. TODO: PUT TOGETHER AS A FUNCTION
                 Geo   = Rebuild(Geo, Set);

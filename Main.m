@@ -47,6 +47,7 @@ while t<=Set.tend
         %IMPORTANT: Here it updates: Areas, Volumes, etc... Should be
         %up-to-date
 	    Geo = UpdateMeasures(Geo);
+        Set = UpdateSet_F(Geo, Geo_0, Set);
         
         % Wounding
         [Geo] = ablateCells(Geo, Set, t);

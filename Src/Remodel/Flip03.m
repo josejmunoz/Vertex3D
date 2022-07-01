@@ -155,9 +155,12 @@ for c = 1:Geo.nCells
                 
                 
                 Geo.Cells(nodeToExpand).X = newNode1;
-                Geo.Cells(length(Geo.Cells)+1).X = newNode2;
+                Geo.Cells(newNodeIDs(2)).X = newNode2;
                 Geo_n.Cells(nodeToExpand).X = newNode1;
-                Geo_n.Cells(length(Geo_n.Cells)+1).X = newNode2;
+                Geo_n.Cells(newNodeIDs(2)).X = newNode2;
+                
+                %TODO: ADD ALSO TO BOTTOM OR TOP
+                Geo.XgID(end+1) = newNodeIDs(2);
                 
                 %% Assign nodes to tets
                 originalTets = Geo.Cells(nodeToExpand).T;
@@ -175,7 +178,7 @@ for c = 1:Geo.nCells
                     for numCell = currentTet
                         if ~isempty(Geo.Cells(numCell).AliveStatus) && ~all(ismember(currentTet, Geo.Cells(numCell).T))
                             numNewTetToRemove(end+1) = numTet;
-                            currentTet
+                            currentTet;
                             break;
                         end
                     end

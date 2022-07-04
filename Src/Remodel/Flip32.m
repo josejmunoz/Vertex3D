@@ -1,6 +1,8 @@
 function [Geo_n, Geo, Dofs, Set, newYgIds] = Flip32(Geo_0, Geo_n, Geo, Dofs, Set, newYgIds)
 	for c = 1:Geo.nCells
-		for f = 1:length(Geo.Cells(c).Faces)
+        f = 0;
+		while f < length(Geo.Cells(c).Faces)
+            f = f + 1;
     	    Ys = Geo.Cells(c).Y;
     	    Ts = Geo.Cells(c).T;
 

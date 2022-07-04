@@ -55,6 +55,7 @@ for c = 1:Geo.nCells
                     Geo   = Geo_backup;
                     Geo_n = Geo_n_backup;
                     fprintf('=>> 30-Flip rejected: is not compatible\n');
+                    continue
                 end
                 
                 [Geo_n] = CombineTwoGhostNodes(Geo_n, Set, commonNodes);
@@ -73,7 +74,6 @@ for c = 1:Geo.nCells
             Geo_n = UpdateMeasures(Geo_n);
             %% ----------------------------
 
-            targetTets = testToSubstitute;
             if CheckTris(Geo) %%&& ~CheckConvexity(Tnew,Geo_backup)
                 fprintf('=>> 30 Flip.\n');
                 Dofs = GetDOFs(Geo, Set);
@@ -86,20 +86,12 @@ for c = 1:Geo.nCells
                     continue
                 end
 
-%                 targetNodes = unique(targetTets);
-%                 for n_i = 1:length(unique(targetTets))
-%                     tNode = targetNodes(n_i);
-%                     news = find(sum(ismember(Tnew,tNode)==1,2));
-%                     if ~ismember(tNode, Geo.XgID)
-%                         Geo_n.Cells(tNode).Y(end-length(news)+1:end,:) = Geo.Cells(tNode).Y(end-length(news)+1:end,:);
-%                     end
-%                 end
                 newYgIds = unique([newYgIds; Geo.AssemblegIds]);
                 Geo   = UpdateMeasures(Geo);
                 Geo_n = UpdateMeasures(Geo_n);
                 %         	    return
                 
-                %PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1)
+                PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1)
             else
                 Geo   = Geo_backup;
                 Geo_n = Geo_n_backup;
@@ -168,8 +160,24 @@ for c = 1:Geo.nCells
                 
                 nodesToChange = [unique(originalTets); newNodeIDs(2)]; 
                 newTets = nodesToChange(delaunayn(vertcat(Geo.Cells(nodesToChange).X)));
+                
+                % Remove tets with all Ghost Nodes
+                newTets(all(ismember(newTets, Geo.XgID), 2), :) = [];
                 %TODO: REMOVE THE TETS THAT ADD NEW NODES TO THE CELLS
-                newTets_removedNotInvolved = newTets;
+                %newTets_removedNotInvolved = newTets(any(ismember(newTets, newNodeIDs), 2), :);
+                tetsToExclude_Possibly = newTets(~any(ismember(newTets, newNodeIDs), 2), :);
+                newTets_removedNotInvolved = newTets(any(ismember(newTets, newNodeIDs), 2), :);
+                
+                addOrNot = 0;
+                for newTet = tetsToExclude_Possibly'
+                    if mod(sum(sum(ismember(newTets_removedNotInvolved, newTet), 2) > 2), 2)
+                        addOrNot = 1;
+                    end
+                end
+                
+                if addOrNot
+                    newTets_removedNotInvolved = [newTets_removedNotInvolved; tetsToExclude_Possibly];
+                end
                 
                 numNewTetToRemove = [];
                 for numTet = 1:size(newTets, 1)
@@ -230,7 +238,7 @@ for c = 1:Geo.nCells
                     Geo_n = UpdateMeasures(Geo_n);
                     %         	    return
 
-                    %PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1)
+                    PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1)
                 else
                     Geo   = Geo_backup;
                     Geo_n = Geo_n_backup;
@@ -241,6 +249,10 @@ for c = 1:Geo.nCells
         end
     end
 end
+
+% visualizeTets(Geo.Cells(1).T, Geo)
+% visualizeTets(Geo.Cells(2).T, Geo)
+% visualizeTets(Geo.Cells(3).T, Geo)
 
 end
 

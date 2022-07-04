@@ -31,11 +31,11 @@ function [Geo, Tnew, removedTets, replacedTets] = CombineTwoGhostNodes(Geo, Set,
                 currentTets = Geo.Cells(numCell).T;
                 
                 % Recalculate Ys
-                if ~isempty(Geo.Cells(numCell).Y)
-                    for idTet = find(any(replacingTets, 2))'
-                        Geo.Cells(numCell).Y(idTet, :) = ComputeY(vertcat(Geo.Cells(currentTets(idTet, :)).X), newCell.X, length([Geo.Cells(currentTets(idTet, :)).AliveStatus]) > 1, Set);
-                    end
-                end
+%                 if ~isempty(Geo.Cells(numCell).Y)
+%                     for idTet = find(any(replacingTets, 2))'
+%                         Geo.Cells(numCell).Y(idTet, :) = ComputeY(vertcat(Geo.Cells(currentTets(idTet, :)).X), newCell.X, length([Geo.Cells(currentTets(idTet, :)).AliveStatus]) > 1, Set);
+%                     end
+%                 end
                 
                 %% Remove repeated Tets
                 % IDs are not ordered in the same way for different cells

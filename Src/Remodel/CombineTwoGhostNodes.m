@@ -14,11 +14,12 @@ function [Geo, Tnew, removedTets, replacedTets] = CombineTwoGhostNodes(Geo, Set,
         replacingTets = ismember(newCell.T, CellsToCombine(2).ID);
         replacedTets = newCell.T(any(replacingTets, 2), :);
         newCell.T(replacingTets) = newCell.ID;
+        %Remove repeated tets after replacement with new IDs
         [~, nonRepeatIDs] = unique(sort(newCell.T, 2), 'rows');
         removedTets = newCell.T(setdiff(1:size(newCell.T, 1), nonRepeatIDs), :);
         Tnew = newCell.T(any(replacingTets(sort(nonRepeatIDs), :), 2), :);
         newCell.T = newCell.T(nonRepeatIDs, :);
-        %Removing Tets with the same cell twice or more
+        % Removing Tets with the new cell twice or more within the Tet
         newCell.T(sum(ismember(newCell.T, nodesToCombine(1)), 2) > 1, :) = [];
         Tnew(sum(ismember(Tnew, nodesToCombine(1)), 2) > 1, :) = [];
         

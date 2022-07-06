@@ -3,5 +3,5 @@ function PostProcessingVTK(Geo, Geo0, Set, Step)
 	CreateVtkFaceCentres(Geo, Set, Step)
     CreateVtkTet(Geo, Set, Step); 
     CreateVtkConn(Geo, Set, Step);
-    CreateVtkEdges(Geo, Set, Step)
+    CreateVtkEdges(Geo, Set, Step);
 end

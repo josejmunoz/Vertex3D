@@ -31,9 +31,9 @@ function [measurementsToDisplay_Header, measurementsToDisplay] = displayFeatures
                 end
 
                 if isfield(measurementsToDisplay, feature{1})
-                    measurementsToDisplay.(feature{1}) = measurementsToDisplay.(feature{1}) + sprintf("%f\n", result);
+                    measurementsToDisplay.(feature{1}) = measurementsToDisplay.(feature{1}) + sprintf("%.20f\n", result);
                 else
-                    measurementsToDisplay.(feature{1}) = sprintf("%f\n", result);
+                    measurementsToDisplay.(feature{1}) = sprintf("%.20f\n", result);
                 end
                 
                 numTris = numTris + 1;

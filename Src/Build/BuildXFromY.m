@@ -21,8 +21,6 @@ function Geo = BuildXFromY(Geo_n, Geo)
                 dY = Geo.Cells(c).Y - Geo_n.Cells(c).Y;
                 Geo.Cells(c).X = Geo.Cells(c).X + mean(dY);
             end
-        else
-            Geo.Cells(c).X = [];
         end
     end
 

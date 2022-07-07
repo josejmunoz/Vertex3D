@@ -5,12 +5,10 @@ function [Dofs, Geo] = GetRemodelDOFs(Tnew, Dofs, Geo)
 		remodelDofs(end+1:end+length(news),:) = Geo.Cells(ccc).globalIds(end-length(news)+1:end,:);
 		for jj = 1:length(Geo.Cells(ccc).Faces)
 			Face_r = Geo.Cells(ccc).Faces(jj);
-			% TODO FIXME this seems not good...
 			FaceTets = Geo.Cells(ccc).T(unique([Face_r.Tris.Edge]),:);
-			if all(ismember(FaceTets,Tnew))
+			if any(ismember(sort(FaceTets, 2),sort(Tnew, 2), 'rows'))
 				remodelDofs(end+1,:) = Face_r.globalIds;
-			end
-
+            end
 		end
 	end
 	Dofs.Remodel = unique(remodelDofs, 'rows');

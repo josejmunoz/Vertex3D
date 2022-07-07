@@ -1,10 +1,10 @@
 function [Geo, Tnew, removedTets, replacedTets] = CombineTwoGhostNodes(Geo, Set, nodesToCombine)
 %COMBINETWOGHOSTNODES Summary of this function goes here
 %   Detailed explanation goes here
-    Tnew = [];
+    oldTets = vertcat(Geo.Cells(:).T);
     if isempty([Geo.Cells(nodesToCombine).AliveStatus]) %% All of them need to be ghost nodes
         CellsToCombine = [Geo.Cells(nodesToCombine)];
-
+        
         newCell = CellsToCombine(1);
         
         newCell.X = mean(vertcat(CellsToCombine.X));
@@ -17,11 +17,9 @@ function [Geo, Tnew, removedTets, replacedTets] = CombineTwoGhostNodes(Geo, Set,
         %Remove repeated tets after replacement with new IDs
         [~, nonRepeatIDs] = unique(sort(newCell.T, 2), 'rows');
         removedTets = newCell.T(setdiff(1:size(newCell.T, 1), nonRepeatIDs), :);
-        Tnew = newCell.T(any(replacingTets(sort(nonRepeatIDs), :), 2), :);
         newCell.T = newCell.T(nonRepeatIDs, :);
         % Removing Tets with the new cell twice or more within the Tet
         newCell.T(sum(ismember(newCell.T, nodesToCombine(1)), 2) > 1, :) = [];
-        Tnew(sum(ismember(Tnew, nodesToCombine(1)), 2) > 1, :) = [];
         
         for numCell = [Geo.Cells.ID]
             currentTets = Geo.Cells(numCell).T;
@@ -56,5 +54,9 @@ function [Geo, Tnew, removedTets, replacedTets] = CombineTwoGhostNodes(Geo, Set,
         %Geo.Cells(nodesToCombine(2)).X = []; 
         Geo.Cells(nodesToCombine(2)).T = [];
     end
+    
+    newTets = vertcat(Geo.Cells(:).T);
+    
+    Tnew = unique(newTets(~ismember(sort(newTets, 2), sort(oldTets, 2), 'rows'), :), 'rows');
 end
 

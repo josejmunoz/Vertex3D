@@ -3,6 +3,7 @@ function [Geo_n, Geo, Dofs, Set, newYgIds] = Flip03(Geo_0, Geo_n, Geo, Dofs, Set
 %   Detailed explanation goes here
 
 for c = 1:Geo.nCells
+    
     f = 0;
     %CARE: Number of faces change within this loop, so it should be a while
     while f < length(Geo.Cells(c).Faces)
@@ -10,7 +11,7 @@ for c = 1:Geo.nCells
         
         Ys = Geo.Cells(c).Y;
         Ts = Geo.Cells(c).T;
-
+        
         Face = Geo.Cells(c).Faces(f);
         nrgs = ComputeTriEnergy(Face, Ys, Set);
         Geo_backup = Geo; Geo_n_backup = Geo_n;
@@ -18,10 +19,11 @@ for c = 1:Geo.nCells
         if max(nrgs)<Set.RemodelTol || ismember(Face.globalIds, newYgIds)
             continue
         end
-
+        
         trisToChange = find(nrgs >= Set.RemodelTol);
-        trisToChange = trisToChange(1); %% For now! TODO: CHECK AGAIN FOR OTHER TRIS IN THE SAME FACE
-
+        [~, maxEnergyTris] = max(nrgs(trisToChange));
+        trisToChange = trisToChange(maxEnergyTris);
+        
         [~, perimeterTris] = ComputeFacePerimeter(vertcat(Face.Tris.Edge), Geo.Cells(c).Y, Face.Centre);
 
         edgeLenghts = zeros(1, length(Face.Tris));
@@ -29,12 +31,14 @@ for c = 1:Geo.nCells
             edgeLenghts(numTris) = ComputeEdgeLength(Face.Tris(numTris).Edge, Geo.Cells(c).Y);
         end
 
+        %Calculate the average length of the other two sides of the triangl
         avgEdgesToFaceCentre = (perimeterTris{trisToChange} - edgeLenghts(trisToChange)) / 2;
 
         if avgEdgesToFaceCentre > edgeLenghts(trisToChange) %% 2 gNodes -> 1 gNode
             %% Remove 1 node
             tetsToShrink = Geo.Cells(c).T(Face.Tris(trisToChange).Edge, :);
             commonNodes = intersect(tetsToShrink(1, :), tetsToShrink(2, :));
+            opposingNodes = setxor(tetsToShrink(1, :), tetsToShrink(2, :));
             firstNodeAlive = Geo.Cells(Face.ij(1)).AliveStatus;
             secondNodeAlive = Geo.Cells(Face.ij(2)).AliveStatus;
             if xor(isempty(firstNodeAlive), isempty(secondNodeAlive))
@@ -46,10 +50,15 @@ for c = 1:Geo.nCells
                 end
                 
                 % Check which tets overlap between the two 'commonNodes'
-                oldTets = vertcat(Geo.Cells(:).T);
-                testToSubstitute = unique(sort(oldTets(sum(ismember(vertcat(Geo.Cells(:).T), commonNodes), 2) > 1, :), 2), 'row');
+                [smallestDistance, commonNodeSmallest] = pdist2(vertcat(Geo.Cells(commonNodes).X), vertcat(Geo.Cells(opposingNodes).X), 'euclidean', 'Smallest', 1);
+                [~, idsSmallestDistance]= min(smallestDistance);
                 
-                [Geo, Tnew] = CombineTwoGhostNodes(Geo, Set, commonNodes);
+                nodesToSubstitute = [commonNodes(commonNodeSmallest(idsSmallestDistance)), opposingNodes(idsSmallestDistance)];
+                
+                oldTets = vertcat(Geo.Cells(:).T);
+                testToSubstitute = unique(sort(oldTets(sum(ismember(vertcat(Geo.Cells(:).T), nodesToSubstitute), 2) > 1, :), 2), 'row');
+                
+                [Geo, Tnew] = CombineTwoGhostNodes(Geo, Set, nodesToSubstitute);
                 
                 if isempty(Tnew)
                     Geo   = Geo_backup;
@@ -58,7 +67,7 @@ for c = 1:Geo.nCells
                     continue
                 end
                 
-                [Geo_n] = CombineTwoGhostNodes(Geo_n, Set, commonNodes);
+                [Geo_n] = CombineTwoGhostNodes(Geo_n, Set, nodesToSubstitute);
             else
                 continue
             end
@@ -89,6 +98,8 @@ for c = 1:Geo.nCells
                 newYgIds = unique([newYgIds; Geo.AssemblegIds]);
                 Geo   = UpdateMeasures(Geo);
                 Geo_n = UpdateMeasures(Geo_n);
+                
+                f = 0;
                 %         	    return
                 
                 PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1)
@@ -179,20 +190,20 @@ for c = 1:Geo.nCells
                     newTets_removedNotInvolved = [newTets_removedNotInvolved; tetsToExclude_Possibly];
                 end
                 
-                numNewTetToRemove = [];
-                for numTet = 1:size(newTets, 1)
-                    currentTet = newTets(numTet, :);
-                    currentTet(currentTet == newNodeIDs(2)) = [];
-                    for numCell = currentTet
-                        if ~isempty(Geo.Cells(numCell).AliveStatus) && ~all(ismember(currentTet, Geo.Cells(numCell).T))
-                            numNewTetToRemove(end+1) = numTet;
-                            currentTet;
-                            break;
-                        end
-                    end
-                end
-                
-                newTets_removedNotInvolved(numNewTetToRemove, :) = [];
+%                 numNewTetToRemove = [];
+%                 for numTet = 1:size(newTets, 1)
+%                     currentTet = newTets(numTet, :);
+%                     currentTet(currentTet == newNodeIDs(2)) = [];
+%                     for numCell = currentTet
+%                         if ~isempty(Geo.Cells(numCell).AliveStatus) && ~all(ismember(currentTet, Geo.Cells(numCell).T))
+%                             numNewTetToRemove(end+1) = numTet;
+%                             currentTet;
+%                             break;
+%                         end
+%                     end
+%                 end
+%                 
+%                 newTets_removedNotInvolved(numNewTetToRemove, :) = [];
                 
                 [Geo] = RemoveTetrahedra(Geo, oldTets);
                 [Geo_n] = RemoveTetrahedra(Geo_n, oldTets);
@@ -237,7 +248,7 @@ for c = 1:Geo.nCells
                     Geo   = UpdateMeasures(Geo);
                     Geo_n = UpdateMeasures(Geo_n);
                     %         	    return
-
+                    f = 0;
                     PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1)
                 else
                     Geo   = Geo_backup;
@@ -249,10 +260,5 @@ for c = 1:Geo.nCells
         end
     end
 end
-
-% visualizeTets(Geo.Cells(1).T, Geo)
-% visualizeTets(Geo.Cells(2).T, Geo)
-% visualizeTets(Geo.Cells(3).T, Geo)
-
 end
 

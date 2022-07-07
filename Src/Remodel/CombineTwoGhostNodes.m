@@ -53,6 +53,7 @@ function [Geo, Tnew, removedTets, replacedTets] = CombineTwoGhostNodes(Geo, Set,
         %Remove the 'old' cell
         %Geo.Cells(nodesToCombine(2)).X = []; 
         Geo.Cells(nodesToCombine(2)).T = [];
+        Geo.XgID(ismember(Geo.XgID, nodesToCombine(2))) = [];
     end
     
     newTets = vertcat(Geo.Cells(:).T);

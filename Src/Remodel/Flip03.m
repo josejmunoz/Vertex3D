@@ -14,11 +14,12 @@ for c = 1:Geo.nCells
         
         Face = Geo.Cells(c).Faces(f);
         nrgs = ComputeTriEnergy(Face, Ys, Set);
-        Geo_backup = Geo; Geo_n_backup = Geo_n;
         
         if max(nrgs)<Set.RemodelTol || ismember(Face.globalIds, newYgIds)
             continue
         end
+        
+        Geo_backup = Geo; Geo_n_backup = Geo_n;
         
         trisToChange = find(nrgs >= Set.RemodelTol);
         [~, maxEnergyTris] = max(nrgs(trisToChange));
@@ -42,6 +43,7 @@ for c = 1:Geo.nCells
             firstNodeAlive = Geo.Cells(Face.ij(1)).AliveStatus;
             secondNodeAlive = Geo.Cells(Face.ij(2)).AliveStatus;
             if xor(isempty(firstNodeAlive), isempty(secondNodeAlive))
+                fprintf('=>> 30 Flip.\n');
                 %% Pick the Ghost node
                 if ~isempty(firstNodeAlive)
                     commonNodes(commonNodes == Face.ij(1)) = [];
@@ -84,7 +86,6 @@ for c = 1:Geo.nCells
             %% ----------------------------
 
             if CheckTris(Geo) %%&& ~CheckConvexity(Tnew,Geo_backup)
-                fprintf('=>> 30 Flip.\n');
                 Dofs = GetDOFs(Geo, Set);
                 [Dofs, Geo]  = GetRemodelDOFs(Tnew, Dofs, Geo);
                 [Geo, Set, DidNotConverge] = SolveRemodelingStep(Geo_0, Geo_n, Geo, Dofs, Set);
@@ -100,9 +101,8 @@ for c = 1:Geo.nCells
                 Geo_n = UpdateMeasures(Geo_n);
                 
                 f = 0;
-                %         	    return
                 
-                PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1)
+                PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+2)
             else
                 Geo   = Geo_backup;
                 Geo_n = Geo_n_backup;
@@ -117,6 +117,7 @@ for c = 1:Geo.nCells
             firstNodeAlive = Geo.Cells(Face.ij(1)).AliveStatus;
             secondNodeAlive = Geo.Cells(Face.ij(2)).AliveStatus;
             if xor(isempty(firstNodeAlive), isempty(secondNodeAlive))
+                fprintf('=>> 03 Flip.\n');
                 %% Pick the Ghost node
                 if ~isempty(firstNodeAlive)
                     mainNode = Face.ij(1);
@@ -179,16 +180,16 @@ for c = 1:Geo.nCells
                 tetsToExclude_Possibly = newTets(~any(ismember(newTets, newNodeIDs), 2), :);
                 newTets_removedNotInvolved = newTets(any(ismember(newTets, newNodeIDs), 2), :);
                 
-                addOrNot = 0;
+                addOrNot = [];
                 for newTet = tetsToExclude_Possibly'
                     if mod(sum(sum(ismember(newTets_removedNotInvolved, newTet), 2) > 2), 2)
-                        addOrNot = 1;
+                        addOrNot(end+1) = 1;
+                    else
+                        addOrNot(end+1) = 0;
                     end
                 end
                 
-                if addOrNot
-                    newTets_removedNotInvolved = [newTets_removedNotInvolved; tetsToExclude_Possibly];
-                end
+                newTets_removedNotInvolved = [newTets_removedNotInvolved; tetsToExclude_Possibly(addOrNot, :)];
                 
 %                 numNewTetToRemove = [];
 %                 for numTet = 1:size(newTets, 1)
@@ -202,8 +203,8 @@ for c = 1:Geo.nCells
 %                         end
 %                     end
 %                 end
-%                 
-%                 newTets_removedNotInvolved(numNewTetToRemove, :) = [];
+                
+                newTets_removedNotInvolved(numNewTetToRemove, :) = [];
                 
                 [Geo] = RemoveTetrahedra(Geo, oldTets);
                 [Geo_n] = RemoveTetrahedra(Geo_n, oldTets);
@@ -225,7 +226,6 @@ for c = 1:Geo.nCells
 
                 %targetTets = testToSubstitute;
                 if CheckTris(Geo) %%&& ~CheckConvexity(Tnew,Geo_backup)
-                    fprintf('=>> 03 Flip.\n');
                     Dofs = GetDOFs(Geo, Set);
                     [Dofs, Geo]  = GetRemodelDOFs(newTets_removedNotInvolved, Dofs, Geo);
                     [Geo, Set, DidNotConverge] = SolveRemodelingStep(Geo_0, Geo_n, Geo, Dofs, Set);
@@ -249,7 +249,7 @@ for c = 1:Geo.nCells
                     Geo_n = UpdateMeasures(Geo_n);
                     %         	    return
                     f = 0;
-                    PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1)
+                    PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+2)
                 else
                     Geo   = Geo_backup;
                     Geo_n = Geo_n_backup;

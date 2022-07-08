@@ -46,21 +46,52 @@ for c = 1:Geo.nCells
                 fprintf('=>> 30 Flip.\n');
                 %% Pick the Ghost node
                 if ~isempty(firstNodeAlive)
+                    mainNode = Face.ij(1);
                     commonNodes(commonNodes == Face.ij(1)) = [];
                 else
+                    mainNode = Face.ij(2);
                     commonNodes(commonNodes == Face.ij(2)) = [];
                 end
                 
-                % Check which tets overlap between the two 'commonNodes'
-                [smallestDistance, commonNodeSmallest] = pdist2(vertcat(Geo.Cells(commonNodes).X), vertcat(Geo.Cells(opposingNodes).X), 'euclidean', 'Smallest', 1);
-                [~, idsSmallestDistance]= min(smallestDistance);
+                %Check commonNodes neighbourhood
+                commonNeighboursOfNodes = {getNodeNeighbours(Geo, commonNodes(1)); getNodeNeighbours(Geo, commonNodes(2))};
                 
-                nodesToSubstitute = [commonNodes(commonNodeSmallest(idsSmallestDistance)), opposingNodes(idsSmallestDistance)];
+                % Get the smallest neighbourhood between the two nodes
+                [~, smallestNumNeighs] = min([length(commonNeighboursOfNodes{1}), length(commonNeighboursOfNodes{2})]);
                 
-                oldTets = vertcat(Geo.Cells(:).T);
-                testToSubstitute = unique(sort(oldTets(sum(ismember(vertcat(Geo.Cells(:).T), nodesToSubstitute), 2) > 1, :), 2), 'row');
+                neighboursToUse = commonNeighboursOfNodes{smallestNumNeighs};
+                nodeToRemove = commonNodes(smallestNumNeighs);
                 
-                [Geo, Tnew] = CombineTwoGhostNodes(Geo, Set, nodesToSubstitute);
+                neighboursToUse(neighboursToUse==mainNode) = [];
+                length(neighboursToUse)
+                
+                %Remove the selected node from that neighbourhood and
+                %reconnect them 
+                oldTets = Geo.Cells(nodeToRemove).T;
+                
+                nodeNeighbours = arrayfun(@(x) getNodeNeighbours(Geo, x), neighboursToUse, 'UniformOutput', false);
+                nodesConnected = neighboursToUse;
+                missingNeighbours = {};
+                for numNode = neighboursToUse'
+                    numNodePosition = find(neighboursToUse==numNode);
+                    missingNeighbours{numNodePosition} = neighboursToUse(~ismember(neighboursToUse, nodeNeighbours{neighboursToUse==numNode}));
+                    
+                    if ismember(commonNodes(setdiff(1:2, smallestNumNeighs)), missingNeighbours{numNodePosition})
+                        missingNeighbours{numNodePosition} = [];
+                    else
+                        nodesConnected = intersect(nodesConnected, missingNeighbours{numNodePosition});
+                    end
+                end
+                
+                Tnew = [];
+                if length(nodesConnected) == 2
+                    opposingNodes = setdiff(neighboursToUse, nodesConnected);
+                    for numNewNode = opposingNodes'
+                        Tnew(end+1, :) = [nodesConnected', mainNode, numNewNode];
+                    end
+                else
+                    fprintf('NEED TO CHECKKKKK!!');
+                end
                 
                 if isempty(Tnew)
                     Geo   = Geo_backup;
@@ -69,7 +100,11 @@ for c = 1:Geo.nCells
                     continue
                 end
                 
-                [Geo_n] = CombineTwoGhostNodes(Geo_n, Set, nodesToSubstitute);
+                [Geo] = RemoveTetrahedra(Geo, oldTets);
+                [Geo_n] = RemoveTetrahedra(Geo_n, oldTets);
+                [Geo] = AddTetrahedra(Geo, Tnew, Set);
+                [Geo_n] = AddTetrahedra(Geo_n, Tnew, Set);
+                
             else
                 continue
             end

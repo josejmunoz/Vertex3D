@@ -63,7 +63,6 @@ for c = 1:Geo.nCells
                 nodeToRemove = commonNodes(smallestNumNeighs);
                 
                 neighboursToUse(neighboursToUse==mainNode) = [];
-                length(neighboursToUse)
                 
                 %Remove the selected node from that neighbourhood and
                 %reconnect them 
@@ -86,9 +85,8 @@ for c = 1:Geo.nCells
                 Tnew = [];
                 if length(nodesConnected) == 2
                     opposingNodes = setdiff(neighboursToUse, nodesConnected);
-                    for numNewNode = opposingNodes'
-                        Tnew(end+1, :) = [nodesConnected', mainNode, numNewNode];
-                    end
+                    nodesToChange = [mainNode; nodesConnected; opposingNodes];
+                    Tnew = nodesToChange(delaunayn(vertcat(Geo.Cells(nodesToChange).X)));
                 else
                     fprintf('NEED TO CHECKKKKK!!');
                 end
@@ -105,6 +103,9 @@ for c = 1:Geo.nCells
                 [Geo] = AddTetrahedra(Geo, Tnew, Set);
                 [Geo_n] = AddTetrahedra(Geo_n, Tnew, Set);
                 
+                
+                %% TODO: CHECK THIS!
+                %[overlaps] = CheckOverlappingTets(goodTets, testTets, Geo);
             else
                 continue
             end

@@ -1,8 +1,8 @@
-function [isConvex] = CheckConvexityTets(nodeTets, Tnew, Geo)
-%CHECKCONVEXITYTETS Summary of this function goes here
+function [overlaps] = CheckOverlappingTets(nodeTets, Tnew, Geo)
+%CHECKOVERLAPPINGTETS Summary of this function goes here
 %   Detailed explanation goes here
 
-isConvex = true;
+overlaps = true;
 %Get the centre of the tetrahedron Tnew and look for if it is inside any
 %other tet.
 for numTnew = 1:size(Tnew, 1)
@@ -17,7 +17,7 @@ for numTnew = 1:size(Tnew, 1)
 %         figure, plot(tetShape)
 %         text(tetXs(:, 1), tetXs(:, 2), tetXs(:, 3), cellfun(@num2str, num2cell(nodeTets), 'UniformOutput', false),'VerticalAlignment','bottom','HorizontalAlignment','right')
 %         hold on, plot3(newTetCentroid(1), newTetCentroid(2), newTetCentroid(3), 'rx');
-        isConvex = false;
+        overlaps = false;
         return
     end
 end

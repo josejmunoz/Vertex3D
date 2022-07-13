@@ -18,6 +18,7 @@ Set.Contractility = true;
 Set.cLineTension = 0.001;
 
 %Set.Remodelling = 0;
+Set.RemodelingFrequency = 0.5;
 
 Set.BC = 1;
 Set.dx = 2; % compression only (2 for stretching)

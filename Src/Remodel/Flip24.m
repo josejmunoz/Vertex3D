@@ -5,6 +5,10 @@ function [Geo_n, Geo, Dofs, Set, newYgIds] = Flip24(Geo_0, Geo_n, Geo, Dofs, Set
 for c = 1:Geo.nCells
     
     f = 0;
+    allTris = [Geo.Cells(c).Faces.Tris];
+    avgArea = mean([allTris.Area]);
+    stdArea = std([allTris.Area]);
+    
     %CARE: Number of faces change within this loop, so it should be a while
     while f < length(Geo.Cells(c).Faces)
         f = f + 1;
@@ -43,7 +47,7 @@ for c = 1:Geo.nCells
             firstNodeAlive = Geo.Cells(Face.ij(1)).AliveStatus;
             secondNodeAlive = Geo.Cells(Face.ij(2)).AliveStatus;
             if xor(isempty(firstNodeAlive), isempty(secondNodeAlive))
-                fprintf('=>> 30 Flip.\n');
+                fprintf('=>> 42 Flip.\n');
                 %% Pick the Ghost node
                 if ~isempty(firstNodeAlive)
                     mainNode = Face.ij(1);
@@ -94,7 +98,7 @@ for c = 1:Geo.nCells
                 if isempty(Tnew)
                     Geo   = Geo_backup;
                     Geo_n = Geo_n_backup;
-                    fprintf('=>> 30-Flip rejected: is not compatible\n');
+                    fprintf('=>> 42-Flip rejected: is not compatible\n');
                     continue
                 end
                 
@@ -128,7 +132,7 @@ for c = 1:Geo.nCells
                 if DidNotConverge
                     Geo   = Geo_backup;
                     Geo_n = Geo_n_backup;
-                    fprintf('=>> 30-Flip rejected: did not converge\n');
+                    fprintf('=>> 42-Flip rejected: did not converge\n');
                     continue
                 end
 
@@ -142,10 +146,10 @@ for c = 1:Geo.nCells
             else
                 Geo   = Geo_backup;
                 Geo_n = Geo_n_backup;
-                fprintf('=>> 30-Flip rejected: is not compatible\n');
+                fprintf('=>> 42-Flip rejected: is not compatible\n');
                 continue
             end
-        else  %% 1 gNodes -> 2 gNode
+        elseif Face.Tris(trisToChange).Area > avgArea - stdArea/2 %% 1 gNodes -> 2 gNode
             %% Add node
             tetsToExpand = Geo.Cells(c).T(Face.Tris(trisToChange).Edge, :);   
             commonNodes = intersect(tetsToExpand(1, :), tetsToExpand(2, :));
@@ -153,7 +157,7 @@ for c = 1:Geo.nCells
             firstNodeAlive = Geo.Cells(Face.ij(1)).AliveStatus;
             secondNodeAlive = Geo.Cells(Face.ij(2)).AliveStatus;
             if xor(isempty(firstNodeAlive), isempty(secondNodeAlive))
-                fprintf('=>> 03 Flip.\n');
+                fprintf('=>> 24 Flip.\n');
                 %% Pick the Ghost node
                 if ~isempty(firstNodeAlive)
                     mainNode = Face.ij(1);
@@ -222,7 +226,7 @@ for c = 1:Geo.nCells
                     if DidNotConverge
                         Geo   = Geo_backup;
                         Geo_n = Geo_n_backup;
-                        fprintf('=>> 03-Flip rejected: did not converge\n');
+                        fprintf('=>> 24-Flip rejected: did not converge\n');
                         continue
                     end
 
@@ -243,7 +247,7 @@ for c = 1:Geo.nCells
                 else
                     Geo   = Geo_backup;
                     Geo_n = Geo_n_backup;
-                    fprintf('=>> 03-Flip rejected: is not compatible\n');
+                    fprintf('=>> 24-Flip rejected: is not compatible\n');
                     continue
                 end
             end

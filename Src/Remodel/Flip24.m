@@ -167,14 +167,8 @@ for c = 1:Geo.nCells
                     commonNodes(commonNodes == Face.ij(2)) = [];
                 end
                 
-                newNodeIDs = length(Geo.Cells)+1;
-                
-                Geo.Cells(newNodeIDs).X = mean(vertcat(Geo.Cells(commonNodes).X));
-                Geo_n.Cells(newNodeIDs).X = mean(vertcat(Geo_n.Cells(commonNodes).X));
-                
-                %TODO: ADD ALSO TO BOTTOM OR TOP
-                Geo.XgID(end+1) = newNodeIDs;
-                Geo_n.XgID(end+1) = newNodeIDs;
+                [Geo] = AddNewNode(Geo, mean(vertcat(Geo.Cells(commonNodes).X)));
+                [Geo_n] = AddNewNode(Geo_n, mean(vertcat(Geo.Cells(commonNodes).X)));
                 
                 %% Assign nodes to tets
                 oldTets = tetsToExpand;

@@ -31,16 +31,43 @@ for c = 1:Geo.nCells
         
         trisToChange = Face.Tris(idMaxTriArea);
 
-        [idNeighbours_1, numNeighbours_1] = getVertexNeighbours(Geo, trisToChange.Edge(1), c);
-        [idNeighbours_2, numNeighbours_2] = getVertexNeighbours(Geo, trisToChange.Edge(2), c);
+        [~, numNeighbours_1, tetsNeighbours_1] = getVertexNeighbours(Geo, trisToChange.Edge(1), c);
+        [~, numNeighbours_2, tetsNeighbours_2] = getVertexNeighbours(Geo, trisToChange.Edge(2), c);
         
+        vertexToExpand = -1;
         if numNeighbours_1 == 3 && numNeighbours_2 == 3
-            [trisArea_1, trisEdges_1] = getTrisAreaOfNeighbours(Geo, Geo.Cells(c).globalIds(trisToChange.Edge(1)));
-            [trisArea_2, trisEdges_2] = getTrisAreaOfNeighbours(Geo, Geo.Cells(c).globalIds(trisToChange.Edge(2)));
+            [trisArea_1, ~] = getTrisAreaOfNeighbours(Geo, Geo.Cells(c).globalIds(trisToChange.Edge(1)));
+            [trisArea_2, ~] = getTrisAreaOfNeighbours(Geo, Geo.Cells(c).globalIds(trisToChange.Edge(2)));
+            
+            if sum(trisArea_1) > sum(trisArea_2)
+                vertexToExpand = trisToChange.Edge(1);
+                tetsNeighbours = tetsNeighbours_1;
+            else
+                vertexToExpand = trisToChange.Edge(2);
+                tetsNeighbours = tetsNeighbours_2;
+            end
         elseif numNeighbours_1 == 3
-            idNeighbours_1
+            vertexToExpand = trisToChange.Edge(1);
+            tetsNeighbours = tetsNeighbours_1;
         elseif numNeighbours_2 == 3
-            idNeighbours_2
+            vertexToExpand = trisToChange.Edge(2);
+            tetsNeighbours = tetsNeighbours_2;
+        end
+        
+        if vertexToExpand ~= -1
+            nodesWithoutTheCell = Geo.Cells(c).T(vertexToExpand, :);
+            nodesWithoutTheCell(~cellfun(@isempty, {Geo.Cells(nodesWithoutTheCell).AliveStatus})) = [];
+            allNodesPos = mean(vertcat(Geo.Cells(Geo.Cells(c).T(vertexToExpand, :)).X));
+            nodesWithoutCellPos = mean(vertcat(Geo.Cells(nodesWithoutTheCell).X));
+            newNodePosition = [allNodesPos(1:2), nodesWithoutCellPos(3)];
+            
+            [Geo] = AddNewNode(Geo, newNodePosition);
+            [Geo_n] = AddNewNode(Geo_n, newNodePosition);
+            
+            oldTets = tetsNeighbours;
+            
+            nodesToChange = [unique(oldTets); newNodeIDs];
+            newTets = nodesToChange(delaunayn(vertcat(Geo.Cells(nodesToChange).X)));
         end
     end
 end

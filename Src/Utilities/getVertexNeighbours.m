@@ -3,9 +3,12 @@ function [idNeighbours, numNeighbours] = getVertexNeighbours(Geo, idVertex, idCe
 %   Two tets are neighbours if they share a face.
 %   Vertex and Tetrahedra share the same ID
 
-allTets = unique(vertcat(Geo.Cells.T), 'rows');
+allTets = vertcat(Geo.Cells.T);
 
-idNeighbours = find(sum(ismember(allTets, Geo.Cells(idCell).T(idVertex, :)), 2) > 2 & sum(ismember(allTets, Geo.Cells(idCell).T(idVertex, :)), 2) < 4);
+idNeighbours = find(sum(ismember(allTets, Geo.Cells(idCell).T(idVertex, :)), 2) == 3);
+%Get unique values
+[~, uniqueIDs] = unique(sort(allTets(idNeighbours, :), 2), 'rows');
+idNeighbours = idNeighbours(uniqueIDs);
 numNeighbours = length(idNeighbours);
 
 end

@@ -49,6 +49,7 @@ for c = 1:Geo.nCells
         end
         
         if vertexToExpand ~= -1
+            fprintf('=>> 13 Flip.\n');
             nodesWithoutTheCell = Geo.Cells(c).T(vertexToExpand, :);
             nodesWithoutTheCell(~cellfun(@isempty, {Geo.Cells(nodesWithoutTheCell).AliveStatus})) = [];
             allNodesPos = mean(vertcat(Geo.Cells(Geo.Cells(c).T(vertexToExpand, :)).X));
@@ -74,6 +75,29 @@ for c = 1:Geo.nCells
             
             Geo   = UpdateMeasures(Geo);
             Geo_n = UpdateMeasures(Geo_n);
+            
+            if CheckTris(Geo) %%&& ~CheckConvexity(Tnew,Geo_backup)
+                Dofs = GetDOFs(Geo, Set);
+                [Dofs, Geo]  = GetRemodelDOFs(newTets, Dofs, Geo);
+                [Geo, Set, DidNotConverge] = SolveRemodelingStep(Geo_0, Geo_n, Geo, Dofs, Set);
+                if DidNotConverge
+                    Geo   = Geo_backup;
+                    Geo_n = Geo_n_backup;
+                    fprintf('=>> 13-Flip rejected: did not converge\n');
+                    continue
+                end
+                
+                newYgIds = unique([newYgIds; Geo.AssemblegIds]);
+                Geo   = UpdateMeasures(Geo);
+                Geo_n = UpdateMeasures(Geo_n);
+                f = 0;
+                PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+2)
+            else
+                Geo   = Geo_backup;
+                Geo_n = Geo_n_backup;
+                fprintf('=>> 13-Flip rejected: is not compatible\n');
+                continue
+            end
         end
     end
 end

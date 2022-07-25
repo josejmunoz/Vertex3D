@@ -6,7 +6,7 @@ function [idNeighbours, numNeighbours] = getVertexNeighbours(Geo, idVertex, idCe
 allTets = unique(vertcat(Geo.Cells.T), 'rows');
 
 idNeighbours = find(sum(ismember(allTets, Geo.Cells(idCell).T(idVertex, :)), 2) > 2 & sum(ismember(allTets, Geo.Cells(idCell).T(idVertex, :)), 2) < 4);
-numNeighbours = sum(idNeighbours);
+numNeighbours = length(idNeighbours);
 
 end
 

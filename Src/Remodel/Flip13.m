@@ -2,15 +2,9 @@ function [Geo_n, Geo, Dofs, Set, newYgIds] = Flip13(Geo_0, Geo_n, Geo, Dofs, Set
 %FLIP13 Summary of this function goes here
 %   Detailed explanation goes here
 
-allFaces = [Geo.Cells.Faces];
-allTris = [allFaces.Tris];
-allEdges = vertcat(allTris.Edge);
 for c = 1:Geo.nCells
     
     f = 0;
-    allTrisCurrentCell = [Geo.Cells(c).Faces.Tris];
-    avgArea = mean([allTrisCurrentCell.Area]);
-    stdArea = std([allTrisCurrentCell.Area]);
     
     %CARE: Number of faces change within this loop, so it should be a while
     while f < length(Geo.Cells(c).Faces)
@@ -23,7 +17,7 @@ for c = 1:Geo.nCells
         faceAreas = [Face.Tris.Area];
         [maxTriArea, idMaxTriArea]= max(faceAreas);
         
-        if maxTriArea < avgArea + stdArea*2 || ismember(Face.globalIds, newYgIds)
+        if maxTriArea < Set.upperAreaThreshold || ismember(Face.globalIds, newYgIds)
             continue
         end
         
@@ -41,17 +35,17 @@ for c = 1:Geo.nCells
             
             if sum(trisArea_1) > sum(trisArea_2)
                 vertexToExpand = trisToChange.Edge(1);
-                tetsNeighbours = tetsNeighbours_1;
+                oldTets = Geo.Cells(c).T(trisToChange.Edge(1), :);
             else
                 vertexToExpand = trisToChange.Edge(2);
-                tetsNeighbours = tetsNeighbours_2;
+                oldTets = Geo.Cells(c).T(trisToChange.Edge(2), :);
             end
         elseif numNeighbours_1 == 3
             vertexToExpand = trisToChange.Edge(1);
-            tetsNeighbours = tetsNeighbours_1;
+            oldTets = Geo.Cells(c).T(trisToChange.Edge(1), :);
         elseif numNeighbours_2 == 3
             vertexToExpand = trisToChange.Edge(2);
-            tetsNeighbours = tetsNeighbours_2;
+            oldTets = Geo.Cells(c).T(trisToChange.Edge(2), :);
         end
         
         if vertexToExpand ~= -1
@@ -61,13 +55,25 @@ for c = 1:Geo.nCells
             nodesWithoutCellPos = mean(vertcat(Geo.Cells(nodesWithoutTheCell).X));
             newNodePosition = [allNodesPos(1:2), nodesWithoutCellPos(3)];
             
-            [Geo] = AddNewNode(Geo, newNodePosition);
+            [Geo, newNodeIDs] = AddNewNode(Geo, newNodePosition);
             [Geo_n] = AddNewNode(Geo_n, newNodePosition);
             
-            oldTets = tetsNeighbours;
+            [newTets] = ConnectTetrahedra(Geo, newNodeIDs, oldTets');
             
-            nodesToChange = [unique(oldTets); newNodeIDs];
-            newTets = nodesToChange(delaunayn(vertcat(Geo.Cells(nodesToChange).X)));
+            [Geo] = RemoveTetrahedra(Geo, oldTets);
+            [Geo_n] = RemoveTetrahedra(Geo_n, oldTets);
+            [Geo] = AddTetrahedra(Geo, newTets, Set);
+            [Geo_n] = AddTetrahedra(Geo_n, newTets, Set);
+            
+            %% All this, goes together when remodel occurs. TODO: PUT TOGETHER AS A FUNCTION
+            Geo   = Rebuild(Geo, Set);
+            Geo_n = Rebuild(Geo_n, Set);
+            
+            Geo   = BuildGlobalIds(Geo);
+            Geo_n = BuildGlobalIds(Geo_n);
+            
+            Geo   = UpdateMeasures(Geo);
+            Geo_n = UpdateMeasures(Geo_n);
         end
     end
 end

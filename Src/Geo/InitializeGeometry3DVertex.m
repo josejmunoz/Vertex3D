@@ -63,6 +63,14 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 	
     [Geo] = BuildCells(Geo, Set, X, Twg);
     
+    %% Define upper and lower area threshold for remodelling
+    allFaces = [Geo.Cells.Faces];
+    allTris = [allFaces.Tris];
+    avgArea = mean([allTris.Area]);
+    stdArea = std([allTris.Area]);
+    Set.upperAreaThreshold = avgArea + stdArea*2;
+    Set.lowerAreaThreshold = avgArea - stdArea/2;
+    
 	% TODO FIXME bad; PVM: better?
 	Geo.AssembleNodes = find(cellfun(@isempty, {Geo.Cells.AliveStatus})==0);
     %% Define BarrierTri0 

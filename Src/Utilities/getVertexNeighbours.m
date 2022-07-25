@@ -10,7 +10,7 @@ idNeighbours = find(sum(ismember(allTets, Geo.Cells(idCell).T(idVertex, :)), 2) 
 [~, uniqueIDs] = unique(sort(allTets(idNeighbours, :), 2), 'rows');
 idNeighbours = idNeighbours(uniqueIDs);
 numNeighbours = length(idNeighbours);
-tetsNeighbours = allTets(idNeighbours(uniqueIDs), :);
+tetsNeighbours = allTets(idNeighbours, :);
 
 end
 

@@ -5,9 +5,6 @@ function [Geo_n, Geo, Dofs, Set, newYgIds] = Flip24(Geo_0, Geo_n, Geo, Dofs, Set
 for c = 1:Geo.nCells
     
     f = 0;
-    allTris = [Geo.Cells(c).Faces.Tris];
-    avgArea = mean([allTris.Area]);
-    stdArea = std([allTris.Area]);
     
     %CARE: Number of faces change within this loop, so it should be a while
     while f < length(Geo.Cells(c).Faces)
@@ -149,7 +146,7 @@ for c = 1:Geo.nCells
                 fprintf('=>> 42-Flip rejected: is not compatible\n');
                 continue
             end
-        elseif Face.Tris(trisToChange).Area > avgArea - stdArea/2 %% 1 gNodes -> 2 gNode
+        elseif Face.Tris(trisToChange).Area > Set.lowerAreaThreshold %% 1 gNodes -> 2 gNode
             %% Add node
             tetsToExpand = Geo.Cells(c).T(Face.Tris(trisToChange).Edge, :);   
             commonNodes = intersect(tetsToExpand(1, :), tetsToExpand(2, :));
@@ -167,39 +164,18 @@ for c = 1:Geo.nCells
                     commonNodes(commonNodes == Face.ij(2)) = [];
                 end
                 
-                [Geo] = AddNewNode(Geo, mean(vertcat(Geo.Cells(commonNodes).X)));
+                [Geo, newNodeIDs] = AddNewNode(Geo, mean(vertcat(Geo.Cells(commonNodes).X)));
                 [Geo_n] = AddNewNode(Geo_n, mean(vertcat(Geo.Cells(commonNodes).X)));
                 
                 %% Assign nodes to tets
                 oldTets = tetsToExpand;
                 
-                nodesToChange = [unique(oldTets); newNodeIDs]; 
-                newTets = nodesToChange(delaunayn(vertcat(Geo.Cells(nodesToChange).X)));
-                
-                % Remove tets with all Ghost Nodes
-                newTets(all(ismember(newTets, Geo.XgID), 2), :) = [];
-                %TODO: REMOVE THE TETS THAT ADD NEW NODES TO THE CELLS
-                %newTets_removedNotInvolved = newTets(any(ismember(newTets, newNodeIDs), 2), :);
-                tetsToExclude_Possibly = newTets(~any(ismember(newTets, newNodeIDs), 2), :);
-                newTets_removedNotInvolved = newTets(any(ismember(newTets, newNodeIDs), 2), :);
-                addOrNot = [];
-                for newTet = tetsToExclude_Possibly'
-                    if mod(sum(sum(ismember(newTets_removedNotInvolved, newTet), 2) > 2), 2)
-                        addOrNot(end+1) = 1;
-                    else
-                        addOrNot(end+1) = 0;
-                    end
-                end
-                
-                newTets = [newTets_removedNotInvolved; tetsToExclude_Possibly(addOrNot==1, :)];
-                
+                [newTets] = ConnectTetrahedra(Geo, newNodeIDs, oldTets);
                 
                 [Geo] = RemoveTetrahedra(Geo, oldTets);
                 [Geo_n] = RemoveTetrahedra(Geo_n, oldTets);
                 [Geo] = AddTetrahedra(Geo, newTets, Set);
                 [Geo_n] = AddTetrahedra(Geo_n, newTets, Set);
-                
-                visualizeTets(Geo_n.Cells(3).T, Geo_n)
                 
                 %% All this, goes together when remodel occurs. TODO: PUT TOGETHER AS A FUNCTION
                 Geo   = Rebuild(Geo, Set);

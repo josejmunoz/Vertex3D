@@ -58,7 +58,7 @@ for c = 1:Geo.nCells
             [Geo, newNodeIDs] = AddNewNode(Geo, newNodePosition);
             [Geo_n] = AddNewNode(Geo_n, newNodePosition);
             
-            [newTets] = ConnectTetrahedra(Geo, newNodeIDs, oldTets');
+            [newTets] = DoFlip13(Geo, newNodeIDs, oldTets');
             
             [Geo] = RemoveTetrahedra(Geo, oldTets);
             [Geo_n] = RemoveTetrahedra(Geo_n, oldTets);

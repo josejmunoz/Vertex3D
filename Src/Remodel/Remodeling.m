@@ -4,9 +4,9 @@ function [Geo_n, Geo, Dofs, Set]=Remodeling(Geo_0, Geo_n, Geo, Dofs, Set)
 	newYgIds = [];
     
     [energyPerCellAndFaces] = GetTrisToRemodelOrdered(Geo, Set);
-    
+    %% loop ENERGY-dependant
     while ~isempty(energyPerCellAndFaces)
-        hasConverged = 0;
+        hasConverged = -1;
         numCell = energyPerCellAndFaces(1, 1);
         numFace = energyPerCellAndFaces(1, 2);
         Face = Geo.Cells(numCell).Faces(numFace);
@@ -59,20 +59,40 @@ function [Geo_n, Geo, Dofs, Set]=Remodeling(Geo_0, Geo_n, Geo, Dofs, Set)
                     [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip23(YsToChange, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
                 end
             end
-            
-            prev_energyPerCellAndFaces = energyPerCellAndFaces;
-            [energyPerCellAndFaces] = GetTrisToRemodelOrdered(Geo, Set);
-            
-            if isequal(prev_energyPerCellAndFaces, energyPerCellAndFaces)
-                break;
-            end
+        end
+        
+        prev_energyPerCellAndFaces = energyPerCellAndFaces;
+        [energyPerCellAndFaces] = GetTrisToRemodelOrdered(Geo, Set);
+        
+        if isequal(prev_energyPerCellAndFaces, energyPerCellAndFaces) && hasConverged == -1
+            break;
         end
     end
     
-    % Only when the triangles are big enough
-    %[Geo_n, Geo, Dofs, Set, newYgIds] = Flip13(Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-    
-    %[Geo_n, Geo, Dofs, Set, newYgIds] = Flip03(Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-
+    %% loop NONENERGY
+    for c = 1:Geo.nCells
+        f = 0;
+        hasConverged = 0;
+        
+        %CARE: Number of faces change within this loop, so it should be a while
+        while f < length(Geo.Cells(c).Faces)
+            f = f + 1;
+            Face = Geo.Cells(c).Faces(f);
+            
+            if ismember(Face.globalIds, newYgIds)
+                faceAreas = [Face.Tris.Area];
+                [maxTriArea, idMaxTriArea]= max(faceAreas);
+                trisToChange = Face.Tris(idMaxTriArea);
+                if maxTriArea < Set.upperAreaThreshold
+                    [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip13(numCell, trisToChange, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                end
+            end
+            
+            if hasConverged
+                f = 0;
+                hasConverged = 0;
+            end
+        end
+    end
 end
 

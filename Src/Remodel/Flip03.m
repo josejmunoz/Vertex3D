@@ -124,7 +124,7 @@ function [Geo_n, Geo, Dofs, Set, newYgIds] = Flip03(Geo_0, Geo_n, Geo, Dofs, Set
                         Geo   = Geo_backup;
                         Geo_n = Geo_n_backup;
                         fprintf('=>> 03-Flip rejected: did not converge\n');
-                        continue
+                        return
                     end
 
     %                 targetNodes = unique(targetTets);
@@ -145,7 +145,7 @@ function [Geo_n, Geo, Dofs, Set, newYgIds] = Flip03(Geo_0, Geo_n, Geo, Dofs, Set
                     Geo   = Geo_backup;
                     Geo_n = Geo_n_backup;
                     fprintf('=>> 03-Flip rejected: is not compatible\n');
-                    continue
+                    return
                 end
             end
         end

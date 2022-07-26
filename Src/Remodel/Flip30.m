@@ -31,6 +31,7 @@ function [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip30(numCell, trisT
             Geo   = Geo_backup;
             Geo_n = Geo_n_backup;
             fprintf('=>> 30-Flip rejected: is not compatible\n');
+            return
         end
         
         [Geo_n] = CombineTwoGhostNodes(Geo_n, Set, nodesToSubstitute);
@@ -57,6 +58,7 @@ function [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip30(numCell, trisT
             Geo   = Geo_backup;
             Geo_n = Geo_n_backup;
             fprintf('=>> 30-Flip rejected: did not converge\n');
+            return
         end
         
         newYgIds = unique([newYgIds; Geo.AssemblegIds]);
@@ -70,6 +72,7 @@ function [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip30(numCell, trisT
         Geo   = Geo_backup;
         Geo_n = Geo_n_backup;
         fprintf('=>> 30-Flip rejected: is not compatible\n');
+        return
     end
 end
 

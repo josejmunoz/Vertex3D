@@ -51,6 +51,7 @@ if CheckTris(Geo) %%&& ~CheckConvexity(Tnew,Geo_backup)
         Geo   = Geo_backup;
         Geo_n = Geo_n_backup;
         fprintf('=>> 24-Flip rejected: did not converge\n');
+        return
     end
     
     newYgIds = unique([newYgIds; Geo.AssemblegIds]);
@@ -64,6 +65,7 @@ else
     Geo   = Geo_backup;
     Geo_n = Geo_n_backup;
     fprintf('=>> 24-Flip rejected: is not compatible\n');
+    return
 end
 end
 

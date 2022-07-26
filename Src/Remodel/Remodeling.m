@@ -80,9 +80,12 @@ function [Geo_n, Geo, Dofs, Set]=Remodeling(Geo_0, Geo_n, Geo, Dofs, Set)
                 trisToChange = Face.Tris(idMaxTriArea);
                 
                 [sideLengths] = ComputeTriSideLengths(Face, idMaxTriArea, numCell, Geo);
-                
                 aspectRatio = ComputeTriAspectRatio(sideLengths);
                 
+                firstNodeAlive = Geo.Cells(Face.ij(1)).AliveStatus;
+                secondNodeAlive = Geo.Cells(Face.ij(2)).AliveStatus;
+                
+                %% Flip 13
                 % Big area and good aspect ratio
                 if maxTriArea > Set.upperAreaThreshold && aspectRatio < 1.2
                     [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip13(numCell, trisToChange, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
@@ -90,8 +93,14 @@ function [Geo_n, Geo, Dofs, Set]=Remodeling(Geo_0, Geo_n, Geo, Dofs, Set)
                 
                 %% TODO: ADD HERE IF THE ASPECT RATIO IS BAD, DO SOMETHING:
                 % E.G., COMBINEGHOSTNODEES WHEN TWO BAD ASPECT RATIO TRIANGLES ARE TOGETHER
+                
                 if aspectRatio > 2
-                    [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip30(numCell, trisToChange, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                    if all(sideLengths(2:3) > sideLengths(1)) && ...
+                        xor(isempty(firstNodeAlive), isempty(secondNodeAlive))
+                        [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip42(Face, numCell, idMaxTriArea, firstNodeAlive, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                    end
+                    
+                    %[Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip30(numCell, trisToChange, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
                 end
             end
             

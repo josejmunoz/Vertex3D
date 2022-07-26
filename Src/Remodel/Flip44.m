@@ -34,6 +34,7 @@ if ~CheckConvexity(Tnew,Geo_backup) && CheckTris(Geo)
         Geo   = Geo_backup;
         Geo_n = Geo_n_backup;
         fprintf('=>> 44-Flip rejected: did not converge\n');
+        return
     end
     newYgIds = unique([newYgIds; Geo.AssemblegIds]);
     targetNodes = unique(targetTets);
@@ -52,6 +53,7 @@ else
     Geo   = Geo_backup;
     Geo_n = Geo_n_backup;
     fprintf('=>> 44-Flip rejected: is not compatible\n');
+    return
 end
 end
 

@@ -63,6 +63,7 @@ if vertexToExpand ~= -1
             Geo   = Geo_backup;
             Geo_n = Geo_n_backup;
             fprintf('=>> 13-Flip rejected: did not converge\n');
+            return
         end
         
         newYgIds = unique([newYgIds; Geo.AssemblegIds]);
@@ -74,6 +75,7 @@ if vertexToExpand ~= -1
         Geo   = Geo_backup;
         Geo_n = Geo_n_backup;
         fprintf('=>> 13-Flip rejected: is not compatible\n');
+        return
     end
 end
 end

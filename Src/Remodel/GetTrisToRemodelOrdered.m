@@ -13,7 +13,9 @@ for c = 1:Geo.nCells
     end
 end
 
-[energyPerCellAndFaces] = sortrows(energyPerCellAndFaces, 3, 'descend');
+if ~isempty(energyPerCellAndFaces)
+    [energyPerCellAndFaces] = sortrows(energyPerCellAndFaces, 3, 'descend');
+end
 
 end
 

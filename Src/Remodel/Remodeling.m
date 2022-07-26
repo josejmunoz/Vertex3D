@@ -70,20 +70,20 @@ function [Geo_n, Geo, Dofs, Set]=Remodeling(Geo_0, Geo_n, Geo, Dofs, Set)
     end
     
     %% loop NONENERGY
-    for c = 1:Geo.nCells
+    for numCell = 1:Geo.nCells
         f = 0;
         hasConverged = 0;
         
         %CARE: Number of faces change within this loop, so it should be a while
-        while f < length(Geo.Cells(c).Faces)
+        while f < length(Geo.Cells(numCell).Faces)
             f = f + 1;
-            Face = Geo.Cells(c).Faces(f);
+            Face = Geo.Cells(numCell).Faces(f);
             
-            if ismember(Face.globalIds, newYgIds)
+            if ~ismember(Face.globalIds, newYgIds)
                 faceAreas = [Face.Tris.Area];
                 [maxTriArea, idMaxTriArea]= max(faceAreas);
                 trisToChange = Face.Tris(idMaxTriArea);
-                if maxTriArea < Set.upperAreaThreshold
+                if maxTriArea > Set.upperAreaThreshold
                     [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip13(numCell, trisToChange, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
                 end
             end

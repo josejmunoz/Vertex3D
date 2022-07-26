@@ -1,7 +1,8 @@
-function [Geo_n, Geo, Dofs, Set, newYgIds] = Flip42(Face, numCell, trisToChange, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds)
+function [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip42(Face, numCell, trisToChange, firstNodeAlive, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds)
 %FLIP42 Summary of this function goes here
 %   Remove 1 node
 
+hasConverged = 0;
 Geo_backup = Geo; Geo_n_backup = Geo_n;
 
 tetsToShrink = Geo.Cells(numCell).T(Face.Tris(trisToChange).Edge, :);
@@ -96,6 +97,8 @@ if CheckTris(Geo) %%&& ~CheckConvexity(Tnew,Geo_backup)
     Geo_n = UpdateMeasures(Geo_n);
     
     PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+2)
+    
+    hasConverged = 1;
 else
     Geo   = Geo_backup;
     Geo_n = Geo_n_backup;

@@ -1,5 +1,6 @@
-function [Geo_n, Geo, Dofs, Set, newYgIds] = Flip23(YsToChange, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds)
+function [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip23(YsToChange, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds)
 
+hasConverged = 0;
 Geo_backup = Geo; Geo_n_backup = Geo_n;
 Ys = Geo.Cells(numCell).Y;
 Ts = Geo.Cells(numCell).T;
@@ -39,6 +40,8 @@ if ~CheckConvexity(Tnew, Geo_backup) && CheckTris(Geo)
     newYgIds = unique([newYgIds; Geo.AssemblegIds]);
     Geo   = UpdateMeasures(Geo);
     Geo_n = UpdateMeasures(Geo_n);
+    
+    hasConverged = 1;
 else
     Geo   = Geo_backup;
     Geo_n = Geo_n_backup;

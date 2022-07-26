@@ -6,6 +6,7 @@ function [Geo_n, Geo, Dofs, Set]=Remodeling(Geo_0, Geo_n, Geo, Dofs, Set)
     [energyPerCellAndFaces] = GetTrisToRemodelOrdered(Geo, Set);
     
     while ~isempty(energyPerCellAndFaces)
+        hasConverged = 0;
         numCell = energyPerCellAndFaces(1, 1);
         numFace = energyPerCellAndFaces(1, 2);
         Face = Geo.Cells(numCell).Faces(numFace);
@@ -40,13 +41,13 @@ function [Geo_n, Geo, Dofs, Set]=Remodeling(Geo_0, Geo_n, Geo, Dofs, Set)
             end
 
             %% FLIP 44
-            if min(nrgs)>=Set.RemodelTol*1e-4 && length(unique([Face.Tris.Edge]))==4 && ...
+            if min(nrgs)>=Set.RemodelTol*1e-4 && length(Face.Tris)==4 && ...
                     ~hasConverged
                 [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip44(Face, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
             end
 
             %% Flip 32
-            if length(unique([Face.Tris.Edge])) == 3 && ~hasConverged
+            if length(Face.Tris) == 3 && ~hasConverged
                 [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip32(Face, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
             end
 
@@ -58,13 +59,18 @@ function [Geo_n, Geo, Dofs, Set]=Remodeling(Geo_0, Geo_n, Geo, Dofs, Set)
                     [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip23(YsToChange, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
                 end
             end
-
+            
+            prev_energyPerCellAndFaces = energyPerCellAndFaces;
             [energyPerCellAndFaces] = GetTrisToRemodelOrdered(Geo, Set);
+            
+            if isequal(prev_energyPerCellAndFaces, energyPerCellAndFaces)
+                break;
+            end
         end
     end
     
     % Only when the triangles are big enough
-    [Geo_n, Geo, Dofs, Set, newYgIds] = Flip13(Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+    %[Geo_n, Geo, Dofs, Set, newYgIds] = Flip13(Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
     
     %[Geo_n, Geo, Dofs, Set, newYgIds] = Flip03(Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
 

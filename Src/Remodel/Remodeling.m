@@ -88,13 +88,12 @@ function [Geo_n, Geo, Dofs, Set]=Remodeling(Geo_0, Geo_n, Geo, Dofs, Set)
                     [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip13(numCell, trisToChange, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
                 end
                 
-                if aspectRatio > 1.5
-                    
+                %% TODO: ADD HERE IF THE ASPECT RATIO IS BAD, DO SOMETHING:
+                % E.G., COMBINEGHOSTNODEES WHEN TWO BAD ASPECT RATIO TRIANGLES ARE TOGETHER
+                if aspectRatio > 2
+                    [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip30(numCell, trisToChange, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
                 end
             end
-            
-            %% TODO: ADD HERE IF THE ASPECT RATIO IS BAD, DO SOMETHING:
-            % E.G., COMBINEGHOSTNODEES WHEN TWO BAD ASPECT RATIO TRIANGLES ARE TOGETHER
             
             if hasConverged
                 f = 0;

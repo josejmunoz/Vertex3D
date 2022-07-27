@@ -9,7 +9,7 @@ tetsToShrink = Geo.Cells(numCell).T(Face.Tris(trisToChange).Edge, :);
 commonNodes = intersect(tetsToShrink(1, :), tetsToShrink(2, :));
 
 fprintf('=>> 42 Flip.\n');
-%% Pick the Ghost node
+% Pick the Ghost node
 if ~isempty(firstNodeAlive)
     mainNode = Face.ij(1);
     commonNodes(commonNodes == Face.ij(1)) = [];
@@ -29,8 +29,7 @@ nodeToRemove = commonNodes(smallestNumNeighs);
 
 neighboursToUse(neighboursToUse==mainNode) = [];
 
-%Remove the selected node from that neighbourhood and
-%reconnect them
+%Remove the selected node from that neighbourhood and reconnect them
 oldTets = Geo.Cells(nodeToRemove).T;
 
 nodeNeighbours = arrayfun(@(x) getNodeNeighbours(Geo, x), neighboursToUse, 'UniformOutput', false);
@@ -48,15 +47,22 @@ for numNode = neighboursToUse'
 end
 
 Tnew = [];
-if length(nodesConnected) == 2
+if length(nodesConnected) == 2 && length(neighboursToUse) == 4
     opposingNodes = setdiff(neighboursToUse, nodesConnected);
-    nodesToChange = [mainNode; nodesConnected; opposingNodes];
-    Tnew = nodesToChange(delaunayn(vertcat(Geo.Cells(nodesToChange).X)));
+    
+    for opposingNode = opposingNodes'
+        Tnew(end+1, 1:4) = [mainNode nodesConnected' opposingNode];
+    end
 else
-    Geo   = Geo_backup;
-    Geo_n = Geo_n_backup;
-    fprintf('NEED TO CHECKKKKK!!');
-    return
+    % DELAUNAY METHOD for more than 4-2
+    nodesToChange = [mainNode; neighboursToUse];
+    Tnew = nodesToChange(delaunayn(vertcat(Geo_n.Cells(nodesToChange).X)));
+    
+    if length(neighboursToUse) - 2 ~= size(Tnew, 1)
+        [~,score] = pca(vertcat(Geo.Cells(neighboursToUse).X));
+        DT = delaunayTriangulation(score(:, 1:2));
+        Tnew = horzcat(ones(length(neighboursToUse) - 2, 1) * mainNode, neighboursToUse(DT.ConnectivityList));
+    end
 end
 
 if isempty(Tnew)

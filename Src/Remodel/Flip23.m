@@ -14,7 +14,7 @@ if any(ghostNodes)
     return
 end
 
-targetTets = Geo.Cells(c).T(YsToChange,:);
+targetTets = Geo.Cells(numCell).T(YsToChange,:);
 Geo   = ReplaceYs(targetTets, Tnew, Ynew, Geo);
 Geo_n = ReplaceYs(targetTets, Tnew, Ynew, Geo_n);
 

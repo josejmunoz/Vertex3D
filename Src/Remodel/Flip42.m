@@ -61,7 +61,11 @@ else
     if length(neighboursToUse) - 2 ~= size(Tnew, 1)
         [~,score] = pca(vertcat(Geo.Cells(neighboursToUse).X));
         DT = delaunayTriangulation(score(:, 1:2));
-        Tnew = horzcat(ones(length(neighboursToUse) - 2, 1) * mainNode, neighboursToUse(DT.ConnectivityList));
+        try
+            Tnew = horzcat(ones(length(neighboursToUse) - 2, 1) * mainNode, neighboursToUse(DT.ConnectivityList));
+        catch MException exc
+            fprintf('No correct TETs were found...\n')
+        end
     end
 end
 

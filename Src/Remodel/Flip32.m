@@ -1,9 +1,10 @@
-function [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip32(Face, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds)
+function [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip32(f, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds)
 
 hasConverged = 0;
 Geo_backup = Geo; Geo_n_backup = Geo_n;
 Ys = Geo.Cells(numCell).Y;
 Ts = Geo.Cells(numCell).T;
+Face = Geo.Cells(numCell).Faces(f);
 
 YsToChange=[Face.Tris(1).Edge(1); Face.Tris(2).Edge(1); Face.Tris(3).Edge(1)];
 [Ynew, Tnew] = YFlip32(Ys, Ts, YsToChange, Geo);

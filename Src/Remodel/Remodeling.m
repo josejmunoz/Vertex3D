@@ -60,7 +60,9 @@ function [Geo_n, Geo, Dofs, Set]=Remodeling(Geo_0, Geo_n, Geo, Dofs, Set)
         checkedYgIds(end+1) = energyPerCellAndFaces(1, 4);
         
         [energyPerCellAndFaces] = GetTrisToRemodelOrdered(Geo, Set);
-        energyPerCellAndFaces(ismember(energyPerCellAndFaces(:, 4), union(checkedYgIds, newYgIds)), :) = [];
+        if ~isempty(energyPerCellAndFaces)
+            energyPerCellAndFaces(ismember(energyPerCellAndFaces(:, 4), union(checkedYgIds, newYgIds)), :) = [];
+        end
     end
     
     %% loop NONENERGY

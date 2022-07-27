@@ -2,6 +2,7 @@ function [Geo_n, Geo, Dofs, Set]=Remodeling(Geo_0, Geo_n, Geo, Dofs, Set)
 
 	Geo.AssemblegIds = [];
 	newYgIds = [];
+    checkedYgIds = [];
     
     [energyPerCellAndFaces] = GetTrisToRemodelOrdered(Geo, Set);
     %% loop ENERGY-dependant
@@ -56,12 +57,10 @@ function [Geo_n, Geo, Dofs, Set]=Remodeling(Geo_0, Geo_n, Geo, Dofs, Set)
             end
         end
         
-        prev_energyPerCellAndFaces = energyPerCellAndFaces;
-        [energyPerCellAndFaces] = GetTrisToRemodelOrdered(Geo, Set);
+        checkedYgIds(end+1) = energyPerCellAndFaces(1, 4);
         
-        if isequal(prev_energyPerCellAndFaces, energyPerCellAndFaces) && hasConverged == -1
-            break;
-        end
+        [energyPerCellAndFaces] = GetTrisToRemodelOrdered(Geo, Set);
+        energyPerCellAndFaces(ismember(energyPerCellAndFaces(:, 4), union(checkedYgIds, newYgIds)), :) = [];
     end
     
     %% loop NONENERGY
@@ -86,6 +85,7 @@ function [Geo_n, Geo, Dofs, Set]=Remodeling(Geo_0, Geo_n, Geo, Dofs, Set)
                 secondNodeAlive = Geo.Cells(Face.ij(2)).AliveStatus;
                 
                 %% Flip 13
+                % TODO: GENERALISE THIS INTO A GENERAL FUNCTION
                 % Big area and good aspect ratio
                 if maxTriArea > Set.upperAreaThreshold && aspectRatio < 1.2
                     [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip13(numCell, trisToChange, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);

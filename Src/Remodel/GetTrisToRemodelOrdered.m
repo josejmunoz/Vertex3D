@@ -8,7 +8,7 @@ for c = 1:Geo.nCells
         face = Geo.Cells(c).Faces(numFace);
         [nrgs]=ComputeTriEnergy(face, Ys, Set);
         if max(nrgs) >= Set.RemodelTol
-            energyPerCellAndFaces(end+1, 1:3) = horzcat(c, numFace, max(nrgs));
+            energyPerCellAndFaces(end+1, 1:4) = horzcat(c, numFace, max(nrgs), face.globalIds);
         end
     end
 end

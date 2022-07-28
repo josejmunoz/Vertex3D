@@ -17,7 +17,7 @@ function [Geo_n, Geo, Dofs, Set]=Remodeling(Geo_0, Geo_n, Geo, Dofs, Set)
             [nrgs]=ComputeTriEnergy(Face, Ys, Set);
             [~, trisToChange]=max(nrgs);
 
-            [sideLengths] = ComputeTriSideLengths(Face, trisToChange, numCell, Geo);
+            [sideLengths] = ComputeTriSideLengths(Face, trisToChange, Geo.Cells(numCell).Y);
 
             firstNodeAlive = Geo.Cells(Face.ij(1)).AliveStatus;
             secondNodeAlive = Geo.Cells(Face.ij(2)).AliveStatus;
@@ -80,7 +80,7 @@ function [Geo_n, Geo, Dofs, Set]=Remodeling(Geo_0, Geo_n, Geo, Dofs, Set)
                 [maxTriArea, idMaxTriArea]= max(faceAreas);
                 trisToChange = Face.Tris(idMaxTriArea);
                 
-                [sideLengths] = ComputeTriSideLengths(Face, idMaxTriArea, numCell, Geo);
+                [sideLengths] = ComputeTriSideLengths(Face, idMaxTriArea, Geo.Cells(numCell).Y);
                 aspectRatio = ComputeTriAspectRatio(sideLengths);
                 
                 firstNodeAlive = Geo.Cells(Face.ij(1)).AliveStatus;
@@ -89,7 +89,7 @@ function [Geo_n, Geo, Dofs, Set]=Remodeling(Geo_0, Geo_n, Geo, Dofs, Set)
                 %% Flip 13
                 % TODO: GENERALISE THIS INTO A GENERAL FUNCTION
                 % Big area and good aspect ratio
-                if maxTriArea > Set.upperAreaThreshold && aspectRatio < 1.2
+                if maxTriArea > Set.upperAreaThreshold && aspectRatio < 1.4
                     [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip13(numCell, trisToChange, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
                 end
                 

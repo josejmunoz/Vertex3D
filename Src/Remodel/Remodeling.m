@@ -99,6 +99,12 @@ function [Geo_n, Geo, Dofs, Set]=Remodeling(Geo_0, Geo_n, Geo, Dofs, Set)
                 
                 %% TODO: ADD HERE IF THE ASPECT RATIO IS BAD, DO SOMETHING:
                 % E.G., COMBINEGHOSTNODEES WHEN TWO BAD ASPECT RATIO TRIANGLES ARE TOGETHER
+                if (nnz(aspectRatio > 2)/numel(aspectRatio)) > 0.66 && ...
+                        xor(isempty(firstNodeAlive), isempty(secondNodeAlive))
+                    nodeToRemove = Face.ij(cellfun(@isempty, {firstNodeAlive, secondNodeAlive}));
+                    [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = FlipRemoveNode(nodeToRemove, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                end
+                
                 numTris = 0;
                 while numTris < length(Face.Tris) && ~hasConverged
                     numTris = numTris + 1;

@@ -80,9 +80,6 @@ function [Geo_n, Geo, Dofs, Set]=Remodeling(Geo_0, Geo_n, Geo, Dofs, Set)
                 [maxTriArea, idMaxTriArea]= max(faceAreas);
                 trisToChange = Face.Tris(idMaxTriArea);
                 
-                [sideLengths] = ComputeTriSideLengths(Face, idMaxTriArea, Geo.Cells(numCell).Y);
-                aspectRatio = ComputeTriAspectRatio(sideLengths);
-                
                 firstNodeAlive = Geo.Cells(Face.ij(1)).AliveStatus;
                 secondNodeAlive = Geo.Cells(Face.ij(2)).AliveStatus;
                 
@@ -95,7 +92,14 @@ function [Geo_n, Geo, Dofs, Set]=Remodeling(Geo_0, Geo_n, Geo, Dofs, Set)
                 
                 %% TODO: ADD HERE IF THE ASPECT RATIO IS BAD, DO SOMETHING:
                 % E.G., COMBINEGHOSTNODEES WHEN TWO BAD ASPECT RATIO TRIANGLES ARE TOGETHER
-                if aspectRatio > 2
+                aspectRatio = [];
+                sideLengths = [];
+                for numTris = 1:length(Face.Tris)
+                    [sideLengths(numTris, 1:3)] = ComputeTriSideLengths(Face, numTris, Geo.Cells(numCell).Y);
+                    aspectRatio(numTris) = ComputeTriAspectRatio(sideLengths(numTris, 1:3));
+                end
+                
+                if aspectRatio > 2 && ~hasConverged
                     if all(sideLengths(2:3) > 1.5*sideLengths(1)) && ...
                         xor(isempty(firstNodeAlive), isempty(secondNodeAlive))
                         [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip42(Face, numCell, idMaxTriArea, firstNodeAlive, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);

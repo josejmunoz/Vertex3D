@@ -83,15 +83,6 @@ function [Geo_n, Geo, Dofs, Set]=Remodeling(Geo_0, Geo_n, Geo, Dofs, Set)
                 firstNodeAlive = Geo.Cells(Face.ij(1)).AliveStatus;
                 secondNodeAlive = Geo.Cells(Face.ij(2)).AliveStatus;
                 
-                %% Flip 13
-                % TODO: GENERALISE THIS INTO A GENERAL FUNCTION
-                % Big area and good aspect ratio
-                if maxTriArea > Set.upperAreaThreshold && aspectRatio < 1.4
-                    [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip13(numCell, trisToChange, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                end
-                
-                %% TODO: ADD HERE IF THE ASPECT RATIO IS BAD, DO SOMETHING:
-                % E.G., COMBINEGHOSTNODEES WHEN TWO BAD ASPECT RATIO TRIANGLES ARE TOGETHER
                 aspectRatio = [];
                 sideLengths = [];
                 for numTris = 1:length(Face.Tris)
@@ -99,13 +90,28 @@ function [Geo_n, Geo, Dofs, Set]=Remodeling(Geo_0, Geo_n, Geo, Dofs, Set)
                     aspectRatio(numTris) = ComputeTriAspectRatio(sideLengths(numTris, 1:3));
                 end
                 
-                if aspectRatio > 2 && ~hasConverged
-                    if all(sideLengths(2:3) > 1.5*sideLengths(1)) && ...
-                        xor(isempty(firstNodeAlive), isempty(secondNodeAlive))
-                        [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip42(Face, numCell, idMaxTriArea, firstNodeAlive, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                %% Flip 13
+                % TODO: GENERALISE THIS INTO A GENERAL FUNCTION
+                % Big area and good aspect ratio
+                if maxTriArea > Set.upperAreaThreshold && aspectRatio(idMaxTriArea) < 1.4
+                    [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip13(numCell, trisToChange, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                end
+                
+                %% TODO: ADD HERE IF THE ASPECT RATIO IS BAD, DO SOMETHING:
+                % E.G., COMBINEGHOSTNODEES WHEN TWO BAD ASPECT RATIO TRIANGLES ARE TOGETHER
+                numTris = 0;
+                while numTris < length(Face.Tris) && ~hasConverged
+                    numTris = numTris + 1;
+                    if aspectRatio(numTris) > 2
+                        if all(sideLengths(numTris, 2:3) > 1.5*sideLengths(numTris, 1)) && ...
+                            xor(isempty(firstNodeAlive), isempty(secondNodeAlive))
+                            [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip42(Face, numCell, numTris, firstNodeAlive, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                        end
+                        
+                        if ~hasConverged
+                            %[Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip30(numCell, trisToChange, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                        end
                     end
-                    
-                    %[Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip30(numCell, trisToChange, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
                 end
             end
             

@@ -63,8 +63,9 @@ else
         DT = delaunayTriangulation(score(:, 1:2));
         try
             Tnew = horzcat(ones(length(neighboursToUse) - 2, 1) * mainNode, neighboursToUse(DT.ConnectivityList));
-        catch MException exc
+        catch MException
             fprintf('No correct TETs were found...\n')
+            Tnew = [];
         end
     end
 end

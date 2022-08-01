@@ -3,6 +3,8 @@ function [vol] = ComputeTetVolume(tet, Geo)
 %   Detailed explanation goes here
 
 Xs = vertcat(Geo.Cells(tet).X);
+newOrder = delaunay(Xs);
+Xs = Xs(newOrder, :);
 y1 = Xs(2, :) - Xs(1, :);
 y2 = Xs(3, :) - Xs(1, :);
 y3 = Xs(4, :) - Xs(1, :);

@@ -2,6 +2,9 @@ function [overlaps] = CheckOverlappingTets(oldTets, newTets, Geo)
 %CHECKOVERLAPPINGTETS Summary of this function goes here
 %   Detailed explanation goes here
 
+overlaps = 0;
+
+%% Check if the volume from previous space is the same occupied by the new tets
 oldVol = 0;
 for tet = oldTets'
     [vol] = ComputeTetVolume(tet, Geo);
@@ -14,7 +17,12 @@ for tet = newTets'
     newVol = newVol + vol;
 end
 
-overlaps = 0;
+if ~isequal(newVol, oldVol)
+    overlaps = 1;
+    return
+end
+
+%% Check if they overlap
 for numTet = 1:size(newTets, 1)-1
     currentTet = newTets(numTet, :);
     for nextNumTet = numTet+1:size(newTets, 1)

@@ -1,12 +1,24 @@
-function [overlaps] = CheckOverlappingTets(goodTets, testTets, Geo)
+function [overlaps] = CheckOverlappingTets(oldTets, newTets, Geo)
 %CHECKOVERLAPPINGTETS Summary of this function goes here
 %   Detailed explanation goes here
 
+oldVol = 0;
+for tet = oldTets'
+    [vol] = ComputeTetVolume(tet, Geo);
+    oldVol = oldVol + vol;
+end
+
+newVol = 0;
+for tet = newTets'
+    [vol] = ComputeTetVolume(tet, Geo);
+    newVol = newVol + vol;
+end
+
 overlaps = 0;
-for numTet = 1:size(testTets, 1)-1
-    currentTet = testTets(numTet, :);
-    for nextNumTet = numTet+1:size(testTets, 1)
-        nextTet = testTets(nextNumTet, :);
+for numTet = 1:size(newTets, 1)-1
+    currentTet = newTets(numTet, :);
+    for nextNumTet = numTet+1:size(newTets, 1)
+        nextTet = newTets(nextNumTet, :);
         if ~isequal(currentTet, nextTet)
             %% 1st Shape
             shape1 = vertcat(Geo.Cells(currentTet).X);
@@ -80,29 +92,5 @@ for numTet = 1:size(testTets, 1)-1
     end
 end
 
-overlaps
-
-% 
-% overlaps = true;
-% for goodTet = 1:size(goodTets, 1)
-%     for numTnew = 1:size(testTets, 1)
-%         %Get the centre of the tetrahedron test tets and look for if it is inside any
-%         %other tet.
-%         newTet = testTets(numTnew, :);
-%         newTetCentroid = mean(vertcat(Geo.Cells(newTet).X), 1);
-% 
-%         tetXs = vertcat(Geo.Cells(goodTets(goodTet)).X);
-%         tetShape = alphaShape(tetXs);
-% 
-%         % Checking if any point of the Xs are inside the tetrahedra
-%         if any(tetShape.inShape(newTetCentroid(1), newTetCentroid(2), newTetCentroid(3)))
-%     %         figure, plot(tetShape)
-%     %         text(tetXs(:, 1), tetXs(:, 2), tetXs(:, 3), cellfun(@num2str, num2cell(nodeTets), 'UniformOutput', false),'VerticalAlignment','bottom','HorizontalAlignment','right')
-%     %         hold on, plot3(newTetCentroid(1), newTetCentroid(2), newTetCentroid(3), 'rx');
-%             overlaps = false;
-%             return
-%         end
-%     end
-% end
 end
 

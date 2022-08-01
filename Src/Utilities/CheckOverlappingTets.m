@@ -12,12 +12,19 @@ for tet = oldTets'
 end
 
 newVol = 0;
+volumes = [];
 for tet = newTets'
     [vol] = ComputeTetVolume(tet, Geo);
+    volumes(end+1) = vol;
     newVol = newVol + vol;
 end
 
-if ~isequal(newVol, oldVol)
+if abs(newVol - oldVol)/newVol > 0.05
+    overlaps = 1;
+    return
+end
+
+if any(CheckSkinnyTets(newTets, Geo))
     overlaps = 1;
     return
 end
@@ -53,7 +60,7 @@ for numTet = 1:size(newTets, 1)-1
 %             end
             
             %% https://uk.mathworks.com/matlabcentral/answers/327990-generate-random-coordinates-inside-a-convex-polytope
-            tic
+            %tic
             shape1 = vertcat(Geo.Cells(currentTet).X);
             CH = convhull(shape1);
             ntri = size(CH, 1);
@@ -94,8 +101,8 @@ for numTet = 1:size(newTets, 1)-1
                     return
                 end
             end
-            tetramesh(vertcat(currentTet, nextTet), vertcat(Geo.Cells.X))
-            toc
+            %tetramesh(vertcat(currentTet, nextTet), vertcat(Geo.Cells.X))
+            %toc
         end
     end
 end

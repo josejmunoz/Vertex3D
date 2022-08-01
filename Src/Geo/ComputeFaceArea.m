@@ -1,7 +1,7 @@
 function [area, trisArea] = ComputeFaceArea(Tris, Y, FaceCentre)
 	area = 0;
-    trisArea = cell(length(Tris),1);
-	for t = 1:length(Tris)
+    trisArea = cell(size(Tris, 1),1);
+	for t = 1:size(Tris, 1)
 		Tri = Tris(t,:);
         Y3 = FaceCentre;
 		YTri = [Y(Tri,:); Y3];

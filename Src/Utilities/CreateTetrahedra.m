@@ -29,7 +29,6 @@ for numPair = 1:size(internalNeighbourNetwork, 1)
 end
 
 Twg = [Twg; newAdditions];
-%Twg = newAdditions;
 
 %% Relationships: 1 cell node and 3 ghost nodes
 % These are the ones are with the face ghost cell on top and bottom
@@ -45,6 +44,5 @@ for numCell = xInternal'
      newAdditions = [newAdditions; repmat([numCell, faceId], size(verticesToConnect, 1), 1), X_VerticesIds(verticesToConnect)];
 end
 
-%Twg = newAdditions;
 Twg = [Twg; newAdditions];
 end

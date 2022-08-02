@@ -4,8 +4,8 @@ function [Geo, Set] = InitializeGeometry_3DVoronoi(Geo, Set)
 
 nCells = 50;
 nSeeds = nCells*3;
-lloydIterations = 6;
-distorsion = 0;
+lloydIterations = 10;
+distorsion = 1;
 cellHeight = 1;
 
 rng default
@@ -29,7 +29,7 @@ for numIter = 1:lloydIterations
     end
 end
 
-
+%% Build 3D topology
 [trianglesConnectivity, neighboursNetwork, cellEdges, verticesOfCell_pos] = Build3DVoronoiTopo(seedsXY);
 
 seedsXY_topoChanged = [seedsXY(:, 1), seedsXY(:, 2) + distorsion];
@@ -37,8 +37,6 @@ seedsXY_topoChanged(:, 2) = seedsXY_topoChanged(:, 2) - min(seedsXY_topoChanged(
 seedsXY_topoChanged(:, 2) = seedsXY_topoChanged(:, 2) / max(seedsXY_topoChanged(:, 2));
 
 [trianglesConnectivity_topoChanged, neighboursNetwork_topoChanged, cellEdges_topoChanged, verticesOfCell_pos_topoChanged] = Build3DVoronoiTopo(seedsXY_topoChanged);
-
-
 
 %% Create node connections:
 X(:, 1) = mean([seedsXY(:, 1), seedsXY_topoChanged(:, 1)], 2);
@@ -68,12 +66,18 @@ xInternal = [1:nCells]';
 Geo.nCells = length(xInternal);
 
 %% Create tetrahedra
-X(X(:, 1) < 0 , 1) = 0;
-X(X(:, 2) < 0 , 2) = 0;
-X(X(:, 1) > 1 , 1) = 1;
-X(X(:, 2) > 1 , 2) = 1;
-tets = delaunayTriangulation(X);
-Twg = tets.ConnectivityList;
+[Twg_bottom] = CreateTetrahedra(trianglesConnectivity, neighboursNetwork, cellEdges, xInternal, X_bottomFaceIds, X_bottomVerticesIds);
+figure, tetramesh(Twg_bottom(any(ismember(Twg_bottom, xInternal), 2), :), X);
+
+[Twg_top] = CreateTetrahedra(trianglesConnectivity_topoChanged, neighboursNetwork_topoChanged, cellEdges_topoChanged, xInternal, X_topFaceIds, X_topVerticesIds);
+Twg = vertcat(Twg_top, Twg_bottom);
+
+% X(X(:, 1) < 0 , 1) = 0;
+% X(X(:, 2) < 0 , 2) = 0;
+% X(X(:, 1) > 1 , 1) = 1;
+% X(X(:, 2) > 1 , 2) = 1;
+% tets = delaunayTriangulation(X);
+% Twg = tets.ConnectivityList;
 
 %% Ghost cells and tets
 Geo.XgID = setdiff(1:size(X, 1), xInternal);

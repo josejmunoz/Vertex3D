@@ -4,18 +4,23 @@ function [] = InitializeGeometry_3DVoronoi()
 
 nSeeds = 100;
 distorsion = 1;
-cellHeight = 5;
+cellHeight = 1;
 
 rng default
 x = rand(nSeeds, 1);
 y = rand(nSeeds, 1);
 
 seedsXY = horzcat(x,y);
+%% Get central
+distanceSeeds = pdist2(seedsXY, [0.5 0.5]);
+[~, indices] = sort(distanceSeeds);
+seedsXY = seedsXY(indices, :);
 
 [trianglesConnectivity, neighboursNetwork, cellEdges, verticesOfCell_pos] = Build3DVoronoiTopo(seedsXY);
 
-seedsXY_topoChanged = horzcat(x, y + distorsion);
-seedsXY_topoChanged(:, 2) = (seedsXY_topoChanged(:, 2) - min(seedsXY_topoChanged(:, 2))) / max(seedsXY_topoChanged(:, 2));
+seedsXY_topoChanged = [seedsXY(:, 1), seedsXY(:, 2) + distorsion];
+seedsXY_topoChanged(:, 2) = seedsXY_topoChanged(:, 2) - min(seedsXY_topoChanged(:, 2));
+seedsXY_topoChanged(:, 2) = seedsXY_topoChanged(:, 2) / max(seedsXY_topoChanged(:, 2));
 
 [trianglesConnectivity_topoChanged, neighboursNetwork_topoChanged, cellEdges_topoChanged, verticesOfCell_pos_topoChanged] = Build3DVoronoiTopo(seedsXY_topoChanged);
 
@@ -47,14 +52,19 @@ X_IDs.bottomFaceIds = X_bottomFaceIds;
 X_IDs.topVerticesIds = X_topVerticesIds;
 X_IDs.topFaceIds = X_topFaceIds;
 
-xInternal = 1:20;
+xInternal = [1:20]';
 
 %% Create tetrahedra
-[Twg_bottom] = CreateTetrahedra(trianglesConnectivity, neighboursNetwork, cellEdges, xInternal, X_bottomFaceIds, X_bottomVerticesIds);
-Twg_bottom
-%[Twg_top] = createTetrahedra(DT_topoChanged.ConnectivityList, neighboursNetwork, verticesInfo.edges, xInternal, X_topFaceIds, X_topVerticesIds);
+X(X(:, 1) < 0 , 1) = 0;
+X(X(:, 2) < 0 , 2) = 0;
+X(X(:, 1) > 1 , 1) = 1;
+X(X(:, 2) > 1 , 2) = 1;
+tets = delaunayTriangulation(X);
+Twg = tets.ConnectivityList;
 
-%Twg = vertcat(Twg_top, Twg_bottom);
+figure, tetramesh(Twg, X);
+figure, tetramesh(Twg(any(ismember(Twg, xInternal), 2), :), X);
+Twg
 
 end
 

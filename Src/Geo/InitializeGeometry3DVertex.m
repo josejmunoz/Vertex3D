@@ -68,8 +68,8 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
     allTris = [allFaces.Tris];
     avgArea = mean([allTris.Area]);
     stdArea = std([allTris.Area]);
-    Set.upperAreaThreshold = avgArea + stdArea*2;
-    Set.lowerAreaThreshold = avgArea - stdArea/2;
+    Set.upperAreaThreshold = avgArea + stdArea;
+    Set.lowerAreaThreshold = avgArea - stdArea;
     
 	% TODO FIXME bad; PVM: better?
 	Geo.AssembleNodes = find(cellfun(@isempty, {Geo.Cells.AliveStatus})==0);

@@ -18,6 +18,7 @@ Set = AddDefault(Set, WoundDefault(Set));
 Set=InitiateOutputFolder(Set);
 Set.flog = fopen(Set.log, 'w+');
 
+%[Geo, Set] = InitializeGeometry_3DVoronoi(Geo, Set);
 [Geo, Set] = InitializeGeometry3DVertex(Geo, Set);
 % TODO FIXME, this is bad, should be joined somehow
 if Set.Substrate == 1

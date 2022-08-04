@@ -5,7 +5,7 @@ Geo.nz = 1;
 Set.Ablation = 0;
 Geo.cellsToAblate = [5];
  
-Set.lambdaV = 10; 
+Set.lambdaV = 20; 
  
 Set.tend=200; 
 Set.Nincr=400; 

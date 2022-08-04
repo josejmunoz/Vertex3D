@@ -1,4 +1,4 @@
-function [trianglesConnectivity, neighboursNetwork, cellEdges_Boundary, verticesOfCell_pos] = Build3DVoronoiTopo(seedsXY)
+function [trianglesConnectivity, neighboursNetwork, cellEdges_Boundary, verticesOfCell_pos, borderCells] = Build3DVoronoiTopo(seedsXY)
 %BUILD3DVORONOITOPO Summary of this function goes here
 %   Detailed explanation goes here
 DT = delaunayTriangulation(seedsXY(:, 1), seedsXY(:, 2));
@@ -19,6 +19,8 @@ for numCell = 1:size(seedsXY, 1)
     end
 end
 
+borderCells = convexHull(DT);
+borderCells = neighboursNetwork(any(ismember(neighboursNetwork, borderCells), 2), :);
 % figure,
 % IC = incenter(DT);
 % triplot(DT)

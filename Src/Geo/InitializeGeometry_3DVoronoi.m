@@ -4,8 +4,8 @@ function [Geo, Set] = InitializeGeometry_3DVoronoi(Geo, Set)
 
 nCells = 50;
 nSeeds = nCells*3;
-lloydIterations = 10;
-distorsion = 1;
+lloydIterations = 100;
+distorsion = 0;
 cellHeight = 1;
 
 rng default
@@ -33,8 +33,8 @@ end
 [trianglesConnectivity, neighboursNetwork, cellEdges, verticesOfCell_pos] = Build3DVoronoiTopo(seedsXY);
 
 seedsXY_topoChanged = [seedsXY(:, 1), seedsXY(:, 2) + distorsion];
-seedsXY_topoChanged(:, 2) = seedsXY_topoChanged(:, 2) - min(seedsXY_topoChanged(:, 2));
-seedsXY_topoChanged(:, 2) = seedsXY_topoChanged(:, 2) / max(seedsXY_topoChanged(:, 2));
+% seedsXY_topoChanged(:, 2) = seedsXY_topoChanged(:, 2) - min(seedsXY_topoChanged(:, 2));
+% seedsXY_topoChanged(:, 2) = seedsXY_topoChanged(:, 2) / max(seedsXY_topoChanged(:, 2));
 
 [trianglesConnectivity_topoChanged, neighboursNetwork_topoChanged, cellEdges_topoChanged, verticesOfCell_pos_topoChanged] = Build3DVoronoiTopo(seedsXY_topoChanged);
 
@@ -71,6 +71,8 @@ figure, tetramesh(Twg_bottom(any(ismember(Twg_bottom, xInternal), 2), :), X);
 
 [Twg_top] = CreateTetrahedra(trianglesConnectivity_topoChanged, neighboursNetwork_topoChanged, cellEdges_topoChanged, xInternal, X_topFaceIds, X_topVerticesIds);
 Twg = vertcat(Twg_top, Twg_bottom);
+figure, tetramesh(Twg_top(any(ismember(Twg_top, xInternal), 2), :), X);
+figure, tetramesh(Twg(any(ismember(Twg, xInternal), 2), :), X);
 
 % X(X(:, 1) < 0 , 1) = 0;
 % X(X(:, 2) < 0 , 2) = 0;

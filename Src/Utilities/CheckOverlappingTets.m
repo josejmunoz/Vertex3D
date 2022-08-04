@@ -5,25 +5,41 @@ function [overlaps] = CheckOverlappingTets(oldTets, newTets, Geo)
 overlaps = 0;
 
 %% Check if the volume from previous space is the same occupied by the new tets
-oldVol = 0;
-for tet = oldTets'
-    [vol] = ComputeTetVolume(tet, Geo);
-    oldVol = oldVol + vol;
-end
+% oldVol = 0;
+% for tet = oldTets'
+%     [vol] = ComputeTetVolume(tet, Geo);
+%     oldVol = oldVol + vol;
+% end
+% 
+% newVol = 0;
+% volumes = [];
+% for tet = newTets'
+%     [vol] = ComputeTetVolume(tet, Geo);
+%     volumes(end+1) = vol;
+%     newVol = newVol + vol;
+% end
+% 
+% if abs(newVol - oldVol)/newVol > 0.05
+%     overlaps = 1;
+%     return
+% end
 
-newVol = 0;
-volumes = [];
-for tet = newTets'
-    [vol] = ComputeTetVolume(tet, Geo);
-    volumes(end+1) = vol;
-    newVol = newVol + vol;
-end
+%% Check nodes connectivity
+nodesToCheck = intersect(unique(oldTets), unique(newTets));
+nodesToCheck = nodesToCheck(cellfun(@isempty, {Geo.Cells(nodesToCheck).AliveStatus}));
 
-if abs(newVol - oldVol)/newVol > 0.05
+oldNeighs = arrayfun(@(x) getNodeNeighbours(Geo, x), nodesToCheck, 'UniformOutput', false);
+[Geo] = RemoveTetrahedra(Geo, oldTets);
+[Geo] = AddTetrahedra(Geo, newTets);
+newNeighs = arrayfun(@(x) getNodeNeighbours(Geo, x), nodesToCheck, 'UniformOutput', false);
+newNeighs = cellfun(@(x) x(ismember(x, nodesToCheck)), newNeighs, 'UniformOutput', false);
+
+if sum(cellfun(@length, newNeighs))/2 > (2*length(nodesToCheck) - 3)
     overlaps = 1;
     return
 end
 
+%% Check if some skinny tet has been created
 if any(CheckSkinnyTets(newTets, Geo))
     overlaps = 1;
     return

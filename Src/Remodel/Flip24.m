@@ -26,6 +26,13 @@ oldTets = tetsToExpand;
 
 [newTets] = ConnectTetrahedra(Geo, newNodeIDs, oldTets);
 
+if isempty(Tnew) || CheckOverlappingTets(oldTets, Tnew, Geo)
+    Geo   = Geo_backup;
+    Geo_n = Geo_n_backup;
+    fprintf('=>> 24-Flip rejected: is not compatible\n');
+    return
+end
+
 [Geo] = RemoveTetrahedra(Geo, oldTets);
 [Geo_n] = RemoveTetrahedra(Geo_n, oldTets);
 [Geo] = AddTetrahedra(Geo, newTets, Set);
@@ -43,7 +50,7 @@ Geo_n = UpdateMeasures(Geo_n);
 %% ----------------------------
 
 %targetTets = testToSubstitute;
-if CheckTris(Geo) %%&& ~CheckConvexity(Tnew,Geo_backup)
+if CheckTris(Geo)
     Dofs = GetDOFs(Geo, Set);
     [Dofs, Geo]  = GetRemodelDOFs(newTets, Dofs, Geo);
     [Geo, Set, DidNotConverge] = SolveRemodelingStep(Geo_0, Geo_n, Geo, Dofs, Set);

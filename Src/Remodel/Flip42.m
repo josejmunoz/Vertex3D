@@ -47,30 +47,27 @@ for numNode = neighboursToUse'
 end
 
 Tnew = [];
-if length(nodesConnected) == 2 && length(neighboursToUse) == 4
-    opposingNodes = setdiff(neighboursToUse, nodesConnected);
-    
-    for opposingNode = opposingNodes'
-        Tnew(end+1, 1:4) = [mainNode nodesConnected' opposingNode];
-    end
-else
-    % DELAUNAY METHOD for more than 4-2
-    nodesToChange = [mainNode; neighboursToUse];
-    Tnew = nodesToChange(delaunayn(vertcat(Geo_n.Cells(nodesToChange).X)));
-    
-    if length(neighboursToUse) - 2 ~= size(Tnew, 1)
-        [~,score] = pca(vertcat(Geo.Cells(neighboursToUse).X));
-        DT = delaunayTriangulation(score(:, 1:2));
-        try
-            Tnew = horzcat(ones(length(neighboursToUse) - 2, 1) * mainNode, neighboursToUse(DT.ConnectivityList));
-        catch MException
-            fprintf('No correct TETs were found...\n')
-            Tnew = [];
+if all(cellfun(@isempty, {Geo.Cells(neighboursToUse).AliveStatus}))
+    if length(nodesConnected) == 2 && length(neighboursToUse) == 4
+        opposingNodes = setdiff(neighboursToUse, nodesConnected);
+
+        for opposingNode = opposingNodes'
+            Tnew(end+1, 1:4) = [mainNode nodesConnected' opposingNode];
+        end
+    else
+        % DELAUNAY METHOD for more than 4-2
+        nodesToChange = [mainNode; neighboursToUse];
+        Tnew = nodesToChange(delaunayn(vertcat(Geo_n.Cells(nodesToChange).X)));
+
+        if length(neighboursToUse) - 2 ~= size(Tnew, 1) || CheckOverlappingTets(oldTets, Tnew, Geo)
+            [~,score] = pca(vertcat(Geo.Cells(neighboursToUse).X));
+            DT = delaunayTriangulation(score(:, 1:2));
+            Tnew = horzcat(ones(size(DT.ConnectivityList, 1), 1) * mainNode, neighboursToUse(DT.ConnectivityList));
         end
     end
 end
 
-if isempty(Tnew)
+if isempty(Tnew) || CheckOverlappingTets(oldTets, Tnew, Geo)
     Geo   = Geo_backup;
     Geo_n = Geo_n_backup;
     fprintf('=>> 42-Flip rejected: is not compatible\n');
@@ -81,10 +78,6 @@ end
 [Geo_n] = RemoveTetrahedra(Geo_n, oldTets);
 [Geo] = AddTetrahedra(Geo, Tnew, Set);
 [Geo_n] = AddTetrahedra(Geo_n, Tnew, Set);
-
-
-%% TODO: CHECK THIS!
-%[overlaps] = CheckOverlappingTets(goodTets, testTets, Geo);
 
 %% All this, goes together when remodel occurs. TODO: PUT TOGETHER AS A FUNCTION
 Geo   = Rebuild(Geo, Set);
@@ -97,7 +90,7 @@ Geo   = UpdateMeasures(Geo);
 Geo_n = UpdateMeasures(Geo_n);
 %% ----------------------------
 
-if CheckTris(Geo) %%&& ~CheckConvexity(Tnew,Geo_backup)
+if CheckTris(Geo)
     Dofs = GetDOFs(Geo, Set);
     [Dofs, Geo]  = GetRemodelDOFs(Tnew, Dofs, Geo);
     [Geo, Set, DidNotConverge] = SolveRemodelingStep(Geo_0, Geo_n, Geo, Dofs, Set);

@@ -9,7 +9,7 @@ for tet = newTets'
     aspectRatio(end+1) = SArea/vol;
 end
 
-skinnyTets = aspectRatio > 70;
+skinnyTets = aspectRatio > 30;
 
 end
 

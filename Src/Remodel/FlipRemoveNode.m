@@ -7,22 +7,31 @@ Geo_backup = Geo; Geo_n_backup = Geo_n;
 
 oldTets = Geo.Cells(nodeToRemove).T;
 nodesToChange = getNodeNeighbours(Geo, nodeToRemove);
+mainNode = nodesToChange(~cellfun(@isempty, {Geo.Cells(nodesToChange).AliveStatus}));
+
+if length(mainNode) > 1
+    return
+end
+
 if length(nodesToChange) > 4
     Tnew = nodesToChange(delaunayn(vertcat(Geo.Cells(nodesToChange).X)));
 else
     Tnew = nodesToChange';
 end
 
-% if CheckConvexity()
-%     [~,score] = pca(vertcat(Geo.Cells(nodesToChange).X));
-%     DT = delaunayTriangulation(score(:, 1:2));
-%     try
-%         Tnew = horzcat(ones(length(nodesToChange) - 2, 1) * mainNode, neighboursToUse(DT.ConnectivityList));
-%     catch MException
-%         fprintf('No correct TETs were found...\n')
-%         Tnew = [];
-%     end
-% end
+if length(nodesToChange) > 4 && CheckOverlappingTets(oldTets, Tnew, Geo)
+    nodesToChange(~cellfun(@isempty, {Geo.Cells(nodesToChange).AliveStatus})) = [];
+    [~,score] = pca(vertcat(Geo.Cells(nodesToChange).X));
+    DT = delaunayTriangulation(score(:, 1:2));
+    Tnew = horzcat(ones(size(DT.ConnectivityList, 1), 1) * mainNode, nodesToChange(DT.ConnectivityList));
+end
+
+if isempty(Tnew) || CheckOverlappingTets(oldTets, Tnew, Geo)
+    Geo   = Geo_backup;
+    Geo_n = Geo_n_backup;
+    fprintf('=>> RemoveNode-Flip rejected: is not compatible\n');
+    return
+end
 
 fprintf('=>> RemoveNode-Flip.\n');
 

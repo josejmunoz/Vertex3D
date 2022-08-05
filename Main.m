@@ -18,8 +18,11 @@ Set = AddDefault(Set, WoundDefault(Set));
 Set=InitiateOutputFolder(Set);
 Set.flog = fopen(Set.log, 'w+');
 
-%[Geo, Set] = InitializeGeometry_3DVoronoi(Geo, Set);
-[Geo, Set] = InitializeGeometry3DVertex(Geo, Set);
+if isequal(Set.InputGeo, 'Bubbles')
+    [Geo, Set] = InitializeGeometry3DVertex(Geo, Set);
+elseif isequal(Set.InputGeo, 'Voronoi')
+    [Geo, Set] = InitializeGeometry_3DVoronoi(Geo, Set);
+end
 % TODO FIXME, this is bad, should be joined somehow
 if Set.Substrate == 1
     Dofs = GetDOFsSubstrate(Geo, Set);

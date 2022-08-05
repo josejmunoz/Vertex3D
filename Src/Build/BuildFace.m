@@ -28,7 +28,7 @@ function Face = BuildFace(ci, cj, nCells, Cell, XgID, Set, XgTop, XgBottom)
 	Face.ij				= ij;
 	Face.globalIds		= -1;
 	Face.InterfaceType	= BuildInterfaceType(ij, XgID, XgTop, XgBottom);
-	Face.Centre			= BuildFaceCentre(ij, nCells,  Cell.X, Cell.Y(face_ids,:), Set.f);
+	Face.Centre			= BuildFaceCentre(ij, nCells,  Cell.X, Cell.Y(face_ids,:), Set.f, isequal(Set.InputGeo, 'Bubbles'));
 	[Face.Tris] = BuildEdges(Cell.T, face_ids, Face.Centre, Face.InterfaceType, Cell.X, Cell.Y, 1:nCells); %%TODO: IMPROVE TO ONLY GET 'NONDEADCELLS'
     
 	[Face.Area]  = ComputeFaceArea(vertcat(Face.Tris.Edge), Cell.Y, Face.Centre);

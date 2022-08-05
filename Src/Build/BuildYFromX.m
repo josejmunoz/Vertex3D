@@ -1,4 +1,4 @@
-function Y = BuildYFromX(Cell, Cells, Set)
+function Y = BuildYFromX(Cell, Geo, Set)
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	% BuildYFromX:										  
 	%   Computes the positions of vertices for a cell using its nodal 
@@ -18,9 +18,18 @@ function Y = BuildYFromX(Cell, Cells, Set)
 	nverts = length(Tets);
 	for i=1:nverts % 1 vert = 1 tet
 		T = Tets(i,:);
-		x = [Cells(T(1)).X; Cells(T(2)).X; Cells(T(3)).X; Cells(T(4)).X];
+		x = [Geo.Cells(T(1)).X; Geo.Cells(T(2)).X; Geo.Cells(T(3)).X; Geo.Cells(T(4)).X];
 
-        Y(i,:) = ComputeY(x, Cell.X, length([Cells(T).AliveStatus]) > 1, Set);
-	end
+        Y(i,:) = ComputeY(x, Cell.X, 0, Set); % length([Geo.Cells(T).AliveStatus])
+        
+        if isequal(Set.InputGeo, 'Voronoi')
+            if sum(ismember(T, Geo.XgTop)) > 0
+                Y(i, 3) = Y(i, 3) / (sum(ismember(T, Geo.XgTop))/2);
+            elseif sum(ismember(T, Geo.XgBottom)) > 0
+                Y(i, 3) = Y(i, 3) / (sum(ismember(T, Geo.XgBottom))/2);
+            end
+        end
+    end
+    Y
 end
 

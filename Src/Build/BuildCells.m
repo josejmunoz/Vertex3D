@@ -21,7 +21,7 @@ function [Geo] = BuildCells(Geo, Set, X, Twg)
 	end
 	% Cell vertices
     for c = 1:Geo.nCells
-		Geo.Cells(c).Y     = BuildYFromX(Geo.Cells(c), Geo.Cells, Set);
+		Geo.Cells(c).Y     = BuildYFromX(Geo.Cells(c), Geo, Set);
     end
     if Set.Substrate == 1
         XgSub=size(X,1); % THE SUBSTRATE NODE

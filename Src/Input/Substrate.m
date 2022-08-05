@@ -1,3 +1,5 @@
+Set.InputGeo = 'Voronoi';
+
 Geo.nx = 1; 
 Geo.ny = 3; 
 Geo.nz = 1;

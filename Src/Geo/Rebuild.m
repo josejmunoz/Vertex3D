@@ -13,7 +13,7 @@ function Geo = Rebuild(Geo, Set)
             
 			Geo.Cells(cc).Faces(j) = BuildFace(cc, cj, Geo.nCells, Geo.Cells(cc), Geo.XgID, Set, Geo.XgTop, Geo.XgBottom);
             if ~oldFaceExists
-                Geo.Cells(cc).Faces(j).Centre = BuildFaceCentre(ij, Geo.nCells, Geo.Cells(cc).X, Geo.Cells(cc).Y(face_ids,:), Set.f);
+                Geo.Cells(cc).Faces(j).Centre = BuildFaceCentre(ij, Geo.nCells, Geo.Cells(cc).X, Geo.Cells(cc).Y(face_ids,:), Set.f, isequal(Set.InputGeo, 'Bubbles'));
             else
                 previousFace = ceil(previousFace/2);
                 Geo.Cells(cc).Faces(j).Centre = oldGeo.Cells(cc).Faces(previousFace).Centre;

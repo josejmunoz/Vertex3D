@@ -1,25 +1,22 @@
-function [newTets] = ConnectTetrahedra(Geo, newNodeIDs, oldTets)
+function [Tnew] = ConnectTetrahedra(Geo, nodesToChange, oldTets, mainNode)
 %CONNECTTETRAHEDRA Summary of this function goes here
 %   Detailed explanation goes here
 
-nodesToChange = [unique(oldTets); newNodeIDs];
-newTets = nodesToChange(delaunayn(vertcat(Geo.Cells(nodesToChange).X)));
-
-% Remove tets with all Ghost Nodes
-newTets(all(ismember(newTets, Geo.XgID), 2), :) = [];
-%TODO: REMOVE THE TETS THAT ADD NEW NODES TO THE CELLS
-%newTets_removedNotInvolved = newTets(any(ismember(newTets, newNodeIDs), 2), :);
-tetsToExclude_Possibly = newTets(~any(ismember(newTets, newNodeIDs), 2), :);
-newTets_removedNotInvolved = newTets(any(ismember(newTets, newNodeIDs), 2), :);
-addOrNot = [];
-for newTet = tetsToExclude_Possibly'
-    if mod(sum(sum(ismember(newTets_removedNotInvolved, newTet), 2) > 2), 2)
-        addOrNot(end+1) = 1;
-    else
-        addOrNot(end+1) = 0;
-    end
+if length(nodesToChange) > 4
+    Tnew = nodesToChange(delaunayn(vertcat(Geo.Cells(nodesToChange).X)));
+else
+    Tnew = nodesToChange';
 end
 
-newTets = [newTets_removedNotInvolved; tetsToExclude_Possibly(addOrNot==1, :)];
+% Remove tets with all Ghost Nodes
+Tnew(all(ismember(Tnew, Geo.XgID), 2), :) = [];
+
+%% Check if everything is correct and try to correct otherwise
+if length(nodesToChange) > 4 && CheckOverlappingTets(oldTets, Tnew, Geo)
+    nodesToChange(~cellfun(@isempty, {Geo.Cells(nodesToChange).AliveStatus})) = [];
+    [~,score] = pca(vertcat(Geo.Cells(nodesToChange).X));
+    DT = delaunayTriangulation(score(:, 1:2));
+    Tnew = horzcat(ones(size(DT.ConnectivityList, 1), 1) * mainNode, nodesToChange(DT.ConnectivityList));
+end
 end
 

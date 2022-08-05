@@ -30,6 +30,5 @@ function Y = BuildYFromX(Cell, Geo, Set)
             end
         end
     end
-    Y
 end
 

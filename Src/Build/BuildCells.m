@@ -8,8 +8,10 @@ function [Geo] = BuildCells(Geo, Set, X, Twg)
 	FaceFields = ["ij", "Centre", "Tris", "globalIds", "InterfaceType", "Area", "Area0"];
     % Build the Cells struct Array
 	Geo.Cells = BuildStructArray(length(X), CellFields);
-	% Nodes and Tetrahedras    
-    Set.TotalCells = Geo.nx * Geo.ny * Geo.nz;
+	% Nodes and Tetrahedras
+    if isequal(Set.InputGeo, 'Bubbles')
+        Set.TotalCells = Geo.nx * Geo.ny * Geo.nz;
+    end
 	for c = 1:length(X)
         Geo.Cells(c).ID    = c;
 		Geo.Cells(c).X     = X(c,:);

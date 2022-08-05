@@ -32,7 +32,7 @@ function [Geo, Tnew, removedTets, replacedTets] = CombineTwoGhostNodes(Geo, Set,
                 % Recalculate Ys
 %                 if ~isempty(Geo.Cells(numCell).Y)
 %                     for idTet = find(any(replacingTets, 2))'
-%                         Geo.Cells(numCell).Y(idTet, :) = ComputeY(vertcat(Geo.Cells(currentTets(idTet, :)).X), newCell.X, length([Geo.Cells(currentTets(idTet, :)).AliveStatus]) > 1, Set);
+%                         Geo.Cells(numCell).Y(idTet, :) = ComputeY(vertcat(Geo.Cells(currentTets(idTet, :)).X), newCell.X, length([Geo.Cells(currentTets(idTet, :)).AliveStatus]), Set);
 %                     end
 %                 end
                 

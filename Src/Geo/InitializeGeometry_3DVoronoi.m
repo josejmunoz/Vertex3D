@@ -2,11 +2,10 @@ function [Geo, Set] = InitializeGeometry_3DVoronoi(Geo, Set)
 %INITIALIZEGEOMETRY_3DVORONOI Summary of this function goes here
 %   Detailed explanation goes here
 
-nCells = 50;
-nSeeds = nCells*3;
-lloydIterations = 100;
+nSeeds = Set.TotalCells + 10* Set.TotalCells;
+lloydIterations = 10;
 distorsion = 0;
-cellHeight = 1;
+cellHeight = 0.2;
 
 rng default
 x = rand(nSeeds, 1);
@@ -23,7 +22,7 @@ seedsXY = seedsXY(indices, :);
 for numIter = 1:lloydIterations
     DT = delaunayTriangulation(seedsXY);
     [V, D] = voronoiDiagram(DT);
-    for numCell = 1:nCells
+    for numCell = 1:Set.TotalCells
         currentVertices = V(D{numCell}, :);
         seedsXY(numCell, :) = mean(currentVertices);
     end
@@ -32,7 +31,7 @@ end
 %% Build 3D topology
 [trianglesConnectivity, neighboursNetwork, cellEdges, verticesOfCell_pos] = Build3DVoronoiTopo(seedsXY);
 
-seedsXY_topoChanged = [seedsXY(:, 1), seedsXY(:, 2) + distorsion];
+seedsXY_topoChanged = [seedsXY(:, 1), seedsXY(:, 2) + rand(size(seedsXY, 1), 1)*distorsion];
 % seedsXY_topoChanged(:, 2) = seedsXY_topoChanged(:, 2) - min(seedsXY_topoChanged(:, 2));
 % seedsXY_topoChanged(:, 2) = seedsXY_topoChanged(:, 2) / max(seedsXY_topoChanged(:, 2));
 
@@ -62,7 +61,7 @@ X = vertcat(X, X_topNodes);
 Geo.XgBottom = X_bottomIds;
 Geo.XgTop = X_topIds;
 
-xInternal = [1:nCells]';
+xInternal = [1:Set.TotalCells]';
 Geo.nCells = length(xInternal);
 
 %% Create tetrahedra

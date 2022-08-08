@@ -20,6 +20,6 @@ nodesToChange = [unique(commonNodes)'; newNodeIDs];
 %figure, tetramesh(Tnew, vertcat(Geo.Cells.X));
 %figure, tetramesh(oldTets, vertcat(Geo.Cells.X));
 
-[Geo, Geo_n, Dofs, newYgIds, hasConverged] = PostFlip(Tnew, oldTets, Geo, Geo_n, Geo_0, Dofs, newYgIds, Set, 'AddNode');
+[Geo, Geo_n, Dofs, newYgIds, hasConverged] = PostFlip(Tnew, tetsToChange, Geo, Geo_n, Geo_0, Dofs, newYgIds, Set, 'AddNode');
 end
 

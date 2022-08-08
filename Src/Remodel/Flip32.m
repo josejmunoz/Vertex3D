@@ -1,7 +1,7 @@
 function [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip32(f, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds)
 
 hasConverged = 0;
-Geo_backup = Geo; Geo_n_backup = Geo_n;
+Geo_backup = Geo; Geo_n_backup = Geo_n; Dofs_backup = Dofs;
 Ys = Geo.Cells(numCell).Y;
 Ts = Geo.Cells(numCell).T;
 Face = Geo.Cells(numCell).Faces(f);
@@ -36,6 +36,7 @@ if ~CheckConvexity(Tnew,Geo_backup) && CheckTris(Geo)
     if DidNotConverge
         Geo   = Geo_backup;
         Geo_n = Geo_n_backup;
+        Dofs = Dofs_backup;
         fprintf('=>> 32-Flip rejected: did not converge\n');
         return
     end
@@ -53,6 +54,7 @@ if ~CheckConvexity(Tnew,Geo_backup) && CheckTris(Geo)
 else
     Geo   = Geo_backup;
     Geo_n = Geo_n_backup;
+    Dofs = Dofs_backup;
     fprintf('=>> 32-Flip rejected: is not compatible\n');
     return
 end

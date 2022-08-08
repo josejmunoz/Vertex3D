@@ -9,9 +9,10 @@ disp('------------- SIMULATION STARTS -------------');
 % simulations can be run from a single file
 
 % Stretch
-Substrate
+% Remodeling_Voronoi
 % StretchBulk
 % Compress
+Remodelling_Bubbles
 
 Set=SetDefault(Set);
 Set = AddDefault(Set, WoundDefault(Set));

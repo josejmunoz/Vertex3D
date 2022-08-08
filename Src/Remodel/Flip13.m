@@ -1,7 +1,7 @@
 function [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip13(numCell, trisToChange, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds)
 %FLIP13 Summary of this function goes here
 %   Detailed explanation goes here
-Geo_backup = Geo; Geo_n_backup = Geo_n;
+Geo_backup = Geo; Geo_n_backup = Geo_n; Dofs_backup = Dofs;
 hasConverged = 0;
 
 [~, numNeighbours_1, tetsNeighbours_1] = getVertexNeighbours(Geo, trisToChange.Edge(1), numCell);
@@ -45,6 +45,7 @@ newNodePosition = nodesWithoutCellPos;
 if isempty(Tnew) || CheckOverlappingTets(oldTets, Tnew, Geo)
     Geo   = Geo_backup;
     Geo_n = Geo_n_backup;
+    Dofs = Dofs_backup;
     fprintf('=>> 13-Flip rejected: is not compatible\n');
     return
 end
@@ -70,7 +71,8 @@ if CheckTris(Geo) %%&& ~CheckConvexity(Tnew,Geo_backup)
     [Geo, Set, DidNotConverge] = SolveRemodelingStep(Geo_0, Geo_n, Geo, Dofs, Set);
     if DidNotConverge
         Geo   = Geo_backup;
-        Geo_n = Geo_n_backup;
+        Geo_n = Geo_n_backup; 
+        Dofs = Dofs_backup;
         fprintf('=>> 13-Flip rejected: did not converge\n');
         return
     end
@@ -83,6 +85,7 @@ if CheckTris(Geo) %%&& ~CheckConvexity(Tnew,Geo_backup)
 else
     Geo   = Geo_backup;
     Geo_n = Geo_n_backup;
+    Dofs = Dofs_backup;
     fprintf('=>> 13-Flip rejected: is not compatible\n');
     return
 end

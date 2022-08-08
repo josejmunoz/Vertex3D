@@ -15,6 +15,15 @@ if any(ghostNodes)
 end
 
 targetTets = Geo.Cells(numCell).T(YsToChange,:);
+
+flipName = '2-3';
+if isempty(Tnew) || CheckOverlappingTets(targetTets, Tnew, Geo)
+    Geo   = Geo_backup;
+    Geo_n = Geo_n_backup;
+    fprintf('=>> %s-Flip rejected: is not compatible\n', flipName);
+    return
+end
+
 Geo   = ReplaceYs(targetTets, Tnew, Ynew, Geo);
 Geo_n = ReplaceYs(targetTets, Tnew, Ynew, Geo_n);
 

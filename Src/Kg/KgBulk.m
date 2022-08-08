@@ -6,11 +6,11 @@ function [g,K,EnergyBulk]=KgBulk(Geo_0, Geo, Set)
 	errorInverted = []; 
  
 	for c=1:Geo.nCells 
-		if Geo.Remodelling 
-			if ~ismember(c,Geo.AssembleNodes) 
-        		continue 
-			end 
-        end 
+        if Geo.Remodelling
+            if ~ismember(c,Geo.AssembleNodes)
+                continue
+            end
+        end
         
         if isempty(Geo.Cells(c).AliveStatus) || Geo.Cells(c).AliveStatus ~= 1
             continue
@@ -39,17 +39,17 @@ function [g,K,EnergyBulk]=KgBulk(Geo_0, Geo, Set)
                         continue
 					end 
 				end 
-				try 
-					[gB, KB, Energye] = KgBulkElem(currentTet, currentTet0, Set.mu_bulk, Set.lambda_bulk); 
-					EnergyBulk=EnergyBulk+Energye; 
-					ge=Assembleg(ge,gB,currentTet_ids); 
-					K = AssembleK(K,KB,currentTet_ids); 
-				catch ME 
-					if (strcmp(ME.identifier,'KgBulkElem:invertedTetrahedralElement')) 
-						errorInverted = [errorInverted; currentTet_ids]; 
-					else 
-						ME.rethrow(); 
-					end 
+                try
+                    [gB, KB, Energye] = KgBulkElem(currentTet, currentTet0, Set.mu_bulk, Set.lambda_bulk);
+                    EnergyBulk=EnergyBulk+Energye;
+                    ge=Assembleg(ge,gB,currentTet_ids);
+                    K = AssembleK(K,KB,currentTet_ids);
+                catch ME
+                    if (strcmp(ME.identifier,'KgBulkElem:invertedTetrahedralElement'))
+                        errorInverted = [errorInverted; currentTet_ids];
+                    else
+                        ME.rethrow();
+                    end
                 end
 			end 
 		end 

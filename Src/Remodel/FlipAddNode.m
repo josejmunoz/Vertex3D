@@ -2,7 +2,7 @@ function [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = FlipAddNode(surroundi
 %FLIPADDNODE Summary of this function goes here
 %   Detailed explanation goes here
 
-
+hasConverged = 0;
 mainNode = surroundingNodes(~cellfun(@isempty, {Geo.Cells(surroundingNodes).AliveStatus}));
 commonNodes = surroundingNodes;
 commonNodes(ismember(commonNodes, mainNode)) = [];

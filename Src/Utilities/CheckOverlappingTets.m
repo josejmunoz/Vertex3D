@@ -26,7 +26,7 @@ if exist('internalFlip', 'var') && internalFlip
     end
     
     normVols = volumes/max(volumes);
-    if any(normVols < 0.05)
+    if any(normVols < 0.1)
         overlaps = 1;
         return;
     end

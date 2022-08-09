@@ -17,7 +17,7 @@ end
 targetTets = Geo.Cells(numCell).T(YsToChange,:);
 
 flipName = '2-3';
-if isempty(Tnew) || CheckOverlappingTets(targetTets, Tnew, Geo)
+if isempty(Tnew) || CheckOverlappingTets(targetTets, Tnew, Geo, 1)
     Geo   = Geo_backup;
     Geo_n = Geo_n_backup;
     fprintf('=>> %s-Flip rejected: is not compatible\n', flipName);

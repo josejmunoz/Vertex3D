@@ -24,6 +24,12 @@ if exist('internalFlip', 'var') && internalFlip
         overlaps = 1;
         return
     end
+    
+    normVols = volumes/max(volumes);
+    if any(normVols < 0.05)
+        overlaps = 1;
+        return;
+    end
 else
     %% Check nodes connectivity
     nodesToCheck = intersect(unique(oldTets), unique(newTets));

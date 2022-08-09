@@ -1,8 +1,9 @@
-function [overlaps] = CheckOverlappingTets(oldTets, newTets, Geo, internalFlip)
+function [overlaps, correctTets] = CheckOverlappingTets(oldTets, newTets, Geo, internalFlip)
 %CHECKOVERLAPPINGTETS Summary of this function goes here
 %   Detailed explanation goes here
 
 overlaps = 0;
+correctTets = [];
 
 newVol = 0;
 volumes = [];
@@ -13,7 +14,8 @@ for tet = newTets'
 end
 
 normVols = volumes/max(volumes);
-if any(normVols < 0.1)
+if any(normVols < 0.07)
+    correctTets = newTets(normVols >= 0.07, :);
     overlaps = 1;
     return;
 end

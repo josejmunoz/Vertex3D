@@ -124,8 +124,9 @@ function [Geo_n, Geo, Dofs, Set]=Remodeling(Geo_0, Geo_n, Geo, Dofs, Set)
                     
                     newNodes = [];
                     for xsToAverage = tetsToChange(1:2:end, :)'
-                        newNodes(end+1, :) = mean(vertcat(Geo.Cells(xsToAverage).X));
+                        newNodes(end+1, :) = mean(vertcat(Geo.Cells(xsToAverage(cellfun(@isempty, {Geo.Cells(xsToAverage).AliveStatus}))).X));
                     end
+                    
                     [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = FlipAddNodes(surroundingNodes, tetsToChange, newNodes, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
                 end
             end

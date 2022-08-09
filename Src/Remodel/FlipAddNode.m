@@ -14,7 +14,7 @@ end
 [Geo, newNodeIDs] = AddNewNode(Geo, mean(vertcat(Geo.Cells(commonNodes).X)));
 [Geo_n] = AddNewNode(Geo_n, mean(vertcat(Geo.Cells(commonNodes).X)));
 
-nodesToChange = [unique(commonNodes)'; newNodeIDs];
+nodesToChange = [unique(commonNodes)'; newNodeIDs; mainNode];
 [Tnew] = ConnectTetrahedra(Geo, nodesToChange, tetsToChange, mainNode);
 
 %figure, tetramesh(Tnew, vertcat(Geo.Cells.X));

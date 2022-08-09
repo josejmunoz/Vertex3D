@@ -22,6 +22,7 @@ Set.cLineTension = 0.001;
 Set.Remodelling = 1;
 Set.RemodelingFrequency = 0.5;
 Set.lambdaB = 0.0001;
+Set.RemodelTol = 6e-05;
 
 Set.BC = 2;
 Set.dx = 1; % compression only (2 for stretching)

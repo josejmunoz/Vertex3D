@@ -22,8 +22,7 @@
             firstNodeAlive = Geo.Cells(Face.ij(1)).AliveStatus;
             secondNodeAlive = Geo.Cells(Face.ij(2)).AliveStatus;
             
-            
-                nodeToRemove = Face.ij(cellfun(@isempty, {firstNodeAlive, secondNodeAlive}));
+            nodeToRemove = Face.ij(cellfun(@isempty, {firstNodeAlive, secondNodeAlive}));
             
             %% Most of the triangles of the face have bad aspect ratio
             if (nnz(nrgs > Set.RemodelTol)/numel(nrgs)) >= 0.5 && ...
@@ -45,32 +44,31 @@
 %                     ~hasConverged
 %                 tetsToExpand = Geo.Cells(numCell).T(Face.Tris(trisToChange).Edge, :);
 %                 surroundingNodes = intersect(tetsToExpand(1, :), tetsToExpand(2, :));
-%                 [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = FlipAddNode(surroundingNodes, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+%                 tetsToChange = Geo.Cells(surroundingNodes).T;
+%                 [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = FlipAddNode(surroundingNodes, tetsToChange, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
 %             end
             
             %% D situation: not covered yet
             
+            %% FLIP 44
+            if min(nrgs)>=Set.RemodelTol*1e-4 && length(Face.Tris)==4 && ...
+                    ~hasConverged
+                [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip44(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+            end
 
+            %% Flip 32
+            if length(Face.Tris) == 3 && ~hasConverged
+                [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip32(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+            end
 
-%             %% FLIP 44
-%             if min(nrgs)>=Set.RemodelTol*1e-4 && length(Face.Tris)==4 && ...
-%                     ~hasConverged
-%                 [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip44(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-%             end
-% 
-%             %% Flip 32
-%             if length(Face.Tris) == 3 && ~hasConverged
-%                 [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip32(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-%             end
-% 
-%             %% Flip 23
-%             if length(Face.Tris) ~= 3 && ~hasConverged
-%                 YsToChange = Face.Tris(trisToChange).Edge;
-% 
-%                 if ~CheckSkinnyTriangles(Ys(YsToChange(1),:),Ys(YsToChange(2),:), Face.Centre)
-%                     [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip23(YsToChange, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-%                 end
-%             end
+            %% Flip 23
+            if length(Face.Tris) ~= 3 && ~hasConverged
+                YsToChange = Face.Tris(trisToChange).Edge;
+
+                if ~CheckSkinnyTriangles(Ys(YsToChange(1),:),Ys(YsToChange(2),:), Face.Centre)
+                    [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip23(YsToChange, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                end
+            end
         end
         
         checkedYgIds(end+1) = energyPerCellAndFaces(1, 4);
@@ -109,8 +107,36 @@
                 %% Flip 13
                 % TODO: GENERALISE THIS INTO A GENERAL FUNCTION
                 % Big area and good aspect ratio
-                if maxTriArea > Set.upperAreaThreshold && aspectRatio(idMaxTriArea) < 1.4
-                    [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip13(numCell, trisToChange, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                tetsToExpand = Geo.Cells(numCell).T(Face.Tris(idMaxTriArea).Edge, :);
+                surroundingNodes = intersect(tetsToExpand(1, :), tetsToExpand(2, :));
+                aliveCells = ~cellfun(@isempty, {Geo.Cells(surroundingNodes).AliveStatus});
+                if maxTriArea > Set.upperAreaThreshold && ...
+                        aspectRatio(idMaxTriArea) < 1.4 && ...
+                        nnz(aliveCells) == 1
+                    
+                    %% TODO: NOT SURE IF THIS IS RIGHT
+                    [trisArea_1, trisEdges_1] = getTrisAreaOfNeighbours(Geo, Geo.Cells(numCell).globalIds(trisToChange.Edge(1)));
+                    [trisArea_2, trisEdges_2] = getTrisAreaOfNeighbours(Geo, Geo.Cells(numCell).globalIds(trisToChange.Edge(2)));
+                    
+                    if (nnz(trisArea_1 > Set.upperAreaThreshold)/numel(trisArea_1)) < 0.5
+                        trisArea_1 = 0;
+                    end
+                    
+                    if (nnz(trisArea_2 > Set.upperAreaThreshold)/numel(trisArea_2)) < 0.5
+                        trisArea_2 = 0;
+                    end
+                    
+                    if ~isequal(trisArea_2, 0) || ~isequal(trisArea_1, 0)
+                        if sum(trisArea_1 > Set.upperAreaThreshold) > sum(trisArea_2 > Set.upperAreaThreshold)
+                            surroundingNodes = tetsToExpand(1, :);
+                            tetsToChange = Geo.Cells(numCell).T(trisToChange.Edge(1), :);
+                        else
+                            surroundingNodes = tetsToExpand(2, :);
+                            tetsToChange = Geo.Cells(numCell).T(trisToChange.Edge(2), :);
+                        end
+                        
+                        [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = FlipAddNode(surroundingNodes, tetsToChange, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                    end
                 end
             end
             

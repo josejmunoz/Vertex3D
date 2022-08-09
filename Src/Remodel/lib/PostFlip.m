@@ -19,15 +19,25 @@ fprintf('=>> %s-Flip.\n', flipName);
 [Geo] = AddTetrahedra(Geo, Tnew, Set);
 [Geo_n] = AddTetrahedra(Geo_n, Tnew, Set);
 
-Geo   = Rebuild(Geo, Set);
-Geo_n = Rebuild(Geo_n, Set);
-
-Geo   = BuildGlobalIds(Geo);
-Geo_n = BuildGlobalIds(Geo_n);
-
-Geo   = UpdateMeasures(Geo);
-Geo_n = UpdateMeasures(Geo_n);
-%% ----------------------------
+try
+    Geo   = Rebuild(Geo, Set);
+    Geo_n = Rebuild(Geo_n, Set);
+    
+    Geo   = BuildGlobalIds(Geo);
+    Geo_n = BuildGlobalIds(Geo_n);
+    
+    Geo   = UpdateMeasures(Geo);
+    Geo_n = UpdateMeasures(Geo_n);
+catch MException
+    Geo   = Geo_backup;
+    Geo_n = Geo_n_backup;
+    fprintf('=>> %s-Flip rejected: ', flipName);
+    fprintf(MException.identifier);
+    fprintf('\n');
+    fprintf(MException.message);
+    fprintf('\n');
+    return
+end
 
 if CheckTris(Geo) %%&& ~CheckConvexity(Tnew,Geo_backup)
     Dofs = GetDOFs(Geo, Set);

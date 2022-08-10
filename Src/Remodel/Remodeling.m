@@ -118,14 +118,54 @@ function [Geo_n, Geo, Dofs, Set]=Remodeling(Geo_0, Geo_n, Geo, Dofs, Set)
                     [nodeNeighbours] = getNodeNeighbours(Geo, nodeToSplit);
                     surroundingNodes = nodeNeighbours;
                     tetsToChange = Geo.Cells(nodeToSplit).T;
+                    nodeToSplit_Pos = Geo.Cells(nodeToSplit).X;
                     
                     mainNode = nodeNeighbours(~cellfun(@isempty, {Geo.Cells(nodeNeighbours).AliveStatus}));
                     nodeNeighbours(ismember(nodeNeighbours, mainNode)) = [];
                     
-                    newNodes = [];
-                    for xsToAverage = tetsToChange(1:2:end, :)'
-                        newNodes(end+1, :) = mean(vertcat(Geo.Cells(xsToAverage(cellfun(@isempty, {Geo.Cells(xsToAverage).AliveStatus}))).X));
+                    H = 2;
+                    nodeNeighboursVertices = vertcat(Geo.Cells(nodeNeighbours).X);
+                    try
+                        centroidOfNeighbours = centroid(nodeNeighboursVertices);
+                    catch
+                        continue
                     end
+                    
+                    runit = centroidOfNeighbours - Geo.Cells(mainNode).X;
+                    runit = runit/norm(runit);
+                    centroidOfNeighbours = Geo.Cells(mainNode).X + 1.5 .* runit;
+                    
+                    runit = centroidOfNeighbours - nodeToSplit_Pos;
+                    runit = runit/norm(runit);
+                    newNodes = nodeToSplit_Pos + 1.5 .* runit;
+                    
+                    runit = newNodes - Geo.Cells(mainNode).X;
+                    runit = runit/norm(runit);
+                    newNodes = Geo.Cells(mainNode).X + 1 .* runit;
+                    
+                    newNodes(end+1, :) = nodeToSplit_Pos;
+                    
+                    
+                    
+%                     DT = delaunayTriangulation(vertcat(nodeNeighboursVertices, centroidOfNeighbours));
+%                     C = circumcenter(DT);
+%                     linesBetweenCentreAndNeighbours = [];
+%                     for numNeighbour = 1:length(nodeNeighbours)
+%                         linesBetweenCentreAndNeighbours(end+1, :) = mean(vertcat(Geo.Cells(numNeighbour).X, centroidOfNeighbours));
+%                     end
+%                     
+%                     newNodes = [];
+%                     for numPair = 1:2:length(nodeNeighbours)
+%                         if numPair == length(nodeNeighbours)
+%                             newNodes(end+1, :) = mean(linesBetweenCentreAndNeighbours([numPair 1], :));
+%                         else
+%                             newNodes(end+1, :) = mean(linesBetweenCentreAndNeighbours(numPair:numPair+1, :));
+%                         end
+%                     end
+                    
+%                     v = vertcat(Geo.Cells.X);
+%                     figure, plot3(v(nodeNeighbours, 1), v(nodeNeighbours, 2), v(nodeNeighbours, 3), 'kx')
+%                     hold on, plot3(newNodes(:, 1), newNodes(:, 2), newNodes(:, 3), 'ro')
                     
                     [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = FlipAddNodes(surroundingNodes, tetsToChange, newNodes, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
                 end

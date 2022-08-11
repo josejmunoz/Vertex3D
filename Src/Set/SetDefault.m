@@ -47,6 +47,7 @@ function Set = SetDefault(Set)
     DSet.Confinement				= false;
 	DSet.InPlaneElasticity          = false;
     DSet.Contractility              = false;
+    DSet.cLineTension               = 0.0001;
 	DSet.mu_bulk					= 3000; 
 	DSet.lambda_bulk				= 2000;
 	DSet.Substrate                  = false;
@@ -61,7 +62,7 @@ function Set = SetDefault(Set)
     DSet.RemodelTol					= .5e-6;
     DSet.RemodelingFrequency		= 2;
     %% ============================ Solution ==============================
-    DSet.tol						= 1e-10;
+    DSet.tol						= 1e-9;
     DSet.MaxIter					= 200;
     DSet.Parallel					= false;
     DSet.Sparse						= false;

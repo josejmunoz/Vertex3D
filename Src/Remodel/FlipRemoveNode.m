@@ -15,6 +15,10 @@ for mainNode = mainNodes'
     currenteNodesToChange(nodeToRemove == currenteNodesToChange) = [];
     [c_Tnew] = ConnectTetrahedra(Geo, currenteNodesToChange, currentOldTets, mainNode);
     Tnew = vertcat(Tnew, c_Tnew);
+    if CheckOverlappingTets(currentOldTets, c_Tnew, Geo, 0)
+        Tnew = [];
+        return
+    end
 end
 
 %figure, tetramesh(Tnew, vertcat(Geo.Cells.X));

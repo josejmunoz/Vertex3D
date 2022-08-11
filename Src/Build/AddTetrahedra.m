@@ -10,9 +10,9 @@ for newTet = newTets'
                 Geo.numY = Geo.numY + 1;
                 
                 if isequal(Set.InputGeo, 'Voronoi')
-                    if sum(ismember(T, Geo.XgTop)) > 0
+                    if sum(ismember(Geo.Cells(numNode).T, Geo.XgTop)) > 0
                         Geo.Cells(numNode).Y(end, 3) = Geo.Cells(numNode).Y(end, 3) / (sum(ismember(newTet, Geo.XgTop))/2);
-                    elseif sum(ismember(T, Geo.XgBottom)) > 0
+                    elseif sum(ismember(Geo.Cells(numNode).T, Geo.XgBottom)) > 0
                         Geo.Cells(numNode).Y(end, 3) = Geo.Cells(numNode).Y(end, 3) / (sum(ismember(newTet, Geo.XgBottom))/2);
                     end
                 end

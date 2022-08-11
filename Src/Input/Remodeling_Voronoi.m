@@ -12,7 +12,6 @@ Set.lambdaV = 10;
 % Set.lambda_bulk	= 200; 
 
 Set.tend=42; % 72 = 70 minutes (60 after ablation)
-%Set.Nincr=Set.tend*100000;
 Set.Nincr=Set.tend*10;
 Set.TInitAblation = 0.5;
  

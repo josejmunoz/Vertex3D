@@ -9,10 +9,10 @@ disp('------------- SIMULATION STARTS -------------');
 % simulations can be run from a single file
 
 % Stretch
-% Remodeling_Voronoi
 % StretchBulk
 % Compress
-Remodelling_Bubbles
+%Remodelling_Bubbles
+Remodeling_Voronoi
 
 Set=SetDefault(Set);
 Set = AddDefault(Set, WoundDefault(Set));
@@ -36,6 +36,7 @@ t=0; tr=0; tp=0;
 Geo_0   = Geo;
 Geo_n   = Geo;
 numStep = 1; relaxingNu = false;
+EnergiesPerTimeStep = {};
 
 PostProcessingVTK(Geo, Geo_0, Set, numStep)
 while t<=Set.tend
@@ -68,13 +69,14 @@ while t<=Set.tend
 %         end
     end
     
-	[g, K, E, Geo] = KgGlobal(Geo_0, Geo_n, Geo, Set); 
+	[g, K, E, Geo, Energies] = KgGlobal(Geo_0, Geo_n, Geo, Set);
 	[Geo, g, K, Energy, Set, gr, dyr, dy] = NewtonRaphson(Geo_0, Geo_n, Geo, Dofs, Set, K, g, numStep, t);
 
     if gr<Set.tol && dyr<Set.tol && all(isnan(g(Dofs.Free)) == 0) && all(isnan(dy(Dofs.Free)) == 0) 
         if Set.nu/Set.nu0 == 1
 	        fprintf('STEP %i has converged ...\n',Set.iIncr)
-    
+            
+            EnergiesPerTimeStep{end+1} = Energies;
             Geo = BuildXFromY(Geo_n, Geo);
 	        tp=t;
     

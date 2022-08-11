@@ -12,7 +12,7 @@ function [Geo_n, Geo, Dofs, Set]=Remodeling(Geo_0, Geo_n, Geo, Dofs, Set)
         numFace = energyPerCellAndFaces(1, 2);
         Face = Geo.Cells(numCell).Faces(numFace);
 
-        if ~ismember(Face.globalIds, newYgIds)
+        if ~ismember(Face.globalIds, newYgIds) && ~isequal(Face.InterfaceType, 'CellCell')
             Ys = Geo.Cells(numCell).Y;
             [nrgs]=ComputeTriEnergy(Face, Ys, Set);
             [~, trisToChange]=max(nrgs);
@@ -50,11 +50,11 @@ function [Geo_n, Geo, Dofs, Set]=Remodeling(Geo_0, Geo_n, Geo, Dofs, Set)
 
             %% D situation: not covered yet
 
-            %% FLIP 44
-            if min(nrgs)>=Set.RemodelTol*1e-4 && length(Face.Tris)==4 && ...
-                    ~hasConverged
-                [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip44(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-            end
+%             %% FLIP 44
+%             if min(nrgs)>=Set.RemodelTol*1e-4 && length(Face.Tris)==4 && ...
+%                     ~hasConverged
+%                 [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip44(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+%             end
 
             %% Flip 32
             if length(Face.Tris) == 3 && ~hasConverged
@@ -89,7 +89,7 @@ function [Geo_n, Geo, Dofs, Set]=Remodeling(Geo_0, Geo_n, Geo, Dofs, Set)
             f = f + 1;
             Face = Geo.Cells(numCell).Faces(f);
 
-            if ~ismember(Face.globalIds, newYgIds)
+            if ~ismember(Face.globalIds, newYgIds) && ~isequal(Face.InterfaceType, 'CellCell')
                 faceAreas = [Face.Tris.Area];
                 [maxTriArea, idMaxTriArea]= max(faceAreas);
                 trisToChange = Face.Tris(idMaxTriArea);
@@ -102,7 +102,7 @@ function [Geo_n, Geo, Dofs, Set]=Remodeling(Geo_0, Geo_n, Geo, Dofs, Set)
                 for numTris = 1:length(Face.Tris)
                     [sideLengths(numTris, 1:3)] = ComputeTriSideLengths(Face, numTris, Geo.Cells(numCell).Y);
                     aspectRatio(numTris) = ComputeTriAspectRatio(sideLengths(numTris, 1:3));
-                end
+                end 
 
                 %% Flip 13
                 % TODO: GENERALISE THIS INTO A GENERAL FUNCTION
@@ -117,13 +117,13 @@ function [Geo_n, Geo, Dofs, Set]=Remodeling(Geo_0, Geo_n, Geo, Dofs, Set)
                     nodeToSplit = Face.ij(Face.ij ~= numCell);
                     [nodeNeighbours] = getNodeNeighbours(Geo, nodeToSplit);
                     surroundingNodes = nodeNeighbours;
+                    surroundingNodes(end+1) = nodeToSplit;
                     tetsToChange = Geo.Cells(nodeToSplit).T;
                     nodeToSplit_Pos = Geo.Cells(nodeToSplit).X;
                     
                     mainNode = nodeNeighbours(~cellfun(@isempty, {Geo.Cells(nodeNeighbours).AliveStatus}));
                     nodeNeighbours(ismember(nodeNeighbours, mainNode)) = [];
                     
-                    H = 2;
                     nodeNeighboursVertices = vertcat(Geo.Cells(nodeNeighbours).X);
                     try
                         centroidOfNeighbours = centroid(nodeNeighboursVertices);
@@ -131,41 +131,20 @@ function [Geo_n, Geo, Dofs, Set]=Remodeling(Geo_0, Geo_n, Geo, Dofs, Set)
                         continue
                     end
                     
-                    runit = centroidOfNeighbours - Geo.Cells(mainNode).X;
+                    %% Create a new node besides the other opposite side (closer to the centroid)
+                    runit = centroidOfNeighbours - mean(vertcat(Geo.Cells(mainNode).X), 1);
                     runit = runit/norm(runit);
-                    centroidOfNeighbours = Geo.Cells(mainNode).X + 1.5 .* runit;
+                    centroidOfNeighbours = mean(vertcat(Geo.Cells(mainNode).X), 1) + 1.5 .* runit;
                     
                     runit = centroidOfNeighbours - nodeToSplit_Pos;
                     runit = runit/norm(runit);
                     newNodes = nodeToSplit_Pos + 1.5 .* runit;
                     
-                    runit = newNodes - Geo.Cells(mainNode).X;
+                    runit = newNodes - mean(vertcat(Geo.Cells(mainNode).X), 1);
                     runit = runit/norm(runit);
-                    newNodes = Geo.Cells(mainNode).X + 1 .* runit;
+                    newNodes = mean(vertcat(Geo.Cells(mainNode).X), 1) + 1 .* runit;
                     
-                    newNodes(end+1, :) = nodeToSplit_Pos;
-                    
-                    
-                    
-%                     DT = delaunayTriangulation(vertcat(nodeNeighboursVertices, centroidOfNeighbours));
-%                     C = circumcenter(DT);
-%                     linesBetweenCentreAndNeighbours = [];
-%                     for numNeighbour = 1:length(nodeNeighbours)
-%                         linesBetweenCentreAndNeighbours(end+1, :) = mean(vertcat(Geo.Cells(numNeighbour).X, centroidOfNeighbours));
-%                     end
-%                     
-%                     newNodes = [];
-%                     for numPair = 1:2:length(nodeNeighbours)
-%                         if numPair == length(nodeNeighbours)
-%                             newNodes(end+1, :) = mean(linesBetweenCentreAndNeighbours([numPair 1], :));
-%                         else
-%                             newNodes(end+1, :) = mean(linesBetweenCentreAndNeighbours(numPair:numPair+1, :));
-%                         end
-%                     end
-                    
-%                     v = vertcat(Geo.Cells.X);
-%                     figure, plot3(v(nodeNeighbours, 1), v(nodeNeighbours, 2), v(nodeNeighbours, 3), 'kx')
-%                     hold on, plot3(newNodes(:, 1), newNodes(:, 2), newNodes(:, 3), 'ro')
+                    %newNodes(end+1, :) = nodeToSplit_Pos;
                     
                     [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = FlipAddNodes(surroundingNodes, tetsToChange, newNodes, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
                 end
@@ -177,5 +156,8 @@ function [Geo_n, Geo, Dofs, Set]=Remodeling(Geo_0, Geo_n, Geo, Dofs, Set)
             end
         end
     end
+    
+    [g, K, E, Geo, Energies] = KgGlobal(Geo_0, Geo_n, Geo, Set);
+    Energies
 end
 

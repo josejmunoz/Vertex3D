@@ -45,16 +45,16 @@ function [Geo_n, Geo, Dofs, Set]=Remodeling(Geo_0, Geo_n, Geo, Dofs, Set)
             %                 tetsToExpand = Geo.Cells(numCell).T(Face.Tris(trisToChange).Edge, :);
             %                 surroundingNodes = intersect(tetsToExpand(1, :), tetsToExpand(2, :));
             %                 tetsToChange = Geo.Cells(surroundingNodes).T;
-            %                 [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = FlipAddNode(surroundingNodes, tetsToChange, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+            %                 [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = FlipAddNodes(surroundingNodes, tetsToChange, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
             %             end
 
             %% D situation: not covered yet
 
-%             %% FLIP 44
-%             if min(nrgs)>=Set.RemodelTol*1e-4 && length(Face.Tris)==4 && ...
-%                     ~hasConverged
-%                 [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip44(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-%             end
+            %% FLIP 44
+            if min(nrgs)>=Set.RemodelTol*1e-4 && length(Face.Tris)==4 && ...
+                    ~hasConverged
+                [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip44(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+            end
 
             %% Flip 32
             if length(Face.Tris) == 3 && ~hasConverged
@@ -147,11 +147,8 @@ function [Geo_n, Geo, Dofs, Set]=Remodeling(Geo_0, Geo_n, Geo, Dofs, Set)
                     
                     runit = centroidOfNeighbours - nodeToSplit_Pos;
                     runit = runit/norm(runit);
-                    newNodes = nodeToSplit_Pos + 1.5 .* runit;
+                    newNodes = nodeToSplit_Pos + 0.8 .* runit;
                     
-                    runit = newNodes - mean(vertcat(Geo.Cells(mainNode).X), 1);
-                    runit = runit/norm(runit);
-                    newNodes = mean(vertcat(Geo.Cells(mainNode).X), 1) + 1 .* runit;
                     
                     % Add the node to split to the neighbourhood
                     surroundingNodes(end+1) = nodeToSplit;

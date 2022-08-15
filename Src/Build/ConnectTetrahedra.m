@@ -1,4 +1,4 @@
-function [Tnew] = ConnectTetrahedra(Geo, nodesToChange, oldTets, mainNode)
+function [Tnew] = ConnectTetrahedra(Geo, nodesToChange, oldTets, mainNode, flipName)
 %CONNECTTETRAHEDRA Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -12,7 +12,7 @@ end
 Tnew(all(ismember(Tnew, Geo.XgID), 2), :) = [];
 
 %% Check if everything is correct and try to correct otherwise
-[overlappingTets, correctedTets] = CheckOverlappingTets(oldTets, Tnew, Geo);
+[overlappingTets, correctedTets] = CheckOverlappingTets(oldTets, Tnew, Geo, flipName);
 
 % if ~isempty(correctedTets)
 %     Tnew = correctedTets;

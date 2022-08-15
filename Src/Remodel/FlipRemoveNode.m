@@ -1,4 +1,4 @@
-function [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = FlipRemoveNode(nodeToRemove, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, internalFlip)
+function [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = FlipRemoveNode(nodeToRemove, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, flipName)
 %FLIPREMOVENODE Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -13,9 +13,9 @@ for mainNode = mainNodes'
     currentOldTets = oldTets(any(ismember(oldTets, mainNode), 2), :);
     currenteNodesToChange = unique(currentOldTets);
     currenteNodesToChange(nodeToRemove == currenteNodesToChange) = [];
-    [c_Tnew] = ConnectTetrahedra(Geo, currenteNodesToChange, currentOldTets, mainNode);
+    [c_Tnew] = ConnectTetrahedra(Geo, currenteNodesToChange, currentOldTets, mainNode, flipName);
     Tnew = vertcat(Tnew, c_Tnew);
-    if CheckOverlappingTets(currentOldTets, c_Tnew, Geo, 0)
+    if CheckOverlappingTets(currentOldTets, c_Tnew, Geo, flipName)
         Tnew = [];
         return
     end
@@ -25,12 +25,12 @@ end
 %figure, tetramesh(oldTets, vertcat(Geo.Cells.X));
 
 if length(mainNodes) > 1
-    internalFlip = 1;
+    flipName = 'RemoveNode: 2+ Main nodes';
 else
-    internalFlip = 0;
+    flipName = 'RemoveNode';
 end
     
-[Geo, Geo_n, Dofs, newYgIds, hasConverged] = PostFlip(Tnew, oldTets, Geo, Geo_n, Geo_0, Dofs, newYgIds, Set, 'RemoveNode', internalFlip);
+[Geo, Geo_n, Dofs, newYgIds, hasConverged] = PostFlip(Tnew, oldTets, Geo, Geo_n, Geo_0, Dofs, newYgIds, Set, flipName);
 
 end
 

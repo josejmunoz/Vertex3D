@@ -8,6 +8,7 @@ mainNode = surroundingNodes(~cellfun(@isempty, {Geo.Cells(surroundingNodes).Aliv
 commonNodes = surroundingNodes;
 % Remove the main node from the common nodes
 commonNodes(ismember(commonNodes, mainNode)) = [];
+flipName = 'AddNode';
 
 if length(mainNode) > 1
     return
@@ -21,12 +22,12 @@ end
 % Put together the new neighbourhood to be connected
 nodesToChange = horzcat(unique(commonNodes)', newNodeIDs, mainNode);
 % Connect the nodes regarding distance (delaunay method)
-[Tnew] = ConnectTetrahedra(Geo, nodesToChange, tetsToChange, mainNode);
+[Tnew] = ConnectTetrahedra(Geo, nodesToChange, tetsToChange, mainNode, flipName);
 
 %figure, tetramesh(Tnew, vertcat(Geo.Cells.X));
 %figure, tetramesh(oldTets, vertcat(Geo.Cells.X));
 
 % Rebuild topology and run mechanics
-[Geo, Geo_n, Dofs, newYgIds, hasConverged] = PostFlip(Tnew, tetsToChange, Geo, Geo_n, Geo_0, Dofs, newYgIds, Set, 'AddNode');
+[Geo, Geo_n, Dofs, newYgIds, hasConverged] = PostFlip(Tnew, tetsToChange, Geo, Geo_n, Geo_0, Dofs, newYgIds, Set, flipName);
 end
 

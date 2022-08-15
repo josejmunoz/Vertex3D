@@ -1,4 +1,4 @@
-function [overlaps, correctTets] = CheckOverlappingTets(oldTets, newTets, Geo, internalFlip)
+function [overlaps, correctTets] = CheckOverlappingTets(oldTets, newTets, Geo, flipType)
 %CHECKOVERLAPPINGTETS Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -20,19 +20,10 @@ if any(normVols < 0.07)
     return;
 end
 
-if exist('internalFlip', 'var') && internalFlip
-    %% Check if the volume from previous space is the same occupied by the new tets
-    oldVol = 0;
-    for tet = oldTets'
-        [vol] = ComputeTetVolume(tet, Geo);
-        oldVol = oldVol + vol;
-    end
+
+if isequal(flipType, 'AddNode')
     
-    if abs(newVol - oldVol)/newVol > 0.05
-        overlaps = 1;
-        return
-    end
-else
+elseif isequal(flipType, 'RemoveNode')
     %% Check nodes connectivity
     nodesToCheck = intersect(unique(oldTets), unique(newTets));
     nodesToCheck = nodesToCheck(cellfun(@isempty, {Geo.Cells(nodesToCheck).AliveStatus}));
@@ -46,7 +37,18 @@ else
         overlaps = 1;
         return
     end
+elseif isequal(flipType, 'Internal')
+    %% Check if the volume from previous space is the same occupied by the new tets
+    oldVol = 0;
+    for tet = oldTets'
+        [vol] = ComputeTetVolume(tet, Geo);
+        oldVol = oldVol + vol;
+    end
     
+    if abs(newVol - oldVol)/newVol > 0.05
+        overlaps = 1;
+        return
+    end
 %     %% Check if some skinny tet has been created
 %     if any(CheckSkinnyTets(newTets, Geo))
 %         overlaps = 1;

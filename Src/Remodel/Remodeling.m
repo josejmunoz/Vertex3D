@@ -114,16 +114,25 @@ function [Geo_n, Geo, Dofs, Set]=Remodeling(Geo_0, Geo_n, Geo, Dofs, Set)
                         aspectRatio(idMaxTriArea) < 1.4 && ...
                         nnz(aliveCells) == 1
 
+                    % Get the node to split (different from the cell node)
                     nodeToSplit = Face.ij(Face.ij ~= numCell);
+                    % Get the neighbours of the node (these tets will be
+                    % removed afterwards)
                     [nodeNeighbours] = getNodeNeighbours(Geo, nodeToSplit);
+                    % Save this for later
                     surroundingNodes = nodeNeighbours;
-                    surroundingNodes(end+1) = nodeToSplit;
+                    % Get Tets to remove ('oldTets')
                     tetsToChange = Geo.Cells(nodeToSplit).T;
+                    % Get the position of the node to split
                     nodeToSplit_Pos = Geo.Cells(nodeToSplit).X;
                     
+                    % Get the main node (ie, cell node)
                     mainNode = nodeNeighbours(~cellfun(@isempty, {Geo.Cells(nodeNeighbours).AliveStatus}));
+                    % Remove it from the list
                     nodeNeighbours(ismember(nodeNeighbours, mainNode)) = [];
                     
+                    % Get the centre of that network (and there would be
+                    % the new node)
                     nodeNeighboursVertices = vertcat(Geo.Cells(nodeNeighbours).X);
                     try
                         centroidOfNeighbours = centroid(nodeNeighboursVertices);
@@ -144,6 +153,8 @@ function [Geo_n, Geo, Dofs, Set]=Remodeling(Geo_0, Geo_n, Geo, Dofs, Set)
                     runit = runit/norm(runit);
                     newNodes = mean(vertcat(Geo.Cells(mainNode).X), 1) + 1 .* runit;
                     
+                    % Add the node to split to the neighbourhood
+                    surroundingNodes(end+1) = nodeToSplit;
                     %newNodes(end+1, :) = nodeToSplit_Pos;
                     
                     [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = FlipAddNodes(surroundingNodes, tetsToChange, newNodes, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);

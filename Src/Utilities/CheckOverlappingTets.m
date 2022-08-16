@@ -37,7 +37,7 @@ elseif isequal(flipType, 'RemoveNode')
         overlaps = 1;
         return
     end
-elseif isequal(flipType, 'Internal')
+elseif contains(flipType, 'Internal')
     %% Check if the volume from previous space is the same occupied by the new tets
     oldVol = 0;
     for tet = oldTets'

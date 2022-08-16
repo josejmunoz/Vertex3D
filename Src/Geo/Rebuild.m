@@ -1,6 +1,15 @@
-function Geo = Rebuild(Geo, Set)
-    % TODO FIXME, whole function needs to be rethought
-    for cc = 1:Geo.nCells
+function Geo = Rebuild(Geo, Set, Tnew)
+%%REBUILD 
+% This function HAVE TO rebuild THE WHOLE CELL
+    nodesChanged = unique(Tnew);
+    cellNodesChanged = nodesChanged(~cellfun(@isempty, {Geo.Cells(nodesChanged).AliveStatus}));
+%     ghostNodesChanged = nodesChanged(cellfun(@isempty, {Geo.Cells(nodesChanged).AliveStatus}));
+%     
+%     surroundingGhostNodes = arrayfun(@(x) getNodeNeighbours(Geo, x), ghostNodesChanged, 'UniformOutput', false);
+%     ghostNodesChanged = unique(vertcat(surroundingGhostNodes{:}));
+%     ghostNodesChanged = ghostNodesChanged(cellfun(@isempty, {Geo.Cells(ghostNodesChanged).AliveStatus}));
+    
+    for cc = cellNodesChanged'
         Cell = Geo.Cells(cc);
         Neigh_nodes = unique(Geo.Cells(cc).T);
         Neigh_nodes(Neigh_nodes==cc)=[];

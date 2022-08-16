@@ -27,8 +27,8 @@ end
 Geo   = ReplaceYs(targetTets, Tnew, Ynew, Geo);
 Geo_n = ReplaceYs(targetTets, Tnew, Ynew, Geo_n);
 
-Geo   = Rebuild(Geo, Set);
-Geo_n = Rebuild(Geo_n, Set);
+Geo   = Rebuild(Geo, Set, Tnew);
+Geo_n = Rebuild(Geo_n, Set, Tnew);
 
 Geo   = BuildGlobalIds(Geo);
 Geo_n = BuildGlobalIds(Geo_n);

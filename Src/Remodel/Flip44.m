@@ -26,8 +26,8 @@ Geo   = RemoveFaces(f, Face.ij, Geo);
 Geo_n = RemoveFaces(f, Face.ij, Geo_n);
 
 %% All this, goes together when remodel occurs. TODO: PUT TOGETHER AS A FUNCTION
-Geo   = Rebuild(Geo, Set);
-Geo_n = Rebuild(Geo_n, Set);
+Geo   = Rebuild(Geo, Set, Tnew);
+Geo_n = Rebuild(Geo_n, Set, Tnew);
 
 Geo   = BuildGlobalIds(Geo);
 Geo_n = BuildGlobalIds(Geo_n);

@@ -20,8 +20,8 @@ fprintf('=>> %s-Flip.\n', flipName);
 [Geo_n] = AddTetrahedra(Geo_n, Tnew, Set);
 
 try
-    Geo   = Rebuild(Geo, Set);
-    Geo_n = Rebuild(Geo_n, Set);
+    Geo   = Rebuild(Geo, Set, Tnew);
+    Geo_n = Rebuild(Geo_n, Set, Tnew);
     
     Geo   = BuildGlobalIds(Geo);
     Geo_n = BuildGlobalIds(Geo_n);

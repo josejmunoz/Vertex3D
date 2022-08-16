@@ -15,9 +15,9 @@ if length(mainNode) > 1
 end
 
 % Add the new node in the positions (newNodes) and get the new IDs
-[Geo, newNodeIDs] = AddNewNode(Geo, newNodes);
+[Geo, newNodeIDs] = AddNewNode(Geo, newNodes, commonNodes);
 % Same in Geo_n
-[Geo_n] = AddNewNode(Geo_n, newNodes);
+[Geo_n] = AddNewNode(Geo_n, newNodes, commonNodes);
 
 % Put together the new neighbourhood to be connected
 nodesToChange = horzcat(unique(commonNodes)', newNodeIDs, mainNode);
@@ -25,7 +25,7 @@ nodesToChange = horzcat(unique(commonNodes)', newNodeIDs, mainNode);
 [Tnew] = ConnectTetrahedra(Geo, nodesToChange, tetsToChange, mainNode, flipName);
 
 %figure, tetramesh(Tnew, vertcat(Geo.Cells.X));
-%figure, tetramesh(oldTets, vertcat(Geo.Cells.X));
+%figure, tetramesh(tetsToChange, vertcat(Geo.Cells.X));
 
 % Rebuild topology and run mechanics
 [Geo, Geo_n, Dofs, newYgIds, hasConverged] = PostFlip(Tnew, tetsToChange, Geo, Geo_n, Geo_0, Dofs, newYgIds, Set, flipName);

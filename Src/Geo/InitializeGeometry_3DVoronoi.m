@@ -3,7 +3,7 @@ function [Geo, Set] = InitializeGeometry_3DVoronoi(Geo, Set)
 %   Detailed explanation goes here
 
 nSeeds = Set.TotalCells + 10* Set.TotalCells;
-lloydIterations = 10;
+lloydIterations = 100;
 distorsion = 0;
 cellHeight = 0.2;
 
@@ -106,6 +106,9 @@ avgArea = mean([allTris.Area]);
 stdArea = std([allTris.Area]);
 Set.upperAreaThreshold = avgArea + stdArea;
 Set.lowerAreaThreshold = avgArea - stdArea;
+
+%% Define border cells
+Geo.BorderCells = setdiff(unique(trianglesConnectivity(any(ismember(trianglesConnectivity, Set.TotalCells+1:nSeeds), 2), :)), Set.TotalCells+1:nSeeds);
 
 % TODO FIXME bad; PVM: better?
 Geo.AssembleNodes = find(cellfun(@isempty, {Geo.Cells.AliveStatus})==0);

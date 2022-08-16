@@ -12,7 +12,7 @@ function [Geo_n, Geo, Dofs, Set]=Remodeling(Geo_0, Geo_n, Geo, Dofs, Set)
         numFace = energyPerCellAndFaces(1, 2);
         Face = Geo.Cells(numCell).Faces(numFace);
 
-        if ~ismember(Face.globalIds, newYgIds) && ~isequal(Face.InterfaceType, 'CellCell')
+        if ~ismember(Face.globalIds, newYgIds) && ~isequal(Face.InterfaceType, 'CellCell') && ~ismember(numCell, Geo.BorderCells)
             Ys = Geo.Cells(numCell).Y;
             [nrgs]=ComputeTriEnergy(Face, Ys, Set);
             [~, trisToChange]=max(nrgs);
@@ -89,7 +89,7 @@ function [Geo_n, Geo, Dofs, Set]=Remodeling(Geo_0, Geo_n, Geo, Dofs, Set)
             f = f + 1;
             Face = Geo.Cells(numCell).Faces(f);
 
-            if ~ismember(Face.globalIds, newYgIds) && ~isequal(Face.InterfaceType, 'CellCell')
+            if ~ismember(Face.globalIds, newYgIds) && ~isequal(Face.InterfaceType, 'CellCell') && ~ismember(numCell, Geo.BorderCells)
                 faceAreas = [Face.Tris.Area];
                 [maxTriArea, idMaxTriArea]= max(faceAreas);
                 trisToChange = Face.Tris(idMaxTriArea);

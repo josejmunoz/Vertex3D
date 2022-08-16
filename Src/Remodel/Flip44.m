@@ -59,6 +59,8 @@ if ~CheckConvexity(Tnew,Geo_backup) && CheckTris(Geo)
     Geo   = UpdateMeasures(Geo);
     Geo_n = UpdateMeasures(Geo_n);
     
+    PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+2)
+    
     hasConverged = 1;
 else
     Geo   = Geo_backup;

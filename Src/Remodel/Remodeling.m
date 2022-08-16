@@ -50,11 +50,11 @@ function [Geo_n, Geo, Dofs, Set]=Remodeling(Geo_0, Geo_n, Geo, Dofs, Set)
 
             %% D situation: not covered yet
 
-            %% FLIP 44
-            if min(nrgs)>=Set.RemodelTol*1e-4 && length(Face.Tris)==4 && ...
-                    ~hasConverged
-                [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip44(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-            end
+%             %% FLIP 44
+%             if min(nrgs)>=Set.RemodelTol*1e-4 && length(Face.Tris)==4 && ...
+%                     ~hasConverged
+%                 [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip44(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+%             end
 
             %% Flip 32
             if length(Face.Tris) == 3 && ~hasConverged
@@ -143,17 +143,34 @@ function [Geo_n, Geo, Dofs, Set]=Remodeling(Geo_0, Geo_n, Geo, Dofs, Set)
                     %% Create a new node besides the other opposite side (closer to the centroid)
                     runit = centroidOfNeighbours - mean(vertcat(Geo.Cells(mainNode).X), 1);
                     runit = runit/norm(runit);
-                    centroidOfNeighbours = mean(vertcat(Geo.Cells(mainNode).X), 1) + 1.5 .* runit;
+                    centroidOfNeighbours = mean(vertcat(Geo.Cells(mainNode).X), 1) + 1 .* runit;
                     
                     runit = centroidOfNeighbours - nodeToSplit_Pos;
                     runit = runit/norm(runit);
                     newNodes = nodeToSplit_Pos + 0.8 .* runit;
                     
                     
+%                     %% Same distance to Centre of Cell as the previous
+%                     Pm = newNodes;
+%                     normal = Geo.Cells(mainNode).X - Pm;
+%                     
+%                     normal1 = normal(1); normal2 = normal(2); normal3 = normal(3); %not actually necessary
+%                     Pm1 = Pm(1); Pm2 = Pm(2); Pm3 = Pm(3);
+%                     
+%                     xc = Geo.Cells(mainNode).X(:, 1);
+%                     yc = Geo.Cells(mainNode).X(:, 2);
+%                     zc = Geo.Cells(mainNode).X(:, 3);
+%                     R = pdist2(nodeToSplit_Pos, Geo.Cells(mainNode).X);
+%                     syms l positive
+%                     sol = solve((Pm1+(l*normal1) - xc)^2 + (Pm2+(l*normal2) - yc)^2 + (Pm3+(l*normal3) - zc)^2 == R^2, l, 'Real', true, 'PrincipalValue', true);
+%                     
+%                     newNodes = double(Pm + sol*normal);
+                    
                     % Add the node to split to the neighbourhood
                     surroundingNodes(end+1) = nodeToSplit;
                     %newNodes(end+1, :) = nodeToSplit_Pos;
                     
+                    PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+2)
                     [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = FlipAddNodes(surroundingNodes, tetsToChange, newNodes, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
                 end
             end

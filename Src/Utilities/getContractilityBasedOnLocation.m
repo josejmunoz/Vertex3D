@@ -26,7 +26,7 @@ function [contractilityValue] = getContractilityBasedOnLocation(currentFace, cur
                     Set.Contractility_Variability_LateralCables(indicesOfClosestTimePoints(2)) * closestTimePointsDistance(2);
                 contractilityValue = contractilityValue * Set.cLineTension;
             else
-                contractilityValue = Set.cLineTension;
+                contractilityValue = Set.cLineTension/100;
             end
         case 'Bottom' % Bottom/Substrate
             contractilityValue = Set.cLineTension/100;

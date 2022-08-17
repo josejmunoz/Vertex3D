@@ -11,11 +11,11 @@ disp('------------- SIMULATION STARTS -------------');
 % Stretch
 % StretchBulk
 % Compress
-%Remodelling_Bubbles
+% Remodelling_Bubbles
 Remodeling_Voronoi
 
 Set=SetDefault(Set);
-Set = AddDefault(Set, WoundDefault(Set));
+Set=WoundDefault(Set);
 Set=InitiateOutputFolder(Set);
 Set.flog = fopen(Set.log, 'w+');
 

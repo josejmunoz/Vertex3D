@@ -18,7 +18,7 @@ Tnew(all(ismember(Tnew, Geo.XgID), 2), :) = [];
 %     Tnew = correctedTets;
 % end
 
-if length(nodesToChange) > 4 && overlappingTets && sum(~cellfun(@isempty, {Geo.Cells(nodesToChange).AliveStatus})) > 1
+if length(nodesToChange) > 4 && overlappingTets && sum(~cellfun(@isempty, {Geo.Cells(nodesToChange).AliveStatus})) == 1
     %% NEED TO DO THIS INSTEAD: https://meshlogic.github.io/posts/jupyter/curve-fitting/fitting-a-circle-to-cluster-of-3d-points/
     nodesToChange(~cellfun(@isempty, {Geo.Cells(nodesToChange).AliveStatus})) = [];
     [~,score] = pca(vertcat(Geo.Cells(nodesToChange).X));

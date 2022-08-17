@@ -50,25 +50,25 @@ function [Geo_n, Geo, Dofs, Set]=Remodeling(Geo_0, Geo_n, Geo, Dofs, Set)
 
             %% D situation: not covered yet
 
-            %% FLIP 44 %%NOT WORKING RIGHT NOW WITH TWO POINTY VERTICES???
-            if min(nrgs)>=Set.RemodelTol*1e-4 && length(Face.Tris)==4 && ...
-                    ~hasConverged
-                [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip44(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-            end
-
-            %% Flip 32
-            if length(Face.Tris) == 3 && ~hasConverged
-                [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip32(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-            end
-
-            %% Flip 23
-            if length(Face.Tris) ~= 3 && ~hasConverged
-                YsToChange = Face.Tris(trisToChange).Edge;
-
-                if ~CheckSkinnyTriangles(Ys(YsToChange(1),:),Ys(YsToChange(2),:), Face.Centre)
-                    [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip23(YsToChange, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                end
-            end
+%             %% FLIP 44 %%NOT WORKING RIGHT NOW WITH TWO POINTY VERTICES???
+%             if min(nrgs)>=Set.RemodelTol*1e-4 && length(Face.Tris)==4 && ...
+%                     ~hasConverged
+%                 [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip44(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+%             end
+%             
+%             %% Flip 32
+%             if length(Face.Tris) == 3 && ~hasConverged
+%                 [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip32(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+%             end
+%             
+%             %% Flip 23
+%             if length(Face.Tris) ~= 3 && ~hasConverged
+%                 YsToChange = Face.Tris(trisToChange).Edge;
+%                 
+%                 if ~CheckSkinnyTriangles(Ys(YsToChange(1),:),Ys(YsToChange(2),:), Face.Centre)
+%                     [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip23(YsToChange, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+%                 end
+%             end
         end
 
         checkedYgIds(end+1) = energyPerCellAndFaces(1, 4);

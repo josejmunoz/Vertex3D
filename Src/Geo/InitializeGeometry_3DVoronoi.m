@@ -3,9 +3,9 @@ function [Geo, Set] = InitializeGeometry_3DVoronoi(Geo, Set)
 %   Detailed explanation goes here
 
 nSeeds = Set.TotalCells + 10* Set.TotalCells;
-lloydIterations = 100;
+lloydIterations = 400;
 distorsion = 0;
-cellHeight = 0.2;
+cellHeight = Set.CellHeight;
 
 rng default
 x = rand(nSeeds, 1);

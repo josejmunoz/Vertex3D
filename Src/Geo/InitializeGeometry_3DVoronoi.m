@@ -12,6 +12,8 @@ x = rand(nSeeds, 1);
 y = rand(nSeeds, 1);
 
 seedsXY = horzcat(x,y);
+seedsXY = unique(round(seedsXY, 2), 'rows');
+nSeeds = size(seedsXY, 1);
 
 %% Get central
 distanceSeeds = pdist2(seedsXY, [0.5 0.5]);
@@ -24,9 +26,7 @@ for numIter = 1:lloydIterations
     [V, D] = voronoiDiagram(DT);
     for numCell = 1:nSeeds
         currentVertices = V(D{numCell}, :);
-        if all(all(~isinf(currentVertices)))
-            seedsXY(numCell, :) = mean(currentVertices);
-        end
+        seedsXY(numCell, :) = mean(currentVertices(all(~isinf(currentVertices), 2), :));
     end
 end
 
@@ -75,10 +75,10 @@ Geo.nCells = length(xInternal);
 % figure, tetramesh(Twg_top(any(ismember(Twg_top, xInternal), 2), :), X);
 % figure, tetramesh(Twg(any(ismember(Twg, xInternal), 2), :), X);
 
-X(X(:, 1) < 0 , 1) = 0;
-X(X(:, 2) < 0 , 2) = 0;
-X(X(:, 1) > 1 , 1) = 1;
-X(X(:, 2) > 1 , 2) = 1;
+% X(X(:, 1) < 0 , 1) = 0;
+% X(X(:, 2) < 0 , 2) = 0;
+% X(X(:, 1) > 1 , 1) = 1;
+% X(X(:, 2) > 1 , 2) = 1;
 tets = delaunayTriangulation(X);
 Twg = tets.ConnectivityList;
 

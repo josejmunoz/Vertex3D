@@ -3,7 +3,7 @@ function [Geo, Set] = InitializeGeometry_3DVoronoi(Geo, Set)
 %   Detailed explanation goes here
 
 nSeeds = Set.TotalCells + 10* Set.TotalCells;
-lloydIterations = 400;
+lloydIterations = 50;
 distorsion = 0;
 cellHeight = Set.CellHeight;
 
@@ -22,9 +22,11 @@ seedsXY = seedsXY(indices, :);
 for numIter = 1:lloydIterations
     DT = delaunayTriangulation(seedsXY);
     [V, D] = voronoiDiagram(DT);
-    for numCell = 1:Set.TotalCells
+    for numCell = 1:nSeeds
         currentVertices = V(D{numCell}, :);
-        seedsXY(numCell, :) = mean(currentVertices);
+        if all(all(~isinf(currentVertices)))
+            seedsXY(numCell, :) = mean(currentVertices);
+        end
     end
 end
 

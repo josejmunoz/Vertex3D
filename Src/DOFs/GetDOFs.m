@@ -15,7 +15,7 @@ function [Dofs]=GetDOFs(Geo, Set)
     vertices_TopIds = allIds(vertices_Top);
     borderVertices_Top = vertices_TopIds(boundary(allYs(vertices_Top, 1:2), 0.7));
     vertices_Bottom = allYs(:, 3) < -Set.CellHeight/4 & allYs(:, 3) > -Set.CellHeight;
-    vertices_BottomIds = allIds(vertices_Top);
+    vertices_BottomIds = allIds(vertices_Bottom);
     borderVertices_Bottom = vertices_BottomIds(boundary(allYs(vertices_Bottom, 1:2), 0.7));
     %%
     for c = 1:Geo.nCells

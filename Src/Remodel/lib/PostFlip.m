@@ -1,23 +1,28 @@
-function [Geo, Geo_n, Dofs, newYgIds, hasConverged] = PostFlip(Tnew, oldTets, Geo, Geo_n, Geo_0, Dofs, newYgIds, Set, flipName)
+function [Geo, Geo_n, Dofs, newYgIds, hasConverged] = PostFlip(Tnew, Ynew, oldTets, Geo, Geo_n, Geo_0, Dofs, newYgIds, Set, flipName)
 %POSTFLIP Summary of this function goes here
 %   Detailed explanation goes here
 
 hasConverged = 0;
 Geo_backup = Geo; Geo_n_backup = Geo_n; Dofs_backup = Dofs;
 
-if isempty(Tnew) || CheckOverlappingTets(oldTets, Tnew, Geo, flipName)
-    Geo   = Geo_backup;
-    Geo_n = Geo_n_backup;
-    fprintf('=>> %s-Flip rejected: is not compatible\n', flipName);
-    return
-end
+% if isempty(Tnew) || CheckOverlappingTets(oldTets, Tnew, Geo, flipName)
+%     Geo   = Geo_backup;
+%     Geo_n = Geo_n_backup;
+%     fprintf('=>> %s-Flip rejected: is not compatible\n', flipName);
+%     return
+% end
 
 fprintf('=>> %s-Flip.\n', flipName);
 
+oldYs = [];
+for numTet = 1:size(oldTets, 1)
+    [oldYs(numTet, :)] = GetYFromTet(Geo, oldTets(numTet, :));
+end
+
 [Geo] = RemoveTetrahedra(Geo, oldTets);
 [Geo_n] = RemoveTetrahedra(Geo_n, oldTets);
-[Geo] = AddTetrahedra(Geo, Tnew, Set);
-[Geo_n] = AddTetrahedra(Geo_n, Tnew, Set);
+[Geo] = AddTetrahedra(Geo, Tnew, Ynew, Set);
+[Geo_n] = AddTetrahedra(Geo_n, Tnew, Ynew, Set);
 
 try
     Geo   = Rebuild(Geo, Set, Tnew);
@@ -40,6 +45,7 @@ catch MException
 end
 
 if CheckTris(Geo) %%&& ~CheckConvexity(Tnew,Geo_backup)
+    PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+2)
     Dofs = GetDOFs(Geo, Set);
     [Dofs, Geo]  = GetRemodelDOFs(Tnew, Dofs, Geo);
     [Geo, Set, DidNotConverge] = SolveRemodelingStep(Geo_0, Geo_n, Geo, Dofs, Set);

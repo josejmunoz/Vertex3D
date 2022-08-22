@@ -6,8 +6,9 @@ for numTris = 1:length(Face.Tris)
     edgeLenghts(numTris) = ComputeEdgeLength(Face.Tris(numTris).Edge, Ys);
 end
 
-lengthsToCentre = pdist2(Ys(Face.Tris(trisToChange).Edge, :), Face.Centre);
+lengthsToCentre(1) = norm(Ys(Face.Tris(trisToChange).Edge(1), :) - Face.Centre);
+lengthsToCentre(2) = norm(Ys(Face.Tris(trisToChange).Edge(2), :) - Face.Centre);
 
-sideLengths = [edgeLenghts(trisToChange), lengthsToCentre'];
+sideLengths = [edgeLenghts(trisToChange), lengthsToCentre];
 end
 

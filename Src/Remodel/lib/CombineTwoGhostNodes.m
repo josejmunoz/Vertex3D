@@ -1,7 +1,9 @@
-function [Geo, Tnew, removedTets, replacedTets] = CombineTwoGhostNodes(Geo, Set, nodesToCombine)
+function [Geo, Tnew, Ynew, removedTets, replacedTets] = CombineTwoGhostNodes(Geo, Set, nodesToCombine, oldTets, oldYs)
 %COMBINETWOGHOSTNODES Summary of this function goes here
 %   Detailed explanation goes here
-    oldTets = vertcat(Geo.Cells(:).T);
+    allTets = vertcat(Geo.Cells(:).T);
+    Ynew = [];
+    Tnew = [];
     if isempty([Geo.Cells(nodesToCombine).AliveStatus]) %% All of them need to be ghost nodes
         CellsToCombine = [Geo.Cells(nodesToCombine)];
         
@@ -42,8 +44,18 @@ function [Geo, Tnew, removedTets, replacedTets] = CombineTwoGhostNodes(Geo, Set,
                 checkRepeatedTets = ismember(sort(currentTets, 2), sort(removedTets, 2), 'rows');
                 checkRepatedCells = sum(ismember(currentTets, nodesToCombine(1)), 2) > 1;
                 Geo.Cells(numCell).T(checkRepeatedTets | checkRepatedCells, :) = [];
+                replacingTets(checkRepeatedTets | checkRepatedCells, :) = [];
+                
                 if ~isempty(Geo.Cells(numCell).Y)
                     Geo.Cells(numCell).Y(checkRepeatedTets | checkRepatedCells, :) = [];
+                    for numTet = find(any(replacingTets, 2))'
+                        tetsToUse = sum(ismember(oldTets, Geo.Cells(numCell).T(numTet, :)), 2) > 2;
+                        if any(tetsToUse)
+                            Geo.Cells(numCell).Y(numTet, :) = mean(vertcat(oldYs(tetsToUse, :)), 1);
+                        end
+                        Ynew(end+1, :) = Geo.Cells(numCell).Y(numTet, :);
+                        Tnew(end+1, :) = Geo.Cells(numCell).T(numTet, :);
+                    end
                 end
             end
         end
@@ -56,8 +68,7 @@ function [Geo, Tnew, removedTets, replacedTets] = CombineTwoGhostNodes(Geo, Set,
         Geo.XgID(ismember(Geo.XgID, nodesToCombine(2))) = [];
     end
     
-    newTets = vertcat(Geo.Cells(:).T);
-    
-    Tnew = unique(newTets(~ismember(sort(newTets, 2), sort(oldTets, 2), 'rows'), :), 'rows');
+    [Tnew, newIds] = unique(sort(Tnew, 2), 'rows');
+    Ynew = Ynew(newIds, :);
 end
 

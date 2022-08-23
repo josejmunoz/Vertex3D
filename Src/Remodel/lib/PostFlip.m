@@ -26,13 +26,17 @@ end
 
 try
     Geo   = Rebuild(Geo, Set, Tnew);
-    Geo_n = Rebuild(Geo_n, Set, Tnew);
-    
     Geo   = BuildGlobalIds(Geo);
-    Geo_n = BuildGlobalIds(Geo_n);
-    
     Geo   = UpdateMeasures(Geo);
+    
+    Geo_n = Rebuild(Geo_n, Set, Tnew);
+    Geo_0 = Rebuild(Geo_0, Set, Tnew);
+    
+    Geo_n = BuildGlobalIds(Geo_n);
+    Geo_0 = BuildGlobalIds(Geo_0);
+    
     Geo_n = UpdateMeasures(Geo_n);
+    Geo_0 = UpdateMeasures(Geo_0);
 catch MException
     Geo   = Geo_backup;
     Geo_n = Geo_n_backup;

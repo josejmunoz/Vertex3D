@@ -1,16 +1,16 @@
 Set.InputGeo = 'Voronoi';
 
-Set.TotalCells = 20;
+Set.TotalCells = 30;
 Set.CellHeight = 0.2;
 
 Set.Ablation = 1;
-Geo.cellsToAblate = [1];
+Geo.cellsToAblate = [1:3];
  
-Set.lambdaV = 15;
+Set.lambdaV = 20;
 
 Set.InPlaneElasticity = true;
-Set.mu_bulk	= 3000;
-Set.lambda_bulk	= 2000; 
+Set.mu_bulk	= 1000;
+Set.lambda_bulk	= 500; 
 
 Set.tend=42; % 72 = 70 minutes (60 after ablation)
 Set.Nincr=Set.tend*80;
@@ -18,16 +18,16 @@ Set.TInitAblation = 0.001;
 Set.TEndAblation = 2;
  
 Set.Substrate  = 2;
-Set.kSubstrate = 0.0001;
-Set.SubstrateZ = -1;
+Set.kSubstrate = 500;
+Set.SubstrateZ = -Set.CellHeight/2;
 
 Set.Contractility = 1;
 Set.cLineTension = 0.1;
 
 Set.Remodelling = 1;
-Set.RemodelingFrequency = 0.05;
+Set.RemodelingFrequency = 0.02;
 Set.lambdaB = 1e-10;
-Set.RemodelTol = Set.lambdaB;
+Set.RemodelTol = 1.8;
 
 Set.BC = 2;
 Set.TStartBC = Set.tend;
@@ -36,8 +36,9 @@ Set.dx = 1; % compression only (2 for stretching)
 Set.VPrescribed = realmax;
 Set.VFixd = -100;
 
-Set.lambdaS1 = 0.1;
-Set.lambdaS2 = 0.000001;
+Set.lambdaS1 = 1;
+Set.lambdaS2 = 0.9;
+Set.lambdaS3 = 1;
 Set.ApplyBC=true;
  
 Set.OutputFolder='Result/Remodelling_Voronoi';

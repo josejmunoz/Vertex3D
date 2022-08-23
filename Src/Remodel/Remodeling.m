@@ -10,65 +10,73 @@ function [Geo_n, Geo, Dofs, Set]=Remodeling(Geo_0, Geo_n, Geo, Dofs, Set)
         hasConverged = 0;
         numCell = energyPerCellAndFaces(1, 1);
         numFace = energyPerCellAndFaces(1, 2);
+        maxARTri = energyPerCellAndFaces(1, 3);
         Face = Geo.Cells(numCell).Faces(numFace);
-
-        if ~ismember(Face.globalIds, newYgIds) && ~isequal(Face.InterfaceType, 'CellCell') && ~ismember(numCell, Geo.BorderCells)
+        
+        if Geo.Cells(numCell).AliveStatus == 1 && ~ismember(Face.globalIds, newYgIds) && ~isequal(Face.InterfaceType, 'CellCell') && ~isequal(Face.InterfaceType, 'Bottom') && ~ismember(numCell, Geo.BorderCells)
             Ys = Geo.Cells(numCell).Y;
-            [nrgs]=ComputeTriEnergy(Face, Ys, Set);
-            [~, trisToChange]=max(nrgs);
-
-            [sideLengths] = ComputeTriSideLengths(Face, trisToChange, Geo.Cells(numCell).Y);
 
             firstNodeAlive = Geo.Cells(Face.ij(1)).AliveStatus;
             secondNodeAlive = Geo.Cells(Face.ij(2)).AliveStatus;
-
+            
             nodeToRemove = Face.ij(cellfun(@isempty, {firstNodeAlive, secondNodeAlive}));
-
-            %% Most of the triangles of the face have bad aspect ratio
-            if (nnz(nrgs > Set.RemodelTol)/numel(nrgs)) >= 0.5 && ...
-                    xor(isempty(firstNodeAlive), isempty(secondNodeAlive))
-                [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = FlipRemoveNode(nodeToRemove, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-            end
-
-            %% B situation: remove node
-            if all(sideLengths(2:3) > 1.5*sideLengths(1)) && ...
-                    xor(isempty(firstNodeAlive), isempty(secondNodeAlive))
+            
+            aspectRatio = [];
+            for numTri = 1:length(Face.Tris)
+                [sideLengths] = ComputeTriSideLengths(Face, numTri, Ys);
+                [aspectRatio(numTri)] = ComputeTriAspectRatio(sideLengths);
+                
                 nodeToRemove = Face.ij(cellfun(@isempty, {firstNodeAlive, secondNodeAlive}));
-                [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = FlipRemoveNode(nodeToRemove, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                cellNodeLoosing = Face.ij(~cellfun(@isempty, {firstNodeAlive, secondNodeAlive}));
+                
+                %% B situation: remove node
+                if aspectRatio(numTri) > Set.RemodelTol && ...
+                        all(sideLengths(2:3) > 1.5*sideLengths(1)) && ...
+                        xor(isempty(firstNodeAlive), isempty(secondNodeAlive)) && ...
+                        ~hasConverged
+                    [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = FlipRemoveNode(nodeToRemove, cellNodeLoosing, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                end
+
+                %             %% C situation: add node
+                %             if all(sideLengths(2:3) < sideLengths(1)/1.5) && ...
+                %                     xor(isempty(firstNodeAlive), isempty(secondNodeAlive)) && ...
+                %                     Face.Tris(trisToChange).Area > Set.lowerAreaThreshold && ...
+                %                     ~hasConverged
+                %                 tetsToExpand = Geo.Cells(numCell).T(Face.Tris(trisToChange).Edge, :);
+                %                 surroundingNodes = intersect(tetsToExpand(1, :), tetsToExpand(2, :));
+                %                 tetsToChange = Geo.Cells(surroundingNodes).T;
+                %                 [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = FlipAddNodes(surroundingNodes, tetsToChange, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                %             end
+
+                %% D situation: not covered yet
+
+                %             %% FLIP 44 %%NOT WORKING RIGHT NOW WITH TWO POINTY VERTICES???
+                %             if min(nrgs)>=Set.RemodelTol*1e-4 && length(Face.Tris)==4 && ...
+                %                     ~hasConverged
+                %                 [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip44(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                %             end
+                %
+                %             %% Flip 32
+                %             if length(Face.Tris) == 3 && ~hasConverged
+                %                 [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip32(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                %             end
+                %
+                %             %% Flip 23
+                %             if length(Face.Tris) ~= 3 && ~hasConverged
+                %                 YsToChange = Face.Tris(trisToChange).Edge;
+                %
+                %                 if ~CheckSkinnyTriangles(Ys(YsToChange(1),:),Ys(YsToChange(2),:), Face.Centre)
+                %                     [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip23(YsToChange, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                %                 end
+                %             end
             end
-
-            %             %% C situation: add node
-            %             if all(sideLengths(2:3) < sideLengths(1)/1.5) && ...
-            %                     xor(isempty(firstNodeAlive), isempty(secondNodeAlive)) && ...
-            %                     Face.Tris(trisToChange).Area > Set.lowerAreaThreshold && ...
-            %                     ~hasConverged
-            %                 tetsToExpand = Geo.Cells(numCell).T(Face.Tris(trisToChange).Edge, :);
-            %                 surroundingNodes = intersect(tetsToExpand(1, :), tetsToExpand(2, :));
-            %                 tetsToChange = Geo.Cells(surroundingNodes).T;
-            %                 [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = FlipAddNodes(surroundingNodes, tetsToChange, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-            %             end
-
-            %% D situation: not covered yet
-
-%             %% FLIP 44 %%NOT WORKING RIGHT NOW WITH TWO POINTY VERTICES???
-%             if min(nrgs)>=Set.RemodelTol*1e-4 && length(Face.Tris)==4 && ...
-%                     ~hasConverged
-%                 [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip44(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-%             end
-%             
-%             %% Flip 32
-%             if length(Face.Tris) == 3 && ~hasConverged
-%                 [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip32(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-%             end
-%             
-%             %% Flip 23
-%             if length(Face.Tris) ~= 3 && ~hasConverged
-%                 YsToChange = Face.Tris(trisToChange).Edge;
-%                 
-%                 if ~CheckSkinnyTriangles(Ys(YsToChange(1),:),Ys(YsToChange(2),:), Face.Centre)
-%                     [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip23(YsToChange, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-%                 end
-%             end
+            
+            %% Most of the triangles of the face have bad aspect ratio
+            if (nnz(aspectRatio > Set.RemodelTol)/numel(aspectRatio)) > 0.5 && ...
+                    xor(isempty(firstNodeAlive), isempty(secondNodeAlive)) && ...
+                    ~hasConverged
+                [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = FlipRemoveNode(nodeToRemove, cellNodeLoosing, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+            end
         end
 
         checkedYgIds(end+1) = energyPerCellAndFaces(1, 4);

@@ -33,7 +33,7 @@ function [Tris] = BuildEdges(Tets, FaceIds, FaceCentre, FaceInterfaceType, X, Ys
 		    i = find(i);
             if isempty(i)
                 ME = MException('BuildEdges:TetrahedraOrdering', ... 
-                    'Cannot create a face with these tetrahedra');
+                    sprintf('Cannot create a face with these tetrahedra'));
                 throw(ME);
             end
 		    tet_order(yi) = i(1);

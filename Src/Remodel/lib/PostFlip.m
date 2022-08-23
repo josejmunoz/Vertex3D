@@ -20,9 +20,11 @@ for numTet = 1:size(oldTets, 1)
 end
 
 [Geo] = RemoveTetrahedra(Geo, oldTets);
-[Geo_n] = RemoveTetrahedra(Geo_n, oldTets);
 [Geo] = AddTetrahedra(Geo, Tnew, Ynew, Set);
+[Geo_n] = RemoveTetrahedra(Geo_n, oldTets);
 [Geo_n] = AddTetrahedra(Geo_n, Tnew, Ynew, Set);
+[Geo_0] = RemoveTetrahedra(Geo_0, oldTets);
+[Geo_0] = AddTetrahedra(Geo_0, Tnew, Ynew, Set);
 
 try
     Geo   = Rebuild(Geo, Set, Tnew);

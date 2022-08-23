@@ -3,7 +3,7 @@ function [Geo, Geo_n, Dofs, newYgIds, hasConverged] = PostFlip(Tnew, Ynew, oldTe
 %   Detailed explanation goes here
 
 hasConverged = 0;
-Geo_backup = Geo; Geo_n_backup = Geo_n; Dofs_backup = Dofs;
+Geo_backup = Geo; Geo_n_backup = Geo_n; Geo_0_backup = Geo_0; Dofs_backup = Dofs;
 
 % if isempty(Tnew) || CheckOverlappingTets(oldTets, Tnew, Geo, flipName)
 %     Geo   = Geo_backup;
@@ -27,18 +27,31 @@ end
 [Geo_0] = AddTetrahedra(Geo_0, Tnew, Ynew, Set);
 
 try
-    Geo   = Rebuild(Geo, Set, Tnew);
+    Geo   = Rebuild(Geo, Set);
     Geo   = BuildGlobalIds(Geo);
     Geo   = UpdateMeasures(Geo);
     
-    Geo_n = Rebuild(Geo_n, Set, Tnew);
-    Geo_0 = Rebuild(Geo_0, Set, Tnew);
-    
+    Geo_n = Rebuild(Geo_n, Set);
     Geo_n = BuildGlobalIds(Geo_n);
-    Geo_0 = BuildGlobalIds(Geo_0);
-    
     Geo_n = UpdateMeasures(Geo_n);
+    
+    Geo_0 = Rebuild(Geo_0, Set);
+    Geo_0 = BuildGlobalIds(Geo_0);
+        
+    %% Update Geo_0 to be reset the vertices that we have changed
+    for c=1:Geo.nCells
+        if ismember(c, Tnew) && ~isempty(Geo.Cells(c).AliveStatus) && Geo.Cells(c).AliveStatus == 1
+            Geo_0.Cells(c).X = Geo.Cells(c).X;
+            Geo_0.Cells(c).Y = Geo.Cells(c).Y;
+            
+            for f=1:length(Geo.Cells(c).Faces)
+                Geo_0.Cells(c).Faces(f).Centre = Geo.Cells(c).Faces(f).Centre;
+            end
+        end
+    end
+    
     Geo_0 = UpdateMeasures(Geo_0);
+    
 catch MException
     Geo   = Geo_backup;
     Geo_n = Geo_n_backup;

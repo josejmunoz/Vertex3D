@@ -1,14 +1,7 @@
-function Geo = Rebuild(Geo, Set, Tnew)
+function Geo = Rebuild(Geo, Set)
 %%REBUILD 
 % This function HAVE TO rebuild THE WHOLE CELL
     oldGeo = Geo;
-    nodesChanged = unique(Tnew);
-    cellNodesChanged = nodesChanged(~cellfun(@isempty, {Geo.Cells(nodesChanged).AliveStatus}));
-%     ghostNodesChanged = nodesChanged(cellfun(@isempty, {Geo.Cells(nodesChanged).AliveStatus}));
-%     
-%     surroundingGhostNodes = arrayfun(@(x) getNodeNeighbours(Geo, x), ghostNodesChanged, 'UniformOutput', false);
-%     ghostNodesChanged = unique(vertcat(surroundingGhostNodes{:}));
-%     ghostNodesChanged = ghostNodesChanged(cellfun(@isempty, {Geo.Cells(ghostNodesChanged).AliveStatus}));
     
     for cc = 1:Geo.nCells
         Cell = Geo.Cells(cc);

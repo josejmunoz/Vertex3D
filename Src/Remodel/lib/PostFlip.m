@@ -1,4 +1,4 @@
-function [Geo, Geo_0, Geo_n, Dofs, newYgIds, hasConverged] = PostFlip(Tnew, Ynew, oldTets, Geo, Geo_n, Geo_0, Dofs, newYgIds, Set, flipName)
+function [Geo_0, Geo_n, Geo, Dofs, newYgIds, hasConverged] = PostFlip(Tnew, Ynew, oldTets, Geo, Geo_n, Geo_0, Dofs, newYgIds, Set, flipName)
 %POSTFLIP Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -55,6 +55,7 @@ try
 catch MException
     Geo   = Geo_backup;
     Geo_n = Geo_n_backup;
+    Geo_0 = Geo_0_backup;
     fprintf('=>> %s-Flip rejected: ', flipName);
     fprintf(MException.identifier);
     fprintf('\n');
@@ -71,6 +72,7 @@ if CheckTris(Geo) %%&& ~CheckConvexity(Tnew,Geo_backup)
     if DidNotConverge
         Geo   = Geo_backup;
         Geo_n = Geo_n_backup;
+        Geo_0 = Geo_0_backup;
         Dofs = Dofs_backup;
         fprintf('=>> %s-Flip rejected: did not converge\n', flipName);
         return
@@ -87,6 +89,7 @@ else
     Geo   = Geo_backup;
     Geo_n = Geo_n_backup;
     Dofs = Dofs_backup;
+    Geo_0 = Geo_0_backup;
     fprintf('=>> %s-Flip rejected: is not compatible\n', flipName);
     return
 end

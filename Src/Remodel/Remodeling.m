@@ -1,4 +1,4 @@
-function [Geo_n, Geo_0, Geo, Dofs, Set]=Remodeling(Geo_0, Geo_n, Geo, Dofs, Set)
+function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Set)
 
     Geo.AssemblegIds = [];
     newYgIds = [];
@@ -34,7 +34,7 @@ function [Geo_n, Geo_0, Geo, Dofs, Set]=Remodeling(Geo_0, Geo_n, Geo, Dofs, Set)
                         all(sideLengths(2:3) > 1.5*sideLengths(1)) && ...
                         xor(isempty(firstNodeAlive), isempty(secondNodeAlive)) && ...
                         ~hasConverged
-                    [Geo_n, Geo, Geo_0, Dofs, Set, newYgIds, hasConverged] = FlipRemoveNode(nodeToRemove, cellNodeLoosing, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                    [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = FlipRemoveNode(nodeToRemove, cellNodeLoosing, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
                 end
 
                 %             %% C situation: add node
@@ -75,7 +75,7 @@ function [Geo_n, Geo_0, Geo, Dofs, Set]=Remodeling(Geo_0, Geo_n, Geo, Dofs, Set)
             if (nnz(aspectRatio > Set.RemodelTol)/numel(aspectRatio)) > 0.5 && ...
                     xor(isempty(firstNodeAlive), isempty(secondNodeAlive)) && ...
                     ~hasConverged
-                [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = FlipRemoveNode(nodeToRemove, cellNodeLoosing, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = FlipRemoveNode(nodeToRemove, cellNodeLoosing, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
             end
         end
 

@@ -42,7 +42,7 @@ PostProcessingVTK(Geo, Geo_0, Set, numStep)
 while t<=Set.tend
     Set.currentT = t;
 	if Set.Remodelling && abs(t-tr)>=Set.RemodelingFrequency
-        [Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Set);
+        [Geo_n, Geo_0, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Set);
         tr    = t;
     end
     

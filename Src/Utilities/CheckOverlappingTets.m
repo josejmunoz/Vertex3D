@@ -5,6 +5,14 @@ function [overlaps, correctTets] = CheckOverlappingTets(oldTets, newTets, Geo, f
 overlaps = 0;
 correctTets = [];
 
+%% Check if some skinny tet has been created
+skinnyTets = CheckSkinnyTets(newTets, Geo);
+if any(skinnyTets)
+    correctTets = newTets(skinnyTets == 0, :);
+    overlaps = 1;
+    return
+end
+
 newVol = 0;
 volumes = [];
 for tet = newTets'
@@ -14,11 +22,13 @@ for tet = newTets'
 end
 
 normVols = volumes/max(volumes);
-if any(normVols < 0.07)
+if any(normVols < 0.05)
     correctTets = newTets(normVols >= 0.07, :);
     overlaps = 1;
     return;
 end
+
+
 
 
 if isequal(flipType, 'AddNode')
@@ -37,7 +47,7 @@ elseif isequal(flipType, 'RemoveNode')
         overlaps = 1;
         return
     end
-elseif contains(flipType, 'Internal')
+else
     %% Check if the volume from previous space is the same occupied by the new tets
     oldVol = 0;
     for tet = oldTets'
@@ -49,11 +59,7 @@ elseif contains(flipType, 'Internal')
         overlaps = 1;
         return
     end
-%     %% Check if some skinny tet has been created
-%     if any(CheckSkinnyTets(newTets, Geo))
-%         overlaps = 1;
-%         return
-%     end
+
 end
 
 %% Check if they overlap

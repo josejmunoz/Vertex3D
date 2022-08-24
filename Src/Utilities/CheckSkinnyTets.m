@@ -6,10 +6,10 @@ aspectRatio = [];
 for tet = newTets'
     [SArea] = ComputeTetSArea(tet, vertcat(Geo.Cells.X));
     [vol] = ComputeTetVolume(tet, Geo);
-    aspectRatio(end+1) = SArea/vol;
+    aspectRatio(end+1) = vol/SArea;
 end
-
-skinnyTets = aspectRatio > 30;
+aspectRatio_Normalized = aspectRatio/max(aspectRatio);
+skinnyTets = aspectRatio_Normalized < 0.1;
 
 end
 

@@ -38,14 +38,15 @@ try
     Geo_0 = Rebuild(Geo_0, Set);
     Geo_0 = BuildGlobalIds(Geo_0);
         
-    %% Update Geo_0 to be reset the vertices that we have changed
+    %% Update Geo_0 to be reset the vertices that we have changed averaging with previous Geo_0 and current Geo
+    percentageGeo = 1 - Set.Reset_PercentageGeo0;
     for c=1:Geo.nCells
         if ismember(c, Tnew) && ~isempty(Geo.Cells(c).AliveStatus) && Geo.Cells(c).AliveStatus == 1
-            Geo_0.Cells(c).X = Geo.Cells(c).X;
-            Geo_0.Cells(c).Y = Geo.Cells(c).Y;
+            Geo_0.Cells(c).X = Set.Reset_PercentageGeo0 * Geo_0.Cells(c).X + percentageGeo * Geo.Cells(c).X;
+            Geo_0.Cells(c).Y = Set.Reset_PercentageGeo0 * Geo_0.Cells(c).Y + percentageGeo * Geo.Cells(c).Y;
             
             for f=1:length(Geo.Cells(c).Faces)
-                Geo_0.Cells(c).Faces(f).Centre = Geo.Cells(c).Faces(f).Centre;
+                Geo_0.Cells(c).Faces(f).Centre = Set.Reset_PercentageGeo0 * Geo_0.Cells(c).Faces(f).Centre + percentageGeo * Geo.Cells(c).Faces(f).Centre;
             end
         end
     end

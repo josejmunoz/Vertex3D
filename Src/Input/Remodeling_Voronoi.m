@@ -35,6 +35,7 @@ Set.TStopBC = Set.tend;
 Set.dx = 1; % compression only (2 for stretching)
 Set.VPrescribed = realmax;
 Set.VFixd = -100;
+Set.Reset_PercentageGeo0 = 0.5; 
 
 Set.lambdaS1 = 1;
 Set.lambdaS2 = 0.9;

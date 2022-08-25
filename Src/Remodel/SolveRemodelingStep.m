@@ -17,7 +17,7 @@ function [Geo, Set, DidNotConverge]=SolveRemodelingStep(Geo_0, Geo_n, Geo, Dofs,
     
     Set.nu0=Set.nu;
     Set.nu=Set.nu_LP_Initial;
-    Set.MaxIter=Set.MaxIter0/2;
+    Set.MaxIter=Set.MaxIter0/4;
     while 1
         [g,K]=KgGlobal(Geo_0, Geo_n, Geo, Set);
         
@@ -34,7 +34,7 @@ function [Geo, Set, DidNotConverge]=SolveRemodelingStep(Geo_0, Geo_n, Geo, Dofs,
             fprintf(Set.flog, 'First strategy ---> Restart iterating while higher viscosity... \n');
             Geo=Geop;
             Set.nu=Set.nu*10;
-            Set.MaxIter=Set.MaxIter0*4;
+            Set.MaxIter=Set.MaxIter0;
             IncreaseEta=false;
         elseif gr>Set.tol || dyr>Set.tol || any(isnan(g(Dofs.Free))) || any(isnan(dy(Dofs.Free))) 
             % this should not take place

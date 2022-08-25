@@ -13,10 +13,10 @@ function [Dofs]=GetDOFs(Geo, Set)
     allYs = vertcat(Geo.Cells(1:Geo.nCells).Y);
     vertices_Top = allYs(:, 3) > Set.CellHeight/4 & allYs(:, 3) < Set.CellHeight;
     vertices_TopIds = allIds(vertices_Top);
-    borderVertices_Top = vertices_TopIds(boundary(allYs(vertices_Top, 1:2), 0.7));
+    borderVertices_Top = vertices_TopIds(boundary(allYs(vertices_Top, 1:2), 1));
     vertices_Bottom = allYs(:, 3) < -Set.CellHeight/4 & allYs(:, 3) > -Set.CellHeight;
     vertices_BottomIds = allIds(vertices_Bottom);
-    borderVertices_Bottom = vertices_BottomIds(boundary(allYs(vertices_Bottom, 1:2), 0.7));
+    borderVertices_Bottom = vertices_BottomIds(boundary(allYs(vertices_Bottom, 1:2), 1));
     %%
     for c = 1:Geo.nCells
         Y     = Geo.Cells(c).Y;
@@ -33,8 +33,14 @@ function [Dofs]=GetDOFs(Geo, Set)
 				end
             end
         end
-        fixY = Y(:,2) < Set.VFixd | ismember(gIDsY, borderVertices_Top) | ismember(gIDsY, borderVertices_Bottom);
-        preY = Y(:,2) > Set.VPrescribed | ismember(gIDsY, borderVertices_Top) | ismember(gIDsY, borderVertices_Bottom);
+        
+%         if ismember(c, Geo.BorderCells)
+%             fixY = ones(size(Y(:,2)));
+%             preY = ones(size(Y(:,2)));
+%         else 
+            fixY = Y(:,2) < Set.VFixd | ismember(gIDsY, borderVertices_Top) | ismember(gIDsY, borderVertices_Bottom);
+            preY = Y(:,2) > Set.VPrescribed | ismember(gIDsY, borderVertices_Top) | ismember(gIDsY, borderVertices_Bottom);
+%         end
         for ff = 1:length(find(fixY))
             idx = find(fixY);
             idx = idx(ff);

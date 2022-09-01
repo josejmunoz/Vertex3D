@@ -1,8 +1,6 @@
-function [Tnew, Ynew] = ConnectTetrahedra(Geo, Geo_n, nodesToChange, oldTets, mainNode, Set, flipName)
+function [Tnew, Ynew] = ConnectTetrahedra(Geo, nodeToRemove, nodesToChange, oldTets, mainNodes, Set, flipName, cellNodeLoosing)
 %CONNECTTETRAHEDRA Summary of this function goes here
 %   Detailed explanation goes here
-
-nodeToRemove = setdiff(unique(oldTets), nodesToChange);
 
 Tnew = [];
 if isequal(Set.InputGeo, 'Voronoi')
@@ -10,7 +8,35 @@ if isequal(Set.InputGeo, 'Voronoi')
     nodesToCombine = [nodesToChange(closestID), nodeToRemove];
     oldYs = cellfun(@(x) GetYFromTet(Geo, x), num2cell(oldTets, 2), 'UniformOutput', false);
     oldYs = vertcat(oldYs{:});
-    [~, Tnew, Ynew, removedTets, replacedTets] = CombineTwoGhostNodes(Geo, Set, nodesToCombine, oldTets, oldYs);
+    if length(mainNodes) >= 4
+        tetsToChange = oldTets(sum(ismember(oldTets, [nodesToChange(closestID) nodeToRemove]), 2) > 1, :);
+        Ynew = oldYs(sum(ismember(oldTets, [nodesToChange(closestID) nodeToRemove]), 2) > 1, :);
+        mainNodes(ismember(mainNodes, cellNodeLoosing)) = [];
+        mainNodes(vertcat(Geo.Cells(mainNodes).AliveStatus) == 0) = [];
+        if size(tetsToChange, 1) == 2
+            tetXs = zeros(size(tetsToChange, 1), 3);
+            for numTet = 1:size(tetsToChange, 1)
+                tetXs(numTet, :) = mean(vertcat(Geo.Cells(tetsToChange(numTet, :)).X));
+            end
+            
+            for nodeToConnect = mainNodes'
+                nodeX = vertcat(Geo.Cells(nodeToConnect).X);
+                [closestDistance, closestID] = pdist2(tetXs(:, 1:2), nodeX(1:2), 'euclidean', 'Smallest', 1);
+                
+                newTet = tetsToChange(closestID, :);
+                newTet(newTet == cellNodeLoosing) = nodeToConnect;
+                Tnew = vertcat(Tnew, newTet);
+                tetsToChange(closestID, :) = [];
+                tetXs(closestID, :) = [];
+            end
+        else
+            error('WARNINGGGG check connect tetrahedra!!!!')
+        end
+    else %% 3 mainNodes ('common')
+        [~, Tnew, Ynew, removedTets, replacedTets] = CombineTwoGhostNodes(Geo, Set, nodesToCombine, c, oldYs);
+    end
+    
+    Tnew
 else
     
     if length(nodesToChange) > 4
@@ -35,7 +61,7 @@ else
         nodesToChange(~cellfun(@isempty, {Geo.Cells(nodesToChange).AliveStatus})) = [];
         [~,score] = pca(vertcat(Geo.Cells(nodesToChange).X));
         DT = delaunayTriangulation(score(:, 1:2));
-        Tnew = horzcat(ones(size(DT.ConnectivityList, 1), 1) * mainNode, nodesToChange(DT.ConnectivityList));
+        Tnew = horzcat(ones(size(DT.ConnectivityList, 1), 1) * mainNodes, nodesToChange(DT.ConnectivityList));
     end
 end
 end

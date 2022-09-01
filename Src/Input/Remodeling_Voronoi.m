@@ -10,7 +10,7 @@ Set.lambdaV = 20;
 
 Set.InPlaneElasticity = true;
 Set.mu_bulk	= 1000;
-Set.lambda_bulk	= 500; 
+Set.lambda_bulk	= 500;
 
 Set.tend=42; % 72 = 70 minutes (60 after ablation)
 Set.Nincr=Set.tend*80;
@@ -27,7 +27,7 @@ Set.cLineTension = 0.1;
 Set.Remodelling = 1;
 Set.RemodelingFrequency = 0.02;
 Set.lambdaB = 1e-10;
-Set.RemodelTol = 1.8;
+Set.RemodelTol = 1.7;
 
 Set.BC = 2;
 Set.TStartBC = Set.tend;
@@ -35,7 +35,7 @@ Set.TStopBC = Set.tend;
 Set.dx = 1; % compression only (2 for stretching)
 Set.VPrescribed = realmax;
 Set.VFixd = -100;
-Set.Reset_PercentageGeo0 = 0.5; 
+Set.Reset_PercentageGeo0 = 0.3; 
 
 Set.lambdaS1 = 1;
 Set.lambdaS2 = 0.9;

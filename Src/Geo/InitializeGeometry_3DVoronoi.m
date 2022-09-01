@@ -30,6 +30,8 @@ for numIter = 1:lloydIterations
     end
 end
 
+%% TODO: Reorder here regarding the first cell (?)
+
 %% Build 3D topology
 [trianglesConnectivity, neighboursNetwork, cellEdges, verticesOfCell_pos] = Build3DVoronoiTopo(seedsXY);
 

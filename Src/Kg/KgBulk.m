@@ -35,7 +35,7 @@ function [g,K,EnergyBulk]=KgBulk(Geo_0, Geo, Set)
 				currentTet0    = [y1_0; y2_0; y3_0; cellNuclei0]; 
 				currentTet_ids = [Geo.Cells(c).globalIds(Tris(t).Edge)', n3, Geo.Cells(c).cglobalIds]; 
 				if Geo.Remodelling 
-					if ~any(ismember(currentTet_ids,Geo.AssemblegIds)) 
+					if ~sum(ismember(currentTet_ids,Geo.AssemblegIds))>2
                         continue
 					end 
 				end 

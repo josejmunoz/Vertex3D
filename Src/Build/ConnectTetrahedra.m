@@ -33,7 +33,7 @@ if isequal(Set.InputGeo, 'Voronoi')
             error('WARNINGGGG check connect tetrahedra!!!!')
         end
     else %% 3 mainNodes ('common')
-        [~, Tnew, Ynew, removedTets, replacedTets] = CombineTwoGhostNodes(Geo, Set, nodesToCombine, c, oldYs);
+        [~, Tnew, Ynew, removedTets, replacedTets] = CombineTwoGhostNodes(Geo, Set, nodesToCombine, oldTets, oldYs);
     end
     
     Tnew

@@ -1,4 +1,4 @@
-function Face = BuildFace(ci, cj, nCells, Cell, XgID, Set, XgTop, XgBottom)
+function Face = BuildFace(ci, cj, face_ids, nCells, Cell, XgID, Set, XgTop, XgBottom)
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	% BuildFace:										  
 	%   Completes a single Face struct with already but empty fields. 
@@ -22,7 +22,6 @@ function Face = BuildFace(ci, cj, nCells, Cell, XgID, Set, XgTop, XgBottom)
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%	
     
     ij			= [ci, cj];
-	face_ids	= sum(ismember(Cell.T,ij),2)==2; 
 
 	Face				= struct();
 	Face.ij				= ij;

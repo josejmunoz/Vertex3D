@@ -8,7 +8,7 @@ oldTets = Geo.Cells(nodeToRemove).T;
 nodesToChange = getNodeNeighbours(Geo, nodeToRemove, cellNodeLoosing);
 mainNodes = nodesToChange(~cellfun(@isempty, {Geo.Cells(nodesToChange).AliveStatus}));
 flipName = 'RemoveNode';
-[Tnew, Ynew] = ConnectTetrahedra(Geo, nodeToRemove, nodesToChange, oldTets, mainNodes, Set, flipName, cellNodeLoosing);
+[Tnew, Ynew, oldTets] = ConnectTetrahedra(Geo, nodeToRemove, nodesToChange, oldTets, mainNodes, Set, flipName, cellNodeLoosing);
 
 %figure, tetramesh(Tnew, vertcat(Geo.Cells.X));
 %figure, tetramesh(oldTets, vertcat(Geo.Cells.X));

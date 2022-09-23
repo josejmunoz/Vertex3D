@@ -48,14 +48,7 @@ function [Geo, Tnew, Ynew, removedTets, replacedTets] = CombineTwoGhostNodes(Geo
                 
                 if ~isempty(Geo.Cells(numCell).Y)
                     Geo.Cells(numCell).Y(checkRepeatedTets | checkRepatedCells, :) = [];
-                    for numTet = find(any(replacingTets, 2))'
-                        tetsToUse = sum(ismember(oldTets, Geo.Cells(numCell).T(numTet, :)), 2) > 2;
-                        if any(tetsToUse)
-                            Geo.Cells(numCell).Y(numTet, :) = mean(vertcat(oldYs(tetsToUse, :)), 1);
-                        end
-                        Ynew(end+1, :) = Geo.Cells(numCell).Y(numTet, :);
-                        Tnew(end+1, :) = Geo.Cells(numCell).T(numTet, :);
-                    end
+                    [Ynew, Tnew] = ComputeYFromOldYs(Geo, numCell, replacingTets, oldTets, oldYs);
                 end
             end
         end

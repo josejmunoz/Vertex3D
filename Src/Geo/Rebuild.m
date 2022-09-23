@@ -46,8 +46,8 @@ function Geo = Rebuild(Geo, Set)
                 previousFace = ceil(previousFace/2);
                 oldFaceCentre = oldGeo.Cells(cc).Faces(previousFace).Centre;
                 
-                newFaceCentre = mean(vertcat(oldFaceCentre, newFaceCentre));
-                %newFaceCentre = oldFaceCentre;
+                contributionOldFaceCentre = 0.8;
+                newFaceCentre = contributionOldFaceCentre * oldFaceCentre + (1 - contributionOldFaceCentre) * newFaceCentre;
             end
             
             Geo.Cells(cc).Faces(j).Centre = newFaceCentre;

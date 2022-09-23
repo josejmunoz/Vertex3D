@@ -51,7 +51,20 @@ if isequal(Set.InputGeo, 'Voronoi')
             
             %% Update oldTets
             nodesChanged = unique(Tnew(:));
-            oldTets = oldTets(sum(ismember(oldTets, nodesChanged), 2) > 3, :);
+            oldTets = oldTets(sum(ismember(oldTets, nodesChanged), 2) > 3, :);      
+            oldYs = [];
+            for numTet = 1:size(oldTets, 1)
+                [oldYs(numTet, :)] = GetYFromTet(Geo, oldTets(numTet, :));
+            end
+            
+            for numTet = 1:size(Tnew, 1)
+                tetsToUse = sum(ismember(oldTets, Tnew(numTet, :)), 2) > 2;
+                if any(tetsToUse)
+                    oldYs(numTet, :) = mean(vertcat(oldYs(tetsToUse, :)), 1);
+                end
+                Ynew(end+1, :) = oldYs(numTet, :);
+            end
+            
         else
             error('Need to check this!');
         end

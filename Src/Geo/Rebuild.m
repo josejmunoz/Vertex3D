@@ -18,15 +18,39 @@ function Geo = Rebuild(Geo, Set)
             cj    = Neigh_nodes(j);
             ij			= [cc, cj];
             face_ids	= sum(ismember(Cell.T,ij),2)==2;
+            
+            %% Check if Two faces are requiered ('Scutoid')
+%             tets = Geo.Cells(cc).T(face_ids,:);
+%             currentNeigh_nodes = unique(tets(:));
+%             if sum(~ismember(currentNeigh_nodes, Geo.XgID)) > 4
+%                 [occurrences, numElems]=hist(tets(:),currentNeigh_nodes);
+%                 nodesToDivideInto2 = numElems(occurrences == 1);
+%                 
+% %                 face_ids(any(ismember(Geo.Cells(cc).T, nodesToDivideInto2(1)), 2)) = 0;
+%                 
+% %                 tetsInCommon = tets(~any(ismember(tets, nodesToDivideInto2), 2), :);
+%                 
+% %                 for nodeFaceSplited = nodesToDivideInto2
+% %                     tetsToSplit = tets(any(ismember(tets, nodeFaceSplited), 2), :);
+% %                     newFaces
+% %                 end
+%             end
+            
             [oldFaceExists, previousFace] = ismember(cj, [oldGeo.Cells(cc).Faces.ij]);
             
-			Geo.Cells(cc).Faces(j) = BuildFace(cc, cj, Geo.nCells, Geo.Cells(cc), Geo.XgID, Set, Geo.XgTop, Geo.XgBottom);
-            if ~oldFaceExists
-                Geo.Cells(cc).Faces(j).Centre = BuildFaceCentre(ij, Geo.nCells, Geo.Cells(cc).X, Geo.Cells(cc).Y(face_ids,:), Set.f, isequal(Set.InputGeo, 'Bubbles'));
-            else
+			Geo.Cells(cc).Faces(j) = BuildFace(cc, cj, face_ids, Geo.nCells, Geo.Cells(cc), Geo.XgID, Set, Geo.XgTop, Geo.XgBottom);
+
+            newFaceCentre = BuildFaceCentre(ij, Geo.nCells, Geo.Cells(cc).X, Geo.Cells(cc).Y(face_ids,:), Set.f, isequal(Set.InputGeo, 'Bubbles'));
+            
+            if oldFaceExists
                 previousFace = ceil(previousFace/2);
-                Geo.Cells(cc).Faces(j).Centre = oldGeo.Cells(cc).Faces(previousFace).Centre;
+                oldFaceCentre = oldGeo.Cells(cc).Faces(previousFace).Centre;
+                
+                newFaceCentre = mean(vertcat(oldFaceCentre, newFaceCentre));
+                %newFaceCentre = oldFaceCentre;
             end
+            
+            Geo.Cells(cc).Faces(j).Centre = newFaceCentre;
         end
         Geo.Cells(cc).Faces = Geo.Cells(cc).Faces(1:length(Neigh_nodes));
         Geo.Cells(cc).Area  = ComputeCellArea(Geo.Cells(cc));

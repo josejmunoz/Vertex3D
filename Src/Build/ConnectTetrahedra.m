@@ -1,8 +1,9 @@
-function [Tnew, Ynew] = ConnectTetrahedra(Geo, nodeToRemove, nodesToChange, oldTets, mainNodes, Set, flipName, cellNodeLoosing)
+function [Tnew, Ynew, oldTets] = ConnectTetrahedra(Geo, nodeToRemove, nodesToChange, oldTets, mainNodes, Set, flipName, cellNodeLoosing)
 %CONNECTTETRAHEDRA Summary of this function goes here
 %   Detailed explanation goes here
 
 Tnew = [];
+Ynew = [];
 allTs = vertcat(Geo.Cells.T);
 if isequal(Set.InputGeo, 'Voronoi')
     if length(cellNodeLoosing) == 1
@@ -12,23 +13,48 @@ if isequal(Set.InputGeo, 'Voronoi')
     mainNodesToConnect = setdiff(mainNodes, nodesLoosing);
     
     if length(mainNodes) >= 4
-        nodesToConnect = unique([unique(allTs(sum(ismember(allTs, nodesLoosing), 2)> 1, :)); nodesToChange]);
-        
-        nodesConnectedToMainNodes = unique([getNodeNeighbours(Geo, mainNodesToConnect(1)); getNodeNeighbours(Geo, mainNodesToConnect(2))]);
-        nodesConnectedToLoosingNodes = intersect(nodesToConnect, getNodeNeighbours(Geo, cellNodeLoosing));
-        
-        newCellBoundaryNode = setdiff(nodesConnectedToLoosingNodes, nodesConnectedToMainNodes);
-        newCellBoundaryNode = newCellBoundaryNode(ismember(newCellBoundaryNode, Geo.XgID));
-        
-        if length(newCellBoundaryNode) > 1
-            error('Need to check this!')
+        if length(mainNodes(vertcat(Geo.Cells(mainNodes).AliveStatus) == 0)) == 1
+            ghostNodeLoosing = mainNodes(vertcat(Geo.Cells(mainNodes).AliveStatus) == 0);
+            nodesToConnect = unique([unique(allTs(sum(ismember(allTs, nodesLoosing), 2)> 1, :)); nodesToChange]);
+
+            nodesConnectedToMainNodes = unique([getNodeNeighbours(Geo, mainNodesToConnect(1)); getNodeNeighbours(Geo, mainNodesToConnect(2))]);
+            nodesConnectedToLoosingNodes = intersect(nodesToConnect, getNodeNeighbours(Geo, cellNodeLoosing));
+
+            newCellBoundaryNode = setdiff(nodesConnectedToLoosingNodes, nodesConnectedToMainNodes);
+            newCellBoundaryNode = newCellBoundaryNode(ismember(newCellBoundaryNode, Geo.XgID));
+
+            if length(newCellBoundaryNode) > 1
+                error('Need to check this!')
+            end
+            
+            connectedNodes = [nodeToRemove, newCellBoundaryNode];
+            newCellBoundaryNode_Neighbours = getNodeNeighbours(Geo, newCellBoundaryNode);
+            opposedNodesToConnect = setdiff(intersect(nodesConnectedToLoosingNodes, newCellBoundaryNode_Neighbours), [nodeToRemove, newCellBoundaryNode]);
+
+            %% Connections #1: 1 mainNodes and 3 ghost node
+            Tnew = [newCellBoundaryNode, nodeToRemove, mainNodesToConnect(1), intersect(getNodeNeighbours(Geo, mainNodesToConnect(1)), opposedNodesToConnect); ...
+                newCellBoundaryNode, nodeToRemove, mainNodesToConnect(2), intersect(getNodeNeighbours(Geo, mainNodesToConnect(2)), opposedNodesToConnect)];
+
+            %% Connections #2: 2 mainNodes and 2 ghost node
+            Tnew(end+1, :) = [mainNodesToConnect', newCellBoundaryNode, nodeToRemove];
+            Tnew(end+1, :) = [cellNodeLoosing, newCellBoundaryNode, mainNodesToConnect(1), intersect(getNodeNeighbours(Geo, mainNodesToConnect(1)), opposedNodesToConnect)];
+            Tnew(end+1, :) = [cellNodeLoosing, newCellBoundaryNode, mainNodesToConnect(2), intersect(getNodeNeighbours(Geo, mainNodesToConnect(2)), opposedNodesToConnect)];
+
+            %% Connections #3: 3 mainNodes and 1 ghost node
+            connectedNode1_ghostNodeLoosing = intersect(getNodeNeighbours(Geo, ghostNodeLoosing), connectedNodes);
+            connectedNode2_mainNodeLoosing = setdiff(connectedNodes, connectedNode1_ghostNodeLoosing);
+            Tnew(end+1, :) = [mainNodesToConnect', ghostNodeLoosing, connectedNode1_ghostNodeLoosing];
+            Tnew(end+1, :) = [mainNodesToConnect', cellNodeLoosing, connectedNode2_mainNodeLoosing];
+            
+            %% Connection #4: 4 mainNodes
+            Tnew(end+1, :) = mainNodes;
+            
+            %% Update oldTets
+            nodesChanged = unique(Tnew(:));
+            oldTets = oldTets(sum(ismember(oldTets, nodesChanged), 2) > 3, :);
+        else
+            error('Need to check this!');
         end
-        
-        newCellBoundaryNode_Neighbours = getNodeNeighbours(Geo, newCellBoundaryNode);
-        opposedNodesToConnect = setdiff(intersect(nodesConnectedToLoosingNodes, newCellBoundaryNode_Neighbours), [nodeToRemove, newCellBoundaryNode]);
-        
-        Tnew = [newCellBoundaryNode, nodeToRemove, mainNodesToConnect(1), intersect(getNodeNeighbours(Geo, mainNodesToConnect(1)), opposedNodesToConnect); ...
-            newCellBoundaryNode, nodeToRemove, mainNodesToConnect(2), intersect(getNodeNeighbours(Geo, mainNodesToConnect(2)), opposedNodesToConnect)];
         
     else %% 3 mainNodes ('common')
         [~, Tnew, Ynew, removedTets, replacedTets] = CombineTwoGhostNodes(Geo, Set, nodesToCombine, oldTets, oldYs);

@@ -4,6 +4,7 @@ function [Tnew, Ynew, oldTets] = ConnectTetrahedra(Geo, nodeToRemove, nodesToCha
 
 Tnew = [];
 Ynew = [];
+
 allTs = vertcat(Geo.Cells.T);
 if isequal(Set.InputGeo, 'Voronoi')
     if length(cellNodeLoosing) == 1
@@ -51,24 +52,39 @@ if isequal(Set.InputGeo, 'Voronoi')
             
             %% Update oldTets
             nodesChanged = unique(Tnew(:));
-            oldTets = oldTets(sum(ismember(oldTets, nodesChanged), 2) > 3, :);      
-            oldYs = [];
-            for numTet = 1:size(oldTets, 1)
-                [oldYs(numTet, :)] = GetYFromTet(Geo, oldTets(numTet, :));
-            end
+            oldTets = oldTets(sum(ismember(oldTets, nodesChanged), 2) > 3, :);
             
+            %% Recalculate Ys
+            
+%             oldYs = [];
+%             for numTet = 1:size(oldTets, 1)
+%                 [oldYs(numTet, :)] = GetYFromTet(Geo, oldTets(numTet, :));
+%             end
+            
+            allTs = vertcat(Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).T);
+            allYs = vertcat(Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).Y);
             for numTet = 1:size(Tnew, 1)
-                tetsToUse = sum(ismember(oldTets, Tnew(numTet, :)), 2) > 2;
+                tetsToUse = sum(ismember(allTs, Tnew(numTet, :)), 2) > 2;
                 
                 mainNode_current = mainNodesToConnect(ismember(mainNodesToConnect, Tnew(numTet, :)));
                 if any(tetsToUse)
                     contributionOldYs = 1;
-                    Ynew(end+1, :) = contributionOldYs * mean(vertcat(oldYs(tetsToUse, :)), 1) + (1-contributionOldYs) * ComputeY(vertcat(Geo.Cells(Tnew(numTet, :)).X), Geo.Cells(mainNode_current(1)).X, length([Geo.Cells(Tnew(numTet, :)).AliveStatus]), Set);
+                    Ynew(end+1, :) = contributionOldYs * mean(vertcat(allYs(tetsToUse, :)), 1) + (1-contributionOldYs) * ComputeY(vertcat(Geo.Cells(Tnew(numTet, :)).X), Geo.Cells(mainNode_current(1)).X, length([Geo.Cells(Tnew(numTet, :)).AliveStatus]), Set);
                 else
                     contributionOldYs = 0.9;
-                    tetsToUse = sum(ismember(oldTets, Tnew(numTet, :)), 2) > 1;
+                    tetsToUse = sum(ismember(allTs, Tnew(numTet, :)), 2) > 1;
                     
-                    Ynew(end+1, :) = contributionOldYs * mean(vertcat(oldYs(tetsToUse, :)), 1) + (1-contributionOldYs) * ComputeY(vertcat(Geo.Cells(Tnew(numTet, :)).X), Geo.Cells(mainNode_current(1)).X, length([Geo.Cells(Tnew(numTet, :)).AliveStatus]), Set);
+                    if any(ismember(Tnew(numTet, :), Geo.XgTop))
+                        tetsToUse = tetsToUse & any(ismember(allTs, Geo.XgTop), 2);
+                    elseif any(ismember(Tnew(numTet, :), Geo.XgBottom))
+                        tetsToUse = tetsToUse & any(ismember(allTs, Geo.XgTop), 2);
+                    end
+                    
+                    if any(tetsToUse)
+                        Ynew(end+1, :) = contributionOldYs * mean(vertcat(allYs(tetsToUse, :)), 1) + (1-contributionOldYs) * ComputeY(vertcat(Geo.Cells(Tnew(numTet, :)).X), Geo.Cells(mainNode_current(1)).X, length([Geo.Cells(Tnew(numTet, :)).AliveStatus]), Set);
+                    else
+                        error('Need to check this!');
+                    end
                 end
             end
             

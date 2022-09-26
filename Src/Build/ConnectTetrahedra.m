@@ -7,13 +7,13 @@ Ynew = [];
 
 allTs = vertcat(Geo.Cells.T);
 if isequal(Set.InputGeo, 'Voronoi')
-    if length(cellNodeLoosing) == 1
-        nodesLoosing = [cellNodeLoosing, mainNodes(vertcat(Geo.Cells(mainNodes).AliveStatus) == 0)];
-    end
-    
-    mainNodesToConnect = setdiff(mainNodes, nodesLoosing);
     
     if length(mainNodes) >= 4
+        if length(cellNodeLoosing) == 1
+            nodesLoosing = [cellNodeLoosing, mainNodes(vertcat(Geo.Cells(mainNodes).AliveStatus) == 0)];
+        end
+
+        mainNodesToConnect = setdiff(mainNodes, nodesLoosing);
         if length(mainNodes(vertcat(Geo.Cells(mainNodes).AliveStatus) == 0)) == 1
             ghostNodeLoosing = mainNodes(vertcat(Geo.Cells(mainNodes).AliveStatus) == 0);
             nodesToConnect = unique([unique(allTs(sum(ismember(allTs, nodesLoosing), 2)> 1, :)); nodesToChange]);
@@ -55,12 +55,6 @@ if isequal(Set.InputGeo, 'Voronoi')
             oldTets = oldTets(sum(ismember(oldTets, nodesChanged), 2) > 3, :);
             
             %% Recalculate Ys
-            
-%             oldYs = [];
-%             for numTet = 1:size(oldTets, 1)
-%                 [oldYs(numTet, :)] = GetYFromTet(Geo, oldTets(numTet, :));
-%             end
-            
             allTs = vertcat(Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).T);
             allYs = vertcat(Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).Y);
             for numTet = 1:size(Tnew, 1)
@@ -93,6 +87,10 @@ if isequal(Set.InputGeo, 'Voronoi')
         end
         
     else %% 3 mainNodes ('common')
+        [~, closestID] = pdist2(vertcat(Geo.Cells(nodesToChange).X), Geo.Cells(nodeToRemove).X, 'euclidean', 'Smallest', 1);
+        nodesToCombine = [nodesToChange(closestID), nodeToRemove];
+        oldYs = cellfun(@(x) GetYFromTet(Geo, x), num2cell(oldTets, 2), 'UniformOutput', false);
+        oldYs = vertcat(oldYs{:});
         [~, Tnew, Ynew, removedTets, replacedTets] = CombineTwoGhostNodes(Geo, Set, nodesToCombine, oldTets, oldYs);
     end
 else

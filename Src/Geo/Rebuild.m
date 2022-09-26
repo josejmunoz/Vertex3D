@@ -19,23 +19,6 @@ function Geo = Rebuild(Geo, Set)
             ij			= [cc, cj];
             face_ids	= sum(ismember(Cell.T,ij),2)==2;
             
-            %% Check if Two faces are requiered ('Scutoid')
-%             tets = Geo.Cells(cc).T(face_ids,:);
-%             currentNeigh_nodes = unique(tets(:));
-%             if sum(~ismember(currentNeigh_nodes, Geo.XgID)) > 4
-%                 [occurrences, numElems]=hist(tets(:),currentNeigh_nodes);
-%                 nodesToDivideInto2 = numElems(occurrences == 1);
-%                 
-% %                 face_ids(any(ismember(Geo.Cells(cc).T, nodesToDivideInto2(1)), 2)) = 0;
-%                 
-% %                 tetsInCommon = tets(~any(ismember(tets, nodesToDivideInto2), 2), :);
-%                 
-% %                 for nodeFaceSplited = nodesToDivideInto2
-% %                     tetsToSplit = tets(any(ismember(tets, nodeFaceSplited), 2), :);
-% %                     newFaces
-% %                 end
-%             end
-            
             [oldFaceExists, previousFace] = ismember(cj, [oldGeo.Cells(cc).Faces.ij]);
             
 			Geo.Cells(cc).Faces(j) = BuildFace(cc, cj, face_ids, Geo.nCells, Geo.Cells(cc), Geo.XgID, Set, Geo.XgTop, Geo.XgBottom);

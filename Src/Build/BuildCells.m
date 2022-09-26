@@ -38,7 +38,9 @@ function [Geo] = BuildCells(Geo, Set, X, Twg)
 		Geo.Cells(c).Faces = BuildStructArray(length(Neigh_nodes), FaceFields);
         for j  = 1:length(Neigh_nodes)
 			cj = Neigh_nodes(j);
-			Geo.Cells(c).Faces(j) = BuildFace(c, cj, Geo.nCells, Geo.Cells(c), Geo.XgID, Set, Geo.XgTop, Geo.XgBottom);
+            ij			= [c, cj];
+            face_ids	= sum(ismember(Geo.Cells(c).T, ij), 2) == 2;
+			Geo.Cells(c).Faces(j) = BuildFace(c, cj, face_ids, Geo.nCells, Geo.Cells(c), Geo.XgID, Set, Geo.XgTop, Geo.XgBottom);
         end
         Geo.Cells(c).Area  = ComputeCellArea(Geo.Cells(c));
         Geo.Cells(c).Area0 = Geo.Cells(c).Area;

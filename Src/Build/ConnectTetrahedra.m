@@ -8,14 +8,15 @@ Ynew = [];
 allTs = vertcat(Geo.Cells.T);
 if isequal(Set.InputGeo, 'Voronoi')
     
-    if length(mainNodes) >= 4
-        if length(cellNodeLoosing) == 1
-            nodesLoosing = [cellNodeLoosing, mainNodes(vertcat(Geo.Cells(mainNodes).AliveStatus) == 0)];
-        end
+    if length(mainNodes) == 4
+        ghostNodeLoosing = mainNodes(vertcat(Geo.Cells(mainNodes).AliveStatus) == 0);
 
-        mainNodesToConnect = setdiff(mainNodes, nodesLoosing);
-        if length(mainNodes(vertcat(Geo.Cells(mainNodes).AliveStatus) == 0)) == 1
-            ghostNodeLoosing = mainNodes(vertcat(Geo.Cells(mainNodes).AliveStatus) == 0);
+        if length(mainNodes(vertcat(Geo.Cells(mainNodes).AliveStatus) == 0)) == 1        
+            if length(cellNodeLoosing) == 1
+                nodesLoosing = [cellNodeLoosing, mainNodes(vertcat(Geo.Cells(mainNodes).AliveStatus) == 0)];
+            end
+
+            mainNodesToConnect = setdiff(mainNodes, nodesLoosing);
             nodesToConnect = unique([unique(allTs(sum(ismember(allTs, nodesLoosing), 2)> 1, :)); nodesToChange]);
 
             nodesConnectedToMainNodes = unique([getNodeNeighbours(Geo, mainNodesToConnect(1)); getNodeNeighbours(Geo, mainNodesToConnect(2))]);
@@ -81,11 +82,9 @@ if isequal(Set.InputGeo, 'Voronoi')
                     end
                 end
             end
-            
         else
-            error('Need to check this!');
+            %%error('Need to check this!');
         end
-        
     else %% 3 mainNodes ('common')
         [~, closestID] = pdist2(vertcat(Geo.Cells(nodesToChange).X), Geo.Cells(nodeToRemove).X, 'euclidean', 'Smallest', 1);
         nodesToCombine = [nodesToChange(closestID), nodeToRemove];

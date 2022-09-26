@@ -87,7 +87,7 @@ while t<=Set.tend
             numStep=numStep+1;
             Geo_n = Geo;
             PostProcessingVTK(Geo, Geo_0, Set, numStep)
-            save(fullfile(pwd, Set.OutputFolder, 'status.mat'), 'Geo', 'Geo_n', 'Geo_0', 'Set', 'Dofs', 'EnergiesPerTimeStep', 't', 'numStep')
+            save(fullfile(pwd, Set.OutputFolder, strcat('status', num2str(numStep),'.mat')), 'Geo', 'Geo_n', 'Geo_0', 'Set', 'Dofs', 'EnergiesPerTimeStep', 't', 'numStep')
             relaxingNu = false;
         else
             Set.nu = max(Set.nu/2, Set.nu0);

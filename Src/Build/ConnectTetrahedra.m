@@ -33,7 +33,12 @@ if isequal(Set.InputGeo, 'Voronoi')
             end
             
             if length(newCellBoundaryNode) > 1
-                error('Need to check this!')
+                nodeNeighbours_Boundary = arrayfun(@(x) sum(~ismember(getNodeNeighbours(Geo, x), Geo.XgID)) == 1, newCellBoundaryNode);
+                
+                newCellBoundaryNode = newCellBoundaryNode(nodeNeighbours_Boundary);
+                if length(newCellBoundaryNode) > 1
+                    error('Need to check this!')
+                end
             end
             
             connectedNodes = [nodeToRemove, newCellBoundaryNode];

@@ -39,6 +39,12 @@ function [Tris] = BuildEdges(Tets, FaceIds, FaceCentre, FaceInterfaceType, X, Ys
 		    tet_order(yi) = i(1);
 		    prev_tet = FaceTets(i(1),:);
         end
+        % Last one should match with the first one
+        if sum(ismember(FaceTets(1, :), prev_tet),2)~=3
+            ME = MException('BuildEdges:TetrahedraOrdering', ...
+                sprintf('Cannot create a face with these tetrahedra'));
+            throw(ME);
+        end
     else
         % TODO FIXME is this enough??? will it get flipped later if not
         % correct ???

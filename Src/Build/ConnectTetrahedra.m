@@ -59,10 +59,17 @@ if isequal(Set.InputGeo, 'Voronoi')
             
             for numTet = 1:size(Tnew, 1)
                 tetsToUse = sum(ismember(oldTets, Tnew(numTet, :)), 2) > 2;
+                
+                mainNode_current = mainNodesToConnect(ismember(mainNodesToConnect, Tnew(numTet, :)));
                 if any(tetsToUse)
-                    oldYs(numTet, :) = mean(vertcat(oldYs(tetsToUse, :)), 1);
+                    contributionOldYs = 1;
+                    Ynew(end+1, :) = contributionOldYs * mean(vertcat(oldYs(tetsToUse, :)), 1) + (1-contributionOldYs) * ComputeY(vertcat(Geo.Cells(Tnew(numTet, :)).X), Geo.Cells(mainNode_current(1)).X, length([Geo.Cells(Tnew(numTet, :)).AliveStatus]), Set);
+                else
+                    contributionOldYs = 0.9;
+                    tetsToUse = sum(ismember(oldTets, Tnew(numTet, :)), 2) > 1;
+                    
+                    Ynew(end+1, :) = contributionOldYs * mean(vertcat(oldYs(tetsToUse, :)), 1) + (1-contributionOldYs) * ComputeY(vertcat(Geo.Cells(Tnew(numTet, :)).X), Geo.Cells(mainNode_current(1)).X, length([Geo.Cells(Tnew(numTet, :)).AliveStatus]), Set);
                 end
-                Ynew(end+1, :) = oldYs(numTet, :);
             end
             
         else

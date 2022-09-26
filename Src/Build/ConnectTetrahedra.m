@@ -23,8 +23,15 @@ if isequal(Set.InputGeo, 'Voronoi')
             nodesConnectedToLoosingNodes = intersect(nodesToConnect, getNodeNeighbours(Geo, cellNodeLoosing));
 
             newCellBoundaryNode = setdiff(nodesConnectedToLoosingNodes, nodesConnectedToMainNodes);
-            newCellBoundaryNode = newCellBoundaryNode(ismember(newCellBoundaryNode, Geo.XgID));
 
+            if ismember(nodeToRemove, Geo.XgTop)
+                newCellBoundaryNode = newCellBoundaryNode(ismember(newCellBoundaryNode, Geo.XgTop));
+            elseif ismember(nodeToRemove, Geo.XgBottom)
+                newCellBoundaryNode = newCellBoundaryNode(ismember(newCellBoundaryNode, Geo.XgBottom));
+            else
+                newCellBoundaryNode = newCellBoundaryNode(ismember(newCellBoundaryNode, Geo.XgID));
+            end
+            
             if length(newCellBoundaryNode) > 1
                 error('Need to check this!')
             end

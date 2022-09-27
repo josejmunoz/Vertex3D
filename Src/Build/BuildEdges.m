@@ -14,7 +14,7 @@ function [Tris] = BuildEdges(Tets, FaceIds, FaceCentre, FaceInterfaceType, X, Ys
     %	face. That is Geo.Cells(c).Y(edges(e,:),:) will give vertices
     %   defining the edge. Used also for triangle computation
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%	
-	TrisFields = ["Edge", "Area", "EdgeLength", "SharedByCells", "Location", "ContractileG"]; 
+	TrisFields = ["Edge", "Area", "AspectRatio", "EdgeLength", "LengthsToCentre", "SharedByCells", "Location", "ContractileG"]; 
     Tris = BuildStructArray(sum(FaceIds), TrisFields);
     
     FaceTets = Tets(FaceIds,:);
@@ -80,19 +80,23 @@ function [Tris] = BuildEdges(Tets, FaceIds, FaceCentre, FaceInterfaceType, X, Ys
     end
     
 	%% Build edges and identify the ones shared by different cells
-	for yf = 1:length(surf_ids)-1
-		Tris(yf).Edge = [surf_ids(yf) surf_ids(yf+1)];
+	for currentTri = 1:length(surf_ids)-1
+		Tris(currentTri).Edge = [surf_ids(currentTri) surf_ids(currentTri+1)];
         %edges shared by different cells
-        currentTris_1 = Tets(Tris(yf).Edge(1), :);
-        currentTris_2 = Tets(Tris(yf).Edge(2), :);
-        Tris(yf).SharedByCells = intersect(currentTris_1(ismember(currentTris_1, nonDeadCells)), currentTris_2(ismember(currentTris_2, nonDeadCells)));
-        Tris(yf).EdgeLength = norm(Ys(Tris(yf).Edge(1), :) - Ys(Tris(yf).Edge(2), :));
+        currentTris_1 = Tets(Tris(currentTri).Edge(1), :);
+        currentTris_2 = Tets(Tris(currentTri).Edge(2), :);
+        Tris(currentTri).SharedByCells = intersect(currentTris_1(ismember(currentTris_1, nonDeadCells)), currentTris_2(ismember(currentTris_2, nonDeadCells)));
+        
+        % Compute Tris aspect ratio, edge length and LengthsToCentre
+        [Tris] = ComputeTriLengthMeasurements(Tris, Ys, currentTri);
 	end
 	Tris(length(surf_ids)).Edge = [surf_ids(end) surf_ids(1)];
     currentTris_1 = Tets(Tris(length(surf_ids)).Edge(1), :);
     currentTris_2 = Tets(Tris(length(surf_ids)).Edge(2), :);
     Tris(length(surf_ids)).SharedByCells = intersect(currentTris_1(ismember(currentTris_1, nonDeadCells)), currentTris_2(ismember(currentTris_2, nonDeadCells)));
-    Tris(length(surf_ids)).EdgeLength = norm(Ys(Tris(length(surf_ids)).Edge(1), :) - Ys(Tris(length(surf_ids)).Edge(2), :));
+    
+    % Compute Tris aspect ratio, edge length and LengthsToCentre
+    [Tris] = ComputeTriLengthMeasurements(Tris, Ys, length(surf_ids));
     
     % Compute Tris area
     [~, triAreas] = ComputeFaceArea(vertcat(Tris.Edge), Ys, FaceCentre);

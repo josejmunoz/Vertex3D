@@ -88,7 +88,7 @@ function [Tris] = BuildEdges(Tets, FaceIds, FaceCentre, FaceInterfaceType, X, Ys
         Tris(currentTri).SharedByCells = intersect(currentTris_1(ismember(currentTris_1, nonDeadCells)), currentTris_2(ismember(currentTris_2, nonDeadCells)));
         
         % Compute Tris aspect ratio, edge length and LengthsToCentre
-        [Tris] = ComputeTriLengthMeasurements(Tris, Ys, currentTri);
+        [Tris] = ComputeTriLengthMeasurements(Tris, Ys, currentTri, FaceCentre);
 	end
 	Tris(length(surf_ids)).Edge = [surf_ids(end) surf_ids(1)];
     currentTris_1 = Tets(Tris(length(surf_ids)).Edge(1), :);
@@ -96,7 +96,7 @@ function [Tris] = BuildEdges(Tets, FaceIds, FaceCentre, FaceInterfaceType, X, Ys
     Tris(length(surf_ids)).SharedByCells = intersect(currentTris_1(ismember(currentTris_1, nonDeadCells)), currentTris_2(ismember(currentTris_2, nonDeadCells)));
     
     % Compute Tris aspect ratio, edge length and LengthsToCentre
-    [Tris] = ComputeTriLengthMeasurements(Tris, Ys, length(surf_ids));
+    [Tris] = ComputeTriLengthMeasurements(Tris, Ys, length(surf_ids), FaceCentre);
     
     % Compute Tris area
     [~, triAreas] = ComputeFaceArea(vertcat(Tris.Edge), Ys, FaceCentre);

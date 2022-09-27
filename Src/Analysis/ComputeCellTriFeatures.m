@@ -14,10 +14,7 @@ function [features] = ComputeCellTriFeatures(cell, Set)
             features(totalTris).energyTris = energyTris(numTris);
             features(totalTris).areaTris = areaTris{numTris};
             features(totalTris).perimeterTris = perimeterTris{numTris};
-            
-            [sideLengths] = ComputeTriSideLengths(face, numTris, cell.Y);
-            [aspectRatio] = ComputeTriAspectRatio(sideLengths);
-            features(totalTris).aspectRatioTris = aspectRatio;
+            features(totalTris).aspectRatioTris = face.Tris(numTris).AspectRatio;
             
             totalTris = totalTris + 1;
         end

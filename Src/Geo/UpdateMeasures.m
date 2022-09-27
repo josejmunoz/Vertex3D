@@ -3,8 +3,10 @@ function Geo = UpdateMeasures(Geo)
 		for f = 1:length(Geo.Cells(c).Faces)
             [Geo.Cells(c).Faces(f).Area, triAreas]  = ComputeFaceArea(vertcat(Geo.Cells(c).Faces(f).Tris.Edge), Geo.Cells(c).Y, Geo.Cells(c).Faces(f).Centre);
             [Geo.Cells(c).Faces(f).Tris.Area] = triAreas{:};
-            [edgeLengths] = ComputeFaceEdgeLengths(Geo.Cells(c).Faces(f), Geo.Cells(c).Y);
+            [edgeLengths, lengthsToCentre, aspectRatio] = ComputeFaceEdgeLengths(Geo.Cells(c).Faces(f), Geo.Cells(c).Y);
             [Geo.Cells(c).Faces(f).Tris.EdgeLength] = edgeLengths{:};
+            [Geo.Cells(c).Faces(f).Tris.LengthsToCentre] = lengthsToCentre{:};
+            [Geo.Cells(c).Faces(f).Tris.AspectRatio] = aspectRatio{:};
             
             %% Reset gradient/forces
             [Geo.Cells(c).Faces(f).Tris.ContractileG] = deal(0);

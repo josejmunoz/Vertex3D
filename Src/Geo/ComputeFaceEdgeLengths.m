@@ -1,8 +1,6 @@
-function [edgeLengths] = ComputeFaceEdgeLengths(Face, Y)
+function [EdgeLength, LengthsToCentre, AspectRatio] = ComputeFaceEdgeLengths(Face, Ys)
 %% Compute the length of the edges of a face
-    edgeLengths = cell(size(Face.Tris, 1), 1);
-    for t = 1:length(Face.Tris)
-    	Tri = Face.Tris(t).Edge;
-        edgeLengths{t} = norm(Y(Tri(1), :) - Y(Tri(2), :));
+    for currentTri = 1:length(Face.Tris)
+        [EdgeLength{currentTri}, LengthsToCentre{currentTri}, AspectRatio{currentTri}] = ComputeTriLengthMeasurements(Face.Tris, Ys, currentTri, Face.Centre);
     end
 end

@@ -14,68 +14,121 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
         Face = Geo.Cells(numCell).Faces(numFace);
         
         if Geo.Cells(numCell).AliveStatus == 1 && ~ismember(Face.globalIds, newYgIds) && ~isequal(Face.InterfaceType, 'CellCell') && ~isequal(Face.InterfaceType, 'Bottom') && ~ismember(numCell, Geo.BorderCells)
-            Ys = Geo.Cells(numCell).Y;
-
             firstNodeAlive = Geo.Cells(Face.ij(1)).AliveStatus;
             secondNodeAlive = Geo.Cells(Face.ij(2)).AliveStatus;
             
             nodeToRemove = Face.ij(cellfun(@isempty, {firstNodeAlive, secondNodeAlive}));
+            cellNodeLoosing = Face.ij(~cellfun(@isempty, {firstNodeAlive, secondNodeAlive}));
+            aspectRatio = [Face.Tris.AspectRatio];
             
-            aspectRatio = [];
-            for numTri = 1:length(Face.Tris)
-                [sideLengths] = ComputeTriSideLengths(Face, numTri, Ys);
-                [aspectRatio(numTri)] = ComputeTriAspectRatio(sideLengths);
-                
-                nodeToRemove = Face.ij(cellfun(@isempty, {firstNodeAlive, secondNodeAlive}));
-                cellNodeLoosing = Face.ij(~cellfun(@isempty, {firstNodeAlive, secondNodeAlive}));
-                
-                %% B situation: remove node
-                if aspectRatio(numTri) > Set.RemodelTol && ...
-                        all(sideLengths(2:3) > 1.5*sideLengths(1)) && ...
-                        xor(isempty(firstNodeAlive), isempty(secondNodeAlive)) && ...
-                        ~hasConverged
-                    [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = FlipRemoveNode(nodeToRemove, cellNodeLoosing, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                end
-
-                %             %% C situation: add node
-                %             if all(sideLengths(2:3) < sideLengths(1)/1.5) && ...
-                %                     xor(isempty(firstNodeAlive), isempty(secondNodeAlive)) && ...
-                %                     Face.Tris(trisToChange).Area > Set.lowerAreaThreshold && ...
-                %                     ~hasConverged
-                %                 tetsToExpand = Geo.Cells(numCell).T(Face.Tris(trisToChange).Edge, :);
-                %                 surroundingNodes = intersect(tetsToExpand(1, :), tetsToExpand(2, :));
-                %                 tetsToChange = Geo.Cells(surroundingNodes).T;
-                %                 [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = FlipAddNodes(surroundingNodes, tetsToChange, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                %             end
-
-                %% D situation: not covered yet
-
-                %             %% FLIP 44 %%NOT WORKING RIGHT NOW WITH TWO POINTY VERTICES???
-                %             if min(nrgs)>=Set.RemodelTol*1e-4 && length(Face.Tris)==4 && ...
-                %                     ~hasConverged
-                %                 [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip44(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                %             end
-                %
-                %             %% Flip 32
-                %             if length(Face.Tris) == 3 && ~hasConverged
-                %                 [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip32(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                %             end
-                %
-                %             %% Flip 23
-                %             if length(Face.Tris) ~= 3 && ~hasConverged
-                %                 YsToChange = Face.Tris(trisToChange).Edge;
-                %
-                %                 if ~CheckSkinnyTriangles(Ys(YsToChange(1),:),Ys(YsToChange(2),:), Face.Centre)
-                %                     [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip23(YsToChange, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                %                 end
-                %             end
-            end
+            nodeToRemoveNeighbours = getNodeNeighbours(Geo, nodeToRemove);
+            
+            [prevFaces] = getFacesFromNode(Geo, [nodeToRemove; nodeToRemoveNeighbours]);
+            prevAvgAspectRatioPerFace = cellfun(@(x) mean([x.Tris.AspectRatio]), prevFaces);
+            
+%             for numTri = 1:length(Face.Tris)
+%                 
+%                 sideLengths = [Face.Tris(numTri).EdgeLength, Face.Tris(numTri).LengthsToCentre];
+%                 
+%                 %% B situation: remove node
+%                 if aspectRatio(numTri) > Set.RemodelTol && ...
+%                         all(sideLengths(2:3) > 1.3*sideLengths(1)) && ...
+%                         xor(isempty(firstNodeAlive), isempty(secondNodeAlive)) && ...
+%                         ~hasConverged
+%                     
+%                     oldGeo_0 = Geo_0;
+%                     oldGeo_n = Geo_n;
+%                     oldGeo = Geo;
+%                     oldDofs = Dofs;
+%                     oldSet = Set;
+%                     oldNewYgIds = newYgIds;
+%                     
+%                     [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = FlipRemoveNode(nodeToRemove, cellNodeLoosing, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+%                     
+%                     %% Get all the triangles that will be involved and do an average per Face to see if the change has worth it.
+%                     [faces] = getFacesFromNode(Geo, [nodeToRemove; nodeToRemoveNeighbours]);
+%                     avgAspectRatioPerFace = cellfun(@(x) mean([x.Tris.AspectRatio]), faces);
+%                     
+%                     if mean(avgAspectRatioPerFace) > mean(prevAvgAspectRatioPerFace)
+%                         %Revert
+%                         disp('----Reverting node removing')
+%                         Geo_0 = oldGeo_0;
+%                         Geo_n = oldGeo_n;
+%                         Geo = oldGeo;
+%                         Dofs = oldDofs;
+%                         Set = oldSet;
+%                         newYgIds = oldNewYgIds;
+%                     else
+%                         disp('Node removing --correct');
+%                     end
+%                 end
+%                 
+%                 %             %% C situation: add node
+%                 %             if all(sideLengths(2:3) < sideLengths(1)/1.5) && ...
+%                 %                     xor(isempty(firstNodeAlive), isempty(secondNodeAlive)) && ...
+%                 %                     Face.Tris(trisToChange).Area > Set.lowerAreaThreshold && ...
+%                 %                     ~hasConverged
+%                 %                 tetsToExpand = Geo.Cells(numCell).T(Face.Tris(trisToChange).Edge, :);
+%                 %                 surroundingNodes = intersect(tetsToExpand(1, :), tetsToExpand(2, :));
+%                 %                 tetsToChange = Geo.Cells(surroundingNodes).T;
+%                 %                 [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = FlipAddNodes(surroundingNodes, tetsToChange, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+%                 %             end
+%                 
+%                 %% D situation: not covered yet
+%                 
+%                 %             %% FLIP 44 %%NOT WORKING RIGHT NOW WITH TWO POINTY VERTICES???
+%                 %             if min(nrgs)>=Set.RemodelTol*1e-4 && length(Face.Tris)==4 && ...
+%                 %                     ~hasConverged
+%                 %                 [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip44(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+%                 %             end
+%                 %
+%                 %             %% Flip 32
+%                 %             if length(Face.Tris) == 3 && ~hasConverged
+%                 %                 [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip32(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+%                 %             end
+%                 %
+%                 %             %% Flip 23
+%                 %             if length(Face.Tris) ~= 3 && ~hasConverged
+%                 %                 YsToChange = Face.Tris(trisToChange).Edge;
+%                 %
+%                 %                 if ~CheckSkinnyTriangles(Ys(YsToChange(1),:),Ys(YsToChange(2),:), Face.Centre)
+%                 %                     [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip23(YsToChange, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+%                 %                 end
+%                 %             end
+%             end
+            
+            [nodeToRemoveFaces] = getFacesFromNode(Geo, nodeToRemove);
+            toRemoveAvgAspectRatioPerFace = cellfun(@(x) median([x.Tris.AspectRatio]), nodeToRemoveFaces);
             
             %% Most of the triangles of the face have bad aspect ratio
-            if (nnz(aspectRatio > Set.RemodelTol)/numel(aspectRatio)) > 0.5 && ...
+            if median(toRemoveAvgAspectRatioPerFace) > (Set.RemodelTol) && ...
                     xor(isempty(firstNodeAlive), isempty(secondNodeAlive)) && ...
                     ~hasConverged
+                
+                oldGeo_0 = Geo_0;
+                oldGeo_n = Geo_n;
+                oldGeo = Geo;
+                oldDofs = Dofs;
+                oldSet = Set;
+                oldNewYgIds = newYgIds;
+                
                 [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = FlipRemoveNode(nodeToRemove, cellNodeLoosing, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                
+                %% Get all the triangles that will be involved and do an average per Face to see if the change has worth it.
+                [faces] = getFacesFromNode(Geo, [nodeToRemove; nodeToRemoveNeighbours]);
+                avgAspectRatioPerFace = cellfun(@(x) mean([x.Tris.AspectRatio]), faces);
+                if median(avgAspectRatioPerFace) > median(prevAvgAspectRatioPerFace)
+                    %Revert
+                    disp('----Reverting node removing')
+                    Geo_0 = oldGeo_0;
+                    Geo_n = oldGeo_n;
+                    Geo = oldGeo;
+                    Dofs = oldDofs;
+                    Set = oldSet;
+                    newYgIds = oldNewYgIds;
+                else
+                    disp('Node removing --correct');
+                end
             end
         end
 
@@ -104,13 +157,6 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
 
                 firstNodeAlive = Geo.Cells(Face.ij(1)).AliveStatus;
                 secondNodeAlive = Geo.Cells(Face.ij(2)).AliveStatus;
-
-                aspectRatio = [];
-                sideLengths = [];
-                for numTris = 1:length(Face.Tris)
-                    [sideLengths(numTris, 1:3)] = ComputeTriSideLengths(Face, numTris, Geo.Cells(numCell).Y);
-                    aspectRatio(numTris) = ComputeTriAspectRatio(sideLengths(numTris, 1:3));
-                end 
 
                 %% Flip 13
                 % TODO: GENERALISE THIS INTO A GENERAL FUNCTION

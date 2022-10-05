@@ -3,13 +3,12 @@ function [nodeNeighbours] = getNodeNeighbours(Geo, node, mainNode)
 %   Detailed explanation goes here
 
 if exist('mainNode', 'var')
-    allNodeTets = Geo.Cells(node).T;
+    allNodeTets = vertcat(Geo.Cells(node).T);
     nodeNeighbours = unique(allNodeTets(any(ismember(allNodeTets, mainNode), 2), :));
-    nodeNeighbours(nodeNeighbours==node) = [];
 else
-    nodeNeighbours = unique(Geo.Cells(node).T);
-    nodeNeighbours(nodeNeighbours==node) = [];
+    nodeNeighbours = unique(vertcat(Geo.Cells(node).T));
 end
 
-end
+nodeNeighbours(ismember(nodeNeighbours, node)) = [];
 
+end

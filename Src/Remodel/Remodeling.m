@@ -10,10 +10,9 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
         hasConverged = 0;
         numCell = energyPerCellAndFaces(1, 1);
         numFace = energyPerCellAndFaces(1, 2);
-        maxARTri = energyPerCellAndFaces(1, 3);
         Face = Geo.Cells(numCell).Faces(numFace);
         
-        if Geo.Cells(numCell).AliveStatus == 1 && ~ismember(Face.globalIds, newYgIds) && ~isequal(Face.InterfaceType, 'CellCell') && ~isequal(Face.InterfaceType, 'Bottom') && ~ismember(numCell, Geo.BorderCells)
+        if Geo.Cells(numCell).AliveStatus == 1 && ~ismember(Face.globalIds, newYgIds) && ~isequal(Face.InterfaceType, 'CellCell') && ~isequal(Face.InterfaceType, 'Bottom') 
             firstNodeAlive = Geo.Cells(Face.ij(1)).AliveStatus;
             secondNodeAlive = Geo.Cells(Face.ij(2)).AliveStatus;
             

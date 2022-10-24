@@ -14,11 +14,6 @@ Geo_backup = Geo; Geo_n_backup = Geo_n; Geo_0_backup = Geo_0; Dofs_backup = Dofs
 
 fprintf('=>> %s-Flip.\n', flipName);
 
-oldYs = [];
-for numTet = 1:size(oldTets, 1)
-    [oldYs(numTet, :)] = GetYFromTet(Geo, oldTets(numTet, :));
-end
-
 [Geo] = RemoveTetrahedra(Geo, oldTets);
 [Geo] = AddTetrahedra(Geo, Tnew, Ynew, Set);
 [Geo_n] = RemoveTetrahedra(Geo_n, oldTets);
@@ -26,7 +21,7 @@ end
 [Geo_0] = RemoveTetrahedra(Geo_0, oldTets);
 [Geo_0] = AddTetrahedra(Geo_0, Tnew, Ynew, Set);
 
-try
+%try
     Geo   = Rebuild(Geo, Set);
     Geo   = BuildGlobalIds(Geo);
     Geo   = UpdateMeasures(Geo);
@@ -53,17 +48,17 @@ try
     
     Geo_0 = UpdateMeasures(Geo_0);
     
-catch MException
-    Geo   = Geo_backup;
-    Geo_n = Geo_n_backup;
-    Geo_0 = Geo_0_backup;
-    fprintf('=>> %s-Flip rejected: ', flipName);
-    fprintf(MException.identifier);
-    fprintf('\n');
-    fprintf(MException.message);
-    fprintf('\n');
-    return
-end
+% catch MException
+%     Geo   = Geo_backup;
+%     Geo_n = Geo_n_backup;
+%     Geo_0 = Geo_0_backup;
+%     fprintf('=>> %s-Flip rejected: ', flipName);
+%     fprintf(MException.identifier);
+%     fprintf('\n');
+%     fprintf(MException.message);
+%     fprintf('\n');
+%     return
+% end
 
 if CheckTris(Geo) %%&& ~CheckConvexity(Tnew,Geo_backup)
     PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+2)

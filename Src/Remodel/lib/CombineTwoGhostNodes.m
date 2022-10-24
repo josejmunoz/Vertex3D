@@ -52,10 +52,12 @@ function [Geo, Tnew, Ynew, removedTets, replacedTets] = CombineTwoGhostNodes(Geo
                         tetsToUse = sum(ismember(oldTets, Geo.Cells(numCell).T(numTet, :)), 2) > 2;
                         if any(tetsToUse)
                             Geo.Cells(numCell).Y(numTet, :) = mean(vertcat(oldYs(tetsToUse, :)), 1);
+                        else
+                            Geo.Cells(numCell).Y(numTet, :) = ComputeY(vertcat(Geo.Cells(currentTets(numTet, :)).X), newCell.X, length([Geo.Cells(currentTets(numTet, :)).AliveStatus]), Set);
                         end
                         Ynew(end+1, :) = Geo.Cells(numCell).Y(numTet, :);
                         Tnew(end+1, :) = Geo.Cells(numCell).T(numTet, :);
-                    end
+                    end         
                 end
             end
         end

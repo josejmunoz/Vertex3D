@@ -1,4 +1,4 @@
-function [Tnew, Ynew, oldTets] = ConnectTetrahedra(Geo, nodeToRemove, nodesToChange, oldTets, mainNodes, Set, flipName, cellNodeLoosing)
+function [Geo, Tnew, Ynew, oldTets] = ConnectTetrahedra(Geo, nodeToRemove, nodesToChange, oldTets, mainNodes, Set, flipName, cellNodeLoosing)
 %CONNECTTETRAHEDRA Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -9,7 +9,8 @@ allTs = vertcat(Geo.Cells.T);
 if isequal(Set.InputGeo, 'Voronoi')
     
     if length(mainNodes) == 4
-        ghostNodeLoosing = mainNodes(vertcat(Geo.Cells(mainNodes).AliveStatus) == 0);
+        %%TODO: Transform this into generic t1
+        debrisNodeLoosing = mainNodes(vertcat(Geo.Cells(mainNodes).AliveStatus) == 0);
 
         if length(mainNodes(vertcat(Geo.Cells(mainNodes).AliveStatus) == 0)) == 1        
             if length(cellNodeLoosing) == 1
@@ -17,12 +18,19 @@ if isequal(Set.InputGeo, 'Voronoi')
             end
 
             mainNodesToConnect = setdiff(mainNodes, nodesLoosing);
-            nodesToConnect = unique([unique(allTs(sum(ismember(allTs, nodesLoosing), 2)> 1, :)); nodesToChange]);
 
-            nodesConnectedToMainNodes = unique([getNodeNeighbours(Geo, mainNodesToConnect(1)); getNodeNeighbours(Geo, mainNodesToConnect(2))]);
-            nodesConnectedToLoosingNodes = intersect(nodesToConnect, getNodeNeighbours(Geo, cellNodeLoosing));
+            % Neighbours of main nodes and loosing nodes
+            nodesConnectedToWinningNodes = getNodeNeighbours(Geo, mainNodesToConnect);
+            nodesConnectedToCellLoosingNode = getNodeNeighbours(Geo, cellNodeLoosing);
+            
+            % Neighbours of nodeToRemove
+            nodesConnectedToNodeToRemoveAndCellNodeLoosing = getNodeNeighbours(Geo, nodeToRemove, cellNodeLoosing);
 
-            newCellBoundaryNode = setdiff(nodesConnectedToLoosingNodes, nodesConnectedToMainNodes);
+            % Define the node that will replace the 'nodeToRemove' and will
+            % belong to the three same cells as before
+            % This is defined by the node that is not connected to the
+            % winning nodes and it belonged to any of the loosing nodes
+            newCellBoundaryNode = setdiff(nodesConnectedToNodeToRemoveAndCellNodeLoosing, nodesConnectedToWinningNodes);
 
             if ismember(nodeToRemove, Geo.XgTop)
                 newCellBoundaryNode = newCellBoundaryNode(ismember(newCellBoundaryNode, Geo.XgTop));
@@ -46,22 +54,29 @@ if isequal(Set.InputGeo, 'Voronoi')
             end
             
             connectedNodes = [nodeToRemove, newCellBoundaryNode];
-            newCellBoundaryNode_Neighbours = getNodeNeighbours(Geo, newCellBoundaryNode);
-            opposedNodesToConnect = setdiff(intersect(nodesConnectedToLoosingNodes, newCellBoundaryNode_Neighbours), [nodeToRemove, newCellBoundaryNode]);
-
-            %% Connections #1: 1 mainNodes and 3 ghost node
+            newCellBoundaryNode_Neighbours = getNodeNeighbours(Geo, newCellBoundaryNode, cellNodeLoosing);
+            %% for now only with the alive cell
+            opposedNodesToConnect = setdiff(intersect(nodesConnectedToCellLoosingNode, newCellBoundaryNode_Neighbours), [nodeToRemove, newCellBoundaryNode]);
+            opposedNodesToConnect = opposedNodesToConnect(ismember(opposedNodesToConnect, Geo.XgID));
+            
+            %% ALTERNATIVE: FLIP TO DO THE INTERCALATION
+            %[Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip44(f, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds)
+            
+            %% VIA REWIRING NETWORK %%%%%%%%%%%%%%%%%%%%%%%%%% 
+            
+            %% Connections #1: 1 mainNodes and 3 ghost node: This might be a flip
             Tnew = [newCellBoundaryNode, nodeToRemove, mainNodesToConnect(1), intersect(getNodeNeighbours(Geo, mainNodesToConnect(1)), opposedNodesToConnect); ...
                 newCellBoundaryNode, nodeToRemove, mainNodesToConnect(2), intersect(getNodeNeighbours(Geo, mainNodesToConnect(2)), opposedNodesToConnect)];
 
-            %% Connections #2: 2 mainNodes and 2 ghost node
+            %% Connections #2: 2 mainNodes and 2 ghost node: I don't know about this one + getting overlapped tets in regular circums
             Tnew(end+1, :) = [mainNodesToConnect', newCellBoundaryNode, nodeToRemove];
             Tnew(end+1, :) = [cellNodeLoosing, newCellBoundaryNode, mainNodesToConnect(1), intersect(getNodeNeighbours(Geo, mainNodesToConnect(1)), opposedNodesToConnect)];
             Tnew(end+1, :) = [cellNodeLoosing, newCellBoundaryNode, mainNodesToConnect(2), intersect(getNodeNeighbours(Geo, mainNodesToConnect(2)), opposedNodesToConnect)];
 
-            %% Connections #3: 3 mainNodes and 1 ghost node
-            connectedNode1_ghostNodeLoosing = intersect(getNodeNeighbours(Geo, ghostNodeLoosing), connectedNodes);
-            connectedNode2_mainNodeLoosing = setdiff(connectedNodes, connectedNode1_ghostNodeLoosing);
-            Tnew(end+1, :) = [mainNodesToConnect', ghostNodeLoosing, connectedNode1_ghostNodeLoosing];
+            %% Connections #3: 3 mainNodes and 1 ghost node: This might be a flip
+            connectedNode1_debrisNodeLoosing = intersect(getNodeNeighbours(Geo, debrisNodeLoosing), connectedNodes);
+            connectedNode2_mainNodeLoosing = setdiff(connectedNodes, connectedNode1_debrisNodeLoosing);
+            Tnew(end+1, :) = [mainNodesToConnect', debrisNodeLoosing, connectedNode1_debrisNodeLoosing];
             Tnew(end+1, :) = [mainNodesToConnect', cellNodeLoosing, connectedNode2_mainNodeLoosing];
             
             %% Connection #4: 4 mainNodes
@@ -106,7 +121,8 @@ if isequal(Set.InputGeo, 'Voronoi')
         nodesToCombine = [nodesToChange(closestID), nodeToRemove];
         oldYs = cellfun(@(x) GetYFromTet(Geo, x), num2cell(oldTets, 2), 'UniformOutput', false);
         oldYs = vertcat(oldYs{:});
-        [~, Tnew, Ynew, removedTets, replacedTets] = CombineTwoGhostNodes(Geo, Set, nodesToCombine, oldTets, oldYs);
+        [newGeo, Tnew, Ynew] = CombineTwoGhostNodes(Geo, Set, nodesToCombine, oldTets, oldYs);
+        Geo.Cells(nodesToCombine(1)).X = newGeo.Cells(nodesToCombine(1)).X;
     end
 else
     

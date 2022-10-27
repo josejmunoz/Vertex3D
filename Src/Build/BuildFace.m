@@ -1,4 +1,4 @@
-function Face = BuildFace(ci, cj, nCells, Cell, XgID, Set, XgTop, XgBottom)
+function Face = BuildFace(ci, cj, face_ids, nCells, Cell, XgID, Set, XgTop, XgBottom)
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	% BuildFace:										  
 	%   Completes a single Face struct with already but empty fields. 
@@ -22,13 +22,12 @@ function Face = BuildFace(ci, cj, nCells, Cell, XgID, Set, XgTop, XgBottom)
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%	
     
     ij			= [ci, cj];
-	face_ids	= sum(ismember(Cell.T,ij),2)==2; 
 
 	Face				= struct();
 	Face.ij				= ij;
 	Face.globalIds		= -1;
 	Face.InterfaceType	= BuildInterfaceType(ij, XgID, XgTop, XgBottom);
-	Face.Centre			= BuildFaceCentre(ij, nCells,  Cell.X, Cell.Y(face_ids,:), Set.f);
+	Face.Centre			= BuildFaceCentre(ij, nCells,  Cell.X, Cell.Y(face_ids,:), Set.f, isequal(Set.InputGeo, 'Bubbles'));
 	[Face.Tris] = BuildEdges(Cell.T, face_ids, Face.Centre, Face.InterfaceType, Cell.X, Cell.Y, 1:nCells); %%TODO: IMPROVE TO ONLY GET 'NONDEADCELLS'
     
 	[Face.Area]  = ComputeFaceArea(vertcat(Face.Tris.Edge), Cell.Y, Face.Centre);

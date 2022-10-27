@@ -8,16 +8,22 @@ function [Geo] = BuildCells(Geo, Set, X, Twg)
 	FaceFields = ["ij", "Centre", "Tris", "globalIds", "InterfaceType", "Area", "Area0"];
     % Build the Cells struct Array
 	Geo.Cells = BuildStructArray(length(X), CellFields);
-	% Nodes and Tetrahedras    
+	% Nodes and Tetrahedras
+    if isequal(Set.InputGeo, 'Bubbles')
+        Set.TotalCells = Geo.nx * Geo.ny * Geo.nz;
+    end
 	for c = 1:length(X)
         Geo.Cells(c).ID    = c;
 		Geo.Cells(c).X     = X(c,:);
 		Geo.Cells(c).T     = Twg(any(ismember(Twg,c),2),:);
+        % Initialize status of cells: 1 = 'Alive', 0 = 'Ablated', [] = 'Dead'
+        if c <= Set.TotalCells
+            Geo.Cells(c).AliveStatus = 1;
+        end
 	end
 	% Cell vertices
     for c = 1:Geo.nCells
-		Geo.Cells(c).Y     = BuildYFromX(Geo.Cells(c), Geo.Cells, ...
-													Geo.XgID, Set);
+		Geo.Cells(c).Y     = BuildYFromX(Geo.Cells(c), Geo, Set);
     end
     if Set.Substrate == 1
         XgSub=size(X,1); % THE SUBSTRATE NODE
@@ -32,7 +38,9 @@ function [Geo] = BuildCells(Geo, Set, X, Twg)
 		Geo.Cells(c).Faces = BuildStructArray(length(Neigh_nodes), FaceFields);
         for j  = 1:length(Neigh_nodes)
 			cj = Neigh_nodes(j);
-			Geo.Cells(c).Faces(j) = BuildFace(c, cj, Geo.nCells, Geo.Cells(c), Geo.XgID, Set, Geo.XgTop, Geo.XgBottom);
+            ij			= [c, cj];
+            face_ids	= sum(ismember(Geo.Cells(c).T, ij), 2) == 2;
+			Geo.Cells(c).Faces(j) = BuildFace(c, cj, face_ids, Geo.nCells, Geo.Cells(c), Geo.XgID, Set, Geo.XgTop, Geo.XgBottom);
         end
         Geo.Cells(c).Area  = ComputeCellArea(Geo.Cells(c));
         Geo.Cells(c).Area0 = Geo.Cells(c).Area;
@@ -88,9 +96,4 @@ function [Geo] = BuildCells(Geo, Set, X, Twg)
         end
     end
     Geo = UpdateMeasures(Geo);
-    
-    % Initialize status of cells: 1 = 'Alive', 0 = 'Ablated', [] = 'Dead'
-    for numCell = 1:Geo.nCells
-        Geo.Cells(numCell).AliveStatus = 1;
-    end
 end

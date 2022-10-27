@@ -9,16 +9,21 @@ disp('------------- SIMULATION STARTS -------------');
 % simulations can be run from a single file
 
 % Stretch
-Substrate
 % StretchBulk
 % Compress
+% Remodelling_Bubbles
+Remodeling_Voronoi
 
 Set=SetDefault(Set);
-Set = AddDefault(Set, WoundDefault(Set));
+Set=WoundDefault(Set);
 Set=InitiateOutputFolder(Set);
 Set.flog = fopen(Set.log, 'w+');
 
-[Geo, Set] = InitializeGeometry3DVertex(Geo, Set);
+if isequal(Set.InputGeo, 'Bubbles')
+    [Geo, Set] = InitializeGeometry3DVertex(Geo, Set);
+elseif isequal(Set.InputGeo, 'Voronoi')
+    [Geo, Set] = InitializeGeometry_3DVoronoi(Geo, Set);
+end
 % TODO FIXME, this is bad, should be joined somehow
 if Set.Substrate == 1
     Dofs = GetDOFsSubstrate(Geo, Set);
@@ -31,12 +36,13 @@ t=0; tr=0; tp=0;
 Geo_0   = Geo;
 Geo_n   = Geo;
 numStep = 1; relaxingNu = false;
+EnergiesPerTimeStep = {};
 
 PostProcessingVTK(Geo, Geo_0, Set, numStep)
 while t<=Set.tend
     Set.currentT = t;
 	if Set.Remodelling && abs(t-tr)>=Set.RemodelingFrequency
-        [Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Set);
+        [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Set);
         tr    = t;
     end
     
@@ -47,6 +53,7 @@ while t<=Set.tend
         %IMPORTANT: Here it updates: Areas, Volumes, etc... Should be
         %up-to-date
 	    Geo = UpdateMeasures(Geo);
+        Set = UpdateSet_F(Geo, Geo_0, Set);
         
         % Wounding
         [Geo] = ablateCells(Geo, Set, t);
@@ -62,13 +69,14 @@ while t<=Set.tend
 %         end
     end
     
-	[g, K, E, Geo] = KgGlobal(Geo_0, Geo_n, Geo, Set); 
+	[g, K, E, Geo, Energies] = KgGlobal(Geo_0, Geo_n, Geo, Set);
 	[Geo, g, K, Energy, Set, gr, dyr, dy] = NewtonRaphson(Geo_0, Geo_n, Geo, Dofs, Set, K, g, numStep, t);
 
     if gr<Set.tol && dyr<Set.tol && all(isnan(g(Dofs.Free)) == 0) && all(isnan(dy(Dofs.Free)) == 0) 
         if Set.nu/Set.nu0 == 1
 	        fprintf('STEP %i has converged ...\n',Set.iIncr)
-    
+            
+            EnergiesPerTimeStep{end+1} = Energies;
             Geo = BuildXFromY(Geo_n, Geo);
 	        tp=t;
     
@@ -79,6 +87,7 @@ while t<=Set.tend
             numStep=numStep+1;
             Geo_n = Geo;
             PostProcessingVTK(Geo, Geo_0, Set, numStep)
+            save(fullfile(pwd, Set.OutputFolder, strcat('status', num2str(numStep),'.mat')), 'Geo', 'Geo_n', 'Geo_0', 'Set', 'Dofs', 'EnergiesPerTimeStep', 't', 'numStep')
             relaxingNu = false;
         else
             Set.nu = max(Set.nu/2, Set.nu0);

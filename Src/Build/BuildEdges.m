@@ -14,7 +14,7 @@ function [Tris] = BuildEdges(Tets, FaceIds, FaceCentre, FaceInterfaceType, X, Ys
     %	face. That is Geo.Cells(c).Y(edges(e,:),:) will give vertices
     %   defining the edge. Used also for triangle computation
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%	
-	TrisFields = ["Edge", "Area", "EdgeLength", "SharedByCells", "Location", "ContractileG"]; 
+	TrisFields = ["Edge", "Area", "AspectRatio", "EdgeLength", "LengthsToCentre", "SharedByCells", "Location", "ContractileG"]; 
     Tris = BuildStructArray(sum(FaceIds), TrisFields);
     
     FaceTets = Tets(FaceIds,:);
@@ -32,10 +32,18 @@ function [Tris] = BuildEdges(Tets, FaceIds, FaceCentre, FaceInterfaceType, X, Ys
 		    i = i & ~ismember(1:length(FaceTets),tet_order)';
 		    i = find(i);
             if isempty(i)
-                return
+                ME = MException('BuildEdges:TetrahedraOrdering', ... 
+                    sprintf('Cannot create a face with these tetrahedra'));
+                throw(ME);
             end
 		    tet_order(yi) = i(1);
 		    prev_tet = FaceTets(i(1),:);
+        end
+        % Last one should match with the first one
+        if sum(ismember(FaceTets(1, :), prev_tet),2)~=3
+            ME = MException('BuildEdges:TetrahedraOrdering', ...
+                sprintf('Cannot create a face with these tetrahedra'));
+            throw(ME);
         end
     else
         % TODO FIXME is this enough??? will it get flipped later if not
@@ -47,7 +55,9 @@ function [Tris] = BuildEdges(Tets, FaceIds, FaceCentre, FaceInterfaceType, X, Ys
     if length(surf_ids) < 3
 		% Something went really wrong in the simulation, or a flip being 
 		% tested would result in another face being just an edge.
-        return
+        ME = MException('BuildEdges:TetrahedraMinSize', ...
+            'Length of the face is lower than 3');
+        throw(ME);
     end
 	surf_ids  = surf_ids(tet_order);
 	%% Vertices ordering
@@ -70,19 +80,23 @@ function [Tris] = BuildEdges(Tets, FaceIds, FaceCentre, FaceInterfaceType, X, Ys
     end
     
 	%% Build edges and identify the ones shared by different cells
-	for yf = 1:length(surf_ids)-1
-		Tris(yf).Edge = [surf_ids(yf) surf_ids(yf+1)];
+	for currentTri = 1:length(surf_ids)-1
+		Tris(currentTri).Edge = [surf_ids(currentTri) surf_ids(currentTri+1)];
         %edges shared by different cells
-        currentTris_1 = Tets(Tris(yf).Edge(1), :);
-        currentTris_2 = Tets(Tris(yf).Edge(2), :);
-        Tris(yf).SharedByCells = intersect(currentTris_1(ismember(currentTris_1, nonDeadCells)), currentTris_2(ismember(currentTris_2, nonDeadCells)));
-        Tris(yf).EdgeLength = norm(Ys(Tris(yf).Edge(1), :) - Ys(Tris(yf).Edge(2), :));
+        currentTris_1 = Tets(Tris(currentTri).Edge(1), :);
+        currentTris_2 = Tets(Tris(currentTri).Edge(2), :);
+        Tris(currentTri).SharedByCells = intersect(currentTris_1(ismember(currentTris_1, nonDeadCells)), currentTris_2(ismember(currentTris_2, nonDeadCells)));
+        
+        % Compute Tris aspect ratio, edge length and LengthsToCentre
+        [Tris(currentTri).EdgeLength, Tris(currentTri).LengthsToCentre, Tris(currentTri).AspectRatio] = ComputeTriLengthMeasurements(Tris, Ys, currentTri, FaceCentre);
 	end
 	Tris(length(surf_ids)).Edge = [surf_ids(end) surf_ids(1)];
     currentTris_1 = Tets(Tris(length(surf_ids)).Edge(1), :);
     currentTris_2 = Tets(Tris(length(surf_ids)).Edge(2), :);
     Tris(length(surf_ids)).SharedByCells = intersect(currentTris_1(ismember(currentTris_1, nonDeadCells)), currentTris_2(ismember(currentTris_2, nonDeadCells)));
-    Tris(length(surf_ids)).EdgeLength = norm(Ys(Tris(length(surf_ids)).Edge(1), :) - Ys(Tris(length(surf_ids)).Edge(2), :));
+    
+    % Compute Tris aspect ratio, edge length and LengthsToCentre
+    [Tris(length(surf_ids)).EdgeLength, Tris(length(surf_ids)).LengthsToCentre, Tris(length(surf_ids)).AspectRatio] = ComputeTriLengthMeasurements(Tris, Ys, length(surf_ids), FaceCentre);
     
     % Compute Tris area
     [~, triAreas] = ComputeFaceArea(vertcat(Tris.Edge), Ys, FaceCentre);

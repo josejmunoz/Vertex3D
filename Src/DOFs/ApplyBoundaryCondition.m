@@ -27,8 +27,9 @@ function [Geo, Dofs] = applyBoundaryCondition(t, Geo, Dofs, Set)
 		Dofs.Free(ismember(Dofs.Free,Dofs.FixP))=[];
 		Dofs.Free(ismember(Dofs.Free,Dofs.FixC))=[];
 	elseif Set.BC==1 || Set.BC==2
-		Dofs.Free=unique([Dofs.Free; Dofs.FixC; Dofs.FixP]);
-	end
+		%Dofs.Free=unique([Dofs.Free]);
+    end
+    
 		
 end
 

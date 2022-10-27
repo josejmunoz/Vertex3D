@@ -40,6 +40,11 @@ function CreateVtkEdges(Geo, Set, Step)
 								   Ys(yi,1),Ys(yi,2),Ys(yi,3));
         end
         
+        for yi = 1:length(Geo.Cells(numCell).Faces)
+            points{numCell} = points{numCell} + sprintf(" %.8f %.8f %.8f\n",...
+                Geo.Cells(numCell).Faces(yi).Centre(1),Geo.Cells(numCell).Faces(yi).Centre(2),Geo.Cells(numCell).Faces(yi).Centre(3));
+        end
+        
         cells_localIDs{numCell} = '';
         idCell{numCell} = '';
 		for f = 1:length(Geo.Cells(numCell).Faces)

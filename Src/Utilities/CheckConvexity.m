@@ -19,7 +19,9 @@ function [isConvex, tetID]=CheckConvexity(Tnew,Geo)
 	end
 	allXs = zeros(length(Geo.Cells),3);
     for c = 1:length(Geo.Cells)
-		allXs(c,:) = Geo.Cells(c).X;
+        if ~isempty(Geo.Cells(c).X)
+            allXs(c,:) = Geo.Cells(c).X;
+        end
     end
 
 	%% Checking if Tnew overlap with other tetrahedra

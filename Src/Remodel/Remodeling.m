@@ -21,16 +21,13 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
         if ~all(ghostNodes) && ~any(ismember(faceGlobalIds, newYgIds))
             % If the shared nodes are all ghost nodes, we won't remodel 
             
-            if length(cellNodesShared) == 1
-                
-            elseif length(cellNodesShared) == 2
-                %% Affects two cells
-                %% Nodes are within the same cell
-                % It is a FLIP N-0
+            if length(cellNodesShared) < 3
+                %% Nodes are within the same cell or are shared between 2 cells
+                % Then, it is a FLIP N-0
                  nodeToRemove = ghostNode1;
+                 nodeToKeep = ghostNode2;
                  
-                 nodeToRemoveNeighbours = getNodeNeighbours(Geo, nodeToRemove);
-                 
+%                  nodeToRemoveNeighbours = getNodeNeighbours(Geo, nodeToRemove);
 %                  %% Previous configuration
 %                  oldGeo_0 = Geo_0;
 %                  oldGeo_n = Geo_n;
@@ -42,17 +39,7 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
 %                  prevAvgAspectRatioPerFace = cellfun(@(x) mean([x.Tris.AspectRatio]), prevFaces);
                  
                  %% Perform flip according to valence of segment
-                 switch valenceSegment
-                     case 2 %??
-                         error('valence tet 2')
-                         [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip23(YsToChange, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                     case 3
-                         [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip32(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                     case 4
-                         [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip44(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                     otherwise
-                         error('valence number greater than expected')
-                 end
+                 [Geo_0, Geo_n, Geo, Dofs, newYgIds, hasConverged] = FlipN0(Geo, Geo_n, Geo_0, Dofs, newYgIds, nodeToRemove, nodeToKeep, Set)
                  
 %                  %% Post-flip checks
 %                  % Get all the triangles that will be involved and do an average per Face to see if the change has worth it.
@@ -72,7 +59,17 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
 %                  end
             else 
                 %% Intercalation
-                
+                switch valenceSegment
+                     case 2 %??
+                         error('valence tet 2')
+                         [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip23(YsToChange, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                     case 3
+                         [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip32(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                     case 4
+                         [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip44(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                     otherwise
+                         error('valence number greater than expected')
+                 end
             end
         end
 

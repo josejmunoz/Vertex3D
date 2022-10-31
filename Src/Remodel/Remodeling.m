@@ -4,38 +4,69 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
     newYgIds = [];
     checkedYgIds = [];
 
-    [energyPerCellAndFaces] = GetTrisToRemodelOrdered(Geo, Set);
+    %%TODO: LOOK FOR SEGMENTS (NODE PAIRS) TO REMODEL
+    [segmentFeatures] = GetTrisToRemodelOrdered(Geo, Set);
     %% loop ENERGY-dependant
-    while ~isempty(energyPerCellAndFaces)
+    while ~isempty(segmentFeatures)
         hasConverged = 0;
-        numCell = energyPerCellAndFaces(1, 1);
-        numFace = energyPerCellAndFaces(1, 2);
+        numCell = segmentFeatures(1, 1);
+        numFace = segmentFeatures(1, 2);
         Face = Geo.Cells(numCell).Faces(numFace);
-
-        [valence, sharedTets] = edgeValence(Geo, Face.ij);
         
         if Geo.Cells(numCell).AliveStatus == 1 && ~ismember(Face.globalIds, newYgIds) && ~isequal(Face.InterfaceType, 'CellCell') && ~isequal(Face.InterfaceType, 'Bottom') 
-            firstNodeAlive = Geo.Cells(Face.ij(1)).AliveStatus;
-            secondNodeAlive = Geo.Cells(Face.ij(2)).AliveStatus;
+            aliveStatusNodes = {Geo.Cells(Face.ij).AliveStatus};
             
-            nodeToRemove = Face.ij(cellfun(@isempty, {firstNodeAlive, secondNodeAlive}));
-            cellNodeLoosing = Face.ij(~cellfun(@isempty, {firstNodeAlive, secondNodeAlive}));
-            aspectRatio = [Face.Tris.AspectRatio];
-            
-            nodeToRemoveNeighbours = getNodeNeighbours(Geo, nodeToRemove);
-            
-            %% Previous configuration
-            oldGeo_0 = Geo_0;
-            oldGeo_n = Geo_n;
-            oldGeo = Geo;
-            oldDofs = Dofs;
-            oldSet = Set;
-            oldNewYgIds = newYgIds;
-            [prevFaces] = getFacesFromNode(Geo, [nodeToRemove; nodeToRemoveNeighbours]);
-            prevAvgAspectRatioPerFace = cellfun(@(x) mean([x.Tris.AspectRatio]), prevFaces);
-            
-            %% Perform flip according to valence
-            switch valence
+            % if we have to remove a ghost node
+            if any(cellfun(@isempty, aliveStatusNodes))
+                 % It is a FLIP N-0
+                 nodeToRemove = Face.ij(cellfun(@isempty, aliveStatusNodes));
+                 cellNodeLoosing = Face.ij(~cellfun(@isempty, aliveStatusNodes));
+                 aspectRatio = [Face.Tris.AspectRatio];
+                 
+                 nodeToRemoveNeighbours = getNodeNeighbours(Geo, nodeToRemove);
+                 
+                 %% Previous configuration
+                 oldGeo_0 = Geo_0;
+                 oldGeo_n = Geo_n;
+                 oldGeo = Geo;
+                 oldDofs = Dofs;
+                 oldSet = Set;
+                 oldNewYgIds = newYgIds;
+                 [prevFaces] = getFacesFromNode(Geo, [nodeToRemove; nodeToRemoveNeighbours]);
+                 prevAvgAspectRatioPerFace = cellfun(@(x) mean([x.Tris.AspectRatio]), prevFaces);
+                 
+                 %% Perform flip according to valence of segment
+                 switch valence
+                     case 2 %??
+                         error('valence tet 2')
+                         [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip23(YsToChange, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                     case 3
+                         [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip32(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                     case 4
+                         [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip44(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                     otherwise
+                         error('valence number greater than expected')
+                 end
+                 
+                 %% Post-flip checks
+                 % Get all the triangles that will be involved and do an average per Face to see if the change has worth it.
+                 [faces] = getFacesFromNode(Geo, [nodeToRemove; nodeToRemoveNeighbours]);
+                 avgAspectRatioPerFace = cellfun(@(x) mean([x.Tris.AspectRatio]), faces);
+                 if median(avgAspectRatioPerFace) > median(prevAvgAspectRatioPerFace)
+                     %Revert
+                     disp('----Reverting node removing')
+                     Geo_0 = oldGeo_0;
+                     Geo_n = oldGeo_n;
+                     Geo = oldGeo;
+                     Dofs = oldDofs;
+                     Set = oldSet;
+                     newYgIds = oldNewYgIds;
+                 else
+                     disp('Node removing --correct');
+                 end
+            else % Both nodes are cells
+                % Perform flip according to valence
+                switch valence
                 case 2 %??
                     error('valence tet 2')
                     [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip23(YsToChange, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
@@ -45,31 +76,17 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
                     [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip44(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
                 otherwise
                     error('valence number greater than expected')
+                end
             end
             
-            %% Post-flip checks
-            % Get all the triangles that will be involved and do an average per Face to see if the change has worth it.
-            [faces] = getFacesFromNode(Geo, [nodeToRemove; nodeToRemoveNeighbours]);
-            avgAspectRatioPerFace = cellfun(@(x) mean([x.Tris.AspectRatio]), faces);
-            if median(avgAspectRatioPerFace) > median(prevAvgAspectRatioPerFace)
-                %Revert
-                disp('----Reverting node removing')
-                Geo_0 = oldGeo_0;
-                Geo_n = oldGeo_n;
-                Geo = oldGeo;
-                Dofs = oldDofs;
-                Set = oldSet;
-                newYgIds = oldNewYgIds;
-            else
-                disp('Node removing --correct');
-            end
+            
         end
 
-        checkedYgIds(end+1) = energyPerCellAndFaces(1, 4);
+        checkedYgIds(end+1) = segmentFeatures(1, 4);
 
-        [energyPerCellAndFaces] = GetTrisToRemodelOrdered(Geo, Set);
-        if ~isempty(energyPerCellAndFaces)
-            energyPerCellAndFaces(ismember(energyPerCellAndFaces(:, 4), union(checkedYgIds, newYgIds)), :) = [];
+        [segmentFeatures] = GetTrisToRemodelOrdered(Geo, Set);
+        if ~isempty(segmentFeatures)
+            segmentFeatures(ismember(segmentFeatures(:, 4), union(checkedYgIds, newYgIds)), :) = [];
         end
     end
 

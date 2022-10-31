@@ -1,24 +1,51 @@
 function [segmentFeatures] = GetTrisToRemodelOrdered(Geo, Set)
 %GETTRISTOREMODELORDERED Summary of this function goes here
 %   Detailed explanation goes here
-possibleGhostPairs = nchoosek(Geo.XgID, 2);
+
+%possibleGhostPairs = nchoosek(Geo.XgID, 2);
+
+ghostNodeCells = Geo.Cells(ismember(1:length(Geo.Cells), Geo.XgID) & ~cellfun(@isempty, {Geo.Cells.T}));
+ghostNodeCellIDs = [ghostNodeCells.ID];
+ghostPairs = [];
+for id = ghostNodeCellIDs
+    neighbours = getNodeNeighbours(Geo, id);
+    neighbours = neighbours(ismember(neighbours, Geo.XgID));
+    idValues = ones(length(neighbours), 1) * id;
+    ghostPairs = [ghostPairs; idValues, neighbours];
+end
+
+ghostPairs = unique(sort(ghostPairs, 2), 'rows');
 
 segmentFeatures = table();
-for ghostPair = possibleGhostPairs'
-    if ismember(ghostPair(2), Geo.Cells(ghostPair(1)).T)
-        % Edge length
-        x1 = Geo.Cells(ghostPair(1)).X;
-        x2 = Geo.Cells(ghostPair(2)).X;
-        edgeLength = norm(x2 - x1);
-        
-        % Edge valence (number of shared tets)
-        [valence, sharedTets] = edgeValence(Geo, ghostPair);
-        
-        % Number of cell nodes shared
-        sharedCellNodes = unique(sharedTets(~ismember(sharedTets, Geo.XgID)));
-        
-        segmentFeatures(end+1, :) = table(ghostPair(1), ghostPair(2), edgeLength, valence, {sharedCellNodes});
+for ghostPair = ghostPairs'
+    % Edge length
+    x1 = Geo.Cells(ghostPair(1)).X;
+    x2 = Geo.Cells(ghostPair(2)).X;
+    edgeLength = norm(x2 - x1);
+    
+    if edgeLength > Set.RemodelTol
+        continue
     end
+    
+    % Edge valence (number of shared tets)
+    [valence, sharedTets] = edgeValence(Geo, ghostPair);
+    
+    % Number of cell nodes shared
+    sharedCellNodes = unique(sharedTets(~ismember(sharedTets, Geo.XgID)));
+    
+    % Face IDs involved
+    faceIDs = [];
+    for cellNode = sharedCellNodes'
+        for numFace = 1:length(Geo.Cells(cellNode).Faces)
+            face = Geo.Cells(cellNode).Faces(numFace);
+            if any(ismember(ghostPair, face.ij))
+                faceIDs(end+1) = face.globalIds;
+            end
+        end
+    end
+    
+    % Add it to the table
+    segmentFeatures(end+1, :) = table(ghostPair(1), ghostPair(2), edgeLength, valence, {sharedCellNodes}, {faceIDs});
 end
 
 % allTs = vertcat(Geo.Cells.T);

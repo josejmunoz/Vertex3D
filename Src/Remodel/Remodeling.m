@@ -9,19 +9,26 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
     %% loop ENERGY-dependant
     while ~isempty(segmentFeatures)
         hasConverged = 0;
-        numCell = segmentFeatures(1, 1);
-        numFace = segmentFeatures(1, 2);
-        Face = Geo.Cells(numCell).Faces(numFace);
+        ghostNode1 = segmentFeatures{1, 1};
+        ghostNode2 = segmentFeatures{1, 2};
+        valenceSegment = segmentFeatures{1, 3};
+        cellNodesShared = segmentFeatures{1, 5};
+        cellNodesShared = cellNodesShared{1};
+        faceGlobalIds = segmentFeatures{1, 6};
+        faceGlobalIds = faceGlobalIds{1};
         
-        if Geo.Cells(numCell).AliveStatus == 1 && ~ismember(Face.globalIds, newYgIds) && ~isequal(Face.InterfaceType, 'CellCell') && ~isequal(Face.InterfaceType, 'Bottom') 
-            aliveStatusNodes = {Geo.Cells(Face.ij).AliveStatus};
+        aliveStatusCellNodes = {Geo.Cells(cellNodesShared).AliveStatus};
+        ghostNodes = cellfun(@isempty, aliveStatusCellNodes);
+        if ~all(ghostNodes) && ~any(ismember(faceGlobalIds, newYgIds))
+            % If the shared nodes are all ghost nodes, we won't remodel 
             
-            % if we have to remove a ghost node
-            if any(cellfun(@isempty, aliveStatusNodes))
-                 % It is a FLIP N-0
-                 nodeToRemove = Face.ij(cellfun(@isempty, aliveStatusNodes));
-                 cellNodeLoosing = Face.ij(~cellfun(@isempty, aliveStatusNodes));
-                 aspectRatio = [Face.Tris.AspectRatio];
+            if length(cellNodesShared) == 1
+                
+            elseif length(cellNodesShared) == 2
+                %% Affects two cells
+                %% Nodes are within the same cell
+                % It is a FLIP N-0
+                 nodeToRemove = ghostNode1;
                  
                  nodeToRemoveNeighbours = getNodeNeighbours(Geo, nodeToRemove);
                  
@@ -36,7 +43,7 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
                  prevAvgAspectRatioPerFace = cellfun(@(x) mean([x.Tris.AspectRatio]), prevFaces);
                  
                  %% Perform flip according to valence of segment
-                 switch valence
+                 switch valenceSegment
                      case 2 %??
                          error('valence tet 2')
                          [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip23(YsToChange, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
@@ -64,29 +71,17 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
                  else
                      disp('Node removing --correct');
                  end
-            else % Both nodes are cells
-                % Perform flip according to valence
-                switch valence
-                case 2 %??
-                    error('valence tet 2')
-                    [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip23(YsToChange, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                case 3
-                    [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip32(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                case 4
-                    [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip44(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                otherwise
-                    error('valence number greater than expected')
-                end
+            else 
+                %% Intercalation
+                
             end
-            
-            
         end
 
-        checkedYgIds(end+1) = segmentFeatures(1, 4);
+        checkedYgIds(end+1, :) = [ghostNode1, ghostNode2];
 
         [segmentFeatures] = GetTrisToRemodelOrdered(Geo, Set);
         if ~isempty(segmentFeatures)
-            segmentFeatures(ismember(segmentFeatures(:, 4), union(checkedYgIds, newYgIds)), :) = [];
+            segmentFeatures(ismember([segmentFeatures{:, 1:2}], checkedYgIds, 'rows'), :) = [];
         end
     end
 

@@ -27,7 +27,7 @@ Set.cLineTension = 0.03;
 Set.Remodelling = 1;
 Set.RemodelingFrequency = 0.02;
 Set.lambdaB = 1e-4;
-Set.RemodelTol = 1.5;
+Set.RemodelTol = 0.01;
 
 Set.BC = 2;
 Set.TStartBC = Set.tend;

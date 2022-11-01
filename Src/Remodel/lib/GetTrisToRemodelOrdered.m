@@ -23,15 +23,59 @@ for ghostPair = ghostPairs'
     x2 = Geo.Cells(ghostPair(2)).X;
     edgeLength = norm(x2 - x1);
     
-    if edgeLength > Set.RemodelTol
-        continue
+
+    
+    % Number of cell nodes shared
+    neighbours_original_1 = getNodeNeighbours(Geo, ghostPair(1));
+    neighbours_original_2 = getNodeNeighbours(Geo, ghostPair(2));
+    neighbours_pair = intersect(neighbours_original_1, neighbours_original_2);
+    sharedCellNodes = neighbours_pair(~ismember(neighbours_pair, Geo.XgID));
+    neighbours_1 = neighbours_original_1(~ismember(neighbours_original_1, Geo.XgID));
+    neighbours_2 = neighbours_original_2(~ismember(neighbours_original_2, Geo.XgID));
+    
+    neighbours_lengths = [length(neighbours_1), length(neighbours_2)];
+    neighbours = {neighbours_1, neighbours_2};
+    neighbours_original = {neighbours_original_1, neighbours_original_2};
+    
+    if any(neighbours_lengths > 3)
+        ghostNodesToT1 = ghostPair(neighbours_lengths > 3);
+        neighboursToT1 = neighbours{neighbours_lengths > 3};
+        neighboursOriginalToT1 = neighbours_original{neighbours_lengths > 3};
+        
+        if all(ismember(neighboursToT1, Geo.BorderCells))
+            continue
+        end
+        
+        cellNodeNeighbours = {};
+        for neigh = neighboursToT1'
+            cellNodeNeighbours{end+1} = getNodeNeighbours(Geo, ghostNodesToT1, neigh);
+        end
+        
+        cellNode_CellNeighbours = zeros(length(cellNodeNeighbours)/2);
+        for numNode = 1:length(cellNodeNeighbours)
+            otherNodes = setdiff(1:length(cellNodeNeighbours), numNode);
+            %opposedNodes{numNode} = setdiff(cellNodeNeighbours{numNode}, vertcat(cellNodeNeighbours{otherNodes}));
+            opposedNodes{numNode} = intersect(cellNodeNeighbours{numNode}, Geo.XgID);
+            
+            cellNode_CellNeighbours(end+1, :) = otherNode(ismember(otherNode, cellNodeNeighbours{numNode}));
+        end
+        
+        % if one of the neighbours is debris, don't use it to calculate the
+        % mean only
+        opposedNodes = opposedNodes([Geo.Cells(neighboursToT1).AliveStatus] > 0);
+        
+        % Check how they are connected (cell nodes)
+        
+        
+        % Checkk average distance between connected and unconnected nodes
+    else
+        if edgeLength > Set.RemodelTol
+            continue
+        end
     end
     
     % Edge valence (number of shared tets)
     [valence, sharedTets] = edgeValence(Geo, ghostPair);
-    
-    % Number of cell nodes shared
-    sharedCellNodes = unique(sharedTets(~ismember(sharedTets, Geo.XgID)));
     
     % Face IDs involved
     faceIDs = [];
@@ -45,7 +89,7 @@ for ghostPair = ghostPairs'
     end
     
     % Add it to the table
-    segmentFeatures(end+1, :) = table(ghostPair(1), ghostPair(2), edgeLength, valence, {sharedCellNodes}, {faceIDs});
+    segmentFeatures(end+1, :) = table(ghostPair(1), ghostPair(2), edgeLength, valence, {sharedCellNodes}, {faceIDs}, {neighbours_1}, {neighbours_2});
 end
 
 % allTs = vertcat(Geo.Cells.T);
@@ -87,7 +131,7 @@ end
 % 
 
 if ~isempty(segmentFeatures)
-    [segmentFeatures] = sortrows(segmentFeatures, 2, 'descend');
+    [segmentFeatures] = sortrows(segmentFeatures, 3, 'ascend');
 end
 
 end

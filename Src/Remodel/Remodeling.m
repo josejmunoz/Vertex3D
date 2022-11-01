@@ -71,6 +71,7 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
                         [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip44(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
                     case 5
                         % Flip 5N
+                        [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip5N(segmentToChange, neighbourhood, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
                     case 6
                         % Flip 6N
                     otherwise

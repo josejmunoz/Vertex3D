@@ -51,23 +51,36 @@ for ghostPair = ghostPairs'
             cellNodeNeighbours{end+1} = getNodeNeighbours(Geo, ghostNodesToT1, neigh);
         end
         
-        cellNode_CellNeighbours = zeros(length(cellNodeNeighbours)/2);
+        cellNode_Adjacency = cell(length(cellNodeNeighbours), 1);
         for numNode = 1:length(cellNodeNeighbours)
-            otherNodes = setdiff(1:length(cellNodeNeighbours), numNode);
+            %otherNodes = setdiff(1:length(cellNodeNeighbours), numNode);
             %opposedNodes{numNode} = setdiff(cellNodeNeighbours{numNode}, vertcat(cellNodeNeighbours{otherNodes}));
             opposedNodes{numNode} = intersect(cellNodeNeighbours{numNode}, Geo.XgID);
             
-            cellNode_CellNeighbours(end+1, :) = otherNode(ismember(otherNode, cellNodeNeighbours{numNode}));
+            currentNeighbours = getNodeNeighbours(Geo, neighboursToT1(numNode));
+            cellNode_Adjacency{numNode} = neighboursToT1(ismember(neighboursToT1, [currentNeighbours; neighboursToT1(numNode)]));
         end
         
         % if one of the neighbours is debris, don't use it to calculate the
         % mean only
+        cellNode_Adjacency = cellNode_Adjacency([Geo.Cells(neighboursToT1).AliveStatus] > 0);
         opposedNodes = opposedNodes([Geo.Cells(neighboursToT1).AliveStatus] > 0);
         
         % Check how they are connected (cell nodes)
+        connectedNodes = cellfun(@length, cellNode_Adjacency) == length(neighboursToT1);
+        nonConnectedNodes = cellfun(@length, cellNode_Adjacency) < length(neighboursToT1);
         
+        % Check average distance between connected and unconnected nodes
+        avgDistance_ConnNodes = mean(pdist2(Geo.Cells(ghostNodesToT1).X, vertcat(Geo.Cells(vertcat(opposedNodes{connectedNodes})).X)));
+        avgDistance_NonConnNodes = mean(pdist2(Geo.Cells(ghostNodesToT1).X, vertcat(Geo.Cells(vertcat(opposedNodes{nonConnectedNodes})).X)));
         
-        % Checkk average distance between connected and unconnected nodes
+        if avgDistance_ConnNodes < avgDistance_NonConnNodes
+            continue
+        end
+        
+        % Change the ghostPair to intercalate
+        neighboursToT1 = neighboursToT1([Geo.Cells(neighboursToT1).AliveStatus] > 0);
+        ghostPair = [ghostNodesToT1 neighboursToT1(connectedNodes)];
     else
         if edgeLength > Set.RemodelTol
             continue

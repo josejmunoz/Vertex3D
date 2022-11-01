@@ -15,13 +15,15 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
         cellNodesShared = cellNodesShared{1};
         faceGlobalIds = segmentFeatures{1, 6};
         faceGlobalIds = faceGlobalIds{1};
+        neighbours_1 = segmentFeatures{1, 7};
+        neighbours_2 = segmentFeatures{1, 8};
         
         aliveStatusCellNodes = {Geo.Cells(cellNodesShared).AliveStatus};
         ghostNodes = cellfun(@isempty, aliveStatusCellNodes);
         if ~all(ghostNodes) && ~any(ismember(faceGlobalIds, newYgIds))
             % If the shared nodes are all ghost nodes, we won't remodel 
             
-            if length(cellNodesShared) < 3
+            if length(neighbours_1{1}) < 3 && length(neighbours_2{1}) < 3
                 %% Nodes are within the same cell or are shared between 2 cells
                 % Then, it is a FLIP N-0
                  nodeToRemove = ghostNode1;
@@ -60,16 +62,20 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
             else 
                 %% Intercalation
                 switch valenceSegment
-                     case 2 %??
-                         error('valence tet 2')
-                         [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip23(YsToChange, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                     case 3
-                         [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip32(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                     case 4
-                         [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip44(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                     otherwise
-                         error('valence number greater than expected')
-                 end
+                    case 2 %??
+                        error('valence tet 2')
+                        [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip23(YsToChange, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                    case 3
+                        [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip32(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                    case 4
+                        [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip44(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                    case 5
+                        % Flip 5N
+                    case 6
+                        % Flip 6N
+                    otherwise
+                        error('valence number greater than expected')
+                end
             end
         end
 

@@ -17,6 +17,7 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
         faceGlobalIds = faceGlobalIds{1};
         neighbours_1 = segmentFeatures{1, 7};
         neighbours_2 = segmentFeatures{1, 8};
+        sharedTets = segmentFeatures{1, 9};
         
         aliveStatusCellNodes = {Geo.Cells(cellNodesShared).AliveStatus};
         ghostNodes = cellfun(@isempty, aliveStatusCellNodes);
@@ -70,10 +71,9 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
                     case 4
                         [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip44(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
                     case 5
-                        % Flip 5N
-                        [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip5N(segmentToChange, neighbourhood, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                        [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip5N([ghostNode1 ghostNode2], sharedTets{1}, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
                     case 6
-                        % Flip 6N
+                        [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip6N([ghostNode1 ghostNode2], sharedTets{1}, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
                     otherwise
                         error('valence number greater than expected')
                 end

@@ -23,8 +23,6 @@ for ghostPair = ghostPairs'
     x2 = Geo.Cells(ghostPair(2)).X;
     edgeLength = norm(x2 - x1);
     
-
-    
     % Number of cell nodes shared
     neighbours_original_1 = getNodeNeighbours(Geo, ghostPair(1));
     neighbours_original_2 = getNodeNeighbours(Geo, ghostPair(2));
@@ -102,7 +100,7 @@ for ghostPair = ghostPairs'
     end
     
     % Add it to the table
-    segmentFeatures(end+1, :) = table(ghostPair(1), ghostPair(2), edgeLength, valence, {sharedCellNodes}, {faceIDs}, {neighbours_1}, {neighbours_2});
+    segmentFeatures(end+1, :) = table(ghostPair(1), ghostPair(2), edgeLength, valence, {sharedCellNodes}, {faceIDs}, {neighbours_1}, {neighbours_2}, {sharedTets});
 end
 
 % allTs = vertcat(Geo.Cells.T);

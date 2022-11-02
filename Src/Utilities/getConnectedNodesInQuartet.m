@@ -7,7 +7,7 @@ for numNode = 1:length(Xs)
     cellNode_Adjacency{numNode} = Xs(ismember(Xs, [currentNeighbours; Xs(numNode)]));
 end
 
-connectedNodes = cellfun(@length, cellNode_Adjacency) == length(Xs);
-unconnectedNodes = cellfun(@length, cellNode_Adjacency) < length(Xs);
+connectedNodes = Xs(cellfun(@length, cellNode_Adjacency) == length(Xs));
+unconnectedNodes = Xs(cellfun(@length, cellNode_Adjacency) < length(Xs));
 end
 

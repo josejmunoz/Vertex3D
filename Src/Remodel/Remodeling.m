@@ -24,7 +24,7 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
         if ~all(ghostNodes) && ~any(ismember(faceGlobalIds, newYgIds))
             % If the shared nodes are all ghost nodes, we won't remodel 
             
-            if length(neighbours_1{1}) < 3 && length(neighbours_2{1}) < 3
+            if length(neighbours_1{1}) < 4 && length(neighbours_2{1}) < 4
                 %% Nodes are within the same cell or are shared between 2 cells
                 % Then, it is a FLIP N-0
                  nodeToRemove = ghostNode1;

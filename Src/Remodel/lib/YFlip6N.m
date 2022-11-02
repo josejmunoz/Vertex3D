@@ -1,10 +1,10 @@
-function [Ynew, Tnew] = YFlip6N(Ys, Ts, XsToDisconnect, Geo)
+function [Ynew, Tnew] = YFlip6N(oldYs, oldTets, XsToDisconnect, Geo, Set)
 %YFLIP6N Summary of this function goes here
 %   Detailed explanation goes here
 Tnew = [];
 Ynew = [];
 
-Xs = unique(Ts);
+Xs = unique(oldTets);
 Xs_g = Xs(ismember(Xs, Geo.XgID));
 Xs_c = Xs(~ismember(Xs, Geo.XgID));
 
@@ -41,12 +41,46 @@ if length(Xs_gConnectedNodes) == length(Xs_gUnconnectedNodes) && length(Xs_cConn
             XsPos(5) XsPos(7) XsPos(1) XsPos(3)];
         
         %% Connection #4: 4 mainNodes
-        Tnew(end+1, :) = [Xs_cConnectedNodes, Xs_cUnconnectedNodes];
+        Tnew(end+1, :) = [Xs_cConnectedNodes', Xs_cUnconnectedNodes'];
     else
         error('Need to check this');
     end
 else
     error('Need to check this');
 end
+
+mainNodesToConnect = Xs_cUnconnectedNodes;
+nodesChanged = unique(Tnew(:));
+oldTets = oldTets(sum(ismember(oldTets, nodesChanged), 2) > 3, :);
+
+%% Recalculate Ys
+allTs = vertcat(Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).T);
+allYs = vertcat(Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).Y);
+for numTet = 1:size(Tnew, 1)
+    tetsToUse = sum(ismember(allTs, Tnew(numTet, :)), 2) > 2;
+    
+    mainNode_current = mainNodesToConnect(ismember(mainNodesToConnect, Tnew(numTet, :)));
+    if any(tetsToUse)
+        contributionOldYs = 1;
+        Ynew(end+1, :) = contributionOldYs * mean(vertcat(allYs(tetsToUse, :)), 1) + (1-contributionOldYs) * ComputeY(vertcat(Geo.Cells(Tnew(numTet, :)).X), Geo.Cells(mainNode_current(1)).X, length([Geo.Cells(Tnew(numTet, :)).AliveStatus]), Set);
+    else
+        contributionOldYs = 0.9;
+        tetsToUse = sum(ismember(allTs, Tnew(numTet, :)), 2) > 1;
+        
+        if any(ismember(Tnew(numTet, :), Geo.XgTop))
+            tetsToUse = tetsToUse & any(ismember(allTs, Geo.XgTop), 2);
+        elseif any(ismember(Tnew(numTet, :), Geo.XgBottom))
+            tetsToUse = tetsToUse & any(ismember(allTs, Geo.XgTop), 2);
+        end
+        
+        if any(tetsToUse)
+            Ynew(end+1, :) = contributionOldYs * mean(vertcat(allYs(tetsToUse, :)), 1) + (1-contributionOldYs) * ComputeY(vertcat(Geo.Cells(Tnew(numTet, :)).X), Geo.Cells(mainNode_current(1)).X, length([Geo.Cells(Tnew(numTet, :)).AliveStatus]), Set);
+        else
+            error('Need to check this!');
+        end
+    end
+            end
+
+
 end
 

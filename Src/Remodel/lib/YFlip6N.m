@@ -1,4 +1,4 @@
-function [Ynew, Tnew] = YFlip6N(oldYs, oldTets, XsToDisconnect, Geo, Set)
+function [Ynew, Tnew] = YFlip6N(oldTets, XsToDisconnect, Geo, Set)
 %YFLIP6N Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -47,10 +47,6 @@ else
     error('Need to check this');
 end
 
-mainNodesToConnect = Xs_cUnconnectedNodes;
-nodesChanged = unique(Tnew(:));
-oldTets = oldTets(sum(ismember(oldTets, nodesChanged), 2) > 3, :);
-
-[Ynew] = RecalculateYs(Geo, Tnew, mainNodesToConnect, Set)
+[Ynew] = RecalculateYs(Geo, Tnew, Xs_cUnconnectedNodes, Set);
 end
 

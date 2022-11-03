@@ -55,7 +55,7 @@ for ghostPair = ghostPairs'
             %opposedNodes{numNode} = setdiff(cellNodeNeighbours{numNode}, vertcat(cellNodeNeighbours{otherNodes}));
             opposedNodes{numNode} = intersect(cellNodeNeighbours{numNode}, Geo.XgID);
             
-            currentNeighbours = getNodeNeighbours(Geo, neighboursToT1(numNode));
+            currentNeighbours = getNodeNeighboursPerDomain(Geo, neighboursToT1(numNode), ismember(ghostNodesToT1, Geo.XgBottom));
             cellNode_Adjacency{numNode} = neighboursToT1(ismember(neighboursToT1, [currentNeighbours; neighboursToT1(numNode)]));
         end
         

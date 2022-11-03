@@ -24,8 +24,8 @@ for ghostPair = ghostPairs'
     edgeLength = norm(x2 - x1);
     
     % Number of cell nodes shared
-    neighbours_original_1 = getNodeNeighbours(Geo, ghostPair(1));
-    neighbours_original_2 = getNodeNeighbours(Geo, ghostPair(2));
+    neighbours_original_1 = getNodeNeighboursPerDomain(Geo, ghostPair(1), ismember(ghostPair(1), Geo.XgBottom));
+    neighbours_original_2 = getNodeNeighboursPerDomain(Geo, ghostPair(2), ismember(ghostPair(2), Geo.XgBottom));
     neighbours_pair = intersect(neighbours_original_1, neighbours_original_2);
     sharedCellNodes = neighbours_pair(~ismember(neighbours_pair, Geo.XgID));
     neighbours_1 = neighbours_original_1(~ismember(neighbours_original_1, Geo.XgID));
@@ -46,7 +46,7 @@ for ghostPair = ghostPairs'
         
         cellNodeNeighbours = {};
         for neigh = neighboursToT1'
-            cellNodeNeighbours{end+1} = getNodeNeighbours(Geo, ghostNodesToT1, neigh);
+            cellNodeNeighbours{end+1} = getNodeNeighboursPerDomain(Geo, ghostNodesToT1, ismember(ghostNodesToT1, Geo.XgBottom), neigh);
         end
         
         cellNode_Adjacency = cell(length(cellNodeNeighbours), 1);

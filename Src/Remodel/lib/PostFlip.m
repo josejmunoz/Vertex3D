@@ -1,4 +1,4 @@
-function [Geo_0, Geo_n, Geo, Dofs, newYgIds, hasConverged] = PostFlip(Tnew, Ynew, oldTets, Geo, Geo_n, Geo_0, Dofs, newYgIds, Set, flipName)
+function [Geo_0, Geo_n, Geo, Dofs, newYgIds, hasConverged] = PostFlip(Tnew, Ynew, oldTets, Geo, Geo_n, Geo_0, Dofs, newYgIds, Set, flipName, segmentToChange)
 %POSTFLIP Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -12,7 +12,7 @@ Geo_backup = Geo; Geo_n_backup = Geo_n; Geo_0_backup = Geo_0; Dofs_backup = Dofs
 %     return
 % end
 
-fprintf('=>> %s-Flip.\n', flipName);
+fprintf('=>> %s-Flip: %i %i.\n', flipName, segmentToChange(1), segmentToChange(2));
 
 [Geo] = RemoveTetrahedra(Geo, oldTets);
 [Geo] = AddTetrahedra(Geo, Tnew, Ynew, Set);

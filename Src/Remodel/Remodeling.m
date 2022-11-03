@@ -67,10 +67,13 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
                         error('valence tet 2')
                         [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip23(YsToChange, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
                     case 3
+                        error('valence tet 3')
                         [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip32(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
                     case 4
+                        error('valence tet 4')
                         [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip44(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
                     case 5
+                        error('valence tet 5')
                         [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip5N([ghostNode1 ghostNode2], sharedTets{1}, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
                     case 6
                         [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip6N([ghostNode1 ghostNode2], sharedTets{1}, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
@@ -88,83 +91,83 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
         end
     end
 
-    %% loop NONENERGY
-    for numCell = 1:Geo.nCells
-        f = 0;
-        hasConverged = 0;
-
-        %CARE: Number of faces change within this loop, so it should be a while
-        while f < length(Geo.Cells(numCell).Faces)
-            f = f + 1;
-            Face = Geo.Cells(numCell).Faces(f);
-
-            if ~ismember(Face.globalIds, newYgIds) && ~isequal(Face.InterfaceType, 'CellCell') && ~ismember(numCell, Geo.BorderCells)
-                faceAreas = [Face.Tris.Area];
-                [maxTriArea, idMaxTriArea]= max(faceAreas);
-                trisToChange = Face.Tris(idMaxTriArea);
-
-                firstNodeAlive = Geo.Cells(Face.ij(1)).AliveStatus;
-                secondNodeAlive = Geo.Cells(Face.ij(2)).AliveStatus;
-
-                %% Flip 13
-                % TODO: GENERALISE THIS INTO A GENERAL FUNCTION
-                % Big area and good aspect ratio
-                tetsToExpand = Geo.Cells(numCell).T(Face.Tris(idMaxTriArea).Edge, :);
-                surroundingNodes = intersect(tetsToExpand(1, :), tetsToExpand(2, :));
-                aliveCells = ~cellfun(@isempty, {Geo.Cells(surroundingNodes).AliveStatus});
-                if (nnz(faceAreas > Set.upperAreaThreshold)/numel(faceAreas)) > 0.5 && ...
-                        aspectRatio(idMaxTriArea) < 1.4 && ...
-                        nnz(aliveCells) == 1
-
-                    % Get the node to split (different from the cell node)
-                    nodeToSplit = Face.ij(Face.ij ~= numCell);
-                    % Get the neighbours of the node (these tets will be
-                    % removed afterwards)
-                    [nodeNeighbours] = getNodeNeighbours(Geo, nodeToSplit);
-                    % Save this for later
-                    surroundingNodes = nodeNeighbours;
-                    % Get Tets to remove ('oldTets')
-                    tetsToChange = Geo.Cells(nodeToSplit).T;
-                    % Get the position of the node to split
-                    nodeToSplit_Pos = Geo.Cells(nodeToSplit).X;
-                    
-                    % Get the main node (ie, cell node)
-                    mainNode = nodeNeighbours(~cellfun(@isempty, {Geo.Cells(nodeNeighbours).AliveStatus}));
-                    % Remove it from the list
-                    nodeNeighbours(ismember(nodeNeighbours, mainNode)) = [];
-                    
-                    % Get the centre of that network (and there would be
-                    % the new node)
-                    nodeNeighboursVertices = vertcat(Geo.Cells(nodeNeighbours).X);
-                    try
-                        centroidOfNeighbours = centroid(nodeNeighboursVertices);
-                    catch
-                        continue
-                    end
-                    
-                    %% Create a new node besides the other opposite side (closer to the centroid)
-                    runit = centroidOfNeighbours - mean(vertcat(Geo.Cells(mainNode).X), 1);
-                    runit = runit/norm(runit);
-                    centroidOfNeighbours = mean(vertcat(Geo.Cells(mainNode).X), 1) + 1 .* runit;
-                    
-                    runit = centroidOfNeighbours - nodeToSplit_Pos;
-                    runit = runit/norm(runit);
-                    newNodes = nodeToSplit_Pos + 0.8 .* runit;
-                    
-                    % Add the node to split to the neighbourhood
-                    surroundingNodes(end+1) = nodeToSplit;
-                    %newNodes(end+1, :) = nodeToSplit_Pos;
-                    
-                    [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = FlipAddNodes(surroundingNodes, tetsToChange, newNodes, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                end
-            end
-
-            if hasConverged
-                f = 0;
-                hasConverged = 0;
-            end
-        end
-    end
+%     %% loop NONENERGY
+%     for numCell = 1:Geo.nCells
+%         f = 0;
+%         hasConverged = 0;
+%         
+%         %CARE: Number of faces change within this loop, so it should be a while
+%         while f < length(Geo.Cells(numCell).Faces)
+%             f = f + 1;
+%             Face = Geo.Cells(numCell).Faces(f);
+%             
+%             if ~ismember(Face.globalIds, newYgIds) && ~isequal(Face.InterfaceType, 'CellCell') && ~ismember(numCell, Geo.BorderCells)
+%                 faceAreas = [Face.Tris.Area];
+%                 [maxTriArea, idMaxTriArea]= max(faceAreas);
+%                 trisToChange = Face.Tris(idMaxTriArea);
+%                 
+%                 firstNodeAlive = Geo.Cells(Face.ij(1)).AliveStatus;
+%                 secondNodeAlive = Geo.Cells(Face.ij(2)).AliveStatus;
+%                 
+%                 %% Flip 13
+%                 % TODO: GENERALISE THIS INTO A GENERAL FUNCTION
+%                 % Big area and good aspect ratio
+%                 tetsToExpand = Geo.Cells(numCell).T(Face.Tris(idMaxTriArea).Edge, :);
+%                 surroundingNodes = intersect(tetsToExpand(1, :), tetsToExpand(2, :));
+%                 aliveCells = ~cellfun(@isempty, {Geo.Cells(surroundingNodes).AliveStatus});
+%                 if (nnz(faceAreas > Set.upperAreaThreshold)/numel(faceAreas)) > 0.5 && ...
+%                         aspectRatio(idMaxTriArea) < 1.4 && ...
+%                         nnz(aliveCells) == 1
+%                     
+%                     % Get the node to split (different from the cell node)
+%                     nodeToSplit = Face.ij(Face.ij ~= numCell);
+%                     % Get the neighbours of the node (these tets will be
+%                     % removed afterwards)
+%                     [nodeNeighbours] = getNodeNeighbours(Geo, nodeToSplit);
+%                     % Save this for later
+%                     surroundingNodes = nodeNeighbours;
+%                     % Get Tets to remove ('oldTets')
+%                     tetsToChange = Geo.Cells(nodeToSplit).T;
+%                     % Get the position of the node to split
+%                     nodeToSplit_Pos = Geo.Cells(nodeToSplit).X;
+%                     
+%                     % Get the main node (ie, cell node)
+%                     mainNode = nodeNeighbours(~cellfun(@isempty, {Geo.Cells(nodeNeighbours).AliveStatus}));
+%                     % Remove it from the list
+%                     nodeNeighbours(ismember(nodeNeighbours, mainNode)) = [];
+%                     
+%                     % Get the centre of that network (and there would be
+%                     % the new node)
+%                     nodeNeighboursVertices = vertcat(Geo.Cells(nodeNeighbours).X);
+%                     try
+%                         centroidOfNeighbours = centroid(nodeNeighboursVertices);
+%                     catch
+%                         continue
+%                     end
+%                     
+%                     %% Create a new node besides the other opposite side (closer to the centroid)
+%                     runit = centroidOfNeighbours - mean(vertcat(Geo.Cells(mainNode).X), 1);
+%                     runit = runit/norm(runit);
+%                     centroidOfNeighbours = mean(vertcat(Geo.Cells(mainNode).X), 1) + 1 .* runit;
+%                     
+%                     runit = centroidOfNeighbours - nodeToSplit_Pos;
+%                     runit = runit/norm(runit);
+%                     newNodes = nodeToSplit_Pos + 0.8 .* runit;
+%                     
+%                     % Add the node to split to the neighbourhood
+%                     surroundingNodes(end+1) = nodeToSplit;
+%                     %newNodes(end+1, :) = nodeToSplit_Pos;
+%                     
+%                     [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = FlipAddNodes(surroundingNodes, tetsToChange, newNodes, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+%                 end
+%             end
+%             
+%             if hasConverged
+%                 f = 0;
+%                 hasConverged = 0;
+%             end
+%         end
+%     end
     
     [g, K, E, Geo, Energies] = KgGlobal(Geo_0, Geo_n, Geo, Set);
     Energies

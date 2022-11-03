@@ -12,10 +12,10 @@ for newTet = newTets'
             DT = delaunayTriangulation(vertcat(Geo.Cells(newTet).X));
             Geo.Cells(numNode).T(end+1, :) = newTet(DT.ConnectivityList);
             if ~isempty(Geo.Cells(numNode).AliveStatus) && exist('Set', 'var')
-                if isequal(Set.InputGeo, 'Voronoi') && ~isempty(Ynew)
+                if ~isempty(Ynew)
                     Geo.Cells(numNode).Y(end+1, :) = Ynew(ismember(newTets, newTet', 'rows'), :);
                 else
-                    Geo.Cells(numNode).Y(end+1, :) = ComputeY(vertcat(Geo.Cells(newTet).X), Geo.Cells(numNode).X, length([Geo.Cells(newTet).AliveStatus]), Set);
+                    Geo.Cells(numNode).Y(end+1, :) = ComputeY(Geo, newTet, Geo.Cells(numNode).X, Set);
                 end
                 
                 Geo.numY = Geo.numY + 1;

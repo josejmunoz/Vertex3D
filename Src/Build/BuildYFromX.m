@@ -17,19 +17,7 @@ function Y = BuildYFromX(Cell, Geo, Set)
 	Y = zeros(size(Tets,1), dim);
 	nverts = length(Tets);
 	for i=1:nverts % 1 vert = 1 tet
-		T = Tets(i,:);
-		x = [Geo.Cells(T(1)).X; Geo.Cells(T(2)).X; Geo.Cells(T(3)).X; Geo.Cells(T(4)).X];
-        
-        if isequal(Set.InputGeo, 'Voronoi')
-            Y(i,:) = ComputeY(x, Cell.X, 0, Set);
-            if sum(ismember(T, Geo.XgTop)) > 0
-                Y(i, 3) = Y(i, 3) / (sum(ismember(T, Geo.XgTop))/2);
-            elseif sum(ismember(T, Geo.XgBottom)) > 0
-                Y(i, 3) = Y(i, 3) / (sum(ismember(T, Geo.XgBottom))/2);
-            end
-        else
-            Y(i,:) = ComputeY(x, Cell.X, length([Geo.Cells(T).AliveStatus]), Set);
-        end
+        Y(i,:) = ComputeY(Geo, Tets(i,:), Cell.X, Set);
     end
 end
 

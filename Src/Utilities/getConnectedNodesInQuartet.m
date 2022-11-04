@@ -3,7 +3,7 @@ function [connectedNodes, unconnectedNodes] = getConnectedNodesInQuartet(Geo, Xs
 %   Detailed explanation goes here
 cellNode_Adjacency = cell(length(Xs), 1);
 for numNode = 1:length(Xs)
-    currentNeighbours = getNodeNeighbours(Geo, Xs(numNode));
+    currentNeighbours = getNodeNeighboursPerDomain(Geo, Xs(numNode), Xs(numNode));
     cellNode_Adjacency{numNode} = Xs(ismember(Xs, [currentNeighbours; Xs(numNode)]));
 end
 

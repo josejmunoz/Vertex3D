@@ -1,17 +1,16 @@
-function [nodeNeighbours] = getNodeNeighboursPerDomain(Geo, node, domain, mainNode)
+function [nodeNeighbours] = getNodeNeighboursPerDomain(Geo, node, nodeOfDomain, mainNode)
 %GETNODENEIGHBOURS Summary of this function goes here
 %   Detailed explanation goes here
 
 allNodeTets = vertcat(Geo.Cells(node).T);
 
-if domain
+if ismember(nodeOfDomain, Geo.XgBottom)
     XgDomain = Geo.XgBottom;
 else
     XgDomain = Geo.XgTop;
 end
 
 allNodeTets = allNodeTets(any(ismember(allNodeTets, XgDomain), 2), :);
-
 
 if exist('mainNode', 'var')
     nodeNeighbours = unique(allNodeTets(any(ismember(allNodeTets, mainNode), 2), :));

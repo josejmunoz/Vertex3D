@@ -6,6 +6,7 @@ function [segmentFeatures] = GetTrisToRemodelOrdered(Geo, Set)
 
 ghostNodeCells = Geo.Cells(ismember(1:length(Geo.Cells), Geo.XgID) & ~cellfun(@isempty, {Geo.Cells.T}));
 ghostNodeCellIDs = [ghostNodeCells.ID];
+ghostNodeCellIDs = setdiff(ghostNodeCellIDs, Geo.BorderGhostNodes);
 ghostPairs = [];
 for id = ghostNodeCellIDs
     neighbours = getNodeNeighbours(Geo, id);

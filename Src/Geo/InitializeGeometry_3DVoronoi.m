@@ -114,6 +114,9 @@ Set.lowerAreaThreshold = avgArea - stdArea;
 %% Define border cells
 Geo.BorderCells = setdiff(unique(trianglesConnectivity(any(ismember(trianglesConnectivity, Set.TotalCells+1:nSeeds), 2), :)), Set.TotalCells+1:nSeeds);
 
+Geo.BorderGhostNodes = setdiff(1:nSeeds, 1:Geo.nCells);
+Geo.BorderGhostNodes = [Geo.BorderGhostNodes'; setdiff(getNodeNeighbours(Geo, Geo.BorderGhostNodes), 1:Geo.nCells)];
+
 % TODO FIXME bad; PVM: better?
 Geo.AssembleNodes = find(cellfun(@isempty, {Geo.Cells.AliveStatus})==0);
 %% Define BarrierTri0

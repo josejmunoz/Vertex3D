@@ -37,15 +37,6 @@ function [Geo, Tnew, Ynew, removedTets, replacedTets] = CombineTwoGhostNodes(Geo
                 checkRepatedCells = sum(ismember(currentTets, nodesToCombine(1)), 2) > 1;
                 Geo.Cells(numCell).T(checkRepeatedTets | checkRepatedCells, :) = [];
                 replacingTets(checkRepeatedTets | checkRepatedCells, :) = [];
-
-                if ~isempty(Geo.Cells(numCell).Y)
-                    Geo.Cells(numCell).Y(checkRepeatedTets | checkRepatedCells, :) = [];
-                    for numTet = find(any(replacingTets, 2))'
-                        Geo.Cells(numCell).Y(numTet, :) = ComputeY(Geo, currentTets(numTet, :), newCell.X, Set);
-                        Ynew(end+1, :) = Geo.Cells(numCell).Y(numTet, :);
-                        Tnew(end+1, :) = Geo.Cells(numCell).T(numTet, :);
-                    end
-                end
             end
         end
 
@@ -57,7 +48,7 @@ function [Geo, Tnew, Ynew, removedTets, replacedTets] = CombineTwoGhostNodes(Geo
         Geo.XgID(ismember(Geo.XgID, nodesToCombine(2))) = [];
     end
 
-    [Tnew, newIds] = unique(sort(Tnew, 2), 'rows');
-    Ynew = Ynew(newIds, :);
+    Tnew = Geo.Cells(nodesToCombine(1)).T;
+    Ynew = [];
 end
 

@@ -38,6 +38,9 @@ for ghostPair = ghostPairs'
     
     if any(neighbours_lengths > 3)
         ghostNodesToT1 = ghostPair(neighbours_lengths > 3);
+        if length(ghostNodesToT1) > 1
+            ghostNodesToT1 = ghostNodesToT1(1);
+        end
         neighboursToT1 = neighbours{neighbours_lengths > 3};
         neighboursOriginalToT1 = neighbours_original{neighbours_lengths > 3};
         
@@ -65,6 +68,10 @@ for ghostPair = ghostPairs'
         cellNode_Adjacency = cellNode_Adjacency([Geo.Cells(neighboursToT1).AliveStatus] > 0);
         opposedNodes = opposedNodes([Geo.Cells(neighboursToT1).AliveStatus] > 0);
         
+        
+        if length(cellNode_Adjacency) < 3
+            continue
+        end
         % Check how they are connected (cell nodes)
         connectedNodes = cellfun(@length, cellNode_Adjacency) == length(neighboursToT1);
         nonConnectedNodes = cellfun(@length, cellNode_Adjacency) < length(neighboursToT1);
@@ -73,7 +80,7 @@ for ghostPair = ghostPairs'
         avgDistance_ConnNodes = mean(pdist2(Geo.Cells(ghostNodesToT1).X, vertcat(Geo.Cells(vertcat(opposedNodes{connectedNodes})).X)));
         avgDistance_NonConnNodes = mean(pdist2(Geo.Cells(ghostNodesToT1).X, vertcat(Geo.Cells(vertcat(opposedNodes{nonConnectedNodes})).X)));
         
-        if avgDistance_ConnNodes < avgDistance_NonConnNodes
+        if avgDistance_ConnNodes < (avgDistance_NonConnNodes + (Set.RemodelStiffness * avgDistance_NonConnNodes))
             continue
         end
         

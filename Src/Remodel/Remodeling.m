@@ -30,36 +30,9 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
                  nodeToRemove = ghostNode1;
                  nodeToKeep = ghostNode2;
                  
-%                  nodeToRemoveNeighbours = getNodeNeighbours(Geo, nodeToRemove);
-%                  %% Previous configuration
-%                  oldGeo_0 = Geo_0;
-%                  oldGeo_n = Geo_n;
-%                  oldGeo = Geo;
-%                  oldDofs = Dofs;
-%                  oldSet = Set;
-%                  oldNewYgIds = newYgIds;
-%                  [prevFaces] = getFacesFromNode(Geo, [nodeToRemove; nodeToRemoveNeighbours]);
-%                  prevAvgAspectRatioPerFace = cellfun(@(x) mean([x.Tris.AspectRatio]), prevFaces);
-                 
                  %% Perform flip according to valence of segment
                  [Geo_0, Geo_n, Geo, Dofs, newYgIds, hasConverged] = FlipN0(Geo, Geo_n, Geo_0, Dofs, newYgIds, nodeToRemove, nodeToKeep, Set);
-                 
-%                  %% Post-flip checks
-%                  % Get all the triangles that will be involved and do an average per Face to see if the change has worth it.
-%                  [faces] = getFacesFromNode(Geo, [nodeToRemove; nodeToRemoveNeighbours]);
-%                  avgAspectRatioPerFace = cellfun(@(x) mean([x.Tris.AspectRatio]), faces);
-%                  if median(avgAspectRatioPerFace) > median(prevAvgAspectRatioPerFace)
-%                      %Revert
-%                      disp('----Reverting node removing')
-%                      Geo_0 = oldGeo_0;
-%                      Geo_n = oldGeo_n;
-%                      Geo = oldGeo;
-%                      Dofs = oldDofs;
-%                      Set = oldSet;
-%                      newYgIds = oldNewYgIds;
-%                  else
-%                      disp('Node removing --correct');
-%                  end
+         
             else 
                 %% Intercalation
                 switch valenceSegment

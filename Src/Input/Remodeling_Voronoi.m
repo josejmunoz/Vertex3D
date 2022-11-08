@@ -1,6 +1,6 @@
 Set.InputGeo = 'Voronoi';
 
-Set.TotalCells = 30;
+Set.TotalCells = 40;
 Set.CellHeight = 0.2;
 
 Set.Ablation = 1;
@@ -22,12 +22,13 @@ Set.kSubstrate = 500;
 Set.SubstrateZ = -Set.CellHeight/2;
 
 Set.Contractility = 1;
-Set.cLineTension = 0.03;
+Set.cLineTension = 0.01;
 
 Set.Remodelling = 1;
 Set.RemodelingFrequency = 0.02;
 Set.lambdaB = 1e-4;
-Set.RemodelTol = 0.01;
+Set.RemodelTol = 0.02;
+Set.RemodelStiffness = -0.1;
 
 Set.BC = 2;
 Set.TStartBC = Set.tend;
@@ -42,4 +43,4 @@ Set.lambdaS2 = 0.9;
 Set.lambdaS3 = 1;
 Set.ApplyBC=true;
  
-Set.OutputFolder='Result/Remodelling_Voronoi';
+Set.OutputFolder=strcat('Result/Remodelling_Voronoi_', num2str(Set.TotalCells));

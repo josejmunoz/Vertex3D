@@ -53,6 +53,7 @@ else
     error('Need to check this');
 end
 
-[Ynew] = RecalculateYs(Geo, Tnew, Xs_cUnconnectedNodes, Set);
+%[Ynew] = RecalculateYs(Geo, Tnew, Xs_cUnconnectedNodes, Set);
+[Ynew] = RecalculateYsFromPrevious(Geo, Tnew, Xs_cUnconnectedNodes, Set);
 end
 

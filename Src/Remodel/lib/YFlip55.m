@@ -12,19 +12,28 @@ Xs_c = Xs(~ismember(Xs, Geo.XgID));
 [tets4Cells] = get4FoldTets(Geo);
 Geo = RemoveTetrahedra(Geo, tets4Cells);
 
-[Xs_gConnectedNodes, Xs_gUnconnectedNodes] = getConnectedNodesInQuartet(Geo, Xs_g, Xs_g);
-[Xs_cConnectedNodes, Xs_cUnconnectedNodes] = getConnectedNodesInQuartet(Geo, Xs_c, Xs_g);
+[Xs_gConnectedNodes, ~] = getConnectedNodesInQuartet(Geo, Xs_g, Xs_g(1));
+[Xs_cConnectedNodes, Xs_cUnconnectedNodes] = getConnectedNodesInQuartet(Geo, Xs_c, Xs_g(1));
 
-if length(Xs_gConnectedNodes) == length(Xs_gUnconnectedNodes) && length(Xs_cConnectedNodes) == length(Xs_cUnconnectedNodes)
+if length(Xs_gConnectedNodes) == length(Xs_g) && length(Xs_cConnectedNodes) == length(Xs_cUnconnectedNodes)
     if any(ismember(XsToDisconnect, Xs_gConnectedNodes)) && any(ismember(XsToDisconnect, Xs_cConnectedNodes))
         Xs_cToDisconnect = XsToDisconnect(~ismember(XsToDisconnect, Geo.XgID));
         Xs_gToDisconnect = XsToDisconnect(ismember(XsToDisconnect, Geo.XgID));
         
         XsPos(1) = Xs_gToDisconnect;
         XsPos(2) = Xs_cToDisconnect;
-        XsPos(3) = setdiff(Xs_gConnectedNodes, Xs_gToDisconnect);
+        
+        Xs_gRemaining = setdiff(Xs_gConnectedNodes, Xs_gToDisconnect);
+        
+        %% COULDNT FIND A BETTER WAY OF GETTING WHICH NODE SHOULD BE THE 3 AND 4
+        if norm(Geo.Cells(Xs_gRemaining(2)).X(1:2) - Geo.Cells(XsPos(2)).X(1:2)) > norm(Geo.Cells(Xs_gRemaining(1)).X(1:2) - Geo.Cells(XsPos(2)).X(1:2))
+            XsPos(3) = Xs_gRemaining(1);
+            XsPos(4) = Xs_gRemaining(2);
+        else
+            XsPos(3) = Xs_gRemaining(2);
+            XsPos(4) = Xs_gRemaining(1);
+        end
         XsPos(6) = setdiff(Xs_cConnectedNodes, Xs_cToDisconnect);
-        XsPos(4) = Xs_gUnconnectedNodes(1);
         XsPos(5) = intersect(getNodeNeighbours(Geo, XsPos(4)), Xs_cUnconnectedNodes);
         XsPos(7) = setdiff(Xs_cUnconnectedNodes, XsPos(5));
         

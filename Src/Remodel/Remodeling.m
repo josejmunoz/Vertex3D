@@ -46,7 +46,6 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
                         error('valence tet 4')
                         [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip44(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
                     case 5
-                        error('valence tet 5')
                         [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip5N([ghostNode1 ghostNode2], sharedTets{1}, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
                     case 6
                         [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip6N([ghostNode1 ghostNode2], sharedTets{1}, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);

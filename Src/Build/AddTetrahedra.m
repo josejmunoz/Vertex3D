@@ -9,6 +9,7 @@ end
 for newTet = newTets'
     for numNode = newTet'
         if ~any(ismember(newTet, Geo.XgID)) && ismember(sort(newTet)', sort(Geo.Cells(numNode).T, 2), 'rows')
+            Geo.Cells(numNode).Y(ismember(sort(Geo.Cells(numNode).T, 2), sort(newTet)', 'rows'), :) = [];
             Geo.Cells(numNode).T(ismember(sort(Geo.Cells(numNode).T, 2), sort(newTet)', 'rows'), :) = [];
         else
             if isempty(Geo.Cells(numNode).T) || ~ismember(sort(newTet)', sort(Geo.Cells(numNode).T, 2), 'rows')

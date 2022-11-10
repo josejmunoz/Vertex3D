@@ -66,13 +66,13 @@ for ghostPair = ghostPairs'
             cellNode_Adjacency{numNode} = neighboursToT1(ismember(neighboursToT1, [currentNeighbours; neighboursToT1(numNode)]));
         end
         
-        % if one of the neighbours is debris, don't use it to calculate the
-        % mean only
-        cellNode_Adjacency = cellNode_Adjacency([Geo.Cells(neighboursToT1).AliveStatus] > 0);
-        opposedNodes = opposedNodes([Geo.Cells(neighboursToT1).AliveStatus] > 0);
+%         % if one of the neighbours is debris, don't use it to calculate the
+%         % mean only
+%         cellNode_Adjacency = cellNode_Adjacency([Geo.Cells(neighboursToT1).AliveStatus] > 0);
+%         opposedNodes = opposedNodes([Geo.Cells(neighboursToT1).AliveStatus] > 0);
         
         
-        if length(cellNode_Adjacency) < 3
+        if length(cellNode_Adjacency) < 4
             continue
         end
         % Check how they are connected (cell nodes)
@@ -139,6 +139,7 @@ for ghostPair = ghostPairs'
 end
 
 if ~isempty(segmentFeatures)
+    [segmentFeatures] = sortrows(segmentFeatures, 4, 'ascend');
     [segmentFeatures] = sortrows(segmentFeatures, 3, 'ascend');
 end
 

@@ -121,13 +121,30 @@ Geo.BorderGhostNodes = [Geo.BorderGhostNodes'; setdiff(getNodeNeighbours(Geo, Ge
 Geo.AssembleNodes = find(cellfun(@isempty, {Geo.Cells.AliveStatus})==0);
 %% Define BarrierTri0
 Set.BarrierTri0=realmax;
+edgeLengths_Top = [];
+edgeLengths_Bottom = [];
+edgeLengths_Lateral = [];
 for c = 1:Geo.nCells
     Cell = Geo.Cells(c);
     for f = 1:length(Geo.Cells(c).Faces)
         Face = Cell.Faces(f);
         Set.BarrierTri0=min([vertcat(Face.Tris.Area); Set.BarrierTri0]);
+        for tri = Face.Tris
+            if tri.Location == 'Top'
+                edgeLengths_Top(end+1) = ComputeEdgeLength(tri.Edge, Geo.Cells(c).Y);
+            elseif tri.Location == 'Bottom'
+                edgeLengths_Bottom(end+1) = ComputeEdgeLength(tri.Edge, Geo.Cells(c).Y);
+            else
+                edgeLengths_Lateral(end+1) = ComputeEdgeLength(tri.Edge, Geo.Cells(c).Y);
+            end
+            
+            
+        end
     end
 end
+Geo.AvgEdgeLength_Top = mean(edgeLengths_Top);
+Geo.AvgEdgeLength_Bottom = mean(edgeLengths_Bottom);
+Geo.AvgEdgeLength_Lateral = mean(edgeLengths_Lateral);
 Set.BarrierTri0=Set.BarrierTri0/10;
 
 end

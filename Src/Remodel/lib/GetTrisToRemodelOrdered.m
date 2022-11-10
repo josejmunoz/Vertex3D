@@ -3,6 +3,8 @@ function [segmentFeatures] = GetTrisToRemodelOrdered(Geo, Set)
 %   Detailed explanation goes here
 
 %possibleGhostPairs = nchoosek(Geo.XgID, 2);
+allTets = vertcat(Geo.Cells(1:Geo.nCells).T);
+allYs = vertcat(Geo.Cells(1:Geo.nCells).Y);
 
 ghostNodeCells = Geo.Cells(ismember(1:length(Geo.Cells), Geo.XgID) & ~cellfun(@isempty, {Geo.Cells.T}));
 ghostNodeCellIDs = [ghostNodeCells.ID];
@@ -77,12 +79,28 @@ for ghostPair = ghostPairs'
         connectedNodes = cellfun(@length, cellNode_Adjacency) == length(neighboursToT1);
         nonConnectedNodes = cellfun(@length, cellNode_Adjacency) < length(neighboursToT1);
         
-        % Check average distance between connected and unconnected nodes
-        avgDistance_ConnNodes = mean(pdist2(Geo.Cells(ghostNodesToT1).X, vertcat(Geo.Cells(vertcat(opposedNodes{connectedNodes})).X)));
-        avgDistance_NonConnNodes = mean(pdist2(Geo.Cells(ghostNodesToT1).X, vertcat(Geo.Cells(vertcat(opposedNodes{nonConnectedNodes})).X)));
+        nonConnectedXs = neighboursToT1(nonConnectedNodes);
         
-        if avgDistance_ConnNodes < (avgDistance_NonConnNodes + (Set.RemodelStiffness * avgDistance_NonConnNodes))
-            continue
+        triplet1 = [neighboursToT1(connectedNodes)' nonConnectedXs(1) ghostNodesToT1];
+        triplet2 = [neighboursToT1(connectedNodes)' nonConnectedXs(2) ghostNodesToT1];
+        
+        triplet1_Ys = mean(allYs(sum(ismember(allTets, triplet1), 2) > 3, :));
+        triplet2_Ys = mean(allYs(sum(ismember(allTets, triplet2), 2) > 3, :));
+        
+        distanceEdgeConnectedNodes = norm(triplet1_Ys - triplet2_Ys);
+        
+%         % Check average distance between connected and unconnected nodes
+%         avgDistance_ConnNodes = mean(pdist2(Geo.Cells(ghostNodesToT1).X, vertcat(Geo.Cells(vertcat(opposedNodes{connectedNodes})).X)));
+%         avgDistance_NonConnNodes = mean(pdist2(Geo.Cells(ghostNodesToT1).X, vertcat(Geo.Cells(vertcat(opposedNodes{nonConnectedNodes})).X)));
+% 
+%         if avgDistance_ConnNodes < (avgDistance_NonConnNodes + (Set.RemodelStiffness * avgDistance_NonConnNodes))
+%             continue
+%         end
+
+        % Check edge length to know when to intercalate
+        avgEdgeLengthDomain = mean([Geo.AvgEdgeLength_Bottom, Geo.AvgEdgeLength_Top]);
+        if distanceEdgeConnectedNodes > avgEdgeLengthDomain/2 + (Set.RemodelStiffness * avgEdgeLengthDomain)
+            
         end
         
         % Change the ghostPair to intercalate

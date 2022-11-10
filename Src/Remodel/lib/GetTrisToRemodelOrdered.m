@@ -99,8 +99,8 @@ for ghostPair = ghostPairs'
 
         % Check edge length to know when to intercalate
         avgEdgeLengthDomain = mean([Geo.AvgEdgeLength_Bottom, Geo.AvgEdgeLength_Top]);
-        if distanceEdgeConnectedNodes > avgEdgeLengthDomain/2 + (Set.RemodelStiffness * avgEdgeLengthDomain)
-            
+        if distanceEdgeConnectedNodes > avgEdgeLengthDomain/2 - (Set.RemodelStiffness * avgEdgeLengthDomain)
+            continue
         end
         
         % Change the ghostPair to intercalate

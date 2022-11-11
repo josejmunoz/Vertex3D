@@ -87,6 +87,10 @@ for ghostPair = ghostPairs'
         triplet1_Ys = mean(allYs(sum(ismember(allTets, triplet1), 2) > 3, :));
         triplet2_Ys = mean(allYs(sum(ismember(allTets, triplet2), 2) > 3, :));
         
+        if any(isnan(triplet1_Ys)) || any(isnan(triplet2_Ys))
+            continue
+        end
+        
         distanceEdgeConnectedNodes = norm(triplet1_Ys - triplet2_Ys);
         
 %         % Check average distance between connected and unconnected nodes

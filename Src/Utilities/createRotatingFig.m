@@ -1,20 +1,15 @@
 function [] = createRotatingFig(fileName)
 %CREATEROTATINGFIG Summary of this function goes here
 %   Detailed explanation goes here
-v = VideoWriter(strcat(fileName, '.mp4'), 'MPEG-4');
+v = VideoWriter(fileName, 'MPEG-4'); %% if linux use other than mp4
+v.Quality = 30;
 open(v);
-v.Quality = 40;
 
 axis equal
-camlight left;
-camlight right;
-lightning flat
+%lighting flat
 material dull
 
-newFig = gca;
-newFig.XGrid = 'off';
-newFig.YGrid = 'off';
-newFig.ZGrid = 'off';
+axis off
 
 for k = 1:360
     camorbit(1,0,'data',[0 0 1])

@@ -137,8 +137,6 @@ for c = 1:Geo.nCells
             else
                 edgeLengths_Lateral(end+1) = ComputeEdgeLength(tri.Edge, Geo.Cells(c).Y);
             end
-            
-            
         end
     end
 end

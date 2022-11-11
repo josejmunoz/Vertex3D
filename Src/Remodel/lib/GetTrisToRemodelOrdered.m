@@ -117,10 +117,29 @@ for ghostPair = ghostPairs'
             ghostPair = [ghostNodesToT1 neighboursToT1(connectedNodes)];
         end
     else
-        if edgeLength > Set.RemodelTol
-            continue
+        numGhost = 1;
+        currentFaces = getFacesFromNode(Geo, ghostPair(numGhost));
+        neighboursOtherPair = getNodeNeighbours(Geo, setdiff(ghostPair, ghostPair(numGhost)));
+        minEdgeLengths = [];
+        for f = 1:length(currentFaces)
+            currentFace = currentFaces{f};
+            mainNode = setdiff(currentFace.ij, ghostPair(numGhost));
+            if ismember(mainNode, neighboursOtherPair)
+                Ys = Geo.Cells(mainNode).Y;
+                [edgeLengths, LengthsToCentre, AspectRatio] = ComputeFaceEdgeLengths(currentFace, Ys);
+                minEdgeLengths(end+1) = min([edgeLengths{:}]);
+            end
+        end
+            
+        avgEdgeLengthDomain = mean([Geo.AvgEdgeLength_Bottom, Geo.AvgEdgeLength_Top]);
+        if min(minEdgeLengths) > avgEdgeLengthDomain - (Set.RemodelStiffness * avgEdgeLengthDomain)
+            if edgeLength > Set.RemodelTol
+                continue
+            end
         end
     end
+   
+    %% TODO: AVOID GHOST NODES INTERCALATIONS
     
     for gPair = ghostPair'
         % Edge valence (number of shared tets)

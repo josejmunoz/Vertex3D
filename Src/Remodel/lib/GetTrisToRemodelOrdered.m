@@ -22,6 +22,9 @@ ghostPairs = unique(sort(ghostPairs, 2), 'rows');
 segmentFeatures = table();
 for ghostPair = ghostPairs'
     ghostPair = ghostPair';
+    if any(ismember(ghostPair, Geo.BorderGhostNodes))
+        continue
+    end
     % Edge length
     x1 = Geo.Cells(ghostPair(1)).X;
     x2 = Geo.Cells(ghostPair(2)).X;

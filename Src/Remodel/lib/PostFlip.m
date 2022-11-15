@@ -5,13 +5,6 @@ function [Geo_0, Geo_n, Geo, Dofs, newYgIds, hasConverged] = PostFlip(Tnew, Ynew
 hasConverged = 0;
 Geo_backup = Geo; Geo_n_backup = Geo_n; Geo_0_backup = Geo_0; Dofs_backup = Dofs;
 
-% if isempty(Tnew) || CheckOverlappingTets(oldTets, Tnew, Geo, flipName)
-%     Geo   = Geo_backup;
-%     Geo_n = Geo_n_backup;
-%     fprintf('=>> %s-Flip rejected: is not compatible\n', flipName);
-%     return
-% end
-
 fprintf('=>> %s-Flip: %i %i.\n', flipName, segmentToChange(1), segmentToChange(2));
 
 [Geo] = RemoveTetrahedra(Geo, oldTets);

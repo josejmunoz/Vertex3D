@@ -1,4 +1,4 @@
-function [Ynew] = RecalculateYsFromPrevious(Geo, Tnew, mainNodesToConnect, Set)
+function [Ynew] = RecalculateYsFromPrevious(Geo, Tnew, mainNodesToConnect, contributionOldYs, Set)
 %RECALCULATEYS Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -18,10 +18,9 @@ for numTet = 1:size(Tnew, 1)
     end
     
     if any(tetsToUse)
-        contributionOldYs = 0.7;
         Ynew(end+1, :) = contributionOldYs * mean(vertcat(allYs(tetsToUse, :)), 1) + (1-contributionOldYs) * YnewlyComputed;
     else
-        contributionOldYs = 0.5;
+        contributionOldYs_2 = contributionOldYs - (contributionOldYs/2);
         tetsToUse = sum(ismember(allTs, Tnew(numTet, :)), 2) > 1;
         
         if any(ismember(Tnew(numTet, :), Geo.XgTop))
@@ -31,7 +30,7 @@ for numTet = 1:size(Tnew, 1)
         end
         
         if any(tetsToUse)
-            Ynew(end+1, :) = contributionOldYs * mean(vertcat(allYs(tetsToUse, :)), 1) + (1-contributionOldYs) * YnewlyComputed;
+            Ynew(end+1, :) = contributionOldYs_2 * mean(vertcat(allYs(tetsToUse, :)), 1) + (1-contributionOldYs_2) * YnewlyComputed;
         else
             Ynew(end+1, :) = YnewlyComputed;
         end

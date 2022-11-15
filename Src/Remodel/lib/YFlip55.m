@@ -58,8 +58,5 @@ if length(Xs_gConnectedNodes) == length(Xs_g) && length(Xs_cConnectedNodes) == l
 else
     error('Need to check this');
 end
-
-%[Ynew] = RecalculateYs(Geo, Tnew, Xs_cUnconnectedNodes, Set);
-[Ynew] = RecalculateYsFromPrevious(Geo, Tnew, Xs_cUnconnectedNodes, Set);
 end
 

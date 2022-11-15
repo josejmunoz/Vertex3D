@@ -111,13 +111,13 @@ for ghostPair = ghostPairs'
         end
         
         % Change the ghostPair to intercalate
-        %neighboursToT1 = neighboursToT1([Geo.Cells(neighboursToT1).AliveStatus] > 0);
+        aliveCells = [Geo.Cells(neighboursToT1).AliveStatus] > 0;
         if sum(connectedNodes) > 1
             %% T1 transition
-            ghostPair = [repmat(ghostNodesToT1, sum(connectedNodes), 1) neighboursToT1(connectedNodes)];
+            ghostPair = [repmat(ghostNodesToT1, sum(connectedNodes & aliveCells'), 1) neighboursToT1(connectedNodes & aliveCells')];
         else
             %% T1 on edge
-            ghostPair = [ghostNodesToT1 neighboursToT1(connectedNodes)];
+            ghostPair = [ghostNodesToT1 neighboursToT1(connectedNodes & aliveCells')];
         end
     else
         numGhost = 1;

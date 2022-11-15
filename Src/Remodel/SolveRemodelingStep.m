@@ -34,14 +34,14 @@ function [Geo, Set, DidNotConverge]=SolveRemodelingStep(Geo_0, Geo_n, Geo, Dofs,
             fprintf(Set.flog, 'First strategy ---> Restart iterating while higher viscosity... \n');
             Geo=Geop;
             Set.nu=Set.nu*10;
-            Set.MaxIter=Set.MaxIter0;
+            Set.MaxIter=Set.MaxIter0/4;
             IncreaseEta=false;
         elseif gr>Set.tol || dyr>Set.tol || any(isnan(g(Dofs.Free))) || any(isnan(dy(Dofs.Free))) 
             % this should not take place
             fprintf('Local Problem did not converge after %i iterations.\n',Set.iter);
             fprintf(Set.flog, 'Local Problem did not converge after %i iterations.\n',Set.iter);
             DidNotConverge=true;
-            Set.MaxIter=Set.MaxIter0;
+            Set.MaxIter=Set.MaxIter0/4;
             Set.nu=original_nu;
             break;
         else 

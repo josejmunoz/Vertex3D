@@ -20,7 +20,7 @@ for newTet = newTets'
                     if ~isempty(Ynew)
                         Geo.Cells(numNode).Y(end+1, :) = Ynew(ismember(newTets, newTet', 'rows'), :);
                     else
-                        Geo.Cells(numNode).Y(end+1, :) = RecalculateYsFromPrevious(Geo, newTet', numNode, 0.6, Set);
+                        Geo.Cells(numNode).Y(end+1, :) = RecalculateYsFromPrevious(Geo, newTet', numNode, 0.005, Set);
                     end
                     
                     Geo.numY = Geo.numY + 1;

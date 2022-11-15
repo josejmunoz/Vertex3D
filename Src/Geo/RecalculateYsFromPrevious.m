@@ -20,7 +20,7 @@ for numTet = 1:size(Tnew, 1)
     if any(tetsToUse)
         Ynew(end+1, :) = contributionOldYs * mean(vertcat(allYs(tetsToUse, :)), 1) + (1-contributionOldYs) * YnewlyComputed;
     else
-        contributionOldYs_2 = contributionOldYs - (contributionOldYs/2);
+        contributionOldYs_2 = contributionOldYs - (contributionOldYs/5);
         tetsToUse = sum(ismember(allTs, Tnew(numTet, :)), 2) > 1;
         
         if any(ismember(Tnew(numTet, :), Geo.XgTop))

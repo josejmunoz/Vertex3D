@@ -54,6 +54,11 @@ for ghostPair = ghostPairs'
             continue
         end
         
+        aliveCells = [Geo.Cells(neighboursToT1).AliveStatus] > 0;
+        if sum(aliveCells) < 3
+            continue
+        end
+        
         cellNodeNeighbours = {};
         for neigh = neighboursToT1'
             cellNodeNeighbours{end+1} = getNodeNeighboursPerDomain(Geo, ghostNodesToT1, ghostNodesToT1, neigh);
@@ -95,14 +100,6 @@ for ghostPair = ghostPairs'
         end
         
         distanceEdgeConnectedNodes = norm(triplet1_Ys - triplet2_Ys);
-        
-%         % Check average distance between connected and unconnected nodes
-%         avgDistance_ConnNodes = mean(pdist2(Geo.Cells(ghostNodesToT1).X, vertcat(Geo.Cells(vertcat(opposedNodes{connectedNodes})).X)));
-%         avgDistance_NonConnNodes = mean(pdist2(Geo.Cells(ghostNodesToT1).X, vertcat(Geo.Cells(vertcat(opposedNodes{nonConnectedNodes})).X)));
-% 
-%         if avgDistance_ConnNodes < (avgDistance_NonConnNodes + (Set.RemodelStiffness * avgDistance_NonConnNodes))
-%             continue
-%         end
 
         % Check edge length to know when to intercalate
         avgEdgeLengthDomain = mean([Geo.AvgEdgeLength_Bottom, Geo.AvgEdgeLength_Top]);
@@ -111,7 +108,6 @@ for ghostPair = ghostPairs'
         end
         
         % Change the ghostPair to intercalate
-        aliveCells = [Geo.Cells(neighboursToT1).AliveStatus] > 0;
         if sum(connectedNodes) > 1
             %% T1 transition
             ghostPair = [repmat(ghostNodesToT1, sum(connectedNodes & aliveCells'), 1) neighboursToT1(connectedNodes & aliveCells')];
@@ -120,17 +116,18 @@ for ghostPair = ghostPairs'
             ghostPair = [ghostNodesToT1 neighboursToT1(connectedNodes & aliveCells')];
         end
     else
-        numGhost = 1;
-        currentFaces = getFacesFromNode(Geo, ghostPair(numGhost));
-        neighboursOtherPair = getNodeNeighbours(Geo, setdiff(ghostPair, ghostPair(numGhost)));
         minEdgeLengths = [];
-        for f = 1:length(currentFaces)
-            currentFace = currentFaces{f};
-            mainNode = setdiff(currentFace.ij, ghostPair(numGhost));
-            if ismember(mainNode, neighboursOtherPair)
-                Ys = Geo.Cells(mainNode).Y;
-                [edgeLengths, LengthsToCentre, AspectRatio] = ComputeFaceEdgeLengths(currentFace, Ys);
-                minEdgeLengths(end+1) = min([edgeLengths{:}]);
+        for numGhost = 1:length(ghostPair)
+            currentFaces = getFacesFromNode(Geo, ghostPair(numGhost));
+            neighboursOtherPair = getNodeNeighbours(Geo, setdiff(ghostPair, ghostPair(numGhost)));
+            for f = 1:length(currentFaces)
+                currentFace = currentFaces{f};
+                mainNode = setdiff(currentFace.ij, ghostPair(numGhost));
+                if ismember(mainNode, neighboursOtherPair)
+                    Ys = Geo.Cells(mainNode).Y;
+                    [edgeLengths, LengthsToCentre, AspectRatio] = ComputeFaceEdgeLengths(currentFace, Ys);
+                    minEdgeLengths(end+1) = min([edgeLengths{:}]);
+                end
             end
         end
             

@@ -20,5 +20,11 @@ Geo.XgID(end+1) = debrisCell;
 removingTets = Geo.Cells(debrisCell).T(all(ismember(Geo.Cells(debrisCell).T, Geo.XgID), 2), :);
 Geo = RemoveTetrahedra(Geo, removingTets);
 
+if ~isfield(Geo, 'RemovedDebrisCells')
+    Geo.RemovedDebrisCells(1) = debrisCell;
+else
+    Geo.RemovedDebrisCells(end+1) = debrisCell;
+end
+
 end
 

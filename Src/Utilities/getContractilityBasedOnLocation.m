@@ -13,7 +13,7 @@ function [contractilityValue] = getContractilityBasedOnLocation(currentFace, cur
     
     switch (currentFace.InterfaceType)
         case 'Top' % Top
-            if any([Geo.Cells(currentTri.SharedByCells).AliveStatus] == 0)
+            if any([Geo.Cells(currentTri.SharedByCells).AliveStatus] == 0) || any(ismember(currentTri.SharedByCells, Geo.RemovedDebrisCells), 2)
                 contractilityValue = Set.Contractility_Variability_PurseString(indicesOfClosestTimePoints(1)) * closestTimePointsDistance(1) + ...
                     Set.Contractility_Variability_PurseString(indicesOfClosestTimePoints(2)) * closestTimePointsDistance(2);
                 contractilityValue = contractilityValue * Set.cLineTension;
@@ -21,7 +21,7 @@ function [contractilityValue] = getContractilityBasedOnLocation(currentFace, cur
                 contractilityValue = Set.cLineTension;
             end
         case 'CellCell' % Lateral
-            if any([Geo.Cells(currentTri.SharedByCells).AliveStatus] == 0)
+            if any([Geo.Cells(currentTri.SharedByCells).AliveStatus] == 0) || any(ismember(currentTri.SharedByCells, Geo.RemovedDebrisCells), 2)
                 contractilityValue = Set.Contractility_Variability_LateralCables(indicesOfClosestTimePoints(1)) * closestTimePointsDistance(1) + ...
                     Set.Contractility_Variability_LateralCables(indicesOfClosestTimePoints(2)) * closestTimePointsDistance(2);
                 contractilityValue = contractilityValue * Set.cLineTension;

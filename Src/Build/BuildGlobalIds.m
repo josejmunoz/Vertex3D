@@ -16,7 +16,8 @@ function Geo = BuildGlobalIds(Geo)
 
 	gIdsTot = 1;
     gIdsTotf = 1;
-    for ci = 1:Geo.nCells
+    nonDeadCells = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID];
+    for ci = nonDeadCells
 		Cell = Geo.Cells(ci);
 		% Define two arrays of zeros, for vertices and face centers, 
 		% corresponding to the vertices of the Cell. If any of such 
@@ -25,7 +26,7 @@ function Geo = BuildGlobalIds(Geo)
 		% completing all iterations are the new globalIds
 		gIds  = zeros(length(Cell.Y), 1);
         gIdsf = zeros(length(Cell.Faces), 1);
-		for cj = 1:ci-1 
+		for cj = min(nonDeadCells):ci-1 
 			ij = [ci, cj];
 			CellJ = Geo.Cells(cj);
 			face_ids_i	= sum(ismember(Cell.T,ij),2)==2;

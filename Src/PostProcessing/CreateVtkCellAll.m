@@ -26,7 +26,7 @@ function CreateVtkCellAll(Geo, Geo0, Set, Step)
     %% This needs to be recalculated here since ids are global here and
     %  local in 'VtkCell'
     cells = '';
-    for c = 1:Geo.nCells
+    for c = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID]
         lastId = sum(nverts(1:c-1));
 		for f = 1:length(Geo.Cells(c).Faces)
 			Face = Geo.Cells(c).Faces(f);

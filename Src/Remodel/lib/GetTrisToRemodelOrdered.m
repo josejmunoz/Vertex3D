@@ -3,8 +3,9 @@ function [segmentFeatures] = GetTrisToRemodelOrdered(Geo, Set)
 %   Detailed explanation goes here
 
 %possibleGhostPairs = nchoosek(Geo.XgID, 2);
-allTets = vertcat(Geo.Cells(1:Geo.nCells).T);
-allYs = vertcat(Geo.Cells(1:Geo.nCells).Y);
+nonDeadCells = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID];
+allTets = vertcat(Geo.Cells(nonDeadCells).T);
+allYs = vertcat(Geo.Cells(nonDeadCells).Y);
 
 ghostNodeCells = Geo.Cells(ismember(1:length(Geo.Cells), Geo.XgID) & ~cellfun(@isempty, {Geo.Cells.T}));
 ghostNodeCellIDs = [ghostNodeCells.ID];

@@ -2,8 +2,8 @@ function Geo = Rebuild(Geo, Set)
 %%REBUILD 
 % This function HAVE TO rebuild THE WHOLE CELL
     oldGeo = Geo;
-    
-    for cc = 1:Geo.nCells
+    nonDeadCells = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID];
+    for cc = nonDeadCells
         Cell = Geo.Cells(cc);
         
         for numT = 1:size(Cell.T, 1)

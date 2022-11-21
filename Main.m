@@ -38,6 +38,18 @@ Geo_n   = Geo;
 numStep = 1; relaxingNu = false;
 EnergiesPerTimeStep = {};
 
+%% TEST TO SEE IF WE CAN SIMPLIFY THE TETRAHEDRA
+% Set.iIncr=numStep;
+% Set.currentT = t;
+% newYgIds = [];
+% nodeToKeep = 1706;
+% nodesToRemove = unique(Geo.Cells(nodeToKeep).T);
+% nodesToRemove = nodesToRemove(ismember(nodesToRemove, Geo.XgTop));
+% nodesToRemove(nodesToRemove == nodeToKeep) = [];
+% for nodeToRemove = nodesToRemove'
+%     [Geo_0, Geo_n, Geo, Dofs, newYgIds, hasConverged] = FlipN0(Geo, Geo_n, Geo_0, Dofs, newYgIds, nodeToRemove, nodeToKeep, Set);
+% end
+
 PostProcessingVTK(Geo, Geo_0, Set, numStep)
 while t<=Set.tend
     Set.currentT = t;
@@ -57,6 +69,18 @@ while t<=Set.tend
         
         % Wounding
         [Geo] = ablateCells(Geo, Set, t);
+        
+        % Debris cells become Ghost nodes when too small or time has passed
+        nonDeadCells = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID];
+        debrisCells = find([Geo.Cells(nonDeadCells).AliveStatus] == 0);
+        nonDebrisCells = find([Geo.Cells(nonDeadCells).AliveStatus] == 1);
+        for debrisCell = debrisCells
+            if t > 0.5*Set.tend || Geo.Cells(debrisCell).Vol < 0.5*mean([Geo.Cells(nonDebrisCells).Vol])
+                [Geo] = RemoveNode(Geo, debrisCell);
+                [Geo_n] = RemoveNode(Geo_n, debrisCell);
+                [Geo_0] = RemoveNode(Geo_0, debrisCell);
+            end
+        end
         
 %         % Analise cells
 %         [~, cellFeatures{numStep}, woundFeatures{numStep}, woundEdgeFeatures{numStep}] = Cell.exportTableWithCellFeatures(tetrahedra.DataRow, Y, numStep, Set);

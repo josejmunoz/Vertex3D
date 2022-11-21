@@ -15,7 +15,7 @@ function CreateVtkEdges(Geo, Set, Step)
 
     measurementsToDisplay = cell(1, Geo.nCells);
     
-    for numCell = [Geo.Cells.ID]
+    for numCell = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID]
         if isempty(Geo.Cells(numCell).AliveStatus)
             continue
         end

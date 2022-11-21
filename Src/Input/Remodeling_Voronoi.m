@@ -25,10 +25,10 @@ Set.Contractility = 1;
 Set.cLineTension = 0.01;
 
 Set.Remodelling = 1;
-Set.RemodelingFrequency = 0.02;
+Set.RemodelingFrequency = 0.001;
 Set.lambdaB = 1e-4;
-Set.RemodelTol = 0.02;
-Set.RemodelStiffness = -0.1;
+Set.RemodelTol = 0;
+Set.RemodelStiffness = 0.9;
 
 Set.BC = 2;
 Set.TStartBC = Set.tend;
@@ -42,5 +42,3 @@ Set.lambdaS1 = 1;
 Set.lambdaS2 = 0.9;
 Set.lambdaS3 = 1;
 Set.ApplyBC=true;
- 
-Set.OutputFolder=strcat('Result/Remodelling_Voronoi_', num2str(Set.TotalCells));

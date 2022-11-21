@@ -6,7 +6,7 @@ function Geo = BuildXFromY(Geo_n, Geo)
                 dY = zeros(size(Geo.Cells(c).T,1), 3);
                 for tet = 1:size(Geo.Cells(c).T,1)
                     gTet = Geo.Cells(c).T(tet,:);
-                    for cm = 1:Geo.nCells
+                    for cm = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID]
                         Cell   = Geo.Cells(cm);
                         Cell_n = Geo_n.Cells(cm);
                         hit = sum(ismember(Cell.T,gTet),2)==4;

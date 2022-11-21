@@ -89,5 +89,10 @@ function [points, cells_localIDs, cells_type, idCell, measurementsToDisplay] = C
             cells_localIDs{c} + cells_type_header + cells_type{c} + idCell_header + idCell{c} + ...
             measurementsTxt);
 		fclose(fout);
-	end
+    end
+    points(cellfun(@isempty, points)) = [];
+    cells_localIDs(cellfun(@isempty, cells_localIDs)) = [];
+    cells_type(cellfun(@isempty, cells_type)) = [];
+    idCell(cellfun(@isempty, idCell)) = [];
+    measurementsToDisplay(cellfun(@isempty, measurementsToDisplay)) = [];
 end

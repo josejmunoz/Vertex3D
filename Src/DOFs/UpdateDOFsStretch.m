@@ -1,5 +1,5 @@
 function Geo = UpdateDOFsStretch(FixP, Geo, Set)
-	for c = 1:Geo.nCells
+	for c = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID]
 		prescYi  = ismember(Geo.Cells(c).globalIds, FixP);
 		Geo.Cells(c).Y(prescYi,2) = Geo.Cells(c).Y(prescYi,2) + Set.dx/((Set.TStopBC-Set.TStartBC)/Set.dt);
 		% TODO FIXME, I think this is proof that face global ids

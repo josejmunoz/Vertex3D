@@ -6,7 +6,7 @@ function [Cell,Y]=CheckOrderingOfTriangulaiton(Cell,Y,Set)
            2 3;
            3 1];
     Recompute=false;
-    for c = 1:Geo.nCells
+    for c = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID]
         Cell = Geo.Cells(c);
         IsConsistent=true;
         for f = 1:length(Cell.Faces)

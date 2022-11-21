@@ -18,7 +18,7 @@ function [Dofs]=GetDOFs(Geo, Set)
     vertices_BottomIds = allIds(vertices_Bottom);
     borderVertices_Bottom = vertices_BottomIds(boundary(allYs(vertices_Bottom, 1:2), 1));
     %%
-    for c = 1:Geo.nCells
+    for c = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID]
         Y     = Geo.Cells(c).Y;
         gIDsY = Geo.Cells(c).globalIds;
         for f = 1:length(Geo.Cells(c).Faces)

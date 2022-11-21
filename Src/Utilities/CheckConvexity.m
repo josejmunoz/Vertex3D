@@ -7,7 +7,7 @@ function [isConvex, tetID]=CheckConvexity(Tnew,Geo)
 	
 	isConvex = false;
 	tetID = -1;
-	for c = 1:Geo.nCells
+	for c = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID]
 		Ts = Geo.Cells(c).T;
 	    %% Checking if the same tetrahadron is already on T
 		[foundTets, tetFoundIds] = ismember(sort(Tnew, 2),sort(Ts, 2), 'rows');

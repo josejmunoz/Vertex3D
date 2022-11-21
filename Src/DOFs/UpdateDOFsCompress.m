@@ -1,6 +1,6 @@
 function [Geo, Dofs] = UpdateDOFsCompress(Geo,Set)
 	maxY = Geo.Cells(1).Y(1,2);
-	for c = 1:Geo.nCells
+	for c = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID]
 		hit = find(Geo.Cells(c).Y(:,2)>maxY);
 		if ~isempty(hit)
 			maxY = max(Geo.Cells(c).Y(hit,2));
@@ -15,7 +15,7 @@ function [Geo, Dofs] = UpdateDOFsCompress(Geo,Set)
 	Set.VPrescribed = maxY-Set.dx/((Set.TStopBC-Set.TStartBC)/Set.dt);
 	Dofs = GetDOFs(Geo, Set);
 	[dimP, numP] = ind2sub([3, Geo.numY+Geo.numF+Geo.nCells],Dofs.FixP);
-	for c = 1:Geo.nCells
+	for c = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID]
 		prescYi  = ismember(Geo.Cells(c).globalIds, numP);
 		Geo.Cells(c).Y(prescYi,dimP) = Set.VPrescribed;
 

@@ -3,7 +3,7 @@ function [Dofs]=GetDOFsSubstrate(Geo, Set)
     gconstrained = zeros((Geo.numY+Geo.numF+Geo.nCells)*3, 1);
     gprescribed  = zeros((Geo.numY+Geo.numF+Geo.nCells)*3, 1);
 
-    for c = 1:Geo.nCells
+    for c = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID]
         Y     = Geo.Cells(c).Y;
         gIDsY = Geo.Cells(c).globalIds;
         for f = 1:length(Geo.Cells(c).Faces)

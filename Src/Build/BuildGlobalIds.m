@@ -26,7 +26,8 @@ function Geo = BuildGlobalIds(Geo)
 		% completing all iterations are the new globalIds
 		gIds  = zeros(length(Cell.Y), 1);
         gIdsf = zeros(length(Cell.Faces), 1);
-		for cj = min(nonDeadCells):ci-1 
+        jCells = intersect(nonDeadCells, 1:ci-1);
+		for cj = jCells
 			ij = [ci, cj];
 			CellJ = Geo.Cells(cj);
 			face_ids_i	= sum(ismember(Cell.T,ij),2)==2;
@@ -68,7 +69,7 @@ function Geo = BuildGlobalIds(Geo)
     Geo.numY = gIdsTot - 1;
 	% Face Centres ids are put after all the vertices ids. Therefore we 
 	% need to add the total number of vertices
-    for c = 1:Geo.nCells
+    for c = nonDeadCells
         for f = 1:length(Geo.Cells(c).Faces)
             Geo.Cells(c).Faces(f).globalIds = Geo.Cells(c).Faces(f).globalIds + Geo.numY;
         end
@@ -78,7 +79,7 @@ function Geo = BuildGlobalIds(Geo)
 	% Nodal ids are put after all the vertices ids and the Face Centres Ids
 	% Therefore we need to add the total number of vertices and the total 
 	% number of faces.
-    for c = 1:Geo.nCells
+    for c = nonDeadCells
 		Geo.Cells(c).cglobalIds = c + Geo.numY + Geo.numF;
     end
 end

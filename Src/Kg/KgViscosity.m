@@ -3,7 +3,7 @@ function [g,K,EnergyF]=KgViscosity(Geo_n, Geo, Set)
 	% TODO FIXME placeholder...
 	dY = zeros(Geo.numF+Geo.numY+Geo.nCells,3);
 	% TODO FIXME BAD!
-	for c = 1:Geo.nCells
+	for c = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID]
         % THERE WAS A HARD TO DEBUG ERROR HERE... 
 		if Geo.Remodelling
 			if ~ismember(c,Geo.AssembleNodes)

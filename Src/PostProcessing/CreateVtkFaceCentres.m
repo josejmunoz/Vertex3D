@@ -7,7 +7,7 @@ function CreateVtkFaceCentres(Geo, Set, Step)
 	if ~exist(newSubFolder, 'dir')
     	mkdir(newSubFolder);
 	end
-	for c = 1:Geo.nCells
+	for c = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID]
 		nameout=fullfile(newSubFolder, ['FaceCentres_', num2str(c, '%04d'), '_t', num2str(Step, '%04d'), fileExtension]);
 		fout=fopen(nameout,'w');
 

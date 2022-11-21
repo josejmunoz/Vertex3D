@@ -4,7 +4,7 @@ function [energiesPerCellAndFaces, allEnergies] = ComputeCellTriEnergy(Geo, Set)
 
 energiesPerCellAndFaces = table();
 allEnergies = {};
-for c = 1:Geo.nCells
+for c = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID]
     Ys = Geo.Cells(c).Y;
     for numFace = 1:length(Geo.Cells(c).Faces)
         face = Geo.Cells(c).Faces(numFace);

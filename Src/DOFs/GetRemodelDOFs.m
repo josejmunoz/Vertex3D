@@ -1,6 +1,6 @@
 function [Dofs, Geo] = GetRemodelDOFs(Tnew, Dofs, Geo)
 remodelDofs = zeros(0,1);
-for numCell = 1:Geo.nCells
+for numCell = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID]
     news = ismember(sort(Geo.Cells(numCell).T, 2), sort(Tnew, 2), 'rows');
     remodelDofs(end+1:end+sum(news),:) = Geo.Cells(numCell).globalIds(news);
     for jj = 1:length(Geo.Cells(numCell).Faces)

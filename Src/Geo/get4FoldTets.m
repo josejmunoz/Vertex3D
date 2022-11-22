@@ -4,7 +4,8 @@ function [tets] = get4FoldTets(Geo)
 
 allTets = vertcat(Geo.Cells(:).T);
 
-tets = allTets(all(~ismember(allTets, Geo.XgID), 2), :);
+ghostNodesWithoutDebris = setdiff(Geo.XgID, Geo.RemovedDebrisCells);
+tets = allTets(all(~ismember(allTets, ghostNodesWithoutDebris), 2), :);
 tets = unique(tets, 'rows');
 
 end

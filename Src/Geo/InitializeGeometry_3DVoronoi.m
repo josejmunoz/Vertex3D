@@ -145,5 +145,8 @@ Geo.AvgEdgeLength_Bottom = mean(edgeLengths_Bottom);
 Geo.AvgEdgeLength_Lateral = mean(edgeLengths_Lateral);
 Set.BarrierTri0=Set.BarrierTri0/10;
 
+
+Geo.RemovedDebrisCells = [];
+
 end
 

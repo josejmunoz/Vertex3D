@@ -6,14 +6,15 @@ function [segmentFeatures] = GetTrisToRemodelOrdered(Geo, Set)
 nonDeadCells = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID];
 allTets = vertcat(Geo.Cells(nonDeadCells).T);
 allYs = vertcat(Geo.Cells(nonDeadCells).Y);
+ghostNodesWithoutDebris = setdiff(Geo.XgID, Geo.RemovedDebrisCells);
 
-ghostNodeCells = Geo.Cells(ismember(1:length(Geo.Cells), Geo.XgID) & ~cellfun(@isempty, {Geo.Cells.T}));
+ghostNodeCells = Geo.Cells(ismember(1:length(Geo.Cells), ghostNodesWithoutDebris) & ~cellfun(@isempty, {Geo.Cells.T}));
 ghostNodeCellIDs = [ghostNodeCells.ID];
 ghostNodeCellIDs = setdiff(ghostNodeCellIDs, Geo.BorderGhostNodes);
 ghostPairs = [];
 for id = ghostNodeCellIDs
     neighbours = getNodeNeighbours(Geo, id);
-    neighbours = neighbours(ismember(neighbours, Geo.XgID));
+    neighbours = neighbours(ismember(neighbours, ghostNodesWithoutDebris));
     idValues = ones(length(neighbours), 1) * id;
     ghostPairs = [ghostPairs; idValues, neighbours];
 end
@@ -31,13 +32,15 @@ for ghostPair = ghostPairs'
     x2 = Geo.Cells(ghostPair(2)).X;
     edgeLength = norm(x2 - x1);
     
+    
+    
     % Number of cell nodes shared
     neighbours_original_1 = getNodeNeighboursPerDomain(Geo, ghostPair(1), ghostPair(1));
     neighbours_original_2 = getNodeNeighboursPerDomain(Geo, ghostPair(2), ghostPair(2));
     neighbours_pair = intersect(neighbours_original_1, neighbours_original_2);
-    sharedCellNodes = neighbours_pair(~ismember(neighbours_pair, Geo.XgID));
-    neighbours_1 = neighbours_original_1(~ismember(neighbours_original_1, Geo.XgID));
-    neighbours_2 = neighbours_original_2(~ismember(neighbours_original_2, Geo.XgID));
+    sharedCellNodes = neighbours_pair(~ismember(neighbours_pair, ghostNodesWithoutDebris));
+    neighbours_1 = neighbours_original_1(~ismember(neighbours_original_1, ghostNodesWithoutDebris));
+    neighbours_2 = neighbours_original_2(~ismember(neighbours_original_2, ghostNodesWithoutDebris));
     
     neighbours_lengths = [length(neighbours_1), length(neighbours_2)];
     neighbours = {neighbours_1, neighbours_2};
@@ -55,7 +58,9 @@ for ghostPair = ghostPairs'
             continue
         end
         
-        aliveCells = [Geo.Cells(neighboursToT1).AliveStatus] > 0;
+        aliveCells = ~cellfun(@isempty, {Geo.Cells(neighboursToT1).AliveStatus});
+        aliveCells(aliveCells) = [Geo.Cells(neighboursToT1).AliveStatus] > 0;
+        
         if sum(aliveCells) < 3
             continue
         end
@@ -69,7 +74,7 @@ for ghostPair = ghostPairs'
         for numNode = 1:length(cellNodeNeighbours)
             %otherNodes = setdiff(1:length(cellNodeNeighbours), numNode);
             %opposedNodes{numNode} = setdiff(cellNodeNeighbours{numNode}, vertcat(cellNodeNeighbours{otherNodes}));
-            opposedNodes{numNode} = intersect(cellNodeNeighbours{numNode}, Geo.XgID);
+            opposedNodes{numNode} = intersect(cellNodeNeighbours{numNode}, ghostNodesWithoutDebris);
             
             currentNeighbours = getNodeNeighboursPerDomain(Geo, neighboursToT1(numNode), ghostNodesToT1);
             cellNode_Adjacency{numNode} = neighboursToT1(ismember(neighboursToT1, [currentNeighbours; neighboursToT1(numNode)]));

@@ -6,6 +6,8 @@ if ~exist('Ynew', 'var')
     Ynew = [];
 end
 
+oldGeo = Geo;
+
 for newTet = newTets'
     for numNode = newTet'
         if ~any(ismember(newTet, Geo.XgID)) && ismember(sort(newTet)', sort(Geo.Cells(numNode).T, 2), 'rows')
@@ -20,7 +22,7 @@ for newTet = newTets'
                     if ~isempty(Ynew)
                         Geo.Cells(numNode).Y(end+1, :) = Ynew(ismember(newTets, newTet', 'rows'), :);
                     else
-                        Geo.Cells(numNode).Y(end+1, :) = RecalculateYsFromPrevious(Geo, newTet', numNode, 0.005, Set);
+                        Geo.Cells(numNode).Y(end+1, :) = RecalculateYsFromPrevious(oldGeo, newTet', numNode, 0.5, Set);
                     end
                     
                     Geo.numY = Geo.numY + 1;

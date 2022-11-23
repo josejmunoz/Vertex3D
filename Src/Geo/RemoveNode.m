@@ -15,7 +15,7 @@ Geo.Cells(debrisCell).ExternalLambda = [];
 Geo.Cells(debrisCell).InternalLambda = [];
 Geo.Cells(debrisCell).SubstrateLambda = [];
 Geo.XgID(end+1) = debrisCell;
-%Geo.XgLateral(end+1) = debrisCell;
+Geo.XgLateral(end+1) = debrisCell;
 
 removingTets = Geo.Cells(debrisCell).T(all(ismember(Geo.Cells(debrisCell).T, Geo.XgID), 2), :);
 Geo = RemoveTetrahedra(Geo, removingTets);

@@ -6,8 +6,10 @@ allNodeTets = vertcat(Geo.Cells(node).T);
 
 if ismember(nodeOfDomain, Geo.XgBottom)
     XgDomain = Geo.XgBottom;
-else
+elseif ismember(nodeOfDomain, Geo.XgTop)
     XgDomain = Geo.XgTop;
+else
+    XgDomain = Geo.XgLateral;
 end
 
 allNodeTets = allNodeTets(any(ismember(allNodeTets, XgDomain), 2), :);

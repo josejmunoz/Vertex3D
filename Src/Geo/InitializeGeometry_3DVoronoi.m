@@ -62,11 +62,12 @@ X_topFaceIds = X_topIds(1:size(XgTopFaceCentre, 1));
 X_topVerticesIds = X_topIds(size(XgTopFaceCentre, 1)+1:end);
 X = vertcat(X, X_topNodes);
 
-Geo.XgBottom = X_bottomIds;
-Geo.XgTop = X_topIds;
-
 xInternal = [1:Set.TotalCells]';
 Geo.nCells = length(xInternal);
+
+Geo.XgBottom = X_bottomIds;
+Geo.XgTop = X_topIds;
+Geo.XgLateral = setdiff(1:size(seedsXY, 1), xInternal);
 
 %% Create tetrahedra
 % [Twg_bottom] = CreateTetrahedra(trianglesConnectivity, neighboursNetwork, cellEdges, xInternal, X_bottomFaceIds, X_bottomVerticesIds);
@@ -87,7 +88,6 @@ Twg = tets.ConnectivityList;
 %% Ghost cells and tets
 Geo.XgID = setdiff(1:size(X, 1), xInternal);
 Twg(all(ismember(Twg,Geo.XgID),2),:)=[];
-
 
 %% After removing ghost tetrahedras, some nodes become disconnected,
 % that is, not a part of any tetrahedra. Therefore, they should be
@@ -144,7 +144,6 @@ Geo.AvgEdgeLength_Top = mean(edgeLengths_Top);
 Geo.AvgEdgeLength_Bottom = mean(edgeLengths_Bottom);
 Geo.AvgEdgeLength_Lateral = mean(edgeLengths_Lateral);
 Set.BarrierTri0=Set.BarrierTri0/10;
-
 
 Geo.RemovedDebrisCells = [];
 

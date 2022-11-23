@@ -4,9 +4,11 @@ function [Ynew, Tnew] = YFlip55(oldTets, XsToDisconnect, Geo, Set)
 
 Ynew = [];
 
+ghostNodesWithoutDebris = setdiff(Geo.XgID, Geo.RemovedDebrisCells);
+
 Xs = unique(oldTets);
-Xs_g = Xs(ismember(Xs, Geo.XgID));
-Xs_c = Xs(~ismember(Xs, Geo.XgID));
+Xs_g = Xs(ismember(Xs, ghostNodesWithoutDebris));
+Xs_c = Xs(~ismember(Xs, ghostNodesWithoutDebris));
 
 % Temporary remove 4-cell tetrahedra
 [tets4Cells] = get4FoldTets(Geo);

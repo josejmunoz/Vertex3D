@@ -32,8 +32,6 @@ for ghostPair = ghostPairs'
     x2 = Geo.Cells(ghostPair(2)).X;
     edgeLength = norm(x2 - x1);
     
-    
-    
     % Number of cell nodes shared
     neighbours_original_1 = getNodeNeighboursPerDomain(Geo, ghostPair(1), ghostPair(1));
     neighbours_original_2 = getNodeNeighboursPerDomain(Geo, ghostPair(2), ghostPair(2));

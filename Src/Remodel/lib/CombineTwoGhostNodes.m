@@ -48,7 +48,7 @@ function [Geo, Tnew, Ynew, removedTets, replacedTets] = CombineTwoGhostNodes(Geo
         Geo.XgID(ismember(Geo.XgID, nodesToCombine(2))) = [];
         
         Tnew = Geo.Cells(nodesToCombine(1)).T;
-        Ynew = RecalculateYsFromPrevious(Geo, Tnew, nodesToCombine(1), 0.005, Set);
+        %Ynew = RecalculateYsFromPrevious(Geo, Tnew, nodesToCombine(1), 0.005, Set);
     end
 
 end

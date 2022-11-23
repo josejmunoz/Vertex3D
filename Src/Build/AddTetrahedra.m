@@ -22,14 +22,13 @@ for newTet = newTets'
                     if ~isempty(Ynew)
                         Geo.Cells(numNode).Y(end+1, :) = Ynew(ismember(newTets, newTet', 'rows'), :);
                     else
-                        Geo.Cells(numNode).Y(end+1, :) = RecalculateYsFromPrevious(oldGeo, newTet', numNode, 0.5, Set);
+                        Geo.Cells(numNode).Y(end+1, :) = RecalculateYsFromPrevious(oldGeo, newTet', numNode, Set);
                     end
                     
                     Geo.numY = Geo.numY + 1;
                 end
             end
         end
-        
     end
 end
 end

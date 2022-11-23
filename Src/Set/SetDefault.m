@@ -61,6 +61,7 @@ function Set = SetDefault(Set)
     DSet.Remodelling				= true;
     DSet.RemodelTol					= .5e-6;
     DSet.RemodelingFrequency		= 2;
+    DSet.contributionOldYs          = 0.5;
     %% ============================ Solution ==============================
     DSet.tol						= 1e-9;
     DSet.MaxIter					= 200;
@@ -97,6 +98,7 @@ function Set = SetDefault(Set)
 	DSet.dt0                        = DSet.tend/DSet.Nincr;
 	DSet.dt                         = DSet.dt0;
 	DSet.MaxIter0					= DSet.MaxIter;
+    DSet.contributionOldFaceCentre  = DSet.contributionOldYs;
     %% TODO: ADD IF IN CASE IT IS USED: E.G., Set.InPlaneElasticity
     DSet.OutputFolder=strcat('Result/Remodelling_', Set.InputGeo, '_Cells_', num2str(Set.TotalCells), ...
         '_lVol_', num2str(Set.lambdaV), '_muBulk_', num2str(Set.mu_bulk), ...

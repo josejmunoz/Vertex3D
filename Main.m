@@ -39,7 +39,7 @@ numStep = 1; relaxingNu = false;
 EnergiesPerTimeStep = {};
 
 while t<=Set.tend
-    [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, relaxingNu] = IterateOnTime(Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, relaxingNu);
+    [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, relaxingNu] = IterateOverTime(Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, relaxingNu);
 end
 tEnd = duration(seconds(toc(tStart)));
 tEnd.Format = 'hh:mm:ss';

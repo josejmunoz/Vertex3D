@@ -1,10 +1,10 @@
 Set.InputGeo = 'Voronoi';
 
-Set.TotalCells = 40;
+Set.TotalCells = 120;
 Set.CellHeight = 0.2;
 
 Set.Ablation = 1;
-Geo.cellsToAblate = [1:3];
+Geo.cellsToAblate = [1:10];
  
 Set.lambdaV = 20;
 
@@ -28,7 +28,7 @@ Set.Remodelling = 1;
 Set.RemodelingFrequency = 0.001;
 Set.lambdaB = 1e-4;
 Set.RemodelTol = 0;
-Set.RemodelStiffness = 0.9;
+Set.RemodelStiffness = 0.4;
 
 Set.BC = 2;
 Set.TStartBC = Set.tend;

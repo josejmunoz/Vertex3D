@@ -17,7 +17,7 @@ function [Geo, Set, DidNotConverge]=SolveRemodelingStep(Geo_0, Geo_n, Geo, Dofs,
     
     Set.nu0=Set.nu;
     Set.nu=Set.nu_LP_Initial;
-    Set.MaxIter=Set.MaxIter0/4;
+    Set.MaxIter=20;
     while 1
         [g,K]=KgGlobal(Geo_0, Geo_n, Geo, Set);
         
@@ -27,16 +27,16 @@ function [Geo, Set, DidNotConverge]=SolveRemodelingStep(Geo_0, Geo_n, Geo, Dofs,
         fprintf('Local Problem ->Iter: %i, ||gr||= %.3e ||dyr||= %.3e  nu/nu0=%.3e  dt/dt0=%.3g \n',0,gr,dyr,Set.nu/Set.nu0,Set.dt/Set.dt0);
         fprintf(Set.flog, 'Local Problem ->Iter: %i, ||gr||= %.3e ||dyr||= %.3e  nu/nu0=%.3e  dt/dt0=%.3g \n',0,gr,dyr,Set.nu/Set.nu0,Set.dt/Set.dt0);
         [Geo, g, K, Energy, Set, gr, dyr, dy] = NewtonRaphson(Geo_0, Geo_n, Geo, Dofs, Set, K, g, -1, -1);
-        if IncreaseEta && (gr>Set.tol || dyr>Set.tol)
-            fprintf('Convergence was not achieved ... \n');
-            fprintf(Set.flog, 'Convergence was not achieved ... \n');
-            fprintf('First strategy ---> Restart iterating while higher viscosity... \n');
-            fprintf(Set.flog, 'First strategy ---> Restart iterating while higher viscosity... \n');
-            Geo=Geop;
-            Set.nu=Set.nu*10;
-            Set.MaxIter=Set.MaxIter0/4;
-            IncreaseEta=false;
-        elseif gr>Set.tol || dyr>Set.tol || any(isnan(g(Dofs.Free))) || any(isnan(dy(Dofs.Free))) 
+%         if IncreaseEta && (gr>Set.tol || dyr>Set.tol)
+%             fprintf('Convergence was not achieved ... \n');
+%             fprintf(Set.flog, 'Convergence was not achieved ... \n');
+%             fprintf('First strategy ---> Restart iterating while higher viscosity... \n');
+%             fprintf(Set.flog, 'First strategy ---> Restart iterating while higher viscosity... \n');
+%             Geo=Geop;
+%             Set.nu=Set.nu*10;
+%             Set.MaxIter=Set.MaxIter0/4;
+%             IncreaseEta=false;
+        if gr>Set.tol || dyr>Set.tol || any(isnan(g(Dofs.Free))) || any(isnan(dy(Dofs.Free))) 
             % this should not take place
             fprintf('Local Problem did not converge after %i iterations.\n',Set.iter);
             fprintf(Set.flog, 'Local Problem did not converge after %i iterations.\n',Set.iter);

@@ -1,4 +1,4 @@
-function [tStart, Set] = InitializeVertexModel(Set, runningMode)
+function [Set, Geo, Dofs, t, tr, Geo_0, Geo_n, numStep, relaxingNu, EnergiesPerTimeStep] = InitializeVertexModel(Set, Geo)
 %INITIALIZEVERTEXMODEL Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -6,6 +6,7 @@ Set=SetDefault(Set);
 Set=WoundDefault(Set);
 Set=InitiateOutputFolder(Set);
 Set.flog = fopen(Set.log, 'w+');
+diary(strrep(Set.log, 'log', 'completeLog'))
 
 if isequal(Set.InputGeo, 'Bubbles')
     [Geo, Set] = InitializeGeometry3DVertex(Geo, Set);
@@ -20,10 +21,12 @@ else
 end
 Geo.Remodelling = false;
 
-t=0; tr=0; tp=0;
+t=0; tr=0;
 Geo_0   = Geo;
 Geo_n   = Geo;
 numStep = 1; relaxingNu = false;
 EnergiesPerTimeStep = {};
+
+PostProcessingVTK(Geo, Geo_0, Set, numStep);
 end
 

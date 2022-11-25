@@ -1,0 +1,13 @@
+Set.cLineTension = 0.03;
+Set.cLineTension = 0.04;
+Set.cLineTension = 0.05;
+Set.cLineTension = 0.06;
+Set.cLineTension = 0.07;
+Set.cLineTension = 0.08;
+Set.cLineTension = 0.09;
+Set.cLineTension = 0.1;
+Set.cLineTension = 0.2;
+Set.cLineTension = 0.3;
+Set.cLineTension = 0.4;
+Set.cLineTension = 1;
+Set.cLineTension = 2;

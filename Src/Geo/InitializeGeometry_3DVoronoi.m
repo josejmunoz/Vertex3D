@@ -3,7 +3,7 @@ function [Geo, Set] = InitializeGeometry_3DVoronoi(Geo, Set)
 %   Detailed explanation goes here
 
 nSeeds = Set.TotalCells + 10* Set.TotalCells;
-lloydIterations = 50;
+lloydIterations = 2;
 distorsion = 0;
 cellHeight = Set.CellHeight;
 
@@ -20,6 +20,23 @@ distanceSeeds = pdist2(seedsXY, [0.5 0.5]);
 [~, indices] = sort(distanceSeeds);
 seedsXY = seedsXY(indices, :);
 
+%% Get an image from it
+% [vx, vy] = voronoi(seedsXY(:, 1), seedsXY(:, 2));
+% 
+% resolution = 2000;
+% imgVoronoi = zeros(resolution, resolution);
+% 
+% vx = vx * resolution;
+% vy = vy * resolution;
+% 
+% for numV = 1:length(vx)
+%     if vx(numV) > 0 && vx(numV) < resolution && vy(numV) > 0 && vy(numV) < resolution
+%         imgVoronoi(vx(numV), vy(numV)) = 1;
+%     end
+% end
+% 
+% figure, imshow(imgVoronoi)
+
 %% Homogeneize voronoi diagram
 for numIter = 1:lloydIterations
     DT = delaunayTriangulation(seedsXY);
@@ -29,6 +46,8 @@ for numIter = 1:lloydIterations
         seedsXY(numCell, :) = mean(currentVertices(all(~isinf(currentVertices), 2), :));
     end
 end
+
+%% TODO: OBTAIN SHAPE OF THE CELLS TO ANALYSE THE ELLIPSE DIAMETER TO OBTAIN ITS REAL CELL HEIGHT
 
 %% TODO: Reorder here regarding the first cell (?)
 

@@ -2,29 +2,32 @@ close all; clear; clc;
 fclose('all');
 addpath(genpath('Src'));
 
-disp('------------- SIMULATION STARTS -------------');
-% TODO FIXME, I think it would be ideal to call the input on another file,
-% and move the main flow (this file) to another file, so that multiple 
-% simulations can be run from a single file
+runningMode = 0;
 
 switch runningMode
     case 1
         Stretch
+        disp('STRECH SIMULATION');
     case 2
         StretchBulk
+        disp('STRECH BULK SIMULATION');
     case 3
         Compress
+        disp('COMPRESSION SIMULATION');
     case 4
         Remodelling_Bubbles
+        disp('REMODELLING WITH BUBBLES SIMULATION');
     case 5
         Remodelling_Voronoi
+        disp('REMODELLING WITH VORONOI SIMULATION');
     case 0
         BatchSimulations
+        disp('BATCH SIMULATIONS');
     otherwise
         error('Incorrect mode selected');
 end
 
-if isfield(Set,'batchProcessing') && Set.batchProcessing
+if runningMode == 0
     fid = fopen(fullfile('Src', 'Input', 'batchParameters.txt'));
     tline = fgetl(fid);
     tlines = cell(0,1);
@@ -34,17 +37,19 @@ if isfield(Set,'batchProcessing') && Set.batchProcessing
     end
     fclose(fid);
 else
-    Set.batchProcessing = false;
     tlines = {'"Single execution"'};
 end
 
-for numLine = 1:length(tlines)
-    diary realLog.out
+parfor numLine = 1:length(tlines) 
     disp('--------- SIMULATION STARTS ---------');
     tStart = tic;
     try
-        eval(tlines{numLine});
-        Set = rmfield(Set, 'OutputFolder');
+        if runningMode == 0
+            [Geo, Set] = readBatchLine(tlines, numLine, Set, Geo);
+        end
+        if isfield(Set, 'OutputFolder')
+            Set = rmfield(Set, 'OutputFolder');
+        end
         [Set, Geo, Dofs, t, tr, Geo_0, Geo_n, numStep, relaxingNu, EnergiesPerTimeStep] = InitializeVertexModel(Set, Geo);
         
         while t<=Set.tend

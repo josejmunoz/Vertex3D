@@ -1,7 +1,7 @@
 function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, relaxingNu] = IterateOverTime(Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, relaxingNu)
 %ITERATEONTIME Summary of this function goes here
 %   Detailed explanation goes here
-    PostProcessingVTK(Geo, Geo_0, Set, numStep)
+    
     Set.currentT = t;
     if Set.Remodelling && abs(t-tr)>=Set.RemodelingFrequency
         [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Set);
@@ -43,8 +43,8 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
         %         end
     end
 
-    [g, K, E, Geo, Energies] = KgGlobal(Geo_0, Geo_n, Geo, Set);
-    [Geo, g, K, Energy, Set, gr, dyr, dy] = NewtonRaphson(Geo_0, Geo_n, Geo, Dofs, Set, K, g, numStep, t);
+    [g, K, ~, Geo, Energies] = KgGlobal(Geo_0, Geo_n, Geo, Set);
+    [Geo, g, ~, ~, Set, gr, dyr, dy] = NewtonRaphson(Geo_0, Geo_n, Geo, Dofs, Set, K, g, numStep, t);
 
     if gr<Set.tol && dyr<Set.tol && all(isnan(g(Dofs.Free)) == 0) && all(isnan(dy(Dofs.Free)) == 0)
         if Set.nu/Set.nu0 == 1
@@ -52,7 +52,6 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
 
             EnergiesPerTimeStep{end+1} = Energies;
             Geo = BuildXFromY(Geo_n, Geo);
-            tp=t;
 
             t=t+Set.dt;
             Set.dt=min(Set.dt+Set.dt*0.5, Set.dt0);
@@ -81,13 +80,11 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
             fprintf(Set.flog, 'Second strategy ---> Repeating the step with half step-size...\n');
             Set.MaxIter=Set.MaxIter0;
             Set.nu=Set.nu0;
-            t=tp;
             Set.dt=Set.dt/2;
             t=t+Set.dt;
         else
             fprintf('Step %i did not converge!! \n', Set.iIncr);
             fprintf(Set.flog, 'Step %i did not converge!! \n', Set.iIncr);
-            break;
         end
     end
 end

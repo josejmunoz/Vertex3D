@@ -20,3 +20,5 @@ Result
 *.xls
 
 docs/
+
+*.txt~

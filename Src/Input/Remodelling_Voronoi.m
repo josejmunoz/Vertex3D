@@ -1,10 +1,10 @@
 Set.InputGeo = 'Voronoi';
 
-Set.TotalCells = 120;
-Set.CellHeight = 0.2;
+Set.TotalCells = 40;
+Set.CellHeight = 15;
 
 Set.Ablation = 1;
-Geo.cellsToAblate = [1:10];
+Geo.cellsToAblate = [1:3];
  
 Set.lambdaV = 20;
 

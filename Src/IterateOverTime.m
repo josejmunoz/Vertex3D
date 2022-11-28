@@ -1,4 +1,4 @@
-function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, relaxingNu] = IterateOverTime(Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, relaxingNu)
+function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, relaxingNu, Geo_b] = IterateOverTime(Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, relaxingNu, Geo_b)
 %ITERATEONTIME Summary of this function goes here
 %   Detailed explanation goes here
     
@@ -72,19 +72,16 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
         relaxingNu = false;
         if Set.iter == Set.MaxIter0
             fprintf('First strategy ---> Repeating the step with higher viscosity... \n');
-            fprintf(Set.flog, 'First strategy ---> Repeating the step with higher viscosity... \n');
             Set.MaxIter=Set.MaxIter0*3;
             Set.nu=10*Set.nu0;
         elseif Set.iter == Set.MaxIter && Set.iter > Set.MaxIter0 && Set.dt>Set.dt0/(2^6)
             fprintf('Second strategy ---> Repeating the step with half step-size...\n');
-            fprintf(Set.flog, 'Second strategy ---> Repeating the step with half step-size...\n');
             Set.MaxIter=Set.MaxIter0;
             Set.nu=Set.nu0;
             Set.dt=Set.dt/2;
             t=t+Set.dt;
         else
             fprintf('Step %i did not converge!! \n', Set.iIncr);
-            fprintf(Set.flog, 'Step %i did not converge!! \n', Set.iIncr);
         end
     end
 end

@@ -40,28 +40,30 @@ else
     tlines = {'"Single execution"'};
 end
 
-parfor numLine = 1:length(tlines) 
+%parpool(3);
+
+for numLine = 1:length(tlines) 
     disp('--------- SIMULATION STARTS ---------');
     tStart = tic;
-    try
+    %try
         if runningMode == 0
+            BatchSimulations
             [Geo, Set] = readBatchLine(tlines, numLine, Set, Geo);
         end
         if isfield(Set, 'OutputFolder')
             Set = rmfield(Set, 'OutputFolder');
         end
-        [Set, Geo, Dofs, t, tr, Geo_0, Geo_n, numStep, relaxingNu, EnergiesPerTimeStep] = InitializeVertexModel(Set, Geo);
+        [Set, Geo, Dofs, t, tr, Geo_0, Geo_b, Geo_n, numStep, relaxingNu, EnergiesPerTimeStep] = InitializeVertexModel(Set, Geo);
         
         while t<=Set.tend
-            [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, relaxingNu] = IterateOverTime(Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, relaxingNu);
+            [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, relaxingNu, Geo_b] = IterateOverTime(Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, relaxingNu, Geo_b);
         end
-    catch ME
-        fprintf("ERROR: %s", ME.message);
-        fprintf(Set.flog, "ERROR: %s", ME.message);
-    end
-    tEnd = duration(seconds(toc(tStart)));
-    tEnd.Format = 'hh:mm:ss';
-    fprintf("Total real run time %s \n",tEnd);
-    fprintf(Set.flog, "Total real run time %s \n",tEnd);
+        tEnd = duration(seconds(toc(tStart)));
+        tEnd.Format = 'hh:mm:ss';
+        fprintf("Total real run time %s \n",tEnd);
+%     catch ME
+%         tEnd = duration(seconds(toc(tStart)));
+%         fprintf("ERROR: %s", ME.message);
+%     end
     diary off
 end

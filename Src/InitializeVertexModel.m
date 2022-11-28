@@ -1,11 +1,10 @@
-function [Set, Geo, Dofs, t, tr, Geo_0, Geo_n, numStep, relaxingNu, EnergiesPerTimeStep] = InitializeVertexModel(Set, Geo)
+function [Set, Geo, Dofs, t, tr, Geo_0, Geo_b, Geo_n, numStep, relaxingNu, EnergiesPerTimeStep] = InitializeVertexModel(Set, Geo)
 %INITIALIZEVERTEXMODEL Summary of this function goes here
 %   Detailed explanation goes here
 
 Set=SetDefault(Set);
 Set=WoundDefault(Set);
 Set=InitiateOutputFolder(Set);
-Set.flog = fopen(Set.log, 'w+');
 diary(strrep(Set.log, 'log', 'completeLog'))
 
 if isequal(Set.InputGeo, 'Bubbles')
@@ -24,6 +23,7 @@ Geo.Remodelling = false;
 t=0; tr=0;
 Geo_0   = Geo;
 Geo_n   = Geo;
+Geo_b   = Geo;
 numStep = 1; relaxingNu = false;
 EnergiesPerTimeStep = {};
 

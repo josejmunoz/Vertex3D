@@ -38,7 +38,8 @@ for numCell = 1:nSeeds
     end
 end
 
-[~, img2DLabelled] = bwdist(img2D);
+[distances, img2DLabelled] = bwdist(img2D);
+watershedImg = watershed(distances, 8);
 
 for numCell = 1:nSeeds
     if all(seedsXY(numCell, :) > 0) && all(seedsXY(numCell, :) <= imgDims)
@@ -46,7 +47,7 @@ for numCell = 1:nSeeds
         img2DLabelled(img2DLabelled == oldId) = numCell;
     end
 end
-
+img2DLabelled = uint16(img2DLabelled);
 
 %% TODO: OBTAIN SHAPE OF THE CELLS TO ANALYSE THE ELLIPSE DIAMETER TO OBTAIN ITS REAL CELL HEIGHT
 features2D = regionprops(img2DLabelled, 'all');
@@ -56,13 +57,13 @@ cellHeight = avgDiameter*Set.CellHeight;
 %% TODO: Reorder here regarding the first cell (?)
 
 %% Build 3D topology
-[trianglesConnectivity, neighboursNetwork, cellEdges, verticesOfCell_pos] = Build3DVoronoiTopo(seedsXY);
+[trianglesConnectivity, neighboursNetwork, cellEdges, verticesOfCell_pos, borderCells] = Build2DVoronoiFromImage(img2DLabelled, watershedImg, 1:Set.TotalCells);
 
 seedsXY_topoChanged = [seedsXY(:, 1), seedsXY(:, 2) + rand(size(seedsXY, 1), 1)*distorsion];
 % seedsXY_topoChanged(:, 2) = seedsXY_topoChanged(:, 2) - min(seedsXY_topoChanged(:, 2));
 % seedsXY_topoChanged(:, 2) = seedsXY_topoChanged(:, 2) / max(seedsXY_topoChanged(:, 2));
 
-[trianglesConnectivity_topoChanged, neighboursNetwork_topoChanged, cellEdges_topoChanged, verticesOfCell_pos_topoChanged] = Build3DVoronoiTopo(seedsXY_topoChanged);
+[trianglesConnectivity_topoChanged, neighboursNetwork_topoChanged, cellEdges_topoChanged, verticesOfCell_pos_topoChanged] = Build2DVoronoiFromImage(img2DLabelled, watershedImg, 1:Set.TotalCells);
 
 %% Create node connections:
 X(:, 1) = mean([seedsXY(:, 1), seedsXY_topoChanged(:, 1)], 2);
@@ -93,20 +94,16 @@ Geo.XgTop = X_topIds;
 Geo.XgLateral = setdiff(1:size(seedsXY, 1), xInternal);
 
 %% Create tetrahedra
-% [Twg_bottom] = CreateTetrahedra(trianglesConnectivity, neighboursNetwork, cellEdges, xInternal, X_bottomFaceIds, X_bottomVerticesIds);
-% figure, tetramesh(Twg_bottom(any(ismember(Twg_bottom, xInternal), 2), :), X);
-% 
-% [Twg_top] = CreateTetrahedra(trianglesConnectivity_topoChanged, neighboursNetwork_topoChanged, cellEdges_topoChanged, xInternal, X_topFaceIds, X_topVerticesIds);
-% Twg = vertcat(Twg_top, Twg_bottom);
-% figure, tetramesh(Twg_top(any(ismember(Twg_top, xInternal), 2), :), X);
-% figure, tetramesh(Twg(any(ismember(Twg, xInternal), 2), :), X);
+[Twg_bottom] = CreateTetrahedra(trianglesConnectivity, neighboursNetwork, cellEdges, xInternal, X_bottomFaceIds, X_bottomVerticesIds);
+[Twg_top] = CreateTetrahedra(trianglesConnectivity_topoChanged, neighboursNetwork_topoChanged, cellEdges_topoChanged, xInternal, X_topFaceIds, X_topVerticesIds);
+Twg = vertcat(Twg_top, Twg_bottom);
 
 % X(X(:, 1) < 0 , 1) = 0;
 % X(X(:, 2) < 0 , 2) = 0;
 % X(X(:, 1) > 1 , 1) = 1;
 % X(X(:, 2) > 1 , 2) = 1;
-tets = delaunayTriangulation(X);
-Twg = tets.ConnectivityList;
+% tets = delaunayTriangulation(X);
+% Twg = tets.ConnectivityList;
 
 %% Ghost cells and tets
 Geo.XgID = setdiff(1:size(X, 1), xInternal);
@@ -135,7 +132,7 @@ Set.upperAreaThreshold = avgArea + stdArea;
 Set.lowerAreaThreshold = avgArea - stdArea;
 
 %% Define border cells
-Geo.BorderCells = setdiff(unique(trianglesConnectivity(any(ismember(trianglesConnectivity, Set.TotalCells+1:nSeeds), 2), :)), Set.TotalCells+1:nSeeds);
+Geo.BorderCells = borderCells;
 
 Geo.BorderGhostNodes = setdiff(1:nSeeds, 1:Geo.nCells);
 Geo.BorderGhostNodes = [Geo.BorderGhostNodes'; setdiff(getNodeNeighbours(Geo, Geo.BorderGhostNodes), 1:Geo.nCells)];

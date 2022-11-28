@@ -3,39 +3,22 @@ function [Geo, Set] = InitializeGeometry_3DVoronoi(Geo, Set)
 %   Detailed explanation goes here
 
 nSeeds = Set.TotalCells + 10* Set.TotalCells;
+imgDims = 2000;
 lloydIterations = 2;
 distorsion = 0;
-cellHeight = Set.CellHeight;
 
 rng default
-x = rand(nSeeds, 1);
-y = rand(nSeeds, 1);
+x = randi(imgDims, nSeeds, 1);
+y = randi(imgDims, nSeeds, 1);
 
 seedsXY = horzcat(x,y);
 seedsXY = unique(round(seedsXY, 2), 'rows');
 nSeeds = size(seedsXY, 1);
 
 %% Get central
-distanceSeeds = pdist2(seedsXY, [0.5 0.5]);
+distanceSeeds = pdist2(seedsXY, [imgDims/2 imgDims/2]);
 [~, indices] = sort(distanceSeeds);
 seedsXY = seedsXY(indices, :);
-
-%% Get an image from it
-% [vx, vy] = voronoi(seedsXY(:, 1), seedsXY(:, 2));
-% 
-% resolution = 2000;
-% imgVoronoi = zeros(resolution, resolution);
-% 
-% vx = vx * resolution;
-% vy = vy * resolution;
-% 
-% for numV = 1:length(vx)
-%     if vx(numV) > 0 && vx(numV) < resolution && vy(numV) > 0 && vy(numV) < resolution
-%         imgVoronoi(vx(numV), vy(numV)) = 1;
-%     end
-% end
-% 
-% figure, imshow(imgVoronoi)
 
 %% Homogeneize voronoi diagram
 for numIter = 1:lloydIterations
@@ -43,11 +26,32 @@ for numIter = 1:lloydIterations
     [V, D] = voronoiDiagram(DT);
     for numCell = 1:nSeeds
         currentVertices = V(D{numCell}, :);
-        seedsXY(numCell, :) = mean(currentVertices(all(~isinf(currentVertices), 2), :));
+        seedsXY(numCell, :) = round(mean(currentVertices(all(~isinf(currentVertices), 2), :)));
     end
 end
 
+%% Get an image from it
+img2D = zeros(imgDims, 'uint16');
+for numCell = 1:nSeeds
+    if all(seedsXY(numCell, :) > 0) && all(seedsXY(numCell, :) <= imgDims)
+        img2D(seedsXY(numCell, 1), seedsXY(numCell, 2)) = 1;
+    end
+end
+
+[~, img2DLabelled] = bwdist(img2D);
+
+for numCell = 1:nSeeds
+    if all(seedsXY(numCell, :) > 0) && all(seedsXY(numCell, :) <= imgDims)
+        oldId = img2DLabelled(seedsXY(numCell, 1), seedsXY(numCell, 2));
+        img2DLabelled(img2DLabelled == oldId) = numCell;
+    end
+end
+
+
 %% TODO: OBTAIN SHAPE OF THE CELLS TO ANALYSE THE ELLIPSE DIAMETER TO OBTAIN ITS REAL CELL HEIGHT
+features2D = regionprops(img2DLabelled, 'all');
+avgDiameter = mean([features2D(1:Set.TotalCells).MajorAxisLength]);
+cellHeight = avgDiameter*Set.CellHeight;
 
 %% TODO: Reorder here regarding the first cell (?)
 

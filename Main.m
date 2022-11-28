@@ -50,9 +50,14 @@ for numLine = 1:length(tlines)
             BatchSimulations
             [Geo, Set] = readBatchLine(tlines, numLine, Set, Geo);
         end
+        
         if isfield(Set, 'OutputFolder')
             Set = rmfield(Set, 'OutputFolder');
         end
+        if isfield(Set, 'log')
+            Set = rmfield(Set, 'log');
+        end
+        
         [Set, Geo, Dofs, t, tr, Geo_0, Geo_b, Geo_n, numStep, relaxingNu, EnergiesPerTimeStep] = InitializeVertexModel(Set, Geo);
         
         while t<=Set.tend

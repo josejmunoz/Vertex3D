@@ -1,4 +1,4 @@
-function [ verticesInfo ] = calculateVertices( labelledImg, watershedImg, neighbours, ratio)
+function [ verticesInfo ] = calculateVertices( labelledImg, neighbours, ratio)
 %CALCULATEVERTICES Summary of this function goes here
 %   With a labelled image as input, the objective is get all vertex for
 %   each cell
@@ -20,9 +20,9 @@ function [ verticesInfo ] = calculateVertices( labelledImg, watershedImg, neighb
         dilatedCells{i}=BW_dilated;
     end
     
-    %the overlapping between dilated cells will be the vertex
-    borderImg=zeros(size(watershedImg));
-    borderImg(watershedImg==0)=1;
+    %the overlapping between labelledImg cells will be the vertex
+    borderImg=zeros(size(labelledImg));
+    borderImg(labelledImg==0)=1;
     for numTriplet = 1 : size(neighboursVertices,1)
               
         BW1_dilate=dilatedCells{neighboursVertices(numTriplet, 1),1};

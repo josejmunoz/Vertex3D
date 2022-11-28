@@ -9,10 +9,7 @@ function [Geo, Set, DidNotConverge]=SolveRemodelingStep(Geo_0, Geo_n, Geo, Dofs,
     % converged only when the prescribed value of global viscosity (Set.nu) is reached.
     
     fprintf('=====>> Solving Local Problem....\n');
-    fprintf(Set.flog, '=====>> Solving Local Problem....\n');
     Geo.Remodelling = true;
-    Geop=Geo;
-    IncreaseEta=true;
     original_nu=Set.nu;
     
     Set.nu0=Set.nu;
@@ -25,7 +22,6 @@ function [Geo, Set, DidNotConverge]=SolveRemodelingStep(Geo_0, Geo_n, Geo, Dofs,
         dyr=norm(dy(Dofs.Remodel));
         gr=norm(g(Dofs.Remodel)); 
         fprintf('Local Problem ->Iter: %i, ||gr||= %.3e ||dyr||= %.3e  nu/nu0=%.3e  dt/dt0=%.3g \n',0,gr,dyr,Set.nu/Set.nu0,Set.dt/Set.dt0);
-        fprintf(Set.flog, 'Local Problem ->Iter: %i, ||gr||= %.3e ||dyr||= %.3e  nu/nu0=%.3e  dt/dt0=%.3g \n',0,gr,dyr,Set.nu/Set.nu0,Set.dt/Set.dt0);
         [Geo, g, K, Energy, Set, gr, dyr, dy] = NewtonRaphson(Geo_0, Geo_n, Geo, Dofs, Set, K, g, -1, -1);
 %         if IncreaseEta && (gr>Set.tol || dyr>Set.tol)
 %             fprintf('Convergence was not achieved ... \n');
@@ -39,7 +35,6 @@ function [Geo, Set, DidNotConverge]=SolveRemodelingStep(Geo_0, Geo_n, Geo, Dofs,
         if gr>Set.tol || dyr>Set.tol || any(isnan(g(Dofs.Free))) || any(isnan(dy(Dofs.Free))) 
             % this should not take place
             fprintf('Local Problem did not converge after %i iterations.\n',Set.iter);
-            fprintf(Set.flog, 'Local Problem did not converge after %i iterations.\n',Set.iter);
             DidNotConverge=true;
             Set.MaxIter=Set.MaxIter0/4;
             Set.nu=original_nu;

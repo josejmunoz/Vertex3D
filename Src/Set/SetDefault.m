@@ -61,7 +61,7 @@ function Set = SetDefault(Set)
     DSet.Remodelling				= true;
     DSet.RemodelTol					= .5e-6;
     DSet.RemodelingFrequency		= 2;
-    DSet.contributionOldYs          = 0.5;
+    DSet.contributionOldYs          = 0.4;
     %% ============================ Solution ==============================
     DSet.tol						= 1e-9;
     DSet.MaxIter					= 200;

@@ -142,6 +142,5 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
 %     end
     
     [g, K, E, Geo, Energies] = KgGlobal(Geo_0, Geo_n, Geo, Set);
-    Energies
 end
 

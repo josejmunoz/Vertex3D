@@ -11,10 +11,10 @@ function [Dofs]=GetDOFs(Geo, Set)
     %% Fix border vertices
     allIds = vertcat(Geo.Cells(1:Geo.nCells).globalIds);
     allYs = vertcat(Geo.Cells(1:Geo.nCells).Y);
-    vertices_Top = allYs(:, 3) > Set.CellHeight/4 & allYs(:, 3) < Set.CellHeight;
+    vertices_Top = allYs(:, 3) > Geo.CellHeightOriginal/4 & allYs(:, 3) < Geo.CellHeightOriginal;
     vertices_TopIds = allIds(vertices_Top);
     borderVertices_Top = vertices_TopIds(boundary(allYs(vertices_Top, 1:2), 1));
-    vertices_Bottom = allYs(:, 3) < -Set.CellHeight/4 & allYs(:, 3) > -Set.CellHeight;
+    vertices_Bottom = allYs(:, 3) < -Geo.CellHeightOriginal/4 & allYs(:, 3) > -Geo.CellHeightOriginal;
     vertices_BottomIds = allIds(vertices_Bottom);
     borderVertices_Bottom = vertices_BottomIds(boundary(allYs(vertices_Bottom, 1:2), 1));
     %%

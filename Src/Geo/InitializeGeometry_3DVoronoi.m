@@ -162,6 +162,8 @@ for c = 1:Geo.nCells
             end
         end
     end
+    
+    Geo.Cells(c).Vol0 = mean([Geo.Cells(1:Geo.nCells).Vol]);
 end
 Geo.AvgEdgeLength_Top = mean(edgeLengths_Top);
 Geo.AvgEdgeLength_Bottom = mean(edgeLengths_Bottom);
@@ -171,7 +173,7 @@ Set.BarrierTri0=Set.BarrierTri0/10;
 Geo.RemovedDebrisCells = [];
 
 minZs = min(vertcat(Geo.Cells(1:Geo.nCells).Y));
-Geo.CellHeightOriginal = abs(minZs(3) * 2);
+Geo.CellHeightOriginal = abs(minZs(3)) * 2;
 
 end
 

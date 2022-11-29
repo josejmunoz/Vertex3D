@@ -23,6 +23,7 @@ function [g, K, E, Geo, Energies] = KgGlobal(Geo_0, Geo_n, Geo, Set)
 	end
 	%% Bending Energy
 	% TODO
+    
 	%% Triangle Energy Barrier
 % 	if Set.EnergyBarrier
 % 	    [gB,KB,EB] = KgTriEnergyBarrier(Geo, Set);

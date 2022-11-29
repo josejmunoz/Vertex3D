@@ -16,15 +16,13 @@ function Set = SetDefault(Set)
     DSet.ObtainX					= 0;
     %% 2D input image to obtain  the initial topology of the cells
     DSet.InputSegmentedImage		= [];
-    DSet.CellAspectRatio			= 1;
-    DSet.zScale						= 1;
+    DSet.CellHeight					= 15; %Regarding 1 avg cell diameter
     DSet.TotalCells					= 9;
     %% ===========================  Add Substrate =========================
     DSet.Substrate					= false;
     DSet.kSubstrate					= 0;
     %% ============================ Time ==================================
-    DSet.tend						= 200;
-    DSet.Nincr						= 400;
+    DSet.tend						= 61;
     %% ============================ Mechanics =============================
     DSet.lambdaV					= 1;
     DSet.lambdaV_Debris				= 0.001;
@@ -59,9 +57,9 @@ function Set = SetDefault(Set)
     DSet.LocalViscosityOption		= 2;
     %% =========================== Remodelling ============================
     DSet.Remodelling				= true;
-    DSet.RemodelTol					= .5e-6;
-    DSet.RemodelingFrequency		= 2;
+    DSet.RemodelTol					= 0;
     DSet.contributionOldYs          = 0.4;
+    DSet.RemodelStiffness           = 0.9;
     %% ============================ Solution ==============================
     DSet.tol						= 1e-9;
     DSet.MaxIter					= 200;
@@ -88,10 +86,11 @@ function Set = SetDefault(Set)
 	Set  = AddDefault(Set, DSet);
 	DSet = Set;
 	%% ========================= Derived variables ========================
+    DSet.Nincr                      = DSet.tend*2;
+    DSet.RemodelingFrequency        = (DSet.tend/DSet.Nincr)*2;
     DSet.lambdaS3					= DSet.lambdaS2;
     DSet.lambdaS4					= DSet.lambdaS2;
     DSet.f							= DSet.s/2;
-    DSet.CellHeight					= DSet.CellAspectRatio*DSet.zScale; %!
     DSet.nu_LP_Initial				= 1*DSet.nu; %!
     DSet.BarrierTri0				= 1e-3*DSet.s; %!
 	DSet.nu0                        = DSet.nu;

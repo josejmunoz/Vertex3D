@@ -120,6 +120,9 @@ Twg(all(ismember(Twg,Geo.XgID),2),:)=[];
 % conv(uniqueTets) = 1:size(X);
 % Twg = conv(clTwg);
 
+%% Normalise Xs
+X = X / imgDims;
+
 %% Build cells
 [Geo] = BuildCells(Geo, Set, X, Twg);
 

@@ -56,7 +56,6 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
             t=t+Set.dt;
             Set.dt=min(Set.dt+Set.dt*0.5, Set.dt0);
             Set.MaxIter=Set.MaxIter0;
-            Set.ApplyBC=true;
             numStep=numStep+1;
             Geo_n = Geo;
             PostProcessingVTK(Geo, Geo_0, Set, numStep)

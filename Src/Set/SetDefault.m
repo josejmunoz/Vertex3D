@@ -14,18 +14,20 @@ function Set = SetDefault(Set)
     DSet.SeedingMethod				= 1;
     DSet.s							= 1.5;
     DSet.ObtainX					= 0;
-    %% 2D input image to obtain  the initial topology of the cells
-    DSet.InputSegmentedImage		= [];
+    %% Type of inputto obtain  the initial topology of the cells
+    DSet.InputGeo               	= 'Voronoi';
     DSet.CellHeight					= 15; %Regarding 1 avg cell diameter
     DSet.TotalCells					= 9;
     %% ===========================  Add Substrate =========================
     DSet.Substrate					= false;
     DSet.kSubstrate					= 0;
     %% ============================ Time ==================================
-    DSet.tend						= 61;
+    DSet.tend						= 61; % 60 minutes after ablation
     %% ============================ Mechanics =============================
-    DSet.lambdaV					= 1;
+    % Volumes
+    DSet.lambdaV					= 5;
     DSet.lambdaV_Debris				= 0.001;
+    % Surface area
     DSet.SurfaceType				= 1;
     DSet.A0eq0						= true;
     DSet.lambdaS1					= 0.5;
@@ -34,22 +36,28 @@ function Set = SetDefault(Set)
     DSet.lambdaS2CellFactor			= [];
     DSet.lambdaS3CellFactor			= [];
     DSet.lambdaS4CellFactor			= [];
+    % Tri energy
     DSet.EnergyBarrier				= true;
     DSet.lambdaB					= 5;
-    DSet.lambdaV					= 5;
     DSet.Beta						= 1;
+    % Bending
     DSet.Bending					= false;
     DSet.lambdaBend					= 0.01;
     DSet.BendingAreaDependent		= true;
+    % Propulsion
     DSet.Propulsion					= false;
+    % Confinment
     DSet.Confinement				= false;
-	DSet.InPlaneElasticity          = false;
-    DSet.Contractility              = false;
+    % Contractility
+    DSet.Contractility              = true;
     DSet.cLineTension               = 0.0001;
+    % In plane elasticity
+	DSet.InPlaneElasticity          = true;
 	DSet.mu_bulk					= 3000; 
 	DSet.lambda_bulk				= 2000;
-	DSet.Substrate                  = false;
-	DSet.SubstrateZ                 = 0;
+    % Substrate
+	DSet.Substrate                  = 2;
+    DSet.kSubstrate                 = 500;
     %% ============================ Viscosity =============================
     DSet.nu							= 0.05;
     DSet.LocalViscosityEdgeBased	= false;
@@ -60,6 +68,7 @@ function Set = SetDefault(Set)
     DSet.RemodelTol					= 0;
     DSet.contributionOldYs          = 0.4;
     DSet.RemodelStiffness           = 0.9;
+    DSet.Reset_PercentageGeo0       = 0.3; 
     %% ============================ Solution ==============================
     DSet.tol						= 1e-9;
     DSet.MaxIter					= 200;
@@ -90,6 +99,7 @@ function Set = SetDefault(Set)
     DSet.RemodelingFrequency        = (DSet.tend/DSet.Nincr)*2;
     DSet.lambdaS3					= DSet.lambdaS2;
     DSet.lambdaS4					= DSet.lambdaS2;
+    DSet.SubstrateZ                 = -DSet.CellHeight/2;
     DSet.f							= DSet.s/2;
     DSet.nu_LP_Initial				= 1*DSet.nu; %!
     DSet.BarrierTri0				= 1e-3*DSet.s; %!

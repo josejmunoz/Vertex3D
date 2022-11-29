@@ -12,6 +12,10 @@ if isequal(Set.InputGeo, 'Bubbles')
 elseif isequal(Set.InputGeo, 'Voronoi')
     [Geo, Set] = InitializeGeometry_3DVoronoi(Geo, Set);
 end
+
+minZs = min(vertcat(Geo.Cells(1:Geo.nCells).Y));
+Set.SubstrateZ = minZs(3)-minZs(3)/2;
+
 % TODO FIXME, this is bad, should be joined somehow
 if Set.Substrate == 1
     Dofs = GetDOFsSubstrate(Geo, Set);

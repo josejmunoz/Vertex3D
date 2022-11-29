@@ -170,5 +170,8 @@ Set.BarrierTri0=Set.BarrierTri0/10;
 
 Geo.RemovedDebrisCells = [];
 
+minZs = min(vertcat(Geo.Cells(1:Geo.nCells).Y));
+Geo.CellHeightOriginal = abs(minZs(3) * 2);
+
 end
 

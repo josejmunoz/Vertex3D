@@ -35,6 +35,11 @@ for ghostPair = ghostPairs'
     % Number of cell nodes shared
     neighbours_original_1 = getNodeNeighboursPerDomain(Geo, ghostPair(1), ghostPair(1));
     neighbours_original_2 = getNodeNeighboursPerDomain(Geo, ghostPair(2), ghostPair(2));
+    
+    if any(ismember(neighbours_original_1, Geo.BorderCells)) || any(ismember(neighbours_original_2, Geo.BorderCells))
+        continue
+    end
+    
     neighbours_pair = intersect(neighbours_original_1, neighbours_original_2);
     sharedCellNodes = neighbours_pair(~ismember(neighbours_pair, ghostNodesWithoutDebris));
     neighbours_1 = neighbours_original_1(~ismember(neighbours_original_1, ghostNodesWithoutDebris));

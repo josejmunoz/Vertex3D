@@ -45,6 +45,7 @@ end
 for numLine = 1:length(tlines) 
     disp('--------- SIMULATION STARTS ---------');
     tStart = tic;
+    didNotConverge = false;
     %try
         if runningMode == 0
             BatchSimulations
@@ -60,7 +61,7 @@ for numLine = 1:length(tlines)
         
         [Set, Geo, Dofs, t, tr, Geo_0, Geo_b, Geo_n, numStep, relaxingNu, EnergiesPerTimeStep] = InitializeVertexModel(Set, Geo);
         
-        while t<=Set.tend
+        while t<=Set.tend && didNotConverge
             [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, relaxingNu, Geo_b] = IterateOverTime(Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, relaxingNu, Geo_b);
         end
         tEnd = duration(seconds(toc(tStart)));

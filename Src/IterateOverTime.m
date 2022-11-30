@@ -1,7 +1,8 @@
-function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, relaxingNu, Geo_b] = IterateOverTime(Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, relaxingNu, Geo_b)
+function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, relaxingNu, Geo_b, didNotConverge] = IterateOverTime(Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, relaxingNu, Geo_b)
 %ITERATEONTIME Summary of this function goes here
 %   Detailed explanation goes here
     
+    didNotConverge = false;
     Set.currentT = t;
     if Set.Remodelling && abs(t-tr)>=Set.RemodelingFrequency
         [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Set);
@@ -81,6 +82,7 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
             t=t+Set.dt;
         else
             fprintf('Step %i did not converge!! \n', Set.iIncr);
+            didNotConverge = true;
         end
     end
 end

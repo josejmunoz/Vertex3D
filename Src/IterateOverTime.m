@@ -10,31 +10,12 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
     debrisCells = find([Geo.Cells(nonDeadCells).AliveStatus] == 0);
     nonDebrisCells = find([Geo.Cells(nonDeadCells).AliveStatus] == 1);
     
-    %%  Analise cells
-    nonDebris_Features = {};
-    for c = nonDebrisCells
-        nonDebris_Features{end+1} = AnalyseCell(Geo, Set, c);
-    end
-    nonDebris_Features_table = struct2table(vertcat(nonDebris_Features{:}));
-    writetable(nonDebris_Features_table, fullfile(pwd, Set.OutputFolder, strcat('cell_features_', num2str(numStep),'.csv')))
-    
-    debris_Features = {};
-    for c = debrisCells
-        debris_Features{end+1} = ComputeCellFeatures(Geo.Cells(c));
-    end
-    
-    if ~isempty(debris_Features)
-        writetable(vertcat(debris_Features{:}), fullfile(pwd, Set.OutputFolder, strcat('debris_features_', num2str(numStep),'.csv')))
-    end
-    save(fullfile(pwd, Set.OutputFolder, strcat('status', num2str(numStep),'.mat')), 'Geo', 'Geo_n', 'Geo_0', 'Set', 'Dofs', 'EnergiesPerTimeStep', 't', 'numStep', 'nonDebris_Features', 'debris_Features')
-    
     %% REMODELLING
     if Set.Remodelling && abs(t-tr)>=Set.RemodelingFrequency
         [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Set);
         tr = t;
     end
     
-
     if ~relaxingNu
         Geo_b = Geo;
         Set.iIncr=numStep;
@@ -43,8 +24,26 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
         %up-to-date
         Geo = UpdateMeasures(Geo);
         Set = UpdateSet_F(Geo, Geo_0, Set);
+        
+        %%  Analise cells
+        nonDebris_Features = {};
+        for c = nonDebrisCells
+            nonDebris_Features{end+1} = AnalyseCell(Geo, c);
+        end
+        nonDebris_Features_table = struct2table(vertcat(nonDebris_Features{:}));
+        writetable(nonDebris_Features_table, fullfile(pwd, Set.OutputFolder, strcat('cell_features_', num2str(numStep),'.csv')))
+        
+        debris_Features = {};
+        for c = debrisCells
+            debris_Features{end+1} = AnalyseCell(Geo, c);
+        end
+        
+        if ~isempty(debris_Features)
+            writetable(vertcat(debris_Features{:}), fullfile(pwd, Set.OutputFolder, strcat('debris_features_', num2str(numStep),'.csv')))
+        end
+        save(fullfile(pwd, Set.OutputFolder, strcat('status', num2str(numStep),'.mat')), 'Geo', 'Geo_n', 'Geo_0', 'Set', 'Dofs', 'EnergiesPerTimeStep', 't', 'numStep', 'nonDebris_Features', 'debris_Features')
 
-        % Wounding
+        %% Wounding
         [Geo] = ablateCells(Geo, Set, t);
         for debrisCell = debrisCells
             if t > 0.15*Set.TEndAblation %%|| Geo.Cells(debrisCell).Vol < 0.5*mean([Geo.Cells(nonDebrisCells).Vol])
@@ -53,8 +52,6 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
                 [Geo_0] = RemoveNode(Geo_0, debrisCell);
             end
         end
-        
-
     end
 
     [g, K, ~, Geo, Energies] = KgGlobal(Geo_0, Geo_n, Geo, Set);

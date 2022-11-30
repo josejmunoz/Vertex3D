@@ -13,18 +13,7 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
     %%  Analise cells
     nonDebris_Features = {};
     for c = nonDebrisCells
-        c_features = ComputeCellFeatures(Geo.Cells(c));
-        c_features.ID = Geo.Cells(c).ID;
-        if ismember(Geo.Cells(c).ID, Geo.BorderCells)
-            c_features.BorderCell = 1;
-        else
-            c_features.BorderCell = 0;
-        end
-        
-        
-        [featuresTri] = ComputeCellTriFeatures(Geo.Cells(c), Set);
-        
-        nonDebris_Features{end+1} = c_features;
+        nonDebris_Features{end+1} = AnalyseCell(Geo, Set, c);
     end
     nonDebris_Features_table = struct2table(vertcat(nonDebris_Features{:}));
     writetable(nonDebris_Features_table, fullfile(pwd, Set.OutputFolder, strcat('cell_features_', num2str(numStep),'.csv')))
@@ -37,7 +26,7 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
     if ~isempty(debris_Features)
         writetable(vertcat(debris_Features{:}), fullfile(pwd, Set.OutputFolder, strcat('debris_features_', num2str(numStep),'.csv')))
     end
-    save(fullfile(pwd, Set.OutputFolder, strcat('status', num2str(numStep),'.mat')), 'Geo', 'Geo_n', 'Geo_0', 'Set', 'Dofs', 'EnergiesPerTimeStep', 't', 'numStep', 'cellFeatures', 'woundFeatures', 'woundEdgeFeatures')
+    save(fullfile(pwd, Set.OutputFolder, strcat('status', num2str(numStep),'.mat')), 'Geo', 'Geo_n', 'Geo_0', 'Set', 'Dofs', 'EnergiesPerTimeStep', 't', 'numStep', 'nonDebris_Features', 'debris_Features')
     
     %% REMODELLING
     if Set.Remodelling && abs(t-tr)>=Set.RemodelingFrequency

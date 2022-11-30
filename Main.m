@@ -27,30 +27,36 @@ switch runningMode
         error('Incorrect mode selected');
 end
 
+Sets = {};
+Geos = {};
+
 if runningMode == 0
     fid = fopen(fullfile('Src', 'Input', 'batchParameters.txt'));
     tline = fgetl(fid);
     tlines = cell(0,1);
     while ischar(tline)
-        tlines{end+1,1} = tline;
+        BatchSimulations
+        eval(tline)
+        Sets{end+1} = Set;
+        Geos{end+1} = Geo;
         tline = fgetl(fid);
     end
     fclose(fid);
 else
+    Sets{1} = Set;
+    Geos{1} = Geo;
     tlines = {'"Single execution"'};
 end
 
 %parpool(3);
 
-for numLine = 1:length(tlines) 
+parfor numLine = 1:length(Sets) 
     disp('--------- SIMULATION STARTS ---------');
     tStart = tic;
     didNotConverge = false;
     %try
-        if runningMode == 0
-            BatchSimulations
-            [Geo, Set] = readBatchLine(tlines, numLine, Set, Geo);
-        end
+        Geo = Geos{numLine};
+        Set = Sets{numLine};
         
         if isfield(Set, 'OutputFolder')
             Set = rmfield(Set, 'OutputFolder');

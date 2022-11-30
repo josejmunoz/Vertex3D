@@ -11,7 +11,8 @@ labelledImg(watershedImg == 0) = 0;
 [imgNeighbours] = calculateNeighbours(labelledImg, ratio);
 
 borderCellsAndMainCells = double(unique(vertcat(imgNeighbours{mainCells})));
-borderCells = setdiff(borderCellsAndMainCells, mainCells);
+borderGhostCells = setdiff(borderCellsAndMainCells, mainCells); 
+borderCells = intersect(mainCells, double(unique(vertcat(imgNeighbours{borderGhostCells}))));
 
 labelledImg(~ismember(labelledImg, 1:max(borderCellsAndMainCells))) = 0;
 [imgNeighbours] = calculateNeighbours(labelledImg, ratio);

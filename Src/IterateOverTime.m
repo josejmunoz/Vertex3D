@@ -4,10 +4,47 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
     
     didNotConverge = false;
     Set.currentT = t;
+    
+    % Debris cells become Ghost nodes when too small or time has passed
+    nonDeadCells = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID];
+    debrisCells = find([Geo.Cells(nonDeadCells).AliveStatus] == 0);
+    nonDebrisCells = find([Geo.Cells(nonDeadCells).AliveStatus] == 1);
+    
+    %%  Analise cells
+    nonDebris_Features = {};
+    for c = nonDebrisCells
+        c_features = ComputeCellFeatures(Geo.Cells(c));
+        c_features.ID = Geo.Cells(c).ID;
+        if ismember(Geo.Cells(c).ID, Geo.BorderCells)
+            c_features.BorderCell = 1;
+        else
+            c_features.BorderCell = 0;
+        end
+        
+        
+        [featuresTri] = ComputeCellTriFeatures(Geo.Cells(c), Set);
+        
+        nonDebris_Features{end+1} = c_features;
+    end
+    nonDebris_Features_table = struct2table(vertcat(nonDebris_Features{:}));
+    writetable(nonDebris_Features_table, fullfile(pwd, Set.OutputFolder, strcat('cell_features_', num2str(numStep),'.csv')))
+    
+    debris_Features = {};
+    for c = debrisCells
+        debris_Features{end+1} = ComputeCellFeatures(Geo.Cells(c));
+    end
+    
+    if ~isempty(debris_Features)
+        writetable(vertcat(debris_Features{:}), fullfile(pwd, Set.OutputFolder, strcat('debris_features_', num2str(numStep),'.csv')))
+    end
+    save(fullfile(pwd, Set.OutputFolder, strcat('status', num2str(numStep),'.mat')), 'Geo', 'Geo_n', 'Geo_0', 'Set', 'Dofs', 'EnergiesPerTimeStep', 't', 'numStep', 'cellFeatures', 'woundFeatures', 'woundEdgeFeatures')
+    
+    %% REMODELLING
     if Set.Remodelling && abs(t-tr)>=Set.RemodelingFrequency
         [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Set);
         tr = t;
     end
+    
 
     if ~relaxingNu
         Geo_b = Geo;
@@ -20,11 +57,6 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
 
         % Wounding
         [Geo] = ablateCells(Geo, Set, t);
-
-        % Debris cells become Ghost nodes when too small or time has passed
-        nonDeadCells = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID];
-        debrisCells = find([Geo.Cells(nonDeadCells).AliveStatus] == 0);
-        nonDebrisCells = find([Geo.Cells(nonDeadCells).AliveStatus] == 1);
         for debrisCell = debrisCells
             if t > 0.15*Set.TEndAblation %%|| Geo.Cells(debrisCell).Vol < 0.5*mean([Geo.Cells(nonDebrisCells).Vol])
                 [Geo] = RemoveNode(Geo, debrisCell);
@@ -32,16 +64,8 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
                 [Geo_0] = RemoveNode(Geo_0, debrisCell);
             end
         end
+        
 
-        %         % Analise cells
-        %         [~, cellFeatures{numStep}, woundFeatures{numStep}, woundEdgeFeatures{numStep}] = Cell.exportTableWithCellFeatures(tetrahedra.DataRow, Y, numStep, Set);
-        %         analysisDir = strcat(Set.OutputFolder,Esc,'Analysis',Esc);
-        %         save(strcat(analysisDir, 'cellInfo_', num2str(Set.iIncr), '.mat'), 'Cell', 'Y0', 'Y', 'Yn', 'Cn', 'X', 'SCn', 'Tetrahedra_weights', 'tetrahedra', 'XgID', 'CellInput', 'cellFeatures', 'woundFeatures', 'woundEdgeFeatures');
-        %
-        %         if any(Cell.DebrisCells)
-        %             writetable(vertcat(woundEdgeFeatures{:}), strcat(analysisDir,'woundEdgeFeatures.csv'))
-        %             writetable(vertcat(woundFeatures{:}), strcat(analysisDir,'woundFeatures.csv'))
-        %         end
     end
 
     [g, K, ~, Geo, Energies] = KgGlobal(Geo_0, Geo_n, Geo, Set);
@@ -60,7 +84,8 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
             numStep=numStep+1;
             Geo_n = Geo;
             PostProcessingVTK(Geo, Geo_0, Set, numStep)
-            save(fullfile(pwd, Set.OutputFolder, strcat('status', num2str(numStep),'.mat')), 'Geo', 'Geo_n', 'Geo_0', 'Set', 'Dofs', 'EnergiesPerTimeStep', 't', 'numStep')
+
+
             relaxingNu = false;
         else
             Set.nu = max(Set.nu/2, Set.nu0);

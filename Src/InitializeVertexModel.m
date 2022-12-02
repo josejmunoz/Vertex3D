@@ -14,7 +14,11 @@ elseif isequal(Set.InputGeo, 'Voronoi')
 end
 
 minZs = min(vertcat(Geo.Cells(1:Geo.nCells).Y));
-Set.SubstrateZ = minZs(3)-minZs(3)/2;
+if minZs(3) > 0
+    Set.SubstrateZ = minZs(3) * 0.99;
+else
+    Set.SubstrateZ = minZs(3) * 1.01;
+end
 
 % TODO FIXME, this is bad, should be joined somehow
 if Set.Substrate == 1

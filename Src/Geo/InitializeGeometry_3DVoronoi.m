@@ -3,8 +3,8 @@ function [Geo, Set] = InitializeGeometry_3DVoronoi(Geo, Set)
 %   Detailed explanation goes here
 
 nSeeds = Set.TotalCells + 10* Set.TotalCells;
-imgDims = 2000;
-lloydIterations = 2;
+imgDims = 3000;
+lloydIterations = 100;
 distorsion = 0;
 
 rng default
@@ -13,7 +13,6 @@ y = randi(imgDims, nSeeds, 1);
 
 seedsXY = horzcat(x,y);
 seedsXY = unique(round(seedsXY, 2), 'rows');
-nSeeds = size(seedsXY, 1);
 
 %% Get central
 distanceSeeds = pdist2(seedsXY, [imgDims/2 imgDims/2]);
@@ -22,9 +21,10 @@ seedsXY = seedsXY(indices, :);
 
 %% Homogeneize voronoi diagram
 for numIter = 1:lloydIterations
+    seedsXY(any(isnan(seedsXY), 2), :) = [];
     DT = delaunayTriangulation(seedsXY);
     [V, D] = voronoiDiagram(DT);
-    for numCell = 1:nSeeds
+    for numCell = 1:size(seedsXY, 1)
         currentVertices = V(D{numCell}, :);
         seedsXY(numCell, :) = round(mean(currentVertices(all(~isinf(currentVertices), 2), :)));
     end
@@ -32,7 +32,7 @@ end
 
 %% Get an image from it
 img2D = zeros(imgDims, 'uint16');
-for numCell = 1:nSeeds
+for numCell = 1:size(seedsXY, 1)
     if all(seedsXY(numCell, :) > 0) && all(seedsXY(numCell, :) <= imgDims)
         img2D(seedsXY(numCell, 1), seedsXY(numCell, 2)) = 1;
     end
@@ -41,7 +41,7 @@ end
 [distances, img2DLabelled] = bwdist(img2D);
 watershedImg = watershed(distances, 8);
 
-for numCell = 1:nSeeds
+for numCell = 1:size(seedsXY, 1)
     if all(seedsXY(numCell, :) > 0) && all(seedsXY(numCell, :) <= imgDims)
         oldId = img2DLabelled(seedsXY(numCell, 1), seedsXY(numCell, 2));
         img2DLabelled(img2DLabelled == oldId) = numCell;
@@ -137,7 +137,7 @@ Set.lowerAreaThreshold = avgArea - stdArea;
 %% Define border cells
 Geo.BorderCells = borderCells;
 
-Geo.BorderGhostNodes = setdiff(1:nSeeds, 1:Geo.nCells);
+Geo.BorderGhostNodes = setdiff(1:size(seedsXY, 1), 1:Geo.nCells);
 Geo.BorderGhostNodes = [Geo.BorderGhostNodes'; setdiff(getNodeNeighbours(Geo, Geo.BorderGhostNodes), 1:Geo.nCells)];
 
 % TODO FIXME bad; PVM: better?
@@ -173,7 +173,7 @@ Set.BarrierTri0=Set.BarrierTri0/10;
 Geo.RemovedDebrisCells = [];
 
 minZs = min(vertcat(Geo.Cells(1:Geo.nCells).Y));
-Geo.CellHeightOriginal = abs(minZs(3)) * 2;
+Geo.CellHeightOriginal = abs(minZs(3));
 
 end
 

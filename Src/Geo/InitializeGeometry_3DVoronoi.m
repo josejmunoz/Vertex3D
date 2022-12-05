@@ -2,7 +2,7 @@ function [Geo, Set] = InitializeGeometry_3DVoronoi(Geo, Set)
 %INITIALIZEGEOMETRY_3DVORONOI Summary of this function goes here
 %   Detailed explanation goes here
 
-nSeeds = Set.TotalCells + 20* Set.TotalCells;
+nSeeds = Set.TotalCells + 30* Set.TotalCells;
 imgDims = 3000;
 lloydIterations = 100;
 distorsion = 0;

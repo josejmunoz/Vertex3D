@@ -9,14 +9,12 @@ function [Dofs]=GetDOFs(Geo, Set)
     gprescribed  = zeros((Geo.numY+Geo.numF+Geo.nCells)*3, 1);
     
     %% Fix border vertices
-    allIds = vertcat(Geo.Cells(1:Geo.nCells).globalIds);
-    allYs = vertcat(Geo.Cells(1:Geo.nCells).Y);
+    allIds = vertcat(Geo.Cells(Geo.BorderCells).globalIds);
+    allYs = vertcat(Geo.Cells(Geo.BorderCells).Y);
     vertices_Top = allYs(:, 3) > Geo.CellHeightOriginal/2;
-    vertices_TopIds = allIds(vertices_Top);
-    borderVertices_Top = vertices_TopIds(boundary(allYs(vertices_Top, 1:2), 1));
+    borderVertices_Top = allIds(vertices_Top);
     vertices_Bottom = allYs(:, 3) < -Geo.CellHeightOriginal/2;
-    vertices_BottomIds = allIds(vertices_Bottom);
-    borderVertices_Bottom = vertices_BottomIds(boundary(allYs(vertices_Bottom, 1:2), 1));
+    borderVertices_Bottom = allIds(vertices_Bottom);
     %%
     for c = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID]
         Y     = Geo.Cells(c).Y;

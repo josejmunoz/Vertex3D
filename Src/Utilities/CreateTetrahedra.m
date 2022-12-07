@@ -38,8 +38,12 @@ newAdditions = [];
 for numPair = 1:size(internalNeighbourNetwork, 1)
     [found] = ismember(Twg_sorted, internalNeighbourNetwork(numPair, :));
     newConnections = unique(Twg_sorted(sum(found, 2) == 2, 4));
-    newConnectionsPairs = nchoosek(newConnections, 2);
-    newAdditions = [newAdditions; repmat(internalNeighbourNetwork(numPair, :), size(newConnectionsPairs, 1), 1), newConnectionsPairs];
+    if length(newConnections) > 1
+        newConnectionsPairs = nchoosek(newConnections, 2);
+        newAdditions = [newAdditions; repmat(internalNeighbourNetwork(numPair, :), size(newConnectionsPairs, 1), 1), newConnectionsPairs];
+    else
+        error('Somewhere creating the connections and initial topology');
+    end
 end
 
 Twg = [Twg; newAdditions];

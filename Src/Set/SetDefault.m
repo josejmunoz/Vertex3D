@@ -59,7 +59,7 @@ function Set = SetDefault(Set)
 	DSet.Substrate                  = 2;
     DSet.kSubstrate                 = 500;
     %% ============================ Viscosity =============================
-    DSet.nu							= 0.05;
+    DSet.nu							= 20000;
     DSet.LocalViscosityEdgeBased	= false;
     DSet.nu_Local_EdgeBased			= 0;
     DSet.LocalViscosityOption		= 2;
@@ -70,8 +70,8 @@ function Set = SetDefault(Set)
     DSet.RemodelStiffness           = 0.9;
     DSet.Reset_PercentageGeo0       = 0.3; 
     %% ============================ Solution ==============================
-    DSet.tol						= 1e-9;
-    DSet.MaxIter					= 200;
+    DSet.tol						= 1e-8;
+    DSet.MaxIter					= 50;
     DSet.Parallel					= false;
     DSet.Sparse						= false;
     %% ================= Boundary Condition and loading setting ===========

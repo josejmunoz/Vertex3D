@@ -5,7 +5,7 @@ function [Geo_0, Geo_n, Geo, Dofs, newYgIds, hasConverged] = PostFlip(Tnew, Ynew
 hasConverged = 0;
 Geo_backup = Geo; Geo_n_backup = Geo_n; Geo_0_backup = Geo_0; Dofs_backup = Dofs;
 
-fprintf('=>> %s-Flip: %i %i.\n', flipName, segmentToChange(1), segmentToChange(2));
+Geo.log = strcat(Geo.log, sprintf('=>> %s-Flip: %i %i.\n', flipName, segmentToChange(1), segmentToChange(2)));
 
 [Geo] = RemoveTetrahedra(Geo, oldTets);
 [Geo] = AddTetrahedra(Geo, Tnew, Ynew, Set);
@@ -45,7 +45,7 @@ fprintf('=>> %s-Flip: %i %i.\n', flipName, segmentToChange(1), segmentToChange(2
 %     Geo   = Geo_backup;
 %     Geo_n = Geo_n_backup;
 %     Geo_0 = Geo_0_backup;
-%     fprintf('=>> %s-Flip rejected: ', flipName);
+%     Geo.log = strcat(Geo.log, sprintf('=>> %s-Flip rejected: ', flipName);
 %     fprintf(MException.identifier);
 %     fprintf('\n');
 %     fprintf(MException.message);
@@ -63,7 +63,7 @@ if CheckTris(Geo) %%&& ~CheckConvexity(Tnew,Geo_backup)
         Geo_n = Geo_n_backup;
         Geo_0 = Geo_0_backup;
         Dofs = Dofs_backup;
-        fprintf('=>> %s-Flip rejected: did not converge\n', flipName);
+        Geo.log = strcat(Geo.log, sprintf('=>> %s-Flip rejected: did not converge\n', flipName));
         return
     end
     
@@ -79,7 +79,7 @@ else
     Geo_n = Geo_n_backup;
     Dofs = Dofs_backup;
     Geo_0 = Geo_0_backup;
-    fprintf('=>> %s-Flip rejected: is not compatible\n', flipName);
+    Geo.log = strcat(Geo.log, sprintf('=>> %s-Flip rejected: is not compatible\n', flipName));
     return
 end
 end

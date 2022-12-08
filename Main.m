@@ -49,20 +49,17 @@ else
 end
 
 %parpool(3);
-
-parfor numLine = 1:length(Sets) 
-    disp('--------- SIMULATION STARTS ---------');
+diary on
+for numLine = 1:length(Sets) 
     tStart = tic;
     didNotConverge = false;
     %try
         Geo = Geos{numLine};
         Set = Sets{numLine};
+        Geo.log = sprintf('--------- SIMULATION STARTS ---------\n');
         
         if isfield(Set, 'OutputFolder')
             Set = rmfield(Set, 'OutputFolder');
-        end
-        if isfield(Set, 'log')
-            Set = rmfield(Set, 'log');
         end
         
         [Set, Geo, Dofs, t, tr, Geo_0, Geo_b, Geo_n, numStep, relaxingNu, EnergiesPerTimeStep] = InitializeVertexModel(Set, Geo);
@@ -72,10 +69,12 @@ parfor numLine = 1:length(Sets)
         end
         tEnd = duration(seconds(toc(tStart)));
         tEnd.Format = 'hh:mm:ss';
-        fprintf("Total real run time %s \n",tEnd);
+        Geo.log = strcat(Geo.log, sprintf("Total real run time %s \n",tEnd));
+        fprintf(fopen(Set.log, 'w'), Geo.log);
 %     catch ME
-%         tEnd = duration(seconds(toc(tStart)));
-%         fprintf("ERROR: %s", ME.message);
+%         Geo.log = strcat(Geo.log, sprintf("ERROR: %s", ME.message));
+%         fprintf(fopen(Set.log, 'w'), Geo.log);
 %     end
-    diary off
+    
 end
+diary off

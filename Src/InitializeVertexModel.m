@@ -5,7 +5,6 @@ function [Set, Geo, Dofs, t, tr, Geo_0, Geo_b, Geo_n, numStep, relaxingNu, Energ
 Set=SetDefault(Set);
 Set=WoundDefault(Set);
 Set=InitiateOutputFolder(Set);
-diary(strrep(Set.log, 'log', 'completeLog'))
 
 if isequal(Set.InputGeo, 'Bubbles')
     [Geo, Set] = InitializeGeometry3DVertex(Geo, Set);

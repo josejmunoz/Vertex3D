@@ -59,7 +59,7 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
 
     if gr<Set.tol && dyr<Set.tol && all(isnan(g(Dofs.Free)) == 0) && all(isnan(dy(Dofs.Free)) == 0)
         if Set.nu/Set.nu0 == 1
-            fprintf('STEP %i has converged ...\n',Set.iIncr)
+            Geo.log = strcat(Geo.log, sprintf('STEP %i has converged ...\n',Set.iIncr));
 
             EnergiesPerTimeStep{end+1} = Energies;
             Geo = BuildXFromY(Geo_n, Geo);
@@ -78,21 +78,23 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
             relaxingNu = true;
         end
     else
-        fprintf('Convergence was not achieved ... \n');
+        Geo.log = strcat(Geo.log, sprintf('Convergence was not achieved ... \n'));
+        
+            Geo.log = strcat(Geo.log, sprintf('STEP %i has converged ...\n',Set.iIncr));
         Geo = Geo_b;
         relaxingNu = false;
         if Set.iter == Set.MaxIter0
-            fprintf('First strategy ---> Repeating the step with higher viscosity... \n');
+            Geo.log = strcat(Geo.log, sprintf('First strategy ---> Repeating the step with higher viscosity... \n'));
             Set.MaxIter=Set.MaxIter0*3;
             Set.nu=10*Set.nu0;
         elseif Set.iter == Set.MaxIter && Set.iter > Set.MaxIter0 && Set.dt>Set.dt0/(2^6)
-            fprintf('Second strategy ---> Repeating the step with half step-size...\n');
+            Geo.log = strcat(Geo.log, sprintf('Second strategy ---> Repeating the step with half step-size...\n'));
             Set.MaxIter=Set.MaxIter0;
             Set.nu=Set.nu0;
             Set.dt=Set.dt/2;
             t=t+Set.dt;
         else
-            fprintf('Step %i did not converge!! \n', Set.iIncr);
+            Geo.log = strcat(Geo.log, sprintf('Step %i did not converge!! \n', Set.iIncr));
             didNotConverge = true;
         end
     end

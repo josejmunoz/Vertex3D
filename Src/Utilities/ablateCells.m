@@ -3,7 +3,7 @@ function [Geo] = ablateCells(Geo, Set, t)
 %   Detailed explanation goes here
 if Set.Ablation == true && Set.TInitAblation <= t
     if isempty(Geo.cellsToAblate) == 0
-        Geo.log = sprintf('%s\n ---- Performing ablation\n', Geo.log);
+        Geo.log = sprintf('%s ---- Performing ablation\n', Geo.log);
         for debrisCell = Geo.cellsToAblate
             Geo.Cells(debrisCell).AliveStatus = 0;
             Geo.Cells(debrisCell).ExternalLambda = Set.lambdaSFactor_Debris;

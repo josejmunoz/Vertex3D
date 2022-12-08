@@ -76,7 +76,7 @@ for numLine = 1:length(Sets)
         end
         tEnd = duration(seconds(toc(tStart)));
         tEnd.Format = 'hh:mm:ss';
-        Geo.log = sprintf("%s\n Total real run time %s \n", Geo.log, tEnd);
+        Geo.log = sprintf("%s Total real run time %s \n", Geo.log, tEnd);
         fprintf(fopen(Set.log, 'w'), Geo.log);
 %     catch ME
 %         Geo.log = sprintf("%s\n ERROR: %s", Geo.log, ME.message);

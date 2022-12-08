@@ -8,7 +8,7 @@ function [Geo, Set, DidNotConverge]=SolveRemodelingStep(Geo_0, Geo_n, Geo, Dofs,
     % and then it is reduced progressively. The solution is considered to be 
     % converged only when the prescribed value of global viscosity (Set.nu) is reached.
     
-    Geo.log = strcat(Geo.log, sprintf('=====>> Solving Local Problem....\n'));
+    Geo.log = sprintf('%s\n =====>> Solving Local Problem....\n', Geo.log);
     Geo.Remodelling = true;
     original_nu=Set.nu;
     
@@ -21,26 +21,26 @@ function [Geo, Set, DidNotConverge]=SolveRemodelingStep(Geo_0, Geo_n, Geo, Dofs,
         dy=zeros((Geo.numF+Geo.numY+Geo.nCells)*3);
         dyr=norm(dy(Dofs.Remodel));
         gr=norm(g(Dofs.Remodel)); 
-        Geo.log = strcat(Geo.log, sprintf('Local Problem ->Iter: %i, ||gr||= %.3e ||dyr||= %.3e  nu/nu0=%.3e  dt/dt0=%.3g \n',0,gr,dyr,Set.nu/Set.nu0,Set.dt/Set.dt0));
+        Geo.log = sprintf('%s\n Local Problem ->Iter: %i, ||gr||= %.3e ||dyr||= %.3e  nu/nu0=%.3e  dt/dt0=%.3g \n',Geo.log, 0,gr,dyr,Set.nu/Set.nu0,Set.dt/Set.dt0);
         [Geo, g, K, Energy, Set, gr, dyr, dy] = NewtonRaphson(Geo_0, Geo_n, Geo, Dofs, Set, K, g, -1, -1);
         
         if gr>Set.tol || dyr>Set.tol || any(isnan(g(Dofs.Free))) || any(isnan(dy(Dofs.Free))) 
             % this should not take place
-            Geo.log = strcat(Geo.log, sprintf('Local Problem did not converge after %i iterations.\n',Set.iter));
+            Geo.log = sprintf('%s\n Local Problem did not converge after %i iterations.\n', Geo.log, Set.iter);
             DidNotConverge=true;
             Set.MaxIter=Set.MaxIter0/4;
             Set.nu=original_nu;
             break;
-        else 
+        else
             if Set.nu/Set.nu0 == 1
-				Geo.log = strcat(Geo.log, sprintf('=====>> Local Problem converged in %i iterations.\n',Set.iter));
-				DidNotConverge=false;
-				Set.MaxIter=Set.MaxIter0;
-				Set.nu=original_nu;
-				Geo.Remodelling = false;
-				break;
+                Geo.log = sprintf('%s\n =====>> Local Problem converged in %i iterations.\n', Geo.log, Set.iter);
+                DidNotConverge=false;
+                Set.MaxIter=Set.MaxIter0;
+                Set.nu=original_nu;
+                Geo.Remodelling = false;
+                break;
             else
-				 Set.nu = max(Set.nu/2, Set.nu0);
+                Set.nu = max(Set.nu/2, Set.nu0);
             end
         end
     end 

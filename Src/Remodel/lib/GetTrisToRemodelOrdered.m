@@ -49,82 +49,82 @@ for ghostPair = ghostPairs'
     neighbours = {neighbours_1, neighbours_2};
     neighbours_original = {neighbours_original_1, neighbours_original_2};
     
-    if any(neighbours_lengths > 3)
-        ghostNodesToT1 = ghostPair(neighbours_lengths > 3);
-        if length(ghostNodesToT1) > 1
-            ghostNodesToT1 = ghostNodesToT1(1);
-        end
-        neighboursToT1 = neighbours{neighbours_lengths > 3};
-        neighboursOriginalToT1 = neighbours_original{neighbours_lengths > 3};
-        
-        if all(ismember(neighboursToT1, Geo.BorderCells))
-            continue
-        end
-        
-        aliveCells = ~cellfun(@isempty, {Geo.Cells(neighboursToT1).AliveStatus});
-        aliveCells(aliveCells) = [Geo.Cells(neighboursToT1).AliveStatus] > 0;
-        
-        if sum(aliveCells) < 3
-            continue
-        end
-        
-        cellNodeNeighbours = {};
-        for neigh = neighboursToT1'
-            cellNodeNeighbours{end+1} = getNodeNeighboursPerDomain(Geo, ghostNodesToT1, ghostNodesToT1, neigh);
-        end
-        
-        cellNode_Adjacency = cell(length(cellNodeNeighbours), 1);
-        for numNode = 1:length(cellNodeNeighbours)
-            %otherNodes = setdiff(1:length(cellNodeNeighbours), numNode);
-            %opposedNodes{numNode} = setdiff(cellNodeNeighbours{numNode}, vertcat(cellNodeNeighbours{otherNodes}));
-            opposedNodes{numNode} = intersect(cellNodeNeighbours{numNode}, ghostNodesWithoutDebris);
-            
-            currentNeighbours = getNodeNeighboursPerDomain(Geo, neighboursToT1(numNode), ghostNodesToT1);
-            cellNode_Adjacency{numNode} = neighboursToT1(ismember(neighboursToT1, [currentNeighbours; neighboursToT1(numNode)]));
-        end
-        
-%         % if one of the neighbours is debris, don't use it to calculate the
-%         % mean only
-%         cellNode_Adjacency = cellNode_Adjacency([Geo.Cells(neighboursToT1).AliveStatus] > 0);
-%         opposedNodes = opposedNodes([Geo.Cells(neighboursToT1).AliveStatus] > 0);
-        
-        
-        if length(cellNode_Adjacency) < 4
-            continue
-        end
-        % Check how they are connected (cell nodes)
-        connectedNodes = cellfun(@length, cellNode_Adjacency) == length(neighboursToT1);
-        nonConnectedNodes = cellfun(@length, cellNode_Adjacency) < length(neighboursToT1);
-        
-        nonConnectedXs = neighboursToT1(nonConnectedNodes);
-        
-        triplet1 = [neighboursToT1(connectedNodes)' nonConnectedXs(1) ghostNodesToT1];
-        triplet2 = [neighboursToT1(connectedNodes)' nonConnectedXs(2) ghostNodesToT1];
-        
-        triplet1_Ys = mean(allYs(sum(ismember(allTets, triplet1), 2) > 3, :));
-        triplet2_Ys = mean(allYs(sum(ismember(allTets, triplet2), 2) > 3, :));
-        
-        if any(isnan(triplet1_Ys)) || any(isnan(triplet2_Ys))
-            continue
-        end
-        
-        distanceEdgeConnectedNodes = norm(triplet1_Ys - triplet2_Ys);
-
-        % Check edge length to know when to intercalate
-        avgEdgeLengthDomain = mean([Geo.AvgEdgeLength_Bottom, Geo.AvgEdgeLength_Top]);
-        if distanceEdgeConnectedNodes > avgEdgeLengthDomain - (Set.RemodelStiffness * avgEdgeLengthDomain)
-            continue
-        end
-        
-        % Change the ghostPair to intercalate
-        if sum(connectedNodes) > 1
-            %% T1 transition
-            ghostPair = [repmat(ghostNodesToT1, sum(connectedNodes & aliveCells'), 1) neighboursToT1(connectedNodes & aliveCells')];
-        else
-            %% T1 on edge
-            ghostPair = [ghostNodesToT1 neighboursToT1(connectedNodes & aliveCells')];
-        end
-    else
+%     if any(neighbours_lengths > 3)
+%         ghostNodesToT1 = ghostPair(neighbours_lengths > 3);
+%         if length(ghostNodesToT1) > 1
+%             ghostNodesToT1 = ghostNodesToT1(1);
+%         end
+%         neighboursToT1 = neighbours{neighbours_lengths > 3};
+%         neighboursOriginalToT1 = neighbours_original{neighbours_lengths > 3};
+%         
+%         if all(ismember(neighboursToT1, Geo.BorderCells))
+%             continue
+%         end
+%         
+%         aliveCells = ~cellfun(@isempty, {Geo.Cells(neighboursToT1).AliveStatus});
+%         aliveCells(aliveCells) = [Geo.Cells(neighboursToT1).AliveStatus] > 0;
+%         
+%         if sum(aliveCells) < 3
+%             continue
+%         end
+%         
+%         cellNodeNeighbours = {};
+%         for neigh = neighboursToT1'
+%             cellNodeNeighbours{end+1} = getNodeNeighboursPerDomain(Geo, ghostNodesToT1, ghostNodesToT1, neigh);
+%         end
+%         
+%         cellNode_Adjacency = cell(length(cellNodeNeighbours), 1);
+%         for numNode = 1:length(cellNodeNeighbours)
+%             %otherNodes = setdiff(1:length(cellNodeNeighbours), numNode);
+%             %opposedNodes{numNode} = setdiff(cellNodeNeighbours{numNode}, vertcat(cellNodeNeighbours{otherNodes}));
+%             opposedNodes{numNode} = intersect(cellNodeNeighbours{numNode}, ghostNodesWithoutDebris);
+%             
+%             currentNeighbours = getNodeNeighboursPerDomain(Geo, neighboursToT1(numNode), ghostNodesToT1);
+%             cellNode_Adjacency{numNode} = neighboursToT1(ismember(neighboursToT1, [currentNeighbours; neighboursToT1(numNode)]));
+%         end
+%         
+% %         % if one of the neighbours is debris, don't use it to calculate the
+% %         % mean only
+% %         cellNode_Adjacency = cellNode_Adjacency([Geo.Cells(neighboursToT1).AliveStatus] > 0);
+% %         opposedNodes = opposedNodes([Geo.Cells(neighboursToT1).AliveStatus] > 0);
+%         
+%         
+%         if length(cellNode_Adjacency) < 4
+%             continue
+%         end
+%         % Check how they are connected (cell nodes)
+%         connectedNodes = cellfun(@length, cellNode_Adjacency) == length(neighboursToT1);
+%         nonConnectedNodes = cellfun(@length, cellNode_Adjacency) < length(neighboursToT1);
+%         
+%         nonConnectedXs = neighboursToT1(nonConnectedNodes);
+%         
+%         triplet1 = [neighboursToT1(connectedNodes)' nonConnectedXs(1) ghostNodesToT1];
+%         triplet2 = [neighboursToT1(connectedNodes)' nonConnectedXs(2) ghostNodesToT1];
+%         
+%         triplet1_Ys = mean(allYs(sum(ismember(allTets, triplet1), 2) > 3, :));
+%         triplet2_Ys = mean(allYs(sum(ismember(allTets, triplet2), 2) > 3, :));
+%         
+%         if any(isnan(triplet1_Ys)) || any(isnan(triplet2_Ys))
+%             continue
+%         end
+%         
+%         distanceEdgeConnectedNodes = norm(triplet1_Ys - triplet2_Ys);
+% 
+%         % Check edge length to know when to intercalate
+%         avgEdgeLengthDomain = mean([Geo.AvgEdgeLength_Bottom, Geo.AvgEdgeLength_Top]);
+%         if distanceEdgeConnectedNodes > avgEdgeLengthDomain - (Set.RemodelStiffness * avgEdgeLengthDomain)
+%             continue
+%         end
+%         
+%         % Change the ghostPair to intercalate
+%         if sum(connectedNodes) > 1
+%             %% T1 transition
+%             ghostPair = [repmat(ghostNodesToT1, sum(connectedNodes & aliveCells'), 1) neighboursToT1(connectedNodes & aliveCells')];
+%         else
+%             %% T1 on edge
+%             ghostPair = [ghostNodesToT1 neighboursToT1(connectedNodes & aliveCells')];
+%         end
+%     else
         minEdgeLengths = [];
         for numGhost = 1:length(ghostPair)
             currentFaces = getFacesFromNode(Geo, ghostPair(numGhost));
@@ -146,7 +146,7 @@ for ghostPair = ghostPairs'
                 continue
             end
         end
-    end
+%     end
    
     %% TODO: AVOID GHOST NODES INTERCALATIONS
     

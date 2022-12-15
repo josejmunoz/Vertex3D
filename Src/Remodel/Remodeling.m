@@ -22,17 +22,13 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
         aliveStatusCellNodes = {Geo.Cells(cellNodesShared).AliveStatus};
         ghostNodes = cellfun(@isempty, aliveStatusCellNodes);
         
+        flipPairs = nchoosek([ghostNode1 ghostNode2 cellNodesShared'], 2);
+        for flipPair = flipPairs'
+            [valenceSegment, flipSharedTets] = edgeValence(Geo, flipPair);
+            
+        end
         
-        gPair_1 = [ghostNode1 cellNodesShared(1)];
-        [~, sharedTets_1] = edgeValence(Geo, gPair_1);
-        gPair_2 = [ghostNode2 cellNodesShared(2)];
-        [valence, sharedTets_2] = edgeValence(Geo, gPair_2);
-        commonTets = vertcat(sharedTets_1, sharedTets_2);
-        oldTets = commonTets;
-        %oldTets = commonTets(sum(ismember(commonTets, horzcat(gPair_1, gPair_2)), 2) > 2, :);
-        valenceSegment = size(oldTets, 1);
-        
-        if ~all(ghostNodes) && ~any(ismember(faceGlobalIds, newYgIds))
+        %if ~all(ghostNodes) && ~any(ismember(faceGlobalIds, newYgIds))
             % If the shared nodes are all ghost nodes, we won't remodel 
             
             %% Intercalation

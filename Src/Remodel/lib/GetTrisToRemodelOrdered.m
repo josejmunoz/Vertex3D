@@ -54,20 +54,29 @@ for numCell = 1:Geo.nCells
         edgesToIntercalate_Bottom = edgeLengths_Bottom < avgEdgeLengthDomain - (Set.RemodelStiffness * avgEdgeLengthDomain) & edgeLengths_Bottom > 0;
         
         if any(edgesToIntercalate_Top)
-            for numCellsToIntercalate = find(edgesToIntercalate_Top)'
-                segmentFeatures(end+1, :) = table(numCell, numCellsToIntercalate, edgeLengths_Top(edgesToIntercalate_Top), 'Top');
+            for numCellToIntercalate = find(edgesToIntercalate_Top)'
+                neighbours_1 = getNodeNeighboursPerDomain(Geo, numCell, Geo.XgTop(1));
+                neighbours_2 = getNodeNeighboursPerDomain(Geo, numCellToIntercalate, Geo.XgTop(1));
+                sharedNeighbours = intersect(neighbours_1, neighbours_2);
+                
+                sharedCellNodes = sharedNeighbours(~ismember(sharedNeighbours, Geo.XgID));
+                
+                segmentFeatures(end+1, :) = table(numCell, numCellToIntercalate, edgeLengths_Top(edgesToIntercalate_Top), {sharedNeighbours}, {neighbours_1}, {neighbours_2});
             end
         end
         
         if any(edgesToIntercalate_Bottom)
-            for numCellsToIntercalate = find(edgesToIntercalate_Bottom)'
-                segmentFeatures(end+1, :) = table(numCell, numCellsToIntercalate, edgeLengths_Bottom(edgesToIntercalate_Bottom), 'Bottom');
+            for numCellToIntercalate = find(edgesToIntercalate_Bottom)'
+                neighbours_1 = getNodeNeighboursPerDomain(Geo, numCell, Geo.XgBottom(1));
+                neighbours_2 = getNodeNeighboursPerDomain(Geo, numCellToIntercalate, Geo.XgBottom(1));
+                sharedNeighbours = intersect(neighbours_1, neighbours_2);
+                
+                sharedCellNodes = sharedNeighbours(~ismember(sharedNeighbours, Geo.XgID));
+                segmentFeatures(end+1, :) = table(numCell, numCellToIntercalate, edgeLengths_Top(edgesToIntercalate_Top), {sharedNeighbours}, {neighbours_1}, {neighbours_2});
             end
         end
     end
 end
-
-segmentFeatures
 
 
 % for ghostPair = ghostPairs'
@@ -222,7 +231,7 @@ segmentFeatures
 % end
 
 if ~isempty(segmentFeatures)
-    [segmentFeatures] = sortrows(segmentFeatures, 4, 'ascend');
+    %[segmentFeatures] = sortrows(segmentFeatures, 4, 'ascend');
     [segmentFeatures] = sortrows(segmentFeatures, 3, 'ascend');
 end
 

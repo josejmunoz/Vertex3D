@@ -49,7 +49,7 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
                 otherwise
                     error('valence number greater than expected')
             end
-        end
+        %end
 
         checkedYgIds(end+1, :) = [ghostNode1, ghostNode2];
 

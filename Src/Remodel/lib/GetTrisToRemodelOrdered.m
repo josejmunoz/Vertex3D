@@ -29,50 +29,33 @@ for numCell = 1:Geo.nCells
 
         Ys = Geo.Cells(numCell).Y;
         currentFaces = getFacesFromNode(Geo, numCell);
-        edgeLengths_Top = zeros(Geo.nCells, 1);
-        edgeLengths_Bottom = zeros(Geo.nCells, 1);
+        edgeLengths = zeros(Geo.nCells, 1);
+        
+        avgEdgeLengthDomain = mean([Geo.AvgEdgeLength_Bottom, Geo.AvgEdgeLength_Top]);
+        
         for currentFace = currentFaces
             cFace = currentFace{1};
-            currentTris = cFace.Tris;
-            for currentTri = currentTris
-                if length(currentTri.SharedByCells) > 1
-                    sharedCells = currentTri.SharedByCells;
-                    sharedCells(sharedCells == numCell) = [];
-                    for numSharedCell = sharedCells
-                        if cFace.InterfaceType == 'Top'
-                            edgeLengths_Top(numSharedCell) = edgeLengths_Top(numSharedCell) + currentTri.EdgeLength;
-                        elseif cFace.InterfaceType == 'Bottom'
-                            edgeLengths_Bottom(numSharedCell) = edgeLengths_Bottom(numSharedCell) + currentTri.EdgeLength;
+            if cFace.InterfaceType ~= 'CellCell'
+                currentTris = cFace.Tris;
+                for currentTri = currentTris
+                    if length(currentTri.SharedByCells) > 1
+                        sharedCells = currentTri.SharedByCells;
+                        sharedCells(sharedCells == numCell) = [];
+                        for numSharedCell = sharedCells
+                            if currentTri.EdgeLength < avgEdgeLengthDomain - (Set.RemodelStiffness * avgEdgeLengthDomain)
+                                nodePair = cFace.ij;
+                                nodePair_g = nodePair(ismember(nodePair, Geo.XgID));
+                                nodePair_c = setdiff(nodePair, nodePair_g);
+                                neighbours_1 = {getNodeNeighboursPerDomain(Geo, nodePair_c, nodePair_g)};
+                                neighbours_2 = {getNodeNeighboursPerDomain(Geo, nodePair_g, nodePair_g)};
+                                sharedNeighbours = {intersect(neighbours_1{1}, neighbours_2{1})};
+                                cellToIntercalateWith = numSharedCell;
+
+                                segmentFeatures(end+1, :) = table(nodePair_c, nodePair_g, cellToIntercalateWith, currentTri.EdgeLength, sharedNeighbours, neighbours_1, neighbours_2);
+                            end
                         end
                     end
                 end
-            end
-        end
-        
-        avgEdgeLengthDomain = mean([Geo.AvgEdgeLength_Bottom, Geo.AvgEdgeLength_Top])*2; %% *2 because there are usually two tris per edge
-        edgesToIntercalate_Top = edgeLengths_Top < avgEdgeLengthDomain - (Set.RemodelStiffness * avgEdgeLengthDomain) & edgeLengths_Top > 0;
-        edgesToIntercalate_Bottom = edgeLengths_Bottom < avgEdgeLengthDomain - (Set.RemodelStiffness * avgEdgeLengthDomain) & edgeLengths_Bottom > 0;
-        
-        if any(edgesToIntercalate_Top)
-            for numCellToIntercalate = find(edgesToIntercalate_Top)'
-                neighbours_1 = getNodeNeighboursPerDomain(Geo, numCell, Geo.XgTop(1));
-                neighbours_2 = getNodeNeighboursPerDomain(Geo, numCellToIntercalate, Geo.XgTop(1));
-                sharedNeighbours = intersect(neighbours_1, neighbours_2);
-                
-                sharedCellNodes = sharedNeighbours(~ismember(sharedNeighbours, Geo.XgID));
-                
-                segmentFeatures(end+1, :) = table(numCell, numCellToIntercalate, edgeLengths_Top(edgesToIntercalate_Top), {sharedNeighbours}, {neighbours_1}, {neighbours_2});
-            end
-        end
-        
-        if any(edgesToIntercalate_Bottom)
-            for numCellToIntercalate = find(edgesToIntercalate_Bottom)'
-                neighbours_1 = getNodeNeighboursPerDomain(Geo, numCell, Geo.XgBottom(1));
-                neighbours_2 = getNodeNeighboursPerDomain(Geo, numCellToIntercalate, Geo.XgBottom(1));
-                sharedNeighbours = intersect(neighbours_1, neighbours_2);
-                
-                sharedCellNodes = sharedNeighbours(~ismember(sharedNeighbours, Geo.XgID));
-                segmentFeatures(end+1, :) = table(numCell, numCellToIntercalate, edgeLengths_Top(edgesToIntercalate_Top), {sharedNeighbours}, {neighbours_1}, {neighbours_2});
             end
         end
     end

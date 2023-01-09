@@ -15,16 +15,17 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
         cellToIntercalateWith = segmentFeatures{1, 3};
         nodesShared = segmentFeatures{1, 5};
         nodesShared = nodesShared{1};
+        faceGlobalId = segmentFeatures{1, 6};
         
         cellNodesShared = nodesShared(~ismember(nodesShared, Geo.XgID));
         ghostNodesShared = nodesShared(ismember(nodesShared, Geo.XgID));
         
         cellNodes = union(cellNodesShared, cellNode);
         
-        %if ~all(ghostNodes) && ~any(ismember(faceGlobalIds, newYgIds))
+        %if ~all(ghostNodes) && 
             % If the shared nodes are all ghost nodes, we won't remodel 
             
-        if sum([Geo.Cells(cellNodes).AliveStatus]) >= 2
+        if sum([Geo.Cells(cellNodes).AliveStatus]) >= 2 && ~any(ismember(faceGlobalId, newYgIds))
             nodesPairs = [cellNode ghostNode];
             for nodesPair = nodesPairs'
                 [valenceSegment, oldTets] = edgeValence(Geo, nodesPair);

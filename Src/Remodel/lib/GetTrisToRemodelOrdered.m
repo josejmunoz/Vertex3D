@@ -50,8 +50,9 @@ for numCell = 1:Geo.nCells
                                 neighbours_2 = {getNodeNeighboursPerDomain(Geo, nodePair_g, nodePair_g)};
                                 sharedNeighbours = {intersect(neighbours_1{1}, neighbours_2{1})};
                                 cellToIntercalateWith = numSharedCell;
+                                faceGlobalId = cFace.globalIds;
 
-                                segmentFeatures(end+1, :) = table(nodePair_c, nodePair_g, cellToIntercalateWith, currentTri.EdgeLength, sharedNeighbours, neighbours_1, neighbours_2);
+                                segmentFeatures(end+1, :) = table(nodePair_c, nodePair_g, cellToIntercalateWith, currentTri.EdgeLength, sharedNeighbours, faceGlobalId, neighbours_1, neighbours_2);
                             end
                         end
                     end

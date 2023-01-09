@@ -14,14 +14,27 @@ Xs_c = Xs(~ismember(Xs, ghostNodesWithoutDebris));
 [tets4Cells] = get4FoldTets(Geo);
 Geo = RemoveTetrahedra(Geo, tets4Cells);
 
-[Xs_gConnectedNodes, ~] = getConnectedNodesInQuartet(Geo, Xs_g, Xs_g(1));
+[Xs_gConnectedNodes, Xs_gUnconnectedNodes] = getConnectedNodesInQuartet(Geo, Xs_g, Xs_g(1));
 [Xs_cConnectedNodes, Xs_cUnconnectedNodes] = getConnectedNodesInQuartet(Geo, Xs_c, Xs_g(1));
+
+
+if length(Xs_cConnectedNodes) == length(Xs_c) && length(Xs_gConnectedNodes) == length(Xs_gUnconnectedNodes)
+    Xs_cToDisconnect = XsToDisconnect(ismember(XsToDisconnect, Geo.XgID));
+    Xs_gToDisconnect = XsToDisconnect(~ismember(XsToDisconnect, Geo.XgID));
+    
+    [Xs_cConnectedNodes, Xs_cUnconnectedNodes] = getConnectedNodesInQuartet(Geo, Xs_g, Xs_g(1));
+    [Xs_gConnectedNodes, Xs_gUnconnectedNodes] = getConnectedNodesInQuartet(Geo, Xs_c, Xs_g(1));
+    
+    
+    Xs_g = Xs(~ismember(Xs, ghostNodesWithoutDebris));
+    Xs_c = Xs(ismember(Xs, ghostNodesWithoutDebris));
+else
+    Xs_cToDisconnect = XsToDisconnect(~ismember(XsToDisconnect, Geo.XgID));
+    Xs_gToDisconnect = XsToDisconnect(ismember(XsToDisconnect, Geo.XgID));
+end 
 
 if length(Xs_gConnectedNodes) == length(Xs_g) && length(Xs_cConnectedNodes) == length(Xs_cUnconnectedNodes)
     if any(ismember(XsToDisconnect, Xs_gConnectedNodes)) && any(ismember(XsToDisconnect, Xs_cConnectedNodes))
-        Xs_cToDisconnect = XsToDisconnect(~ismember(XsToDisconnect, Geo.XgID));
-        Xs_gToDisconnect = XsToDisconnect(ismember(XsToDisconnect, Geo.XgID));
-        
         XsPos(1) = Xs_gToDisconnect;
         XsPos(2) = Xs_cToDisconnect;
         
@@ -53,7 +66,7 @@ if length(Xs_gConnectedNodes) == length(Xs_g) && length(Xs_cConnectedNodes) == l
             XsPos(5) XsPos(7) XsPos(1) XsPos(3)];
         
         %% Connection #4: 4 mainNodes
-        Tnew(end+1, :) = [Xs_cConnectedNodes', Xs_cUnconnectedNodes'];
+        %Tnew(end+1, :) = [Xs_cConnectedNodes', Xs_cUnconnectedNodes'];
     else
         error('Need to check this');
     end

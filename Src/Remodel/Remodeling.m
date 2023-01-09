@@ -1,5 +1,6 @@
 function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Set)
 
+    
     Geo.AssemblegIds = [];
     newYgIds = [];
     checkedYgIds = [];
@@ -8,50 +9,48 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
     %% loop ENERGY-dependant
     while ~isempty(segmentFeatures)
         hasConverged = 0;
-        ghostNode1 = segmentFeatures{1, 1};
-        ghostNode2 = segmentFeatures{1, 2};
-        valenceSegment = segmentFeatures{1, 4};
-        cellNodesShared = segmentFeatures{1, 5};
-        cellNodesShared = cellNodesShared{1};
-        faceGlobalIds = segmentFeatures{1, 6};
-        faceGlobalIds = faceGlobalIds{1};
-        neighbours_1 = segmentFeatures{1, 7};
-        neighbours_2 = segmentFeatures{1, 8};
-        sharedTets = segmentFeatures{1, 9};
         
-        aliveStatusCellNodes = {Geo.Cells(cellNodesShared).AliveStatus};
-        ghostNodes = cellfun(@isempty, aliveStatusCellNodes);
+        cellNode = segmentFeatures{1, 1};
+        ghostNode = segmentFeatures{1, 2};
+        cellToIntercalateWith = segmentFeatures{1, 3};
+        nodesShared = segmentFeatures{1, 5};
+        nodesShared = nodesShared{1};
         
-        flipPairs = nchoosek([ghostNode1 ghostNode2 cellNodesShared'], 2);
-        for flipPair = flipPairs'
-            [valenceSegment, flipSharedTets] = edgeValence(Geo, flipPair);
-            
-        end
+        cellNodesShared = nodesShared(~ismember(nodesShared, Geo.XgID));
+        ghostNodesShared = nodesShared(ismember(nodesShared, Geo.XgID));
+        
+        cellNodes = union(cellNodesShared, cellNode);
         
         %if ~all(ghostNodes) && ~any(ismember(faceGlobalIds, newYgIds))
             % If the shared nodes are all ghost nodes, we won't remodel 
             
-            %% Intercalation
-            switch valenceSegment
-                case 2 %??
-                    error('valence tet 2')
-                    [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip23(YsToChange, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                case 3
-                    error('valence tet 3')
-                    [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip32(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                case 4
-                    error('valence tet 4')
-                    [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip44(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                case 5
-                    [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip5N(gPair, oldTets, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                case 6
-                    [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip6N([ghostNode1 ghostNode2], oldTets, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                otherwise
-                    error('valence number greater than expected')
-            end
-        %end
+        if sum([Geo.Cells(cellNodes).AliveStatus]) >= 2
+            nodesPairs = [cellNode ghostNode];
+            for nodesPair = nodesPairs'
+                [valenceSegment, oldTets] = edgeValence(Geo, nodesPair);
 
-        checkedYgIds(end+1, :) = [ghostNode1, ghostNode2];
+                %% Intercalation
+                switch valenceSegment
+                    case 2 %??
+                        error('valence tet 2')
+                        [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip23(YsToChange, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                    case 3
+                        error('valence tet 3')
+                        [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip32(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                    case 4
+                        error('valence tet 4')
+                        [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip44(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                    case 5
+                        [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip5N(nodesPair, oldTets, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                    case 6
+                        [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip6N(nodesPair, oldTets, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                    otherwise
+                        error('valence number greater than expected')
+                end
+            end
+        end
+
+        checkedYgIds(end+1, :) = [cellNode ghostNode];
 
         [segmentFeatures] = GetTrisToRemodelOrdered(Geo, Set);
         if ~isempty(segmentFeatures)

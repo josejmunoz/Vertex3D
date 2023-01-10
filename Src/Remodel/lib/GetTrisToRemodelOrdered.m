@@ -46,7 +46,7 @@ for numCell = 1:Geo.nCells
                                 nodePair = cFace.ij;
                                 nodePair_g = nodePair(ismember(nodePair, Geo.XgID));
                                 nodePair_c = setdiff(nodePair, nodePair_g);
-                                if ~ismember(nodePair_c, Geo.BorderCells)
+                                if Geo.Cells(nodePair_c).AliveStatus || ~ismember(nodePair_c, Geo.BorderCells)
                                     neighbours_1 = {getNodeNeighboursPerDomain(Geo, nodePair_c, nodePair_g)};
                                     neighbours_2 = {getNodeNeighboursPerDomain(Geo, nodePair_g, nodePair_g)};
                                     sharedNeighbours = {intersect(neighbours_1{1}, neighbours_2{1})};

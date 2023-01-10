@@ -23,7 +23,7 @@ ghostPairs = unique(sort(ghostPairs, 2), 'rows');
 
 segmentFeatures = table();
 for numCell = 1:Geo.nCells
-    if Geo.Cells(numCell).AliveStatus
+    if Geo.Cells(numCell).AliveStatus || ~ismember(numCell, Geo.BorderCells)
         neighbours_Top = getNodeNeighboursPerDomain(Geo, numCell, Geo.XgTop(1));
         neighbours_Bottom = getNodeNeighboursPerDomain(Geo, numCell, Geo.XgBottom(1));
 
@@ -46,13 +46,15 @@ for numCell = 1:Geo.nCells
                                 nodePair = cFace.ij;
                                 nodePair_g = nodePair(ismember(nodePair, Geo.XgID));
                                 nodePair_c = setdiff(nodePair, nodePair_g);
-                                neighbours_1 = {getNodeNeighboursPerDomain(Geo, nodePair_c, nodePair_g)};
-                                neighbours_2 = {getNodeNeighboursPerDomain(Geo, nodePair_g, nodePair_g)};
-                                sharedNeighbours = {intersect(neighbours_1{1}, neighbours_2{1})};
-                                cellToIntercalateWith = numSharedCell;
-                                faceGlobalId = cFace.globalIds;
+                                if ~ismember(nodePair_c, Geo.BorderCells)
+                                    neighbours_1 = {getNodeNeighboursPerDomain(Geo, nodePair_c, nodePair_g)};
+                                    neighbours_2 = {getNodeNeighboursPerDomain(Geo, nodePair_g, nodePair_g)};
+                                    sharedNeighbours = {intersect(neighbours_1{1}, neighbours_2{1})};
+                                    cellToIntercalateWith = numSharedCell;
+                                    faceGlobalId = cFace.globalIds;
 
-                                segmentFeatures(end+1, :) = table(nodePair_c, nodePair_g, cellToIntercalateWith, currentTri.EdgeLength, sharedNeighbours, faceGlobalId, neighbours_1, neighbours_2);
+                                    segmentFeatures(end+1, :) = table(nodePair_c, nodePair_g, cellToIntercalateWith, currentTri.EdgeLength, sharedNeighbours, faceGlobalId, neighbours_1, neighbours_2);
+                                end
                             end
                         end
                     end

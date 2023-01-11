@@ -49,9 +49,14 @@ if length(Xs_gConnectedNodes) == length(Xs_gUnconnectedNodes) && length(Xs_cConn
         %% Connection #4: 4 mainNodes
         Tnew(end+1, :) = [Xs_cConnectedNodes', Xs_cUnconnectedNodes'];
     else
-        error('Need to check this');
+        disp('Need to check this');
+        Tnew = [];
     end
+elseif length(Xs_cConnectedNodes) == length(Xs_c) 
+    disp('Need to check this');
+    Tnew = [];
 else
-    error('Need to check this');
+    disp('Need to check this');
+    Tnew = [];
 end
 end

@@ -1,7 +1,7 @@
 function [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip5N(segmentToChange, oldTets, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds)
 %FLIP5N Summary of this function goes here
 %   Detailed explanation goes here
-
+hasConverged = false;
 flipName = '5-5';
 [Ynew, Tnew] = YFlip55(oldTets, segmentToChange, Geo, Set);
 

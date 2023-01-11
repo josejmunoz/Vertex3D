@@ -74,10 +74,12 @@ if length(Xs_gConnectedNodes) == length(Xs_g) && length(Xs_cConnectedNodes) == l
         %% Connection #4: 4 mainNodes
         %Tnew(end+1, :) = [Xs_cConnectedNodes', Xs_cUnconnectedNodes'];
     else
-        error('Need to check this');
+        %error('Need to check this');
+        Tnew = [];
     end
 else
-    error('Need to check this');
+    %error('Need to check this');
+    Tnew = [];
 end
 end
 

@@ -41,12 +41,18 @@ if length(Xs_gConnectedNodes) == length(Xs_g) && length(Xs_cConnectedNodes) == l
         Xs_gRemaining = setdiff(Xs_gConnectedNodes, Xs_gToDisconnect);
         
         %% COULDNT FIND A BETTER WAY OF GETTING WHICH NODE SHOULD BE THE 3 AND 4
-        if norm(Geo.Cells(Xs_gRemaining(2)).X(1:2) - Geo.Cells(XsPos(2)).X(1:2)) > norm(Geo.Cells(Xs_gRemaining(1)).X(1:2) - Geo.Cells(XsPos(2)).X(1:2))
-            XsPos(3) = Xs_gRemaining(1);
-            XsPos(4) = Xs_gRemaining(2);
+        aliveStatus = [Geo.Cells(Xs_gRemaining).AliveStatus] == 1;
+        if any(~aliveStatus) && ~all(aliveStatus == 0)
+            XsPos(3) = Xs_gRemaining(aliveStatus);
+            XsPos(4) = Xs_gRemaining(~aliveStatus);
         else
-            XsPos(3) = Xs_gRemaining(2);
-            XsPos(4) = Xs_gRemaining(1);
+            if norm(Geo.Cells(Xs_gRemaining(2)).X(1:2) - Geo.Cells(XsPos(2)).X(1:2)) > norm(Geo.Cells(Xs_gRemaining(1)).X(1:2) - Geo.Cells(XsPos(2)).X(1:2))
+                XsPos(3) = Xs_gRemaining(1);
+                XsPos(4) = Xs_gRemaining(2);
+            else
+                XsPos(3) = Xs_gRemaining(2);
+                XsPos(4) = Xs_gRemaining(1);
+            end
         end
         XsPos(6) = setdiff(Xs_cConnectedNodes, Xs_cToDisconnect);
         XsPos(5) = intersect(getNodeNeighbours(Geo, XsPos(4)), Xs_cUnconnectedNodes);

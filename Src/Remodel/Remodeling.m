@@ -25,7 +25,7 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
         %if ~all(ghostNodes) && 
             % If the shared nodes are all ghost nodes, we won't remodel 
             
-        if sum([Geo.Cells(cellNodes).AliveStatus]) >= 2 && ~any(ismember(faceGlobalId, newYgIds))
+        %%if sum([Geo.Cells(cellNodes).AliveStatus]) >= 2 %&& ~any(ismember(faceGlobalId, newYgIds))
             nodesPairs = [cellNode ghostNode];
             for nodesPair = nodesPairs'
                 [valenceSegment, oldTets] = edgeValence(Geo, nodesPair);
@@ -49,7 +49,7 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
                         error('valence number greater than expected')
                 end
             end
-        end
+        %%end
 
         checkedYgIds(end+1, :) = [cellNode ghostNode];
 

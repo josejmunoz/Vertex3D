@@ -8,134 +8,73 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
     [segmentFeatures] = GetTrisToRemodelOrdered(Geo, Set);
     %% loop ENERGY-dependant
     while ~isempty(segmentFeatures)
-        hasConverged = 0;
-        
-        cellNode = segmentFeatures{1, 1};
-        ghostNode = segmentFeatures{1, 2};
-        cellToIntercalateWith = segmentFeatures{1, 3};
-        nodesShared = segmentFeatures{1, 5};
-        nodesShared = nodesShared{1};
-        faceGlobalId = segmentFeatures{1, 6};
-        
-        cellNodesShared = nodesShared(~ismember(nodesShared, Geo.XgID));
-        ghostNodesShared = nodesShared(ismember(nodesShared, Geo.XgID));
-        
-        cellNodes = union(cellNodesShared, cellNode);
-        
-        %if ~all(ghostNodes) && 
-            % If the shared nodes are all ghost nodes, we won't remodel 
+        Geo_backup = Geo; Geo_n_backup = Geo_n; Geo_0_backup = Geo_0; Dofs_backup = Dofs;
+
+        for numPair = 1:2
+            hasConverged(numPair) = 0;
             
-        %%if sum([Geo.Cells(cellNodes).AliveStatus]) >= 2 %&& ~any(ismember(faceGlobalId, newYgIds))
-            nodesPairs = [cellNode ghostNode];
-            for nodesPair = nodesPairs'
-                [valenceSegment, oldTets] = edgeValence(Geo, nodesPair);
-
-                %% Intercalation
-                switch valenceSegment
-                    case 2 %??
-                        error('valence tet 2')
-                        [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip23(YsToChange, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                    case 3
-                        error('valence tet 3')
-                        [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip32(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                    case 4
-                        error('valence tet 4')
-                        [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip44(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                    case 5
-                        [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip5N(nodesPair, oldTets, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                    case 6
-                        [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip6N(nodesPair, oldTets, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                    otherwise
-                        error('valence number greater than expected')
-                end
+            cellNode = segmentFeatures{numPair, 1};
+            ghostNode = segmentFeatures{numPair, 2};
+            cellToIntercalateWith = segmentFeatures{numPair, 3};
+            nodesShared = segmentFeatures{numPair, 5};
+            nodesShared = nodesShared{1};
+            faceGlobalId = segmentFeatures{numPair, 6};
+            
+            cellNodesShared = nodesShared(~ismember(nodesShared, Geo.XgID));
+            ghostNodesShared = nodesShared(ismember(nodesShared, Geo.XgID));
+            
+            cellNodes = union(cellNodesShared, cellNode);
+            
+            %if ~all(ghostNodes) &&
+            % If the shared nodes are all ghost nodes, we won't remodel
+            
+            %%if sum([Geo.Cells(cellNodes).AliveStatus]) >= 2 %&& ~any(ismember(faceGlobalId, newYgIds))
+            nodesPair = [cellNode ghostNode];
+            
+            
+            [valenceSegment, oldTets] = edgeValence(Geo, nodesPair);
+            
+            %% Intercalation
+            switch valenceSegment
+                case 2 %??
+                    disp('error: valence tet 2')
+                    sprintf('%s error: valence tet 2\n', Geo.log)
+                    %[Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair)] = Flip23(YsToChange, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                case 3
+                    disp('error: valence tet 3')
+                    sprintf('%s error: valence tet 3\n', Geo.log)
+                    %[Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair)] = Flip32(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                case 4
+                    disp('error: valence tet 4')
+                    sprintf('%s error: valence tet 4\n', Geo.log)
+                    %[Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair)] = Flip44(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                case 5
+                    [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair)] = Flip5N(nodesPair, oldTets, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                case 6
+                    [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair)] = Flip6N(nodesPair, oldTets, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                otherwise
+                    disp('error: valence number greater than expected')
+                    sprintf('%s error: valence number greater than expected\n', Geo.log)
             end
-        %%end
+        end
+        
+        if any(~hasConverged)
+            % Go back to initial state
+            Geo_backup.log = Geo.log;
+            Geo   = Geo_backup;
+            Geo_n = Geo_n_backup;
+            Dofs = Dofs_backup;
+            Geo_0 = Geo_0_backup;
+        end
 
-        checkedYgIds(end+1, :) = [cellNode ghostNode];
+        checkedYgIds(end+1:end+3, :) = [segmentFeatures{1, 1} segmentFeatures{numPair, 2};
+            segmentFeatures{2, 1} segmentFeatures{2, 2}];
 
         [segmentFeatures] = GetTrisToRemodelOrdered(Geo, Set);
         if ~isempty(segmentFeatures)
             segmentFeatures(ismember([segmentFeatures{:, 1:2}], checkedYgIds, 'rows'), :) = [];
         end
     end
-
-%     %% loop NONENERGY
-%     for numCell = 1:Geo.nCells
-%         f = 0;
-%         hasConverged = 0;
-%         
-%         %CARE: Number of faces change within this loop, so it should be a while
-%         while f < length(Geo.Cells(numCell).Faces)
-%             f = f + 1;
-%             Face = Geo.Cells(numCell).Faces(f);
-%             
-%             if ~ismember(Face.globalIds, newYgIds) && ~isequal(Face.InterfaceType, 'CellCell') && ~ismember(numCell, Geo.BorderCells)
-%                 faceAreas = [Face.Tris.Area];
-%                 [maxTriArea, idMaxTriArea]= max(faceAreas);
-%                 trisToChange = Face.Tris(idMaxTriArea);
-%                 
-%                 firstNodeAlive = Geo.Cells(Face.ij(1)).AliveStatus;
-%                 secondNodeAlive = Geo.Cells(Face.ij(2)).AliveStatus;
-%                 
-%                 %% Flip 13
-%                 % TODO: GENERALISE THIS INTO A GENERAL FUNCTION
-%                 % Big area and good aspect ratio
-%                 tetsToExpand = Geo.Cells(numCell).T(Face.Tris(idMaxTriArea).Edge, :);
-%                 surroundingNodes = intersect(tetsToExpand(1, :), tetsToExpand(2, :));
-%                 aliveCells = ~cellfun(@isempty, {Geo.Cells(surroundingNodes).AliveStatus});
-%                 if (nnz(faceAreas > Set.upperAreaThreshold)/numel(faceAreas)) > 0.5 && ...
-%                         aspectRatio(idMaxTriArea) < 1.4 && ...
-%                         nnz(aliveCells) == 1
-%                     
-%                     % Get the node to split (different from the cell node)
-%                     nodeToSplit = Face.ij(Face.ij ~= numCell);
-%                     % Get the neighbours of the node (these tets will be
-%                     % removed afterwards)
-%                     [nodeNeighbours] = getNodeNeighbours(Geo, nodeToSplit);
-%                     % Save this for later
-%                     surroundingNodes = nodeNeighbours;
-%                     % Get Tets to remove ('oldTets')
-%                     tetsToChange = Geo.Cells(nodeToSplit).T;
-%                     % Get the position of the node to split
-%                     nodeToSplit_Pos = Geo.Cells(nodeToSplit).X;
-%                     
-%                     % Get the main node (ie, cell node)
-%                     mainNode = nodeNeighbours(~cellfun(@isempty, {Geo.Cells(nodeNeighbours).AliveStatus}));
-%                     % Remove it from the list
-%                     nodeNeighbours(ismember(nodeNeighbours, mainNode)) = [];
-%                     
-%                     % Get the centre of that network (and there would be
-%                     % the new node)
-%                     nodeNeighboursVertices = vertcat(Geo.Cells(nodeNeighbours).X);
-%                     try
-%                         centroidOfNeighbours = centroid(nodeNeighboursVertices);
-%                     catch
-%                         continue
-%                     end
-%                     
-%                     %% Create a new node besides the other opposite side (closer to the centroid)
-%                     runit = centroidOfNeighbours - mean(vertcat(Geo.Cells(mainNode).X), 1);
-%                     runit = runit/norm(runit);
-%                     centroidOfNeighbours = mean(vertcat(Geo.Cells(mainNode).X), 1) + 1 .* runit;
-%                     
-%                     runit = centroidOfNeighbours - nodeToSplit_Pos;
-%                     runit = runit/norm(runit);
-%                     newNodes = nodeToSplit_Pos + 0.8 .* runit;
-%                     
-%                     % Add the node to split to the neighbourhood
-%                     surroundingNodes(end+1) = nodeToSplit;
-%                     %newNodes(end+1, :) = nodeToSplit_Pos;
-%                     
-%                     [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = FlipAddNodes(surroundingNodes, tetsToChange, newNodes, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-%                 end
-%             end
-%             
-%             if hasConverged
-%                 f = 0;
-%                 hasConverged = 0;
-%             end
-%         end
-%     end
     
     [g, K, E, Geo, Energies] = KgGlobal(Geo_0, Geo_n, Geo, Set);
 end

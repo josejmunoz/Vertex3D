@@ -5,20 +5,20 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
     newYgIds = [];
     checkedYgIds = [];
     
-    [segmentFeatures] = GetTrisToRemodelOrdered(Geo, Set);
+    [segmentFeatures_all] = GetTrisToRemodelOrdered(Geo, Set);
     %% loop ENERGY-dependant
-    while ~isempty(segmentFeatures)
+    while ~isempty(segmentFeatures_all)
         Geo_backup = Geo; Geo_n_backup = Geo_n; Geo_0_backup = Geo_0; Dofs_backup = Dofs;
-
-        if size(segmentFeatures, 1) == 1
-            break;
+        
+        segmentFeatures = segmentFeatures_all{1};
+        
+        for numRow = 1:size(segmentFeatures, 1)
+            gNodeNeighbours{numRow} = getNodeNeighbours(Geo, segmentFeatures{numRow, 2});
         end
-        gNode1Neigbhours = getNodeNeighbours(Geo, segmentFeatures{1, 2});
-        gNode2Neigbhours = getNodeNeighbours(Geo, segmentFeatures{2, 2});
-        gNodes_NeighboursShared = union(gNode1Neigbhours, gNode2Neigbhours);
+        gNodes_NeighboursShared = unique(vertcat(gNodeNeighbours{:}));
         cellNodesShared = gNodes_NeighboursShared(~ismember(gNodes_NeighboursShared, Geo.XgID));
         if sum([Geo.Cells(cellNodesShared).AliveStatus]) > 2 
-            for numPair = 1:2
+            for numPair = 1:size(segmentFeatures, 1)
                 hasConverged(numPair) = 0;
 
                 cellNode = segmentFeatures{numPair, 1};
@@ -64,6 +64,9 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
                         disp('error: valence number greater than expected')
                         sprintf('%s error: valence number greater than expected\n', Geo.log)
                 end
+                if ~hasConverged(numPair)
+                    break;
+                end
             end
 
             if any(~hasConverged)
@@ -74,14 +77,18 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
                 Dofs = Dofs_backup;
                 Geo_0 = Geo_0_backup;
             end
+            
+            checkedYgIds(end+1:end+size(segmentFeatures, 1), :) = [segmentFeatures{:, 1}, segmentFeatures{:, 2}];
         end
-
-        checkedYgIds(end+1:end+2, :) = [segmentFeatures{1, 1}, segmentFeatures{1, 2}; ...
-            segmentFeatures{2, 1}, segmentFeatures{2, 2}];
-
-        [segmentFeatures] = GetTrisToRemodelOrdered(Geo, Set);
-        if ~isempty(segmentFeatures)
-            segmentFeatures(ismember([segmentFeatures{:, 1:2}], checkedYgIds, 'rows'), :) = [];
+        
+        [segmentFeatures_all] = GetTrisToRemodelOrdered(Geo, Set);
+        if ~isempty(segmentFeatures_all)
+            for numRow = 1:size(segmentFeatures_all, 1)
+                cSegFea = segmentFeatures_all{numRow};
+                if all(ismember([cSegFea{:, 1:2}], checkedYgIds, 'rows'))
+                    segmentFeatures_all(numRow) = [];
+                end
+            end
         end
     end
     

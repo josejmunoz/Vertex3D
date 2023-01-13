@@ -12,6 +12,7 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
         
         segmentFeatures = segmentFeatures_all{1};
         
+        gNodeNeighbours = {};
         for numRow = 1:size(segmentFeatures, 1)
             gNodeNeighbours{numRow} = getNodeNeighbours(Geo, segmentFeatures{numRow, 2});
         end
@@ -82,14 +83,16 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
         checkedYgIds(end+1:end+size(segmentFeatures, 1), :) = [segmentFeatures{:, 1}, segmentFeatures{:, 2}];
         
         [segmentFeatures_all] = GetTrisToRemodelOrdered(Geo, Set);
+        rowsToRemove = [];
         if ~isempty(segmentFeatures_all)
-            for numRow = 1:size(segmentFeatures_all, 1)
+            for numRow = 1:length(segmentFeatures_all)
                 cSegFea = segmentFeatures_all{numRow};
                 if all(ismember([cSegFea{:, 1:2}], checkedYgIds, 'rows'))
-                    segmentFeatures_all(numRow) = [];
+                    rowsToRemove(end+1) = numRow;
                 end
             end
         end
+        segmentFeatures_all(rowsToRemove) = [];
     end
     
     [g, K, E, Geo, Energies] = KgGlobal(Geo_0, Geo_n, Geo, Set);

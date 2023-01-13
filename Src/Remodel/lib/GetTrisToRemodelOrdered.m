@@ -12,14 +12,6 @@ ghostNodeCells = Geo.Cells(ismember(1:length(Geo.Cells), ghostNodesWithoutDebris
 ghostNodeCellIDs = [ghostNodeCells.ID];
 ghostNodeCellIDs = setdiff(ghostNodeCellIDs, Geo.BorderGhostNodes);
 ghostPairs = [];
-for id = ghostNodeCellIDs
-    neighbours = getNodeNeighbours(Geo, id);
-    neighbours = neighbours(ismember(neighbours, ghostNodesWithoutDebris));
-    idValues = ones(length(neighbours), 1) * id;
-    ghostPairs = [ghostPairs; idValues, neighbours];
-end
-
-ghostPairs = unique(sort(ghostPairs, 2), 'rows');
 
 segmentFeatures = table();
 for numCell = 1:Geo.nCells
@@ -210,7 +202,7 @@ end
 
 if ~isempty(segmentFeatures)
     %[segmentFeatures] = sortrows(segmentFeatures, 4, 'ascend');
-    [segmentFeatures] = sortrows(segmentFeatures, 3, 'ascend');
+    %[segmentFeatures] = sortrows(segmentFeatures, 3, 'ascend');
 end
 
 end

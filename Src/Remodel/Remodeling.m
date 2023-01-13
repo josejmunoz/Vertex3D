@@ -77,9 +77,9 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
                 Dofs = Dofs_backup;
                 Geo_0 = Geo_0_backup;
             end
-            
-            checkedYgIds(end+1:end+size(segmentFeatures, 1), :) = [segmentFeatures{:, 1}, segmentFeatures{:, 2}];
         end
+        
+        checkedYgIds(end+1:end+size(segmentFeatures, 1), :) = [segmentFeatures{:, 1}, segmentFeatures{:, 2}];
         
         [segmentFeatures_all] = GetTrisToRemodelOrdered(Geo, Set);
         if ~isempty(segmentFeatures_all)

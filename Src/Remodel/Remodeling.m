@@ -67,7 +67,7 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
             Geo_0 = Geo_0_backup;
         end
 
-        checkedYgIds(end+1:end+3, :) = [segmentFeatures{1, 1} segmentFeatures{numPair, 2};
+        checkedYgIds(end+1:end+3, :) = [segmentFeatures{1, 1} segmentFeatures{numPair, 2}; ...
             segmentFeatures{2, 1} segmentFeatures{2, 2}];
 
         [segmentFeatures] = GetTrisToRemodelOrdered(Geo, Set);

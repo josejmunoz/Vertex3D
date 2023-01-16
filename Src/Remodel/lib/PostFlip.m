@@ -57,14 +57,16 @@ if CheckTris(Geo) %%&& ~CheckConvexity(Tnew,Geo_backup)
     PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+2)
     Dofs = GetDOFs(Geo, Set);
     [Dofs, Geo]  = GetRemodelDOFs(Tnew, Dofs, Geo);
-    [Geo, Set, DidNotConverge] = SolveRemodelingStep(Geo_0, Geo_n, Geo, Dofs, Set);
-    if DidNotConverge
-        Geo   = Geo_backup;
-        Geo_n = Geo_n_backup;
-        Geo_0 = Geo_0_backup;
-        Dofs = Dofs_backup;
-        Geo.log = sprintf('%s =>> %s-Flip rejected: did not converge\n', Geo.log, flipName);
-        return
+    if Set.NeedToConverge
+        [Geo, Set, DidNotConverge] = SolveRemodelingStep(Geo_0, Geo_n, Geo, Dofs, Set);
+        if DidNotConverge
+            Geo   = Geo_backup;
+            Geo_n = Geo_n_backup;
+            Geo_0 = Geo_0_backup;
+            Dofs = Dofs_backup;
+            Geo.log = sprintf('%s =>> %s-Flip rejected: did not converge\n', Geo.log, flipName);
+            return
+        end
     end
     
     newYgIds = unique([newYgIds; Geo.AssemblegIds]);

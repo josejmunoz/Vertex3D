@@ -11,6 +11,8 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
         Geo_backup = Geo; Geo_n_backup = Geo_n; Geo_0_backup = Geo_0; Dofs_backup = Dofs;
         
         segmentFeatures = segmentFeatures_all{1};
+        [~, ids] = unique(segmentFeatures(:, 1:2), 'rows');
+        segmentFeatures = segmentFeatures(ids, :);
         
         gNodeNeighbours = {};
         for numRow = 1:size(segmentFeatures, 1)
@@ -20,6 +22,12 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
         cellNodesShared = gNodes_NeighboursShared(~ismember(gNodes_NeighboursShared, Geo.XgID));
         if sum([Geo.Cells(cellNodesShared).AliveStatus]) > 2 
             for numPair = 1:size(segmentFeatures, 1)
+                if numPair == size(segmentFeatures, 1)
+                    Set.NeedToConverge = 1;
+                else
+                    Set.NeedToConverge = 0;
+                end
+                
                 hasConverged(numPair) = 0;
 
                 cellNode = segmentFeatures{numPair, 1};

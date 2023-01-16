@@ -50,6 +50,12 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
 
 
                 [valenceSegment, oldTets] = edgeValence(Geo, nodesPair);
+                
+                gNodes_NeighboursShared = unique(oldTets);
+                cellNodesShared = gNodes_NeighboursShared(~ismember(gNodes_NeighboursShared, Geo.XgID));
+                if sum([Geo.Cells(cellNodesShared).AliveStatus]) < 2
+                    disp('hey')
+                end
 
                 %% Intercalation
                 switch valenceSegment
@@ -62,9 +68,7 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
                         sprintf('%s error: valence tet 3\n', Geo.log)
                         %[Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair)] = Flip32(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
                     case 4
-                        disp('error: valence tet 4')
-                        sprintf('%s error: valence tet 4\n', Geo.log)
-                        %[Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair)] = Flip44(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                        [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair)] = Flip4N(nodesPair, oldTets, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
                     case 5
                         [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair)] = Flip5N(nodesPair, oldTets, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
                     case 6
@@ -72,9 +76,6 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
                     otherwise
                         disp('error: valence number greater than expected')
                         sprintf('%s error: valence number greater than expected\n', Geo.log)
-                end
-                if ~hasConverged(numPair)
-                    break;
                 end
             end
 

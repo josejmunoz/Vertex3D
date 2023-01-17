@@ -19,12 +19,14 @@ function [segmentFeatures] = AddEdgeToIntercalate(Geo, numCell, segmentFeatures,
                 cellToIntercalate = sharedNeighbours_c([Geo.Cells(sharedNeighbours_c).AliveStatus] == 1);
             else
                 cellToIntercalate = -1;
+                continue
             end
             cFace = getFacesFromNode(Geo, [numCell nodePair_g]);
             cFace = cFace{1};
             sharedNeighbours = {sharedNeighbours};
             faceGlobalId = cFace.globalIds;
-            segmentFeatures(end+1, :) = table(numCell, nodePair_g, cellToIntercalate, edgeLength, sharedNeighbours, faceGlobalId, neighbours_1, neighbours_2);
+            cellToSplitFrom = neighbourToNumCell;
+            segmentFeatures(end+1, :) = table(numCell, nodePair_g, cellToIntercalate, cellToSplitFrom, edgeLength, sharedNeighbours, faceGlobalId, neighbours_1, neighbours_2);
         end
     end
 end

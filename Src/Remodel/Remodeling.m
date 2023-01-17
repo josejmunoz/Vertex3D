@@ -13,7 +13,7 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
         segmentFeatures = segmentFeatures_all{1};
         [~, ids] = unique(segmentFeatures(:, 1:2), 'rows');
         segmentFeatures = segmentFeatures(ids, :);
-        
+        segmentFeatures = sortrows(sortrows(segmentFeatures, 3, 'descend'), 4);
         gNodeNeighbours = {};
         for numRow = 1:size(segmentFeatures, 1)
             gNodeNeighbours{numRow} = getNodeNeighbours(Geo, segmentFeatures{numRow, 2});
@@ -28,54 +28,52 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
                     Set.NeedToConverge = 0;
                 end
                 
-                hasConverged(numPair) = 0;
-
                 cellNode = segmentFeatures{numPair, 1};
                 ghostNode = segmentFeatures{numPair, 2};
                 cellToIntercalateWith = segmentFeatures{numPair, 3};
-                nodesShared = segmentFeatures{numPair, 5};
-                nodesShared = nodesShared{1};
-                faceGlobalId = segmentFeatures{numPair, 6};
-
-                cellNodesShared = nodesShared(~ismember(nodesShared, Geo.XgID));
-                ghostNodesShared = nodesShared(ismember(nodesShared, Geo.XgID));
-
-                cellNodes = union(cellNodesShared, cellNode);
-
-                %if ~all(ghostNodes) &&
-                % If the shared nodes are all ghost nodes, we won't remodel
-
-                %%if sum([Geo.Cells(cellNodes).AliveStatus]) >= 2 %&& ~any(ismember(faceGlobalId, newYgIds))
-                nodesPair = [cellNode ghostNode];
-
-
-                [valenceSegment, oldTets] = edgeValence(Geo, nodesPair);
+                cellToSplitFrom = segmentFeatures{numPair, 4};
                 
-                gNodes_NeighboursShared = unique(oldTets);
-                cellNodesShared = gNodes_NeighboursShared(~ismember(gNodes_NeighboursShared, Geo.XgID));
-                if sum([Geo.Cells(cellNodesShared).AliveStatus]) < 2
-                    disp('hey')
-                end
+                hasConverged(numPair) = 1;
+                while hasConverged(numPair) == 1
+                    hasConverged(numPair) = 0;
 
-                %% Intercalation
-                switch valenceSegment
-                    case 2 %??
-                        disp('error: valence tet 2')
-                        sprintf('%s error: valence tet 2\n', Geo.log)
-                        %[Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair)] = Flip23(YsToChange, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                    case 3
-                        disp('error: valence tet 3')
-                        sprintf('%s error: valence tet 3\n', Geo.log)
-                        %[Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair)] = Flip32(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                    case 4
-                        [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair)] = Flip4N(nodesPair, oldTets, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                    case 5
-                        [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair)] = Flip5N(nodesPair, oldTets, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                    case 6
-                        [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair)] = Flip6N(nodesPair, oldTets, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                    otherwise
-                        disp('error: valence number greater than expected')
-                        sprintf('%s error: valence number greater than expected\n', Geo.log)
+                    %if ~all(ghostNodes) &&
+                    % If the shared nodes are all ghost nodes, we won't remodel
+
+                    %%if sum([Geo.Cells(cellNodes).AliveStatus]) >= 2 %&& ~any(ismember(faceGlobalId, newYgIds))
+                    nodesPair = [cellNode ghostNode];
+
+                    [valenceSegment, oldTets] = edgeValence(Geo, nodesPair);
+
+                    %% Intercalation
+                    switch valenceSegment
+                        case 2 %??
+                            disp('error: valence tet 2')
+                            sprintf('%s error: valence tet 2\n', Geo.log)
+                            %[Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair)] = Flip23(YsToChange, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                        case 3
+                            disp('error: valence tet 3')
+                            sprintf('%s error: valence tet 3\n', Geo.log)
+                            %[Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair)] = Flip32(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                        case 4
+                            [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair)] = Flip4N(nodesPair, oldTets, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                        case 5
+                            [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair)] = Flip5N(nodesPair, oldTets, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                        case 6
+                            [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair)] = Flip6N(nodesPair, oldTets, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                        otherwise
+                            disp('error: valence number greater than expected')
+                            sprintf('%s error: valence number greater than expected\n', Geo.log)
+                    end
+
+                    sharedNodesStill = getNodeNeighboursPerDomain(Geo, cellNode, ghostNode, cellToSplitFrom);
+
+                    if any(ismember(sharedNodesStill, Geo.XgID))
+                        sharedNodesStill_g = sharedNodesStill(ismember(sharedNodesStill, Geo.XgID));
+                        ghostNode = sharedNodesStill_g(1);
+                    else
+                        break;
+                    end
                 end
             end
 

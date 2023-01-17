@@ -27,9 +27,16 @@ if length(Xs_gConnectedNodes) == length(Xs_gUnconnectedNodes) && length(Xs_cConn
         XsPos(3) = setdiff(Xs_gConnectedNodes, Xs_gToDisconnect);
         XsPos(6) = setdiff(Xs_cConnectedNodes, Xs_cToDisconnect);
         XsPos(4) = Xs_gUnconnectedNodes(1);
-        XsPos(5) = intersect(getNodeNeighbours(Geo, XsPos(4)), Xs_cUnconnectedNodes);
         XsPos(8) = Xs_gUnconnectedNodes(2);
-        XsPos(7) = intersect(getNodeNeighbours(Geo, XsPos(8)), Xs_cUnconnectedNodes);
+        
+%         aliveStatus = [Geo.Cells(Xs_cUnconnectedNodes).AliveStatus] == 1;
+%         if any(~aliveStatus) && ~all(aliveStatus == 0)
+%             XsPos(5) = Xs_cUnconnectedNodes(aliveStatus);
+%             XsPos(7) = Xs_cUnconnectedNodes(~aliveStatus);
+%         else
+            XsPos(5) = intersect(getNodeNeighbours(Geo, XsPos(4)), Xs_cUnconnectedNodes);
+            XsPos(7) = intersect(getNodeNeighbours(Geo, XsPos(8)), Xs_cUnconnectedNodes);
+%         end
         
         %% Connections #1: 1 mainNodes and 3 ghost node
         Tnew = [XsPos(1) XsPos(3) XsPos(8) XsPos(7); ... %3-7-8-1

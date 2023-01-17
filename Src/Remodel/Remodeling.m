@@ -61,6 +61,8 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
                             [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair)] = Flip5N(nodesPair, oldTets, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
                         case 6
                             [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair)] = Flip6N(nodesPair, oldTets, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                        case 7
+                            [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair)] = Flip7N(nodesPair, oldTets, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
                         otherwise
                             disp('error: valence number greater than expected')
                             sprintf('%s error: valence number greater than expected\n', Geo.log)
@@ -89,7 +91,7 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
         
         checkedYgIds(end+1:end+size(segmentFeatures, 1), :) = [segmentFeatures{:, 1}, segmentFeatures{:, 2}];
         
-        [segmentFeatures_all] = GetTrisToRemodelOrdered(Geo, Set);
+        %[segmentFeatures_all] = GetTrisToRemodelOrdered(Geo, Set);
         rowsToRemove = [];
         if ~isempty(segmentFeatures_all)
             for numRow = 1:length(segmentFeatures_all)

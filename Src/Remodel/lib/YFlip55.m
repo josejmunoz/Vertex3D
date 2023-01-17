@@ -9,6 +9,10 @@ ghostNodesWithoutDebris = setdiff(Geo.XgID, Geo.RemovedDebrisCells);
 Xs = unique(oldTets);
 Xs_g = Xs(ismember(Xs, ghostNodesWithoutDebris));
 Xs_c = Xs(~ismember(Xs, ghostNodesWithoutDebris));
+intercalationFlip = 0;
+if length(Xs_c) == 4
+    intercalationFlip = 1;
+end
 
 % Temporary remove 4-cell tetrahedra
 [tets4Cells] = get4FoldTets(Geo);
@@ -41,7 +45,11 @@ if length(Xs_gConnectedNodes) == length(Xs_g) && length(Xs_cConnectedNodes) == l
         Xs_gRemaining = setdiff(Xs_gConnectedNodes, Xs_gToDisconnect);
         
         %% COULDNT FIND A BETTER WAY OF GETTING WHICH NODE SHOULD BE THE 3 AND 4
-        aliveStatus = [Geo.Cells(Xs_gRemaining).AliveStatus] == 1;
+        if all(ismember(Xs_gRemaining, Geo.XgID) == 0)
+            aliveStatus = [Geo.Cells(Xs_gRemaining).AliveStatus] == 1;
+        else
+            aliveStatus = 0;
+        end
         if any(~aliveStatus) && ~all(aliveStatus == 0)
             XsPos(3) = Xs_gRemaining(aliveStatus);
             XsPos(4) = Xs_gRemaining(~aliveStatus);
@@ -72,7 +80,10 @@ if length(Xs_gConnectedNodes) == length(Xs_g) && length(Xs_cConnectedNodes) == l
             XsPos(5) XsPos(7) XsPos(1) XsPos(3)];
         
         %% Connection #4: 4 mainNodes
-        %Tnew(end+1, :) = [Xs_cConnectedNodes', Xs_cUnconnectedNodes'];
+        if intercalationFlip
+            Xs_c = Xs(~ismember(Xs, ghostNodesWithoutDebris));
+            Tnew(end+1, :) = Xs_c;
+        end
     else
         %error('Need to check this');
         Tnew = [];

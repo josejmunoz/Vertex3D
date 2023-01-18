@@ -27,7 +27,7 @@ function Geo = BuildGlobalIds(Geo)
 		% completing all iterations are the new globalIds
 		gIds  = zeros(length(Cell.Y), 1);
         gIdsf = zeros(length(Cell.Faces), 1);
-        jCells = intersect(nonDeadCells, ci+1:Geo.nCells);
+        jCells = intersect(nonDeadCells, 1:ci-1);
 		for cj = jCells
 			ij = [ci, cj];
 			CellJ = Geo.Cells(cj);
@@ -81,7 +81,7 @@ function Geo = BuildGlobalIds(Geo)
 	% Therefore we need to add the total number of vertices and the total 
 	% number of faces.
     for c = nonDeadCells
-		Geo.Cells(c).cglobalIds = find(nonDeadCells == c) + Geo.numY + Geo.numF;
+		Geo.Cells(c).cglobalIds = c + Geo.numY + Geo.numF;
     end
-    Geo.nCells = length(nonDeadCells);
+    Geo.nCells = Geo.nCells;
 end

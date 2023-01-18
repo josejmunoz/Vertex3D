@@ -1,4 +1,4 @@
-function [Geo] = ablateCells(Geo, Set, t)
+function [Geo, Geo_n, Geo_0] = ablateCells(Geo, Geo_n, Geo_0, Set, t)
 %PERFORMABLATION Summary of this function goes here
 %   Detailed explanation goes here
 if Set.Ablation == true && Set.TInitAblation <= t
@@ -12,14 +12,22 @@ if Set.Ablation == true && Set.TInitAblation <= t
         
         remainingDebrisCells = setdiff(Geo.cellsToAblate, uniqueDebrisCell);
         for debrisCell = remainingDebrisCells
-            [Geo, Tnew, Ynew] = CombineTwoNodes(Geo, Set, [uniqueDebrisCell debrisCell], [], [])
-            Geo.Cells(debrisCell).AliveStatus = [];
-            
+            [Geo] = CombineTwoNodes(Geo, Set, [uniqueDebrisCell debrisCell]);
+            [Geo_n] = CombineTwoNodes(Geo_n, Set, [uniqueDebrisCell debrisCell]);
+            [Geo_0] = CombineTwoNodes(Geo_0, Set, [uniqueDebrisCell debrisCell]);
         end
         
         Geo   = Rebuild(Geo, Set);
         Geo   = BuildGlobalIds(Geo);
         Geo   = UpdateMeasures(Geo);
+        
+        Geo_n = Rebuild(Geo_n, Set);
+        Geo_n = BuildGlobalIds(Geo_n);
+        Geo_n = UpdateMeasures(Geo_n);
+        
+        Geo_0 = Rebuild(Geo_0, Set);
+        Geo_0 = BuildGlobalIds(Geo_0);
+       
         
         Geo.cellsToAblate = [];
     end

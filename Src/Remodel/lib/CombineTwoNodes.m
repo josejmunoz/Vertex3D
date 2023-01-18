@@ -37,12 +37,23 @@ function [Geo, Tnew, Ynew, removedTets, replacedTets] = CombineTwoNodes(Geo, Set
             replacingTets(checkRepeatedTets | checkRepatedCells, :) = [];
         end
     end
-    newCell.Y = RecalculateYsFromPrevious(Geo, newCell.T, nodesToCombine(1), 0.005, Set);
+    newCell.Y = RecalculateYsFromPrevious(Geo, newCell.T, nodesToCombine(1), Set);
     %Update the 'new' cell
     Geo.Cells(nodesToCombine(1)) = newCell;
     %Remove the 'old' cell
     Geo.Cells(nodesToCombine(2)).T = [];
     Geo.Cells(nodesToCombine(2)).Y = [];
+    Geo.Cells(nodesToCombine(2)).AliveStatus = [];
+    Geo.Cells(nodesToCombine(2)).Area = [];
+    Geo.Cells(nodesToCombine(2)).Area0 = [];
+    Geo.Cells(nodesToCombine(2)).Vol = [];
+    Geo.Cells(nodesToCombine(2)).Vol0 = [];
+    Geo.Cells(nodesToCombine(2)).Faces = [];
+    Geo.Cells(nodesToCombine(2)).cglobalIds = [];
+    Geo.Cells(nodesToCombine(2)).globalIds = [];
+    Geo.Cells(nodesToCombine(2)).ExternalLambda = [];
+    Geo.Cells(nodesToCombine(2)).InternalLambda = [];
+    Geo.Cells(nodesToCombine(2)).SubstrateLambda = [];
     
     Tnew = newCell.T;
     Ynew = newCell.Y;

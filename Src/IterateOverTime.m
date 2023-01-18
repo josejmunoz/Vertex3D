@@ -19,6 +19,17 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
     if ~relaxingNu
         Geo_b = Geo;
         Set.iIncr=numStep;
+        
+        %% Wounding
+        [Geo, Geo_n, Geo_0] = ablateCells(Geo, Geo_n, Geo_0, Set, t);
+%         for debrisCell = debrisCells
+%             if t > 0.15*Set.TEndAblation %%|| Geo.Cells(debrisCell).Vol < 0.5*mean([Geo.Cells(nonDebrisCells).Vol])
+%                 [Geo] = RemoveNode(Geo, debrisCell);
+%                 [Geo_n] = RemoveNode(Geo_n, debrisCell);
+%                 [Geo_0] = RemoveNode(Geo_0, debrisCell);
+%             end
+%         end
+        
         [Geo, Dofs] = ApplyBoundaryCondition(t, Geo, Dofs, Set);
         %IMPORTANT: Here it updates: Areas, Volumes, etc... Should be
         %up-to-date
@@ -43,15 +54,7 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
         end
         save(fullfile(pwd, Set.OutputFolder, strcat('status', num2str(numStep),'.mat')), 'Geo', 'Geo_n', 'Geo_0', 'Set', 'Dofs', 'EnergiesPerTimeStep', 't', 'numStep', 'nonDebris_Features', 'debris_Features')
 
-        %% Wounding
-        [Geo] = ablateCells(Geo, Set, t);
-%         for debrisCell = debrisCells
-%             if t > 0.15*Set.TEndAblation %%|| Geo.Cells(debrisCell).Vol < 0.5*mean([Geo.Cells(nonDebrisCells).Vol])
-%                 [Geo] = RemoveNode(Geo, debrisCell);
-%                 [Geo_n] = RemoveNode(Geo_n, debrisCell);
-%                 [Geo_0] = RemoveNode(Geo_0, debrisCell);
-%             end
-%         end
+
     end
 
     [g, K, ~, Geo, Energies] = KgGlobal(Geo_0, Geo_n, Geo, Set);

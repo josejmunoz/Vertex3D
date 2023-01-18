@@ -17,6 +17,7 @@ function Geo = BuildGlobalIds(Geo)
 	gIdsTot = 1;
     gIdsTotf = 1;
     nonDeadCells = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID];
+    
     for ci = nonDeadCells
 		Cell = Geo.Cells(ci);
 		% Define two arrays of zeros, for vertices and face centers, 
@@ -26,7 +27,7 @@ function Geo = BuildGlobalIds(Geo)
 		% completing all iterations are the new globalIds
 		gIds  = zeros(length(Cell.Y), 1);
         gIdsf = zeros(length(Cell.Faces), 1);
-        jCells = intersect(nonDeadCells, 1:ci-1);
+        jCells = intersect(nonDeadCells, ci+1:Geo.nCells);
 		for cj = jCells
 			ij = [ci, cj];
 			CellJ = Geo.Cells(cj);
@@ -80,6 +81,7 @@ function Geo = BuildGlobalIds(Geo)
 	% Therefore we need to add the total number of vertices and the total 
 	% number of faces.
     for c = nonDeadCells
-		Geo.Cells(c).cglobalIds = c + Geo.numY + Geo.numF;
+		Geo.Cells(c).cglobalIds = find(nonDeadCells == c) + Geo.numY + Geo.numF;
     end
+    Geo.nCells = length(nonDeadCells);
 end

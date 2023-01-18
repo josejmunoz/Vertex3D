@@ -17,6 +17,12 @@ function [Geo, Dofs] = ApplyBoundaryCondition(t, Geo, Dofs, Set)
 %   Dofs : DOFS object with updated degrees of freedom				
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+if Set.Substrate == 1
+    Dofs = GetDOFsSubstrate(Geo, Set);
+else
+    Dofs = GetDOFs(Geo, Set);
+end
+
 if t>=Set.TStartBC && t<=Set.TStopBC
     [dimP, FixIDs] = ind2sub([3, Geo.numY+Geo.numF+Geo.nCells],Dofs.FixP);
     if Set.BC==1

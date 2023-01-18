@@ -4,12 +4,23 @@ function [Geo] = ablateCells(Geo, Set, t)
 if Set.Ablation == true && Set.TInitAblation <= t
     if isempty(Geo.cellsToAblate) == 0
         Geo.log = sprintf('%s ---- Performing ablation\n', Geo.log);
-        for debrisCell = Geo.cellsToAblate
-            Geo.Cells(debrisCell).AliveStatus = 0;
-            Geo.Cells(debrisCell).ExternalLambda = Set.lambdaSFactor_Debris;
-            Geo.Cells(debrisCell).InternalLambda = Set.lambdaSFactor_Debris;
-            Geo.Cells(debrisCell).SubstrateLambda = Set.lambdaSFactor_Debris;
+        uniqueDebrisCell = Geo.cellsToAblate(1);
+        Geo.Cells(uniqueDebrisCell).AliveStatus = 0;
+        Geo.Cells(uniqueDebrisCell).ExternalLambda = Set.lambdaSFactor_Debris;
+        Geo.Cells(uniqueDebrisCell).InternalLambda = Set.lambdaSFactor_Debris;
+        Geo.Cells(uniqueDebrisCell).SubstrateLambda = Set.lambdaSFactor_Debris;
+        
+        remainingDebrisCells = setdiff(Geo.cellsToAblate, uniqueDebrisCell);
+        for debrisCell = remainingDebrisCells
+            [Geo, Tnew, Ynew] = CombineTwoNodes(Geo, Set, [uniqueDebrisCell debrisCell], [], [])
+            Geo.Cells(debrisCell).AliveStatus = [];
+            
         end
+        
+        Geo   = Rebuild(Geo, Set);
+        Geo   = BuildGlobalIds(Geo);
+        Geo   = UpdateMeasures(Geo);
+        
         Geo.cellsToAblate = [];
     end
 end

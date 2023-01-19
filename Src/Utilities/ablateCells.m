@@ -1,4 +1,4 @@
-function [Geo, Geo_n, Geo_0] = ablateCells(Geo, Geo_n, Geo_0, Set, t)
+function [Geo, Geo_n, Geo_0] = ablateCells(Geo, Geo_n, Geo_0, Set, t, numStep)
 %PERFORMABLATION Summary of this function goes here
 %   Detailed explanation goes here
 if Set.Ablation == true && Set.TInitAblation <= t
@@ -27,9 +27,10 @@ if Set.Ablation == true && Set.TInitAblation <= t
         
         Geo_0 = Rebuild(Geo_0, Set);
         Geo_0 = BuildGlobalIds(Geo_0);
-       
         
         Geo.cellsToAblate = [];
+        
+        PostProcessingVTK(Geo, Geo_0, Set, numStep)
     end
 end
 end

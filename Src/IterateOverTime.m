@@ -21,7 +21,7 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
         Set.iIncr=numStep;
         
         %% Wounding
-        [Geo, Geo_n, Geo_0] = ablateCells(Geo, Geo_n, Geo_0, Set, t);
+        [Geo, Geo_n, Geo_0] = ablateCells(Geo, Geo_n, Geo_0, Set, t, numStep);
 %         for debrisCell = debrisCells
 %             if t > 0.15*Set.TEndAblation %%|| Geo.Cells(debrisCell).Vol < 0.5*mean([Geo.Cells(nonDebrisCells).Vol])
 %                 [Geo] = RemoveNode(Geo, debrisCell);

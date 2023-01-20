@@ -1,4 +1,4 @@
-function [Ynew, Tnew] = YFlip55(oldTets, XsToDisconnect, Geo, Set)
+function [Ynew, Tnew] = YFlip55(oldTets, oldYs, XsToDisconnect, Geo, Set)
 %YFLIP6N Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -84,6 +84,14 @@ if length(Xs_gConnectedNodes) == length(Xs_g) && length(Xs_cConnectedNodes) == l
             Xs_c = Xs(~ismember(Xs, ghostNodesWithoutDebris));
             Tnew(end+1, :) = Xs_c;
         end
+        %% Recalculate Ys: the new way.
+        Tnew_cNodes = sum(~ismember(Tnew, Geo.XgID), 2);
+        oldTets_cNodes = sum(~ismember(oldTets, Geo.XgID), 2);
+%         Ynew = RecalculateYsFromPrevious(Geo, Tnew, Xs, Set);
+%         for nTet = 1:size(Tnew, 1)
+%             cTet = Tnew(nTet, :);
+%             Ynew(nTet, :) = mean(oldYs(sum(ismember(oldTets, cTet), 2) > 2 & Tnew_cNodes(nTet) == oldTets_cNodes, :), 1);
+%         end
     else
         %error('Need to check this');
         Tnew = [];

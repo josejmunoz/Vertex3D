@@ -14,7 +14,7 @@ ghostNodeCellIDs = setdiff(ghostNodeCellIDs, Geo.BorderGhostNodes);
 ghostPairs = [];
 
 segmentFeatures = {};
-for numCell = 1:Geo.nCells
+for numCell = nonDeadCells
     if Geo.Cells(numCell).AliveStatus && ~ismember(numCell, Geo.BorderCells)
         
         %%%

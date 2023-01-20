@@ -49,35 +49,6 @@ function [Geo, Tnew, Ynew, removedTets, replacedTets] = CombineTwoNodes(Geo, Set
         end
     end
     
-%     %Nodes with more than 1 cell node in the tet
-%     importantYs = sum(ismember(oldTs, nonDeadCells), 2) > 1;
-%     importantYs_tets = oldTs(importantYs, :);
-%     importantYs_Pos = oldYs(importantYs, :);
-%     
-%     %newCell.Y = RecalculateYsFromPrevious(Geo, newCell.T, nodesToCombine(1), Set);
-%     for newTet = 1:size(newCell.T, 1)
-%         found = 0;
-%         nTet = newCell.T(newTet, :);
-%         nTet(nTet == nodesToCombine(1)) = [];
-%         if any(ismember(nTet, nonDeadCells))
-%             for oldTet = 1:size(importantYs_tets, 1)
-%                 oTet = importantYs_tets(oldTet, :);
-%                 oTet(oTet == nodesToCombine(2)) = [];
-%                 if all(ismember(oTet, nTet))
-%                     found = 1;
-%                     newCell.Y(newTet, :) = importantYs_Pos(oldTet, :);
-%                 end
-%             end
-%         end
-%         
-%         for numCell = nTet
-%             if ismember(numCell, nonDeadCells)
-%                 Geo.Cells(numCell).Y(ismember(Geo.Cells(numCell).T, newCell.T(newTet, :), 'rows'), :) = newCell.Y(newTet, :);
-%             end
-%         end
-%     end
-    
-    
     %Update the 'new' cell
     Geo.Cells(nodesToCombine(1)) = newCell;
     %Remove the 'old' cell

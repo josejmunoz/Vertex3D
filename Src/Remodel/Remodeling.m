@@ -25,7 +25,7 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
                 if numPair == size(segmentFeatures, 1)
                     Set.NeedToConverge = 1;
                 else
-                    Set.NeedToConverge = 0;
+                    Set.NeedToConverge = 1;
                 end
                 
                 cellNode = segmentFeatures{numPair, 1};
@@ -43,7 +43,7 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
                     %%if sum([Geo.Cells(cellNodes).AliveStatus]) >= 2 %&& ~any(ismember(faceGlobalId, newYgIds))
                     nodesPair = [cellNode ghostNode];
 
-                    [valenceSegment, oldTets] = edgeValence(Geo, nodesPair);
+                    [valenceSegment, oldTets, oldYs] = edgeValence(Geo, nodesPair);
 
                     %% Intercalation
                     switch valenceSegment
@@ -58,7 +58,7 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
                         case 4
                             [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair)] = Flip4N(nodesPair, oldTets, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
                         case 5
-                            [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair)] = Flip5N(nodesPair, oldTets, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                            [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair)] = Flip5N(nodesPair, oldTets, oldYs, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
                         case 6
                             [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair)] = Flip6N(nodesPair, oldTets, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
                         case 7

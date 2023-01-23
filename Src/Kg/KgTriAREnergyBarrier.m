@@ -5,15 +5,11 @@ function [g,K,EnergyB]=KgTriAREnergyBarrier(Geo,Set)
     [g, K] = initializeKg(Geo, Set);
     EnergyB = 0;
     
-    for c=1:Geo.nCells
+    for c = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID]
         if Geo.Remodelling
             if ~ismember(c,Geo.AssembleNodes)
                 continue
             end
-        end
-
-        if isempty(Geo.Cells(c).AliveStatus) || Geo.Cells(c).AliveStatus ~= 1
-            continue
         end
 
         Cell = Geo.Cells(c);

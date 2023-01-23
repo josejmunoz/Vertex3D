@@ -9,7 +9,11 @@ function Geo = Rebuild(Geo, Set)
         for numT = 1:size(Cell.T, 1)
             tet = Cell.T(numT, :);
             DT = delaunayTriangulation(vertcat(Geo.Cells(tet).X));
-            Geo.Cells(cc).T(numT, :) = tet(DT.ConnectivityList);
+            if ~any(ismember(numT, Geo.XgID))
+                Geo.Cells(cc).T(numT, :) = tet;
+            else
+                Geo.Cells(cc).T(numT, :) = tet(DT.ConnectivityList);
+            end
         end
         
         Neigh_nodes = unique(Geo.Cells(cc).T);

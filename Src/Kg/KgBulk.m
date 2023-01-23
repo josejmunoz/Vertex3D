@@ -5,15 +5,11 @@ function [g,K,EnergyBulk]=KgBulk(Geo_0, Geo, Set)
 	EnergyBulk=0; 
 	errorInverted = []; 
  
-	for c=1:Geo.nCells 
+	for c = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID]
         if Geo.Remodelling
             if ~ismember(c,Geo.AssembleNodes)
                 continue
             end
-        end
-        
-        if isempty(Geo.Cells(c).AliveStatus) || Geo.Cells(c).AliveStatus ~= 1
-            continue
         end
         
 		ge=zeros(size(g, 1), 1); 

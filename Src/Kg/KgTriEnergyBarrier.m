@@ -4,7 +4,7 @@ function [g,K,EnergyB]=KgTriEnergyBarrier(Geo,Set)
 
 	[g, K] = initializeKg(Geo, Set);
 	EnergyB = 0;
-	for c=1:Geo.nCells
+	for c=[Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID]
 		if Geo.Remodelling
 			if ~ismember(c,Geo.AssembleNodes)
         		continue

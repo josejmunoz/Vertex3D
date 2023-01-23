@@ -7,9 +7,9 @@ function [g,K,EnergyS]=KgSurfaceCellBasedAdhesion(Geo, Set)
         		continue
 			end
 		end
-        if Geo.Cells(c).AliveStatus ~= 1
-            continue
-        end
+%         if Geo.Cells(c).AliveStatus ~= 1
+%             continue
+%         end
         
 		Cell  = Geo.Cells(c);
 		Ys    = Geo.Cells(c).Y;

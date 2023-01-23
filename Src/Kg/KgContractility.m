@@ -10,15 +10,12 @@ function [g, K, energy, Geo] = KgContractility(Geo, Set)
     energy = 0;
     %% Loop over Cells 
 	% Analytical residual g and Jacobian K
-	for numCell = [Geo.Cells.ID]
+	for numCell = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID]
         currentCell = Geo.Cells(numCell);
         if Geo.Remodelling
 			if ~ismember(currentCell.ID, Geo.AssembleNodes)
         		continue
 			end
-        end
-        if isempty(currentCell.AliveStatus) || currentCell.AliveStatus ~= 1
-            continue
         end
         
         ge=sparse(size(g, 1), 1);

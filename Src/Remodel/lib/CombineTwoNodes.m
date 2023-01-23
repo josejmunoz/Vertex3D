@@ -11,7 +11,7 @@ function [Geo, Tnew, Ynew, removedTets, replacedTets] = CombineTwoNodes(Geo, Set
     oldYs = Geo.Cells(nodesToCombine(2)).Y;
     oldTs = Geo.Cells(nodesToCombine(2)).T;
     
-    newCell.X = mean(vertcat(CellsToCombine.X));
+    %newCell.X = mean(vertcat(CellsToCombine.X));
     newCell.T = vertcat(CellsToCombine.T);
     newCell.Y = vertcat(CellsToCombine.Y);
     

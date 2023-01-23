@@ -10,6 +10,8 @@ if Set.Ablation == true && Set.TInitAblation <= t
         Geo.Cells(uniqueDebrisCell).InternalLambda = Set.lambdaSFactor_Debris;
         Geo.Cells(uniqueDebrisCell).SubstrateLambda = Set.lambdaSFactor_Debris;
         
+        Geo.Cells(uniqueDebrisCell).X = mean(vertcat(Geo.Cells(Geo.cellsToAblate).X));
+        
         remainingDebrisCells = setdiff(Geo.cellsToAblate, uniqueDebrisCell);
         for debrisCell = remainingDebrisCells
             [Geo] = CombineTwoNodes(Geo, Set, [uniqueDebrisCell debrisCell]);

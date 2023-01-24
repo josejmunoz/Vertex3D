@@ -28,6 +28,8 @@ function Geo = Rebuild(Geo, Set)
             if oldFaceExists
                 previousFace = ceil(previousFace/2);
                 oldFaceCentre = oldGeo.Cells(cc).Faces(previousFace).Centre;
+            else
+                oldFaceCentre = [];
             end
             
 			Geo.Cells(cc).Faces(j) = BuildFace(cc, cj, face_ids, Geo.nCells, Geo.Cells(cc), Geo.XgID, Set, Geo.XgTop, Geo.XgBottom, oldFaceCentre);            

@@ -25,18 +25,12 @@ function Geo = Rebuild(Geo, Set)
             
             [oldFaceExists, previousFace] = ismember(cj, [oldGeo.Cells(cc).Faces.ij]);
             
-			Geo.Cells(cc).Faces(j) = BuildFace(cc, cj, face_ids, Geo.nCells, Geo.Cells(cc), Geo.XgID, Set, Geo.XgTop, Geo.XgBottom);
-
-            newFaceCentre = BuildFaceCentre(ij, Geo.nCells, Geo.Cells(cc).X, Geo.Cells(cc).Y(face_ids,:), Set.f, isequal(Set.InputGeo, 'Bubbles'));
-            
             if oldFaceExists
                 previousFace = ceil(previousFace/2);
                 oldFaceCentre = oldGeo.Cells(cc).Faces(previousFace).Centre;
-                
-                newFaceCentre = Set.contributionOldFaceCentre * oldFaceCentre + (1 - Set.contributionOldFaceCentre) * newFaceCentre;
             end
             
-            Geo.Cells(cc).Faces(j).Centre = newFaceCentre;
+			Geo.Cells(cc).Faces(j) = BuildFace(cc, cj, face_ids, Geo.nCells, Geo.Cells(cc), Geo.XgID, Set, Geo.XgTop, Geo.XgBottom, oldFaceCentre);            
         end
         Geo.Cells(cc).Faces = Geo.Cells(cc).Faces(1:length(Neigh_nodes));
         Geo.Cells(cc).Area  = ComputeCellArea(Geo.Cells(cc));

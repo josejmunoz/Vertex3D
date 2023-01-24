@@ -10,6 +10,8 @@ if Set.Ablation == true && Set.TInitAblation <= t
         Geo.Cells(uniqueDebrisCell).InternalLambda = Set.lambdaSFactor_Debris;
         Geo.Cells(uniqueDebrisCell).SubstrateLambda = Set.lambdaSFactor_Debris;
         
+        Geo_n.Cells(uniqueDebrisCell).X = mean(vertcat(Geo.Cells(Geo.cellsToAblate).X));
+        Geo_0.Cells(uniqueDebrisCell).X = mean(vertcat(Geo_0.Cells(Geo.cellsToAblate).X));
         Geo.Cells(uniqueDebrisCell).X = mean(vertcat(Geo.Cells(Geo.cellsToAblate).X));
         
         remainingDebrisCells = setdiff(Geo.cellsToAblate, uniqueDebrisCell);
@@ -18,7 +20,8 @@ if Set.Ablation == true && Set.TInitAblation <= t
             [Geo_n] = CombineTwoNodes(Geo_n, Set, [uniqueDebrisCell debrisCell]);
             [Geo_0] = CombineTwoNodes(Geo_0, Set, [uniqueDebrisCell debrisCell]);
         end
-        
+        oldContributionOldFaceCentre = Set.contributionOldFaceCentre;
+        Set.contributionOldFaceCentre = 0;
         Geo   = Rebuild(Geo, Set);
         Geo   = BuildGlobalIds(Geo);
         Geo   = UpdateMeasures(Geo);
@@ -30,15 +33,15 @@ if Set.Ablation == true && Set.TInitAblation <= t
         Geo_0 = Rebuild(Geo_0, Set);
         Geo_0 = BuildGlobalIds(Geo_0);
         
-        Geo.cellsToAblate = [];
+        PostProcessingVTK(Geo, Geo_0, Set, numStep)
         
+        Geo.cellsToAblate = [];
+        Set.contributionOldFaceCentre = oldContributionOldFaceCentre;
         if Set.Substrate == 1
             Dofs = GetDOFsSubstrate(Geo, Set);
         else
             Dofs = GetDOFs(Geo, Set);
         end
-        
-        PostProcessingVTK(Geo, Geo_0, Set, numStep)
     end
 end
 end

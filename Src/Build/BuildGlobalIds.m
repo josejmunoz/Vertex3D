@@ -31,20 +31,29 @@ function Geo = BuildGlobalIds(Geo)
 		for cj = jCells
 			ij = [ci, cj];
 			CellJ = Geo.Cells(cj);
-			face_ids_i	= sum(ismember(Cell.T,ij),2)==2;
-			face_ids_j	= sum(ismember(CellJ.T,ij),2)==2;
+			face_ids_i	= find(sum(ismember(Cell.T,ij),2)==2);
+			face_ids_j	= find(sum(ismember(CellJ.T,ij),2)==2);
+            
+            tets_i = Cell.T(face_ids_i, :);
+            tets_j = CellJ.T(face_ids_j, :);
+            
+            [~, ids] = ismember(sort(tets_i, 2), sort(tets_j, 2), 'rows');
+            face_ids_i = face_ids_i(ids);
+            
 			gIds(face_ids_i) = CellJ.globalIds(face_ids_j);
-
-            for f = 1:length(Cell.Faces)
-                Face = Cell.Faces(f);
-				% Find the Face struct being checked
-                if sum(ismember(Face.ij, ij),2) == 2
-                    for f2 = 1:length(CellJ.Faces)
-                        FaceJ = CellJ.Faces(f2);
-						% Find the Face struct on the opposite Cell (FaceJ)
-                        if sum(ismember(FaceJ.ij, ij),2) == 2
-							% Substitute its id
-                            gIdsf(f) = FaceJ.globalIds;
+            
+            if any(face_ids_j)
+                for f = 1:length(Cell.Faces)
+                    Face = Cell.Faces(f);
+                    % Find the Face struct being checked
+                    if all(ismember(Face.ij, ij))
+                        for f2 = 1:length(CellJ.Faces)
+                            FaceJ = CellJ.Faces(f2);
+                            % Find the Face struct on the opposite Cell (FaceJ)
+                            if all(ismember(FaceJ.ij, ij))
+                                % Substitute its id
+                                gIdsf(f) = FaceJ.globalIds;
+                            end
                         end
                     end
                 end

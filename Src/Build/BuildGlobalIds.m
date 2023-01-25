@@ -13,11 +13,10 @@ function Geo = BuildGlobalIds(Geo)
 	%   Geo : Completed Geo struct										  
 	%   Set : User input set struct with added default fields             
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    nonDeadCells = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID];
 
 	gIdsTot = 1;
     gIdsTotf = 1;
-    nonDeadCells = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID];
-    
     for ci = nonDeadCells
 		Cell = Geo.Cells(ci);
 		% Define two arrays of zeros, for vertices and face centers, 
@@ -27,33 +26,25 @@ function Geo = BuildGlobalIds(Geo)
 		% completing all iterations are the new globalIds
 		gIds  = zeros(length(Cell.Y), 1);
         gIdsf = zeros(length(Cell.Faces), 1);
-        jCells = intersect(nonDeadCells, 1:ci-1);
-		for cj = jCells
+		for cj = 1:ci-1 
 			ij = [ci, cj];
 			CellJ = Geo.Cells(cj);
-			face_ids_i	= find(sum(ismember(Cell.T,ij),2)==2);
-			face_ids_j	= find(sum(ismember(CellJ.T,ij),2)==2);
+			face_ids_i	= sum(ismember(Cell.T,ij),2)==2;
             
-            tets_i = Cell.T(face_ids_i, :);
-            tets_j = CellJ.T(face_ids_j, :);
+            for numId = find(face_ids_i)'
+                gIds(numId) = CellJ.globalIds(ismember(sort(CellJ.T, 2), sort(Cell.T(numId, :), 2), 'rows'));
+            end
             
-            [~, ids] = ismember(sort(tets_i, 2), sort(tets_j, 2), 'rows');
-            face_ids_i = face_ids_i(ids);
-            
-			gIds(face_ids_i) = CellJ.globalIds(face_ids_j);
-            
-            if any(face_ids_j)
-                for f = 1:length(Cell.Faces)
-                    Face = Cell.Faces(f);
-                    % Find the Face struct being checked
-                    if all(ismember(Face.ij, ij))
-                        for f2 = 1:length(CellJ.Faces)
-                            FaceJ = CellJ.Faces(f2);
-                            % Find the Face struct on the opposite Cell (FaceJ)
-                            if all(ismember(FaceJ.ij, ij))
-                                % Substitute its id
-                                gIdsf(f) = FaceJ.globalIds;
-                            end
+            for f = 1:length(Cell.Faces)
+                Face = Cell.Faces(f);
+				% Find the Face struct being checked
+                if sum(ismember(Face.ij, ij),2) == 2
+                    for f2 = 1:length(CellJ.Faces)
+                        FaceJ = CellJ.Faces(f2);
+						% Find the Face struct on the opposite Cell (FaceJ)
+                        if sum(ismember(FaceJ.ij, ij),2) == 2
+							% Substitute its id
+                            gIdsf(f) = FaceJ.globalIds;
                         end
                     end
                 end
@@ -79,7 +70,7 @@ function Geo = BuildGlobalIds(Geo)
     Geo.numY = gIdsTot - 1;
 	% Face Centres ids are put after all the vertices ids. Therefore we 
 	% need to add the total number of vertices
-    for c = nonDeadCells
+    for c = 1:Geo.nCells
         for f = 1:length(Geo.Cells(c).Faces)
             Geo.Cells(c).Faces(f).globalIds = Geo.Cells(c).Faces(f).globalIds + Geo.numY;
         end
@@ -89,8 +80,7 @@ function Geo = BuildGlobalIds(Geo)
 	% Nodal ids are put after all the vertices ids and the Face Centres Ids
 	% Therefore we need to add the total number of vertices and the total 
 	% number of faces.
-    for c = nonDeadCells
+    for c = 1:Geo.nCells
 		Geo.Cells(c).cglobalIds = c + Geo.numY + Geo.numF;
     end
-    Geo.nCells = Geo.nCells;
 end

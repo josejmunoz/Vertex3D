@@ -63,20 +63,23 @@ function [Tris] = BuildEdges(Tets, FaceIds, FaceCentre, FaceInterfaceType, X, Ys
 	%% Vertices ordering
 	% The clockwise ordering might be incorrect for some cases, which need
 	% reordering.
-    Order=0;
+    Order=zeros(1, length(surf_ids));
     for iii=1:length(surf_ids)
 	    if iii==length(surf_ids)
 		    v1=Ys(surf_ids(iii),:)-FaceCentre;
 		    v2=Ys(surf_ids(1),:)-FaceCentre;
-		    Order=Order+dot(cross(v1,v2),FaceCentre-X)/length(surf_ids);
+		    Order(iii)=dot(cross(v1,v2),FaceCentre-X)/length(surf_ids);
 	    else
 		    v1=Ys(surf_ids(iii),:)-FaceCentre;
 		    v2=Ys(surf_ids(iii+1),:)-FaceCentre;
-		    Order=Order+dot(cross(v1,v2),FaceCentre-X)/length(surf_ids);
+		    Order(iii)=dot(cross(v1,v2),FaceCentre-X)/length(surf_ids);
 	    end
     end
-	if Order<0 
+	if all(Order<0) 
 	    surf_ids=flip(surf_ids);
+%     elseif any(Order<0)
+%         disp('possible error')
+%         surf_ids(Order < 0)=flip(surf_ids(Order < 0));
     end
     
 	%% Build edges and identify the ones shared by different cells

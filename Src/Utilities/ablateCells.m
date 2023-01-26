@@ -3,6 +3,7 @@ function [Geo, Geo_n, Geo_0, Dofs] = ablateCells(Geo, Geo_n, Geo_0, Dofs, Set, t
 %   Detailed explanation goes here
 if Set.Ablation == true && Set.TInitAblation <= t
     if isempty(Geo.cellsToAblate) == 0
+        oldGeo = Geo;
         Geo.log = sprintf('%s ---- Performing ablation\n', Geo.log);
         uniqueDebrisCell = Geo.cellsToAblate(1);
         Geo.Cells(uniqueDebrisCell).AliveStatus = 0;
@@ -22,6 +23,8 @@ if Set.Ablation == true && Set.TInitAblation <= t
         end
         oldContributionOldFaceCentre = Set.contributionOldFaceCentre;
         Set.contributionOldFaceCentre = 0;
+        oldContributionYs = Set.contributionOldYs;
+        Set.contributionOldYs = 0;
         Geo   = Rebuild(Geo, Set);
         Geo   = BuildGlobalIds(Geo);
         Geo   = UpdateMeasures(Geo);
@@ -37,6 +40,7 @@ if Set.Ablation == true && Set.TInitAblation <= t
         
         Geo.cellsToAblate = [];
         Set.contributionOldFaceCentre = oldContributionOldFaceCentre;
+        Set.contributionOldYs = oldContributionYs;
         if Set.Substrate == 1
             Dofs = GetDOFsSubstrate(Geo, Set);
         else

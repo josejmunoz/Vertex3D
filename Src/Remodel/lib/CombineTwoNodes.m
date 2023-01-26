@@ -14,6 +14,7 @@ function [Geo, Tnew, Ynew, removedTets, replacedTets] = CombineTwoNodes(Geo, Set
     %newCell.X = mean(vertcat(CellsToCombine.X));
     newCell.T = vertcat(CellsToCombine.T);
     newCell.Y = vertcat(CellsToCombine.Y);
+    newCell.globalIds = vertcat(CellsToCombine.globalIds);
     
     %Replace old for new ID
     replacingTets = ismember(newCell.T, CellsToCombine(2).ID);
@@ -24,28 +25,33 @@ function [Geo, Tnew, Ynew, removedTets, replacedTets] = CombineTwoNodes(Geo, Set
     removedTets = newCell.T(setdiff(1:size(newCell.T, 1), nonRepeatIDs), :);
     newCell.Y = newCell.Y(nonRepeatIDs, :);
     newCell.T = newCell.T(nonRepeatIDs, :);
+    newCell.globalIds = newCell.globalIds(nonRepeatIDs, :);
     % Removing Tets with the new cell twice or more within the Tet
+    newCell.globalIds(sum(ismember(newCell.T, nodesToCombine(1)), 2) > 1, :) = [];
     newCell.Y(sum(ismember(newCell.T, nodesToCombine(1)), 2) > 1, :) = [];
     newCell.T(sum(ismember(newCell.T, nodesToCombine(1)), 2) > 1, :) = [];
     
     for numCell = [Geo.Cells.ID]
-        currentTets = Geo.Cells(numCell).T;
-        if any(any(ismember(currentTets, [nodesToCombine(2) nodesToCombine(1)])))
-            %% Replace 'old' cell by 'new' cell
-            replacingTets = ismember(currentTets, nodesToCombine(2));
-            Geo.Cells(numCell).T(replacingTets) = nodesToCombine(1);
+        if ~ismember(numCell, nodesToCombine)
             currentTets = Geo.Cells(numCell).T;
-            
-            %% Remove repeated Tets
-            % IDs are not ordered in the same way for different cells
-            % but same Tet
-            checkRepeatedTets = ismember(sort(currentTets, 2), sort(removedTets, 2), 'rows');
-            checkRepatedCells = sum(ismember(currentTets, nodesToCombine(1)), 2) > 1;
-            Geo.Cells(numCell).T(checkRepeatedTets | checkRepatedCells, :) = [];
-            if ~ismember(numCell, Geo.XgID)
-                Geo.Cells(numCell).Y(checkRepeatedTets | checkRepatedCells, :) = [];
+            if any(any(ismember(currentTets, [nodesToCombine(2) nodesToCombine(1)])))
+                %% Replace 'old' cell by 'new' cell
+                replacingTets = ismember(currentTets, nodesToCombine(2));
+                Geo.Cells(numCell).T(replacingTets) = nodesToCombine(1);
+                currentTets = Geo.Cells(numCell).T;
+                
+                %% Remove repeated Tets
+                % IDs are not ordered in the same way for different cells
+                % but same Tet
+                checkRepeatedTets = ismember(sort(currentTets, 2), sort(removedTets, 2), 'rows');
+                checkRepatedCells = sum(ismember(currentTets, nodesToCombine(1)), 2) > 1;
+                Geo.Cells(numCell).T(checkRepeatedTets | checkRepatedCells, :) = [];
+                if ~ismember(numCell, Geo.XgID)
+                    Geo.Cells(numCell).Y(checkRepeatedTets | checkRepatedCells, :) = [];
+                    Geo.Cells(numCell).globalIds(checkRepeatedTets | checkRepatedCells, :) = [];
+                end
+                replacingTets(checkRepeatedTets | checkRepatedCells, :) = [];
             end
-            replacingTets(checkRepeatedTets | checkRepatedCells, :) = [];
         end
     end
     

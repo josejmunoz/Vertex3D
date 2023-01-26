@@ -18,7 +18,6 @@ function [Geo, g,K,Energy, Set, gr, dyr, dy] = NewtonRaphson(Geo_0, Geo_n, Geo, 
     auxgr(1)=gr;
 	ig = 1;
 	while (gr>Set.tol || dyr>Set.tol) && Set.iter<Set.MaxIter
-
     	dy(dof)=-K(dof,dof)\g(dof);
     	alpha = LineSearch(Geo_0, Geo_n, Geo, Dofs, Set, g, dy);
     	%% Update mechanical nodes

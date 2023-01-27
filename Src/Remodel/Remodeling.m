@@ -102,27 +102,27 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
                 disp('error');
             end
             
+            cellsConnected = intersect(verticesToChange(1, :), verticesToChange(2, :));
+            
             verticesToChange(refTet, :) = [];
             
-            cellsConnected = intersect(verticesToChange(1, :), verticesToChange(2, :));
             middleVertexToChange = allT_filtered(sum(ismember(allT_filtered, cellsConnected), 2) == 2 & sum(ismember(allT_filtered, Geo.XgID), 2) == 2, :);
             middleVertexToChange = unique(sort(middleVertexToChange, 2), 'rows');
             
             verticesToChange = vertcat(verticesToChange, middleVertexToChange);
             
             for tetToCheck = verticesToChange'
-                for nodesInTet = tetToCheck
-                    newPoint = Geo.Cells(nodesInTet).Y(ismember(sort(Geo.Cells(nodesInTet).T, 2), tetToCheck, 'rows'), :);
-                    
-                    vectorRefNew = refPoint - newPoint;
-                    
-                    Geo.Cells(nodesInTet).Y(ismember(sort(Geo.Cells(nodesInTet).T, 2), tetToCheck, 'rows'), :) = refPoint - vectorRefNew/20;
+                for nodeInTet = tetToCheck'
+                    if ~ismember(nodeInTet, Geo.XgID)
+                        newPoint = Geo.Cells(nodeInTet).Y(ismember(sort(Geo.Cells(nodeInTet).T, 2), tetToCheck', 'rows'), :);
+
+                        vectorRefNew = refPoint - newPoint;
+
+                        Geo.Cells(nodeInTet).Y(ismember(sort(Geo.Cells(nodeInTet).T, 2), tetToCheck', 'rows'), :) = refPoint - vectorRefNew/20;
+                    end
                 end
-                tetToCheck
             end
-            
-            %%
-            
+            PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1);
             
             % Also the vertex middle Scutoid vertex
             

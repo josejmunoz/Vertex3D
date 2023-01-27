@@ -54,7 +54,7 @@ Geo.log = sprintf('%s =>> %s-Flip: %i %i.\n', Geo.log, flipName, segmentToChange
 % end
 
 if CheckTris(Geo) %%&& ~CheckConvexity(Tnew,Geo_backup)
-    PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+2)
+    PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1)
     Dofs = GetDOFs(Geo, Set);
     [Dofs, Geo]  = GetRemodelDOFs(Tnew, Dofs, Geo);
     if Set.NeedToConverge
@@ -73,7 +73,7 @@ if CheckTris(Geo) %%&& ~CheckConvexity(Tnew,Geo_backup)
     Geo   = UpdateMeasures(Geo);
     Geo_n = UpdateMeasures(Geo_n);
     
-    PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+2)
+    PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1)
     
     hasConverged = 1;
 else

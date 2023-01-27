@@ -118,10 +118,20 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
 
                         vectorRefNew = refPoint - newPoint;
 
-                        Geo.Cells(nodeInTet).Y(ismember(sort(Geo.Cells(nodeInTet).T, 2), tetToCheck', 'rows'), :) = refPoint - vectorRefNew/20;
+                        Geo.Cells(nodeInTet).Y(ismember(sort(Geo.Cells(nodeInTet).T, 2), tetToCheck', 'rows'), :) = refPoint - vectorRefNew/10;
+                        Geo_n.Cells(nodeInTet).Y(ismember(sort(Geo.Cells(nodeInTet).T, 2), tetToCheck', 'rows'), :) = Geo.Cells(nodeInTet).Y(ismember(sort(Geo.Cells(nodeInTet).T, 2), tetToCheck', 'rows'), :);
                     end
                 end
             end
+            
+            %%% SHOULD I MOVE THE GHOST NODES ALSO??? FOR THE FACES TO BE
+            %%% WELL PLACED??
+            Geo   = Rebuild(Geo, Set);
+            Geo   = BuildGlobalIds(Geo);
+            Geo   = UpdateMeasures(Geo);
+            Geo_n = Rebuild(Geo_n, Set);
+            Geo_n = BuildGlobalIds(Geo_n);
+            Geo_n = UpdateMeasures(Geo_n);
             PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1);
             
             % Also the vertex middle Scutoid vertex

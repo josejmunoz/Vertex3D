@@ -35,6 +35,8 @@ if Set.Ablation == true && Set.TInitAblation <= t
         
         Geo_0 = Rebuild(Geo_0, Set);
         Geo_0 = BuildGlobalIds(Geo_0);
+        % Only update the debris cell one
+        Geo_0 = UpdateMeasures(Geo_0, uniqueDebrisCell);
         
         PostProcessingVTK(Geo, Geo_0, Set, numStep)
         

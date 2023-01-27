@@ -1,4 +1,4 @@
-function [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = Flip4N(segmentToChange, oldTets, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds)
+function [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged, Tnew] = Flip4N(segmentToChange, oldTets, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds)
 %FLIP4N Summary of this function goes here
 %   Detailed explanation goes here
 hasConverged = false;

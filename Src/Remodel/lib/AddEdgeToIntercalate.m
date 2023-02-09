@@ -15,6 +15,7 @@ function [segmentFeatures] = AddEdgeToIntercalate(Geo, numCell, segmentFeatures,
             neighbours_2 = {getNodeNeighboursPerDomain(Geo, nodePair_g, nodePair_g)};
             sharedNeighbours = intersect(neighbours_1{1}, neighbours_2{1});
             sharedNeighbours_c = sharedNeighbours(ismember(sharedNeighbours, Geo.XgID) == 0);
+            sharedNeighbours_c(sharedNeighbours_c == neighbourToNumCell) = [];
             if any([Geo.Cells(sharedNeighbours_c).AliveStatus] == 1)
                 cellToIntercalate = sharedNeighbours_c([Geo.Cells(sharedNeighbours_c).AliveStatus] == 1);
             else

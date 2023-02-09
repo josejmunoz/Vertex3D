@@ -125,7 +125,6 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
                         newPoint = Geo.Cells(nodeInTet).Y(ismember(sort(Geo.Cells(nodeInTet).T, 2), tetToCheck', 'rows'), :);
 
                         Geo.Cells(nodeInTet).Y(ismember(sort(Geo.Cells(nodeInTet).T, 2), tetToCheck', 'rows'), :) = refPoint*(1-closeToNewPoint) + newPoint*closeToNewPoint;
-                        %Geo_n.Cells(nodeInTet).Y(ismember(sort(Geo.Cells(nodeInTet).T, 2), tetToCheck', 'rows'), :) = Geo.Cells(nodeInTet).Y(ismember(sort(Geo.Cells(nodeInTet).T, 2), tetToCheck', 'rows'), :);
                     end
                 end
             end
@@ -139,8 +138,7 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
             Geo   = Rebuild(Geo, Set);
             Geo   = BuildGlobalIds(Geo);
             Geo   = UpdateMeasures(Geo);
-            Geo_n = Rebuild(Geo_n, Set);
-            Geo_n = BuildGlobalIds(Geo_n);
+            Geo_n = Geo;
             Geo_0 = Rebuild(Geo_0, Set);
             Geo_0 = BuildGlobalIds(Geo_0);    
             PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1);
@@ -168,7 +166,6 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
 
             newYgIds = unique([newYgIds; Geo.AssemblegIds]);
             Geo   = UpdateMeasures(Geo);
-            Geo_n = UpdateMeasures(Geo_n);
 
             PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+2)
 

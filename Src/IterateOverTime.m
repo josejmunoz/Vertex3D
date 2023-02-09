@@ -34,7 +34,7 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
         %IMPORTANT: Here it updates: Areas, Volumes, etc... Should be
         %up-to-date
         Geo = UpdateMeasures(Geo);
-        Set = UpdateSet_F(Geo, Geo_0, Set);
+        Set = UpdateSet_F(Geo, Set);
         
         %%  Analise cells
         nonDebris_Features = {};

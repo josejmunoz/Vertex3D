@@ -6,11 +6,6 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
     checkedYgIds = [];
     
     [segmentFeatures_all] = GetTrisToRemodelOrdered(Geo, Set);
-    [g, K, E, Geo, Energies] = KgGlobal(Geo_0, Geo_n, Geo, Set);
-    Energies
-    vol0 = [Geo.Cells([Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID]).Vol0];
-    vol = [Geo.Cells([Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID]).Vol];
-    sum(vol - vol0)
     
     %% loop ENERGY-dependant
     while ~isempty(segmentFeatures_all)
@@ -143,12 +138,6 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
             Geo_0 = BuildGlobalIds(Geo_0);    
             PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1);
             
-            %%
-            [g, K, E, Geo, Energies] = KgGlobal(Geo_0, Geo_n, Geo, Set);
-            Energies
-            vol0 = [Geo.Cells([Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID]).Vol0];
-            vol = [Geo.Cells([Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID]).Vol];
-            sum(vol - vol0)
             %% 
             Dofs = GetDOFs(Geo, Set);
             [Dofs, Geo]  = GetRemodelDOFs(allTnew, Dofs, Geo);
@@ -170,8 +159,6 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
             PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+2)
 
             hasConverged = 1;
-
-
         end
         
         checkedYgIds(end+1:end+size(segmentFeatures, 1), :) = [segmentFeatures{:, 1}, segmentFeatures{:, 2}];

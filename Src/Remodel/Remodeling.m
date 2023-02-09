@@ -82,6 +82,14 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
                     end
                 end
             end
+
+            Geo   = Rebuild(Geo, Set);
+            Geo   = BuildGlobalIds(Geo);
+            Geo   = UpdateMeasures(Geo);
+            Geo_n = Rebuild(Geo_n, Set);
+            Geo_n = BuildGlobalIds(Geo_n);
+            Geo_0 = Rebuild(Geo_0, Set);
+            Geo_0 = BuildGlobalIds(Geo_0);   
             
             %% Vertices connecting the two intercalating cells should be closer
             allT = vertcat(Geo.Cells.T);
@@ -118,20 +126,50 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
 
                         vectorRefNew = refPoint - newPoint;
 
-                        Geo.Cells(nodeInTet).Y(ismember(sort(Geo.Cells(nodeInTet).T, 2), tetToCheck', 'rows'), :) = refPoint - vectorRefNew/10;
-                        Geo_n.Cells(nodeInTet).Y(ismember(sort(Geo.Cells(nodeInTet).T, 2), tetToCheck', 'rows'), :) = Geo.Cells(nodeInTet).Y(ismember(sort(Geo.Cells(nodeInTet).T, 2), tetToCheck', 'rows'), :);
+                        Geo.Cells(nodeInTet).Y(ismember(sort(Geo.Cells(nodeInTet).T, 2), tetToCheck', 'rows'), :) = refPoint - vectorRefNew/2;
+                        %Geo_n.Cells(nodeInTet).Y(ismember(sort(Geo.Cells(nodeInTet).T, 2), tetToCheck', 'rows'), :) = Geo.Cells(nodeInTet).Y(ismember(sort(Geo.Cells(nodeInTet).T, 2), tetToCheck', 'rows'), :);
                     end
                 end
             end
             
-            %%% SHOULD I MOVE THE GHOST NODES ALSO??? FOR THE FACES TO BE
-            %%% WELL PLACED??
+%             error('continue improving this!');
+%             ghostNodesToUpdate = unique(verticesToChange(:));
+%             ghostNodesToUpdate = ghostNodesToUpdate(ismember(ghostNodesToUpdate, Geo.XgID));
+%             
+%             for ghostNodeToUpdate = ghostNodesToUpdate'
+%                 neighbours = unique(Geo.Cells(ghostNodeToUpdate).T);
+%                 neighbours_Cells = neighbours(~ismember(neighbours, Geo.XgID));
+% 
+%                  newXValue = mean(vertcat(Geo.Cells(neighbours_Cells).X));
+%                  Geo.Cells(ghostNodeToUpdate).X(1:2) = newXValue(1:2);
+%             end
+%             
+%             Geo = BuildXFromY(Geo_n, Geo);
+%             
+%             %%% SHOULD I MOVE THE GHOST NODES ALSO??? FOR THE FACES TO BE
+%             %%% WELL PLACED??
             Geo   = Rebuild(Geo, Set);
             Geo   = BuildGlobalIds(Geo);
             Geo   = UpdateMeasures(Geo);
             Geo_n = Rebuild(Geo_n, Set);
             Geo_n = BuildGlobalIds(Geo_n);
             Geo_n = UpdateMeasures(Geo_n);
+            Geo_0 = Rebuild(Geo_0, Set);
+            Geo_0 = BuildGlobalIds(Geo_0);    
+%             %% Update Geo_0 to be reset the vertices that we have changed averaging with previous Geo_0 and current Geo
+%             percentageGeo = 1 - Set.Reset_PercentageGeo0;
+%             for c=1:Geo.nCells
+%                 if ismember(c, Tnew) && ~isempty(Geo.Cells(c).AliveStatus) && Geo.Cells(c).AliveStatus == 1
+%                     Geo_0.Cells(c).X = Set.Reset_PercentageGeo0 * Geo_0.Cells(c).X + percentageGeo * Geo.Cells(c).X;
+%                     Geo_0.Cells(c).Y = Set.Reset_PercentageGeo0 * Geo_0.Cells(c).Y + percentageGeo * Geo.Cells(c).Y;
+%                     
+%                     for f=1:length(Geo.Cells(c).Faces)
+%                         Geo_0.Cells(c).Faces(f).Centre = Set.Reset_PercentageGeo0 * Geo_0.Cells(c).Faces(f).Centre + percentageGeo * Geo.Cells(c).Faces(f).Centre;
+%                     end
+%                 end
+%             end
+            
+%             Geo_0 = UpdateMeasures(Geo_0);
             PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1);
             
             % Also the vertex middle Scutoid vertex

@@ -35,7 +35,5 @@ function Geo = Rebuild(Geo, Set)
 			Geo.Cells(cc).Faces(j) = BuildFace(cc, cj, face_ids, Geo.nCells, Geo.Cells(cc), Geo.XgID, Set, Geo.XgTop, Geo.XgBottom, oldFaceCentre);            
         end
         Geo.Cells(cc).Faces = Geo.Cells(cc).Faces(1:length(Neigh_nodes));
-        Geo.Cells(cc).Area  = ComputeCellArea(Geo.Cells(cc));
-        Geo.Cells(cc).Vol   = ComputeCellVolume(Geo.Cells(cc));
     end
 end

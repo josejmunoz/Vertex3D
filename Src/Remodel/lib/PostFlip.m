@@ -21,7 +21,6 @@ Geo.log = sprintf('%s =>> %s-Flip: %i %i.\n', Geo.log, flipName, segmentToChange
     
     Geo_n = Rebuild(Geo_n, Set);
     Geo_n = BuildGlobalIds(Geo_n);
-    Geo_n = UpdateMeasures(Geo_n);
     
     Geo_0 = Rebuild(Geo_0, Set);
     Geo_0 = BuildGlobalIds(Geo_0);
@@ -38,8 +37,6 @@ Geo.log = sprintf('%s =>> %s-Flip: %i %i.\n', Geo.log, flipName, segmentToChange
             end
         end
     end
-    
-    Geo_0 = UpdateMeasures(Geo_0);
     
 % catch MException
 %     Geo   = Geo_backup;
@@ -71,7 +68,6 @@ if CheckTris(Geo) %%&& ~CheckConvexity(Tnew,Geo_backup)
     
     newYgIds = unique([newYgIds; Geo.AssemblegIds]);
     Geo   = UpdateMeasures(Geo);
-    Geo_n = UpdateMeasures(Geo_n);
     
     PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1)
     

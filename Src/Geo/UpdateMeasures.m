@@ -1,9 +1,16 @@
 function Geo = UpdateMeasures(Geo, ids)
+%%
+
+%% SHOULD ONLY BE USED WITH GEO, NOT GEO_0 OR GEO_N
+    if isequal(Geo.Cells(Geo.nCells).Vol, [])
+        error('Updating measures with an incorrect Geo');
+    end
+    
     if ~exist('ids', 'var')
         ids = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID];
-        resetLengths = 0;
-    else
         resetLengths = 1;
+    else
+        resetLengths = 0;
     end
 	for c = ids
         if resetLengths

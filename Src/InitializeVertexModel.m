@@ -29,7 +29,16 @@ Geo.Remodelling = false;
 
 t=0; tr=0;
 Geo_0   = Geo;
+% Removing info of unused features from Geo
+[Geo_0.Cells.Vol] = deal([]);
+[Geo_0.Cells.Vol0] = deal([]);
+[Geo_0.Cells.Area] = deal([]);
+[Geo_0.Cells.Area0] = deal([]);
 Geo_n   = Geo;
+[Geo_n.Cells.Vol] = deal([]);
+[Geo_n.Cells.Vol0] = deal([]);
+[Geo_n.Cells.Area] = deal([]);
+[Geo_n.Cells.Area0] = deal([]);
 Geo_b   = Geo;
 numStep = 1; relaxingNu = false;
 EnergiesPerTimeStep = {};

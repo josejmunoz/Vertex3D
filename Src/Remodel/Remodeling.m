@@ -84,6 +84,43 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
                 end
             end 
             
+            cellToWin = segmentFeatures.numCell(1);
+            cellsLoosing = setdiff(cellNodesShared, [cellToWin, segmentFeatures.cellToSplitFrom(1)]);
+            
+            for numCellLoosing = cellsLoosing'
+                nodesPair = [cellNode ghostNode];
+                
+                [valenceSegment, oldTets, oldYs] = edgeValence(Geo, nodesPair);
+                
+                %% Intercalation
+                switch valenceSegment
+                    case 0
+                        break;
+                    case 2 %??
+                        disp('error: valence tet 2')
+                        sprintf('%s error: valence tet 2\n', Geo.log)
+                        %[Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair)] = Flip23(YsToChange, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                        break;
+                    case 3
+                        disp('error: valence tet 3')
+                        sprintf('%s error: valence tet 3\n', Geo.log)
+                        break;
+                        %[Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair)] = Flip32(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                    case 4
+                        [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair), Tnew] = Flip4N(nodesPair, oldTets, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                    case 5
+                        [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair), Tnew] = Flip5N(nodesPair, oldTets, oldYs, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                    case 6
+                        [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair), Tnew] = Flip6N(nodesPair, oldTets, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                    case 7
+                        [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair), Tnew] = Flip7N(nodesPair, oldTets, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                    otherwise
+                        disp('error: valence number greater than expected')
+                        sprintf('%s error: valence number greater than expected\n', Geo.log);
+                        break;
+                end
+            end
+
             %% Vertices connecting the two intercalating cells should be closer
             allT = vertcat(Geo.Cells.T);
             if ismember(ghostNode, Geo.XgBottom)
@@ -112,7 +149,7 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
             
             verticesToChange = vertcat(verticesToChange, middleVertexToChange);
             
-            closeToNewPoint = 0.5;
+            closeToNewPoint = 0.4;
             
             for tetToCheck = verticesToChange'
                 for nodeInTet = tetToCheck'
@@ -124,6 +161,7 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
                 end
             end
             
+            %closeToNewPoint = 0.5;
             % Also the vertex middle Scutoid vertex
             for currentCell = cellNodesShared'
                 middleVertexTet = all(ismember(Geo.Cells(currentCell).T, cellNodesShared), 2);
@@ -141,6 +179,15 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
             %% 
             Dofs = GetDOFs(Geo, Set);
             [Dofs, Geo]  = GetRemodelDOFs(allTnew, Dofs, Geo);
+            
+            [g, K, E, ~, Energies] = KgGlobal(Geo_0, Geo_n, Geo, Set);
+            dyr=norm(-K(Dofs.Remodel,Dofs.Remodel)\g(Dofs.Remodel))
+            gr=norm(g(Dofs.Remodel))
+            [g, K, E, ~, Energies_backup] = KgGlobal(Geo_0_backup, Geo_n_backup, Geo_backup, Set);
+            dyr=norm(-K(Dofs.Remodel,Dofs.Remodel)\g(Dofs.Remodel))
+            gr=norm(g(Dofs.Remodel))
+            Energies_backup
+            Energies
             [Geo, Set, DidNotConverge] = SolveRemodelingStep(Geo_0, Geo_n, Geo, Dofs, Set);
             if DidNotConverge
                 % Go back to initial state

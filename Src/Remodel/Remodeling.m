@@ -127,7 +127,7 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
             % Also the vertex middle Scutoid vertex
             for currentCell = cellNodesShared'
                 middleVertexTet = all(ismember(Geo.Cells(currentCell).T, cellNodesShared), 2);
-                Geo.Cells(currentCell).Y(middleVertexTet, 3) = refPoint(3)*(1-closeToNewPoint) + Geo.Cells(currentCell).Y(middleVertexTet, 3)*(closeToNewPoint);
+                Geo.Cells(currentCell).Y(middleVertexTet, :) = refPoint*(1-closeToNewPoint) + Geo.Cells(currentCell).Y(middleVertexTet, :)*(closeToNewPoint);
             end
             
             Geo   = Rebuild(Geo, Set);

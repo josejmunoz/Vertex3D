@@ -66,7 +66,7 @@ function Set = SetDefault(Set)
     %% =========================== Remodelling ============================
     DSet.Remodelling				= true;
     DSet.RemodelTol					= 0;
-    DSet.contributionOldYs          = 0.4;
+    DSet.contributionOldYs          = 0.2;
     DSet.RemodelStiffness           = 0.9;
     DSet.Reset_PercentageGeo0       = 0.3; 
     %% ============================ Solution ==============================
@@ -96,7 +96,7 @@ function Set = SetDefault(Set)
 	DSet = Set;
 	%% ========================= Derived variables ========================
     DSet.Nincr                      = DSet.tend*2;
-    DSet.RemodelingFrequency        = (DSet.tend/DSet.Nincr)*2;
+    DSet.RemodelingFrequency        = (DSet.tend/DSet.Nincr);
     DSet.lambdaS3					= DSet.lambdaS2;
     DSet.lambdaS4					= DSet.lambdaS2;
     DSet.SubstrateZ                 = -DSet.CellHeight/2;
@@ -107,12 +107,12 @@ function Set = SetDefault(Set)
 	DSet.dt0                        = DSet.tend/DSet.Nincr;
 	DSet.dt                         = DSet.dt0;
 	DSet.MaxIter0					= DSet.MaxIter;
-    DSet.contributionOldFaceCentre  = DSet.contributionOldYs;
+    DSet.contributionOldFaceCentre  = 0;
     %% TODO: ADD IF IN CASE IT IS USED: E.G., Set.InPlaneElasticity
     DSet.OutputFolder=strcat('Result/Remodelling_', Set.InputGeo, '_Cells_', num2str(Set.TotalCells), ...
         '_lVol_', num2str(Set.lambdaV), '_muBulk_', num2str(Set.mu_bulk), ...
         '_lBulk_', num2str(Set.lambda_bulk), '_kSubs_', num2str(Set.kSubstrate), ...
-        '_lt_', num2str(Set.cLineTension), '_pString_', num2str(Set.purseStringStrength),'_RemTol_', num2str(Set.RemodelTol), ...
+        '_lt_', num2str(Set.cLineTension), '_pString_', num2str(Set.purseStringStrength),'_deformableL_', num2str(Set.lambdaB), ...
         '_RemStiff_', num2str(Set.RemodelStiffness), '_shapeElastic_', num2str(Set.Reset_PercentageGeo0), ...
         '_lS1_', num2str(Set.lambdaS1), '_lS2_', num2str(Set.lambdaS2), ...
         '_lS3_', num2str(Set.lambdaS3));

@@ -5,9 +5,22 @@ function [Ynew] = RecalculateYsFromPrevious(Geo, Tnew, mainNodesToConnect, Set)
 allTs = vertcat(Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).T);
 allYs = vertcat(Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).Y);
 Ynew = [];
+
+possibleDebrisCells = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).AliveStatus] == 0;
+if any(possibleDebrisCells)
+    debrisCells = Geo.Cells(possibleDebrisCells).ID;
+else
+    debrisCells = -1;
+end
 for numTet = 1:size(Tnew, 1)
     mainNode_current = mainNodesToConnect(ismember(mainNodesToConnect, Tnew(numTet, :)));
     YnewlyComputed = ComputeY(Geo, Tnew(numTet, :), Geo.Cells(mainNode_current(1)).X, Set);
+    
+    if sum(ismember(Tnew(numTet, :), Geo.XgID)) < 3 && any(ismember(Tnew(numTet, :), debrisCells))
+        Set.contributionOldYs = 1;
+    else
+        Set.contributionOldYs = 0;
+    end
     
     if all(~ismember(Tnew(numTet, :), [Geo.XgBottom, Geo.XgTop]))
         Ynew(end+1, :) = YnewlyComputed;
@@ -23,7 +36,7 @@ for numTet = 1:size(Tnew, 1)
         if any(tetsToUse)
             Ynew(end+1, :) = Set.contributionOldYs * mean(vertcat(allYs(tetsToUse, :)), 1) + (1-Set.contributionOldYs) * YnewlyComputed;
         else
-            contributionOldYs_2 = Set.contributionOldYs - (Set.contributionOldYs/5);
+            contributionOldYs_2 = Set.contributionOldYs - (Set.contributionOldYs);
             tetsToUse = sum(ismember(allTs, Tnew(numTet, :)), 2) > 1;
 
             if any(ismember(Tnew(numTet, :), Geo.XgTop))

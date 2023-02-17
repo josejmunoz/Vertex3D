@@ -24,10 +24,11 @@ function [segmentFeatures] = AddEdgeToIntercalate(Geo, numCell, segmentFeatures,
             end
             cFace = getFacesFromNode(Geo, [numCell nodePair_g]);
             cFace = cFace{1};
+            numSharedNeighbours = length(sharedNeighbours);
             sharedNeighbours = {sharedNeighbours};
             faceGlobalId = cFace.globalIds;
             cellToSplitFrom = neighbourToNumCell;
-            segmentFeatures(end+1, :) = table(numCell, nodePair_g, cellToIntercalate, cellToSplitFrom, edgeLength, sharedNeighbours, faceGlobalId, neighbours_1, neighbours_2);
+            segmentFeatures(end+1, :) = table(numCell, nodePair_g, cellToIntercalate, cellToSplitFrom, edgeLength, numSharedNeighbours, sharedNeighbours, faceGlobalId, neighbours_1, neighbours_2);
 %             %% Now numCell should receive a tet from cellToIntercalate
 %             neighbours_2 = {getNodeNeighboursPerDomain(Geo, cellToIntercalate, nodePair_g)};
 %             sharedNeighbours = intersect(sharedNeighbours{1}, neighbours_2{1});

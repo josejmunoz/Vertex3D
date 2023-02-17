@@ -59,9 +59,40 @@ if length(Xs_gConnectedNodes) == length(Xs_gUnconnectedNodes) && length(Xs_cConn
         disp('Need to check this');
         Tnew = [];
     end
-elseif length(Xs_cConnectedNodes) == length(Xs_c) 
-    disp('Need to check this');
-    Tnew = [];
+elseif length(Xs_cConnectedNodes) == length(Xs_c) && length(Xs_gConnectedNodes) == 1 
+    Xs_cToDisconnect = XsToDisconnect(~ismember(XsToDisconnect, ghostNodesWithoutDebris));
+    Xs_gToDisconnect = XsToDisconnect(ismember(XsToDisconnect, ghostNodesWithoutDebris));
+    
+    remainingCells = setdiff(Xs_c, Xs_cToDisconnect);
+    remainingGhost = setdiff(Xs_g, Xs_gToDisconnect);
+    
+    XsPos(3) = Xs_gToDisconnect;
+    XsPos(7) = Xs_cToDisconnect;
+    
+    XsPos(6) = remainingCells(1);
+    XsPos(8) = remainingCells(2);
+    
+    XsPos(5) = intersect(oldTets(any(ismember(oldTets, XsPos(6)), 2), :), remainingGhost);
+    XsPos(2) = intersect(oldTets(any(ismember(oldTets, XsPos(8)), 2), :), remainingGhost);
+    
+    XsPos(1) = setdiff(oldTets(any(ismember(oldTets, XsPos(2)), 2), :), XsPos);
+    XsPos(4) = setdiff(oldTets(any(ismember(oldTets, XsPos(5)), 2), :), XsPos);
+    
+%     Tnew = [XsPos(1) XsPos(2) XsPos(3) XsPos(8); ...
+%         XsPos(1) XsPos(4) XsPos(3) XsPos(6); ...
+%         XsPos(5) XsPos(4) XsPos(3) XsPos(6); ...
+%         XsPos(7) XsPos(8) XsPos(1) XsPos(6); ...
+%         XsPos(1) XsPos(8) XsPos(3) XsPos(6)];
+    
+    %% Option 2
+    Tnew = [XsPos(5) XsPos(4) XsPos(3) XsPos(6); ...
+        XsPos(1) XsPos(4) XsPos(2) XsPos(7); ...
+        XsPos(8) XsPos(4) XsPos(2) XsPos(7); ...
+        XsPos(3) XsPos(4) XsPos(6) XsPos(8); ...
+        XsPos(2) XsPos(3) XsPos(4) XsPos(8); ...
+        XsPos(7) XsPos(8) XsPos(4) XsPos(6);];
+    
+    Tnew
 else
     disp('Need to check this');
     Tnew = [];

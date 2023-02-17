@@ -14,7 +14,7 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
         segmentFeatures = segmentFeatures_all{1};
         [~, ids] = unique(segmentFeatures(:, 1:2), 'rows');
         segmentFeatures = segmentFeatures(ids, :);
-        segmentFeatures = sortrows(sortrows(segmentFeatures, 3, 'descend'), 4);
+        segmentFeatures = sortrows(segmentFeatures, 6);
         gNodeNeighbours = {};
         for numRow = 1:size(segmentFeatures, 1)
             gNodeNeighbours{numRow} = getNodeNeighbours(Geo, segmentFeatures{numRow, 2});
@@ -39,39 +39,58 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
                     % If the shared nodes are all ghost nodes, we won't remodel
 
                     %%if sum([Geo.Cells(cellNodes).AliveStatus]) >= 2 %&& ~any(ismember(faceGlobalId, newYgIds))
-                    nodesPair = [cellNode ghostNode];
-
-                    [valenceSegment, oldTets, oldYs] = edgeValence(Geo, nodesPair);
-
-                    %% Intercalation
-                    switch valenceSegment
-                        case 0
-                            break;
-                        case 2 %??
-                            disp('error: valence tet 2')
-                            sprintf('%s error: valence tet 2\n', Geo.log)
-                            %[Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair)] = Flip23(YsToChange, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                            break;
-                        case 3
-                            disp('error: valence tet 3')
-                            sprintf('%s error: valence tet 3\n', Geo.log)
-                            break;
-                            %[Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair)] = Flip32(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                        case 4
-                            [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair), Tnew] = Flip4N(nodesPair, oldTets, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                        case 5
-                            [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair), Tnew] = Flip5N(nodesPair, oldTets, oldYs, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                        case 6
-                            [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair), Tnew] = Flip6N(nodesPair, oldTets, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                        case 7
-                            [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair), Tnew] = Flip7N(nodesPair, oldTets, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                        otherwise
-                            disp('error: valence number greater than expected')
-                            sprintf('%s error: valence number greater than expected\n', Geo.log);
-                            break;
+                    nodesPairs = [cellNode ghostNode];
+                    [~, oldTets, ~] = edgeValence(Geo, nodesPairs);
+                    
+                    %% Here cellToIntercalateWith will win 1 node. 
+                    % We have to remove a node from 'cellToIntercalateWith' 
+                    % and give it to 'cellNode.
+                    nodesFromCellToLose = getNodeNeighboursPerDomain(Geo, cellToIntercalateWith, ghostNode, ghostNode);
+                    nodesFromCellToLose_withoutNeighsFromCellNode = setdiff(nodesFromCellToLose, oldTets(:));
+                    nodesFromCellToLose_withoutNeighsFromCellNode = nodesFromCellToLose_withoutNeighsFromCellNode(ismember(nodesFromCellToLose_withoutNeighsFromCellNode, Geo.XgID));
+                    
+                    nodeToWin = nodesFromCellToLose_withoutNeighsFromCellNode(cellfun(@(x) any(any(~ismember(x, [Geo.XgID cellToIntercalateWith]))), {Geo.Cells(nodesFromCellToLose_withoutNeighsFromCellNode).T}));
+                    
+                    if length(nodeToWin)> 1
+                        error('nodeToWin');
                     end
                     
-                    allTnew = vertcat(allTnew, Tnew);
+                    nodesPairs(2, 1:2) = [cellToIntercalateWith nodeToWin];
+                    
+                    for nodesPair = nodesPairs'
+                    
+                        [valenceSegment, oldTets, oldYs] = edgeValence(Geo, nodesPair);
+
+                        %% Intercalation
+                        switch valenceSegment
+                            case 0
+                                break;
+                            case 2 %??
+                                disp('error: valence tet 2')
+                                sprintf('%s error: valence tet 2\n', Geo.log)
+                                %[Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair)] = Flip23(YsToChange, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                                break;
+                            case 3
+                                disp('error: valence tet 3')
+                                sprintf('%s error: valence tet 3\n', Geo.log)
+                                break;
+                                %[Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair)] = Flip32(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                            case 4
+                                [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair), Tnew] = Flip4N(nodesPair, oldTets, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                            case 5
+                                [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair), Tnew] = Flip5N(nodesPair, oldTets, oldYs, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                            case 6
+                                [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair), Tnew] = Flip6N(nodesPair, oldTets, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                            case 7
+                                [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair), Tnew] = Flip7N(nodesPair, oldTets, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                            otherwise
+                                disp('error: valence number greater than expected')
+                                sprintf('%s error: valence number greater than expected\n', Geo.log);
+                                break;
+                        end
+                    
+                        allTnew = vertcat(allTnew, Tnew);
+                    end
 
                     sharedNodesStill = getNodeNeighboursPerDomain(Geo, cellNode, ghostNode, cellToSplitFrom);
 
@@ -83,43 +102,6 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
                     end
                 end
             end 
-            
-            cellToWin = segmentFeatures.numCell(1);
-            cellsLoosing = setdiff(cellNodesShared, [cellToWin, segmentFeatures.cellToSplitFrom(1)]);
-            
-            for numCellLoosing = cellsLoosing'
-                nodesPair = [cellNode ghostNode];
-                
-                [valenceSegment, oldTets, oldYs] = edgeValence(Geo, nodesPair);
-                
-                %% Intercalation
-                switch valenceSegment
-                    case 0
-                        break;
-                    case 2 %??
-                        disp('error: valence tet 2')
-                        sprintf('%s error: valence tet 2\n', Geo.log)
-                        %[Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair)] = Flip23(YsToChange, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                        break;
-                    case 3
-                        disp('error: valence tet 3')
-                        sprintf('%s error: valence tet 3\n', Geo.log)
-                        break;
-                        %[Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair)] = Flip32(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                    case 4
-                        [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair), Tnew] = Flip4N(nodesPair, oldTets, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                    case 5
-                        [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair), Tnew] = Flip5N(nodesPair, oldTets, oldYs, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                    case 6
-                        [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair), Tnew] = Flip6N(nodesPair, oldTets, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                    case 7
-                        [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair), Tnew] = Flip7N(nodesPair, oldTets, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                    otherwise
-                        disp('error: valence number greater than expected')
-                        sprintf('%s error: valence number greater than expected\n', Geo.log);
-                        break;
-                end
-            end
 
             %% Vertices connecting the two intercalating cells should be closer
             allT = vertcat(Geo.Cells.T);

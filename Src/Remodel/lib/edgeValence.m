@@ -6,7 +6,11 @@ nodeTets2 = sort(Geo.Cells(nodesEdge(2)).T, 2);
 
 tetIds = ismember(nodeTets1, nodeTets2, 'rows');
 sharedTets = nodeTets1(tetIds, :);
-sharedYs = Geo.Cells(nodesEdge(1)).Y(tetIds, :);
+if any(~ismember(nodesEdge, Geo.XgID))
+    sharedYs = Geo.Cells(nodesEdge(1)).Y(tetIds, :);
+else
+    sharedYs = [];
+end
 valence = size(sharedTets, 1);
 end
 

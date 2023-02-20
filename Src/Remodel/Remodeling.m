@@ -24,6 +24,7 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
         if sum([Geo.Cells(cellNodesShared).AliveStatus]) > 2 
             Set.NeedToConverge = 0;
             allTnew = [];
+            initialNodeValence = arrayfun(@(x) sum((ismember(getNodeNeighbours(Geo, x), Geo.XgID))), [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID]);
             for numPair = 1:size(segmentFeatures, 1)
                 
                 cellNode = segmentFeatures{numPair, 1};
@@ -31,31 +32,14 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
                 cellToIntercalateWith = segmentFeatures{numPair, 3};
                 cellToSplitFrom = segmentFeatures{numPair, 4};
                 
+                nodesToCombineLater = [];
                 hasConverged(numPair) = 1;
                 while hasConverged(numPair) == 1
                     hasConverged(numPair) = 0;
 
-                    %if ~all(ghostNodes) &&
-                    % If the shared nodes are all ghost nodes, we won't remodel
-
-                    %%if sum([Geo.Cells(cellNodes).AliveStatus]) >= 2 %&& ~any(ismember(faceGlobalId, newYgIds))
                     nodesPairs = [cellNode ghostNode];
-                    [~, oldTets, ~] = edgeValence(Geo, nodesPairs);
                     
-                    %% Here cellToIntercalateWith will win 1 node. 
-                    % We have to remove a node from 'cellToIntercalateWith' 
-                    % and give it to 'cellNode.
-                    nodesFromCellToLose = getNodeNeighboursPerDomain(Geo, cellToIntercalateWith, ghostNode, ghostNode);
-                    nodesFromCellToLose_withoutNeighsFromCellNode = setdiff(nodesFromCellToLose, oldTets(:));
-                    nodesFromCellToLose_withoutNeighsFromCellNode = nodesFromCellToLose_withoutNeighsFromCellNode(ismember(nodesFromCellToLose_withoutNeighsFromCellNode, Geo.XgID));
-                    
-                    nodeToWin = nodesFromCellToLose_withoutNeighsFromCellNode(cellfun(@(x) any(any(~ismember(x, [Geo.XgID cellToIntercalateWith]))), {Geo.Cells(nodesFromCellToLose_withoutNeighsFromCellNode).T}));
-                    
-                    if length(nodeToWin)> 1
-                        error('nodeToWin');
-                    end
-                    
-                    nodesPairs(2, 1:2) = [cellToIntercalateWith nodeToWin];
+                    nodesToCombineLater(end+1) = ghostNode;
                     
                     for nodesPair = nodesPairs'
                     
@@ -98,6 +82,34 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
                         sharedNodesStill_g = sharedNodesStill(ismember(sharedNodesStill, Geo.XgID));
                         ghostNode = sharedNodesStill_g(1);
                     else
+                        PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1);
+                        nonDeadCells = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID];
+                        
+                        remodellingNodeValence = arrayfun(@(x) sum((ismember(getNodeNeighbours(Geo, x), Geo.XgID))), [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID]);
+                        nodesToAddOrRemove = remodellingNodeValence - initialNodeValence;
+                        
+                        for nodeToChangeValence = find(nodesToAddOrRemove ~= 0)
+                            for numTime = 1:abs(nodesToAddOrRemove(nodeToChangeValence))
+                                if nodesToAddOrRemove(nodeToChangeValence) > 0
+                                    [Geo_0, Geo_n, Geo, Dofs, newYgIds, hasConverged] = FlipN0(Geo, Geo_n, Geo_0, Dofs, newYgIds, nodeToRemove, nodeToKeep, Set);
+                                else
+                                    closerNode = getNodeNeighboursPerDomain(Geo, nodesToCombineLater(numTime), nodesToCombineLater(numTime));
+                                    closerNode_g = closerNode(ismember(closerNode, Geo.XgID));
+                                    nodesOfCellToAdd = getNodeNeighboursPerDomain(Geo, nonDeadCells(nodeToChangeValence), nodesToCombineLater(numTime));
+                                    nodesOfCellToAdd_g = nodesOfCellToAdd(ismember(nodesOfCellToAdd, Geo.XgID));
+                                    
+                                    if isempty(intersect(closerNode_g, nodesOfCellToAdd_g))
+                                        error('caca');
+                                    end
+                                    edgeToBeAddedNode = [nodesToCombineLater(numTime), intersect(closerNode_g, nodesOfCellToAdd_g)];
+                                    newNodes = mean(vertcat(Geo.Cells(edgeToBeAddedNode).X));
+                                    [~, oldTets, ~] = edgeValence(Geo, edgeToBeAddedNode);
+                                    [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = FlipAddNodes(unique(oldTets(:)), oldTets, newNodes, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                                end
+                            end
+                        end
+                        PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+2);
+                        
                         break;
                     end
                 end

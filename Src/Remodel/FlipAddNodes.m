@@ -1,4 +1,4 @@
-function [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = FlipAddNodes(surroundingNodes, tetsToChange, newNodes, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds)
+function [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = FlipAddNodes(surroundingNodes, oldTets, newNodes, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds)
 %FLIPADDNODEs Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -22,12 +22,13 @@ end
 % Put together the new neighbourhood to be connected
 nodesToChange = horzcat(unique(commonNodes)', newNodeIDs, mainNode);
 % Connect the nodes regarding distance (delaunay method)
-[Tnew] = ConnectTetrahedra(Geo, nodesToChange, tetsToChange, mainNode, flipName);
+[Tnew] = ConnectTetrahedra(Geo, nodesToChange, oldTets, mainNode, flipName);
+[Geo, Tnew, Ynew, oldTets] = ConnectTetrahedra(Geo, nodeToRemove, nodesToChange, oldTets, mainNodes, Set, flipName, cellNodeLoosing);
 
 %figure, tetramesh(Tnew, vertcat(Geo.Cells.X));
 %figure, tetramesh(tetsToChange, vertcat(Geo.Cells.X));
 
 % Rebuild topology and run mechanics
-[Geo, Geo_n, Dofs, newYgIds, hasConverged] = PostFlip(Tnew, tetsToChange, Geo, Geo_n, Geo_0, Dofs, newYgIds, Set, flipName);
+[Geo, Geo_n, Dofs, newYgIds, hasConverged] = PostFlip(Tnew, [], oldTets, Geo, Geo_n, Geo_0, Dofs, newYgIds, Set, flipName);
 end
 

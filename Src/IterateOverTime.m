@@ -72,7 +72,6 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
             Geo_n = Geo;
             PostProcessingVTK(Geo, Geo_0, Set, numStep)
 
-
             relaxingNu = false;
         else
             Set.nu = max(Set.nu/2, Set.nu0);

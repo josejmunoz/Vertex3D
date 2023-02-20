@@ -1,4 +1,4 @@
-function [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = FlipAddNodes(surroundingNodes, oldTets, newNodes, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds)
+function [Geo, Geo_n, Geo_0, Dofs, Set, newYgIds, hasConverged] = FlipAddNodes(surroundingNodes, oldTets, newNodes, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds)
 %FLIPADDNODEs Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -11,24 +11,25 @@ commonNodes(ismember(commonNodes, mainNode)) = [];
 flipName = 'AddNode';
 
 if length(mainNode) > 1
-    return
+    error('Too many main nodes')
 end
 
 % Add the new node in the positions (newNodes) and get the new IDs
 [Geo, newNodeIDs] = AddNewNode(Geo, newNodes, commonNodes);
 % Same in Geo_n
 [Geo_n] = AddNewNode(Geo_n, newNodes, commonNodes);
+% Same in Geo_0
+[Geo_0] = AddNewNode(Geo_0, newNodes, commonNodes);
 
 % Put together the new neighbourhood to be connected
 nodesToChange = horzcat(unique(commonNodes)', newNodeIDs, mainNode);
 % Connect the nodes regarding distance (delaunay method)
 [Tnew] = ConnectTetrahedra(Geo, nodesToChange, oldTets, mainNode, flipName);
-[Geo, Tnew, Ynew, oldTets] = ConnectTetrahedra(Geo, nodeToRemove, nodesToChange, oldTets, mainNodes, Set, flipName, cellNodeLoosing);
 
 %figure, tetramesh(Tnew, vertcat(Geo.Cells.X));
 %figure, tetramesh(tetsToChange, vertcat(Geo.Cells.X));
 
 % Rebuild topology and run mechanics
-[Geo, Geo_n, Dofs, newYgIds, hasConverged] = PostFlip(Tnew, [], oldTets, Geo, Geo_n, Geo_0, Dofs, newYgIds, Set, flipName);
+[Geo_0, Geo_n, Geo, Dofs, newYgIds, hasConverged] = PostFlip(Tnew, [], oldTets, Geo, Geo_n, Geo_0, Dofs, newYgIds, Set, flipName, [newNodeIDs -1]);
 end
 

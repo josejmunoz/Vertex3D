@@ -98,13 +98,22 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
                                     nodesOfCellToAdd = getNodeNeighboursPerDomain(Geo, nonDeadCells(nodeToChangeValence), nodesToCombineLater(numTime));
                                     nodesOfCellToAdd_g = nodesOfCellToAdd(ismember(nodesOfCellToAdd, Geo.XgID));
                                     
-                                    if isempty(intersect(closerNode_g, nodesOfCellToAdd_g))
+                                    nodeCloserToCell = intersect(closerNode_g, nodesOfCellToAdd_g);
+                                    if isempty(nodeCloserToCell)
                                         error('caca');
                                     end
-                                    edgeToBeAddedNode = [nodesToCombineLater(numTime), intersect(closerNode_g, nodesOfCellToAdd_g)];
+                                    
+                                    nodesToPick = getNodeNeighboursPerDomain(Geo, nodeCloserToCell(1), nodesToCombineLater(numTime), nonDeadCells(nodeToChangeValence));
+                                    nodesToPick_g = nodesToPick(ismember(nodesToPick, Geo.XgID));
+                                    
+                                    edgeToBeAddedNode = [nodeCloserToCell(1), nodesToPick_g(1)];
                                     newNodes = mean(vertcat(Geo.Cells(edgeToBeAddedNode).X));
                                     [~, oldTets, ~] = edgeValence(Geo, edgeToBeAddedNode);
-                                    [Geo_n, Geo, Dofs, Set, newYgIds, hasConverged] = FlipAddNodes(unique(oldTets(:)), oldTets, newNodes, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+                                    oldTets = oldTets(any(ismember(oldTets, nonDeadCells(nodeToChangeValence)), 2), :);
+                                    
+                                    surroundingNodes = unique(oldTets(:));
+                                    surroundingNodes = setdiff(surroundingNodes, setdiff(nonDeadCells, nonDeadCells(nodeToChangeValence)));
+                                    [Geo, Geo_n, Geo_0, Dofs, Set, newYgIds, hasConverged] = FlipAddNodes(surroundingNodes, oldTets, newNodes, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
                                 end
                             end
                         end

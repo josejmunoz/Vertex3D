@@ -1,9 +1,9 @@
-function [Geo, Tnew] = ConnectTetrahedra(Geo, nodesToChange, oldTets, mainNodes, flipName)
+function [Tnew] = ConnectTetrahedra(Geo, nodesToChange, oldTets, mainNodes, flipName)
 %CONNECTTETRAHEDRA Summary of this function goes here
 %   Detailed explanation goes here
 
 if length(nodesToChange) > 4
-    Tnew = nodesToConnect(delaunayn(vertcat(Geo.Cells(nodesToChange).X), {'Qv', 'Q7'}));
+    Tnew = nodesToChange(delaunayn(vertcat(Geo.Cells(nodesToChange).X), {'Qv', 'Q7'}));
 else
     Tnew = nodesToChange';
 end

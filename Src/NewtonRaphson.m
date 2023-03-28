@@ -29,7 +29,8 @@ function [Geo, g,K,Energy, Set, gr, dyr, dy] = NewtonRaphson(Geo_0, Geo_n, Geo, 
     	[g, K, Energy, Geo, Energies] = KgGlobal(Geo_0, Geo_n, Geo, Set);
     	dyr=norm(dy(dof)); gr=norm(g(dof));
     	Geo.log = sprintf('%s Step: % i,Iter: %i, Time: %g ||gr||= %.3e ||dyr||= %.3e alpha= %.3e  nu/nu0=%.3g \n', Geo.log, numStep,Set.iter,t,gr,dyr,alpha,Set.nu/Set.nu0);
-
+        Geo.log
+        
     	Set.iter=Set.iter+1;
 		auxgr(ig+1)=gr;
 		% TODO FIXME, what even is this ?! PVM: In other words, WTF!?

@@ -69,7 +69,7 @@ if CheckTris(Geo) %%&& ~CheckConvexity(Tnew,Geo_backup)
     newYgIds = unique([newYgIds; Geo.AssemblegIds]);
     Geo   = UpdateMeasures(Geo);
     
-    PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1)
+    %PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1)
     
     hasConverged = 1;
 else

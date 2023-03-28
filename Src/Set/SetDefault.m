@@ -59,7 +59,7 @@ function Set = SetDefault(Set)
 	DSet.Substrate                  = 2;
     DSet.kSubstrate                 = 500;
     %% ============================ Viscosity =============================
-    DSet.nu							= 20000;
+    DSet.nu							= 1000;
     DSet.LocalViscosityEdgeBased	= false;
     DSet.nu_Local_EdgeBased			= 0;
     DSet.LocalViscosityOption		= 2;
@@ -110,6 +110,7 @@ function Set = SetDefault(Set)
     DSet.contributionOldFaceCentre  = 0;
     %% TODO: ADD IF IN CASE IT IS USED: E.G., Set.InPlaneElasticity
     DSet.OutputFolder=strcat('Result/Remodelling_', Set.InputGeo, '_Cells_', num2str(Set.TotalCells), ...
+        '_visc_', num2str(Set.nu), ...
         '_lVol_', num2str(Set.lambdaV), '_muBulk_', num2str(Set.mu_bulk), ...
         '_lBulk_', num2str(Set.lambda_bulk), '_kSubs_', num2str(Set.kSubstrate), ...
         '_lt_', num2str(Set.cLineTension), '_pString_', num2str(Set.purseStringStrength),'_deformableL_', num2str(Set.lambdaB), ...

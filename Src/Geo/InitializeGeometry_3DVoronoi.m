@@ -87,23 +87,20 @@ X_topVerticesIds = X_topIds(size(XgTopFaceCentre, 1)+1:end);
 X = vertcat(X, X_topNodes);
 
 xInternal = [1:Set.TotalCells]';
+
+%% Create tetrahedra
+[Twg_bottom] = CreateTetrahedra(trianglesConnectivity, neighboursNetwork, cellEdges, xInternal, X_bottomFaceIds, X_bottomVerticesIds);
+[Twg_bottom, X, X_bottomIds] = upsampleTetMesh(Twg_bottom, X, X_bottomIds);
+[Twg_top] = CreateTetrahedra(trianglesConnectivity_topoChanged, neighboursNetwork_topoChanged, cellEdges_topoChanged, xInternal, X_topFaceIds, X_topVerticesIds);
+[Twg_top, X, X_topIds] = upsampleTetMesh(Twg_top, X, X_topIds);
+Twg = vertcat(Twg_top, Twg_bottom);
+
+%% Fill Geo info
 Geo.nCells = length(xInternal);
 
 Geo.XgBottom = X_bottomIds;
 Geo.XgTop = X_topIds;
 Geo.XgLateral = setdiff(1:size(seedsXY, 1), xInternal);
-
-%% Create tetrahedra
-[Twg_bottom] = CreateTetrahedra(trianglesConnectivity, neighboursNetwork, cellEdges, xInternal, X_bottomFaceIds, X_bottomVerticesIds);
-[Twg_top] = CreateTetrahedra(trianglesConnectivity_topoChanged, neighboursNetwork_topoChanged, cellEdges_topoChanged, xInternal, X_topFaceIds, X_topVerticesIds);
-Twg = vertcat(Twg_top, Twg_bottom);
-
-% X(X(:, 1) < 0 , 1) = 0;
-% X(X(:, 2) < 0 , 2) = 0;
-% X(X(:, 1) > 1 , 1) = 1;
-% X(X(:, 2) > 1 , 2) = 1;
-% tets = delaunayTriangulation(X);
-% Twg = tets.ConnectivityList;
 
 %% Ghost cells and tets
 Geo.XgID = setdiff(1:size(X, 1), xInternal);

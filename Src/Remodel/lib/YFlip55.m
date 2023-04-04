@@ -43,9 +43,11 @@ possibleEdges = setdiff(possibleEdges, XsToDisconnect);
 %Remove other impossible edges
 
 %% Step 3: Select the edge to add
-% Based on connecting the 
+% Aim: connecting the XsToDisconnect_c to another gNode
+% Based on Valence? distance? who should be intercalating with?
 
 %% Step 4: Propagate the change to get the remaining tets
+% Create tetrahedra
 
 
 %% ----------- Specific method

@@ -22,7 +22,7 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
         if sum([Geo.Cells(cellNodesShared).AliveStatus]) > 2 
             Set.NeedToConverge = 0;
             allTnew = [];
-            initialNodeValence = arrayfun(@(x) sum((ismember(getNodeNeighbours(Geo, x), Geo.XgID))), [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID]);
+            initialNodeValence = arrayfun(@(x) sum((ismember(getNodeNeighbours(Geo, x), Geo.XgID))), [Geo.Cells.ID]);
             numPair = 1;
                 
             cellNode = segmentFeatures{numPair, 1};
@@ -43,7 +43,6 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
                 nodesPair = [cellNode ghostNode];
 
                 [valenceSegment, oldTets, oldYs] = edgeValence(Geo, nodesPair);
-
                 %% Intercalation
                 switch valenceSegment
                     case 0
@@ -75,13 +74,17 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
                 allTnew = vertcat(allTnew, Tnew);
 
                 sharedNodesStill = getNodeNeighboursPerDomain(Geo, cellNode, ghostNode, cellToSplitFrom);
-
+                
                 if any(ismember(sharedNodesStill, Geo.XgID))
                     sharedNodesStill_g = sharedNodesStill(ismember(sharedNodesStill, Geo.XgID));
                     ghostNode = sharedNodesStill_g(1);
                 else
                     break;
                 end
+
+                remodellingNodeValence = arrayfun(@(x) sum((ismember(getNodeNeighbours(Geo, x), Geo.XgID))), [Geo.Cells.ID]);
+                nodesToAddOrRemove = remodellingNodeValence - initialNodeValence;
+                find(nodesToAddOrRemove ~= 0)
             end
 
 %             while hasConverged(numPair) == 1
@@ -243,6 +246,43 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
 %             PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1);
             
             %% 
+
+            %% Change nodes position to get a better mesh
+            % Better with vertices?
+            tetsToChange = vertcat(Geo.Cells([gNodes_NeighboursShared]).T);
+            tetsToChange = tetsToChange(sum(ismember(tetsToChange, gNodes_NeighboursShared), 2) > 3, :);
+            triGTets = [];
+            for tet = tetsToChange'
+                gTet = tet(ismember(tet, Geo.XgID));
+                if length(gTet)> 2
+                    triGTets(end+1, 1:3) = sort(gTet);
+                    %triGTets(end+1, 1:3) = gTet;
+                end
+            end
+            triGTets = unique(triGTets, 'rows');
+            X0 = vertcat(Geo.Cells.X);
+            R=RotationMatrix(X0);
+            % plot3(X0(:,1),X0(:,2),X0(:,3),'o')
+            X=(R'*X0')';            
+            [X_ids, ~, T_newIndices] = unique(triGTets);
+            X2D = X(X_ids, 1:2);  % Flatten rotated X
+            X3=X(X_ids,3);
+            T = reshape(T_newIndices, size(triGTets));
+            X2D0=X2D;
+            [X2D,flag,dJ0,dJ,Xf]=RegulariseMesh(T,X2D);
+            % plot 2D meshes
+            % initial mesh
+            Plot2D(dJ,dJ0,T,X2D,X2D0,Xf)
+            X=[X2D X3];
+            X=(R*X')';
+            Plot3D(dJ,dJ0,T,X,X0);
+
+            for numX = 1:length(X_ids)
+                Geo.Cells(X_id).X = X(numX, :);
+                Geo_n.Cells(X_id).X = X(numX, :);
+            end
+
+            %% Solve remodelling
             Dofs = GetDOFs(Geo, Set);
             [Dofs, Geo]  = GetRemodelDOFs(allTnew, Dofs, Geo);
             [Geo, Set, DidNotConverge] = SolveRemodelingStep(Geo_0, Geo_n, Geo, Dofs, Set);
@@ -283,3 +323,118 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
     [g, K, E, Geo, Energies] = KgGlobal(Geo_0, Geo_n, Geo, Set);
 end
 
+function R=RotationMatrix(X)
+% fit on plane a*x+b*y-z+d=0
+x=[X(:,1) X(:,2) ones(size(X,1),1)];
+f=zeros(3,1);
+A=zeros(3);
+for i=1:3
+    for j=1:3
+        A(i,j)=sum(x(:,i).*x(:,j));
+    end
+    f(i)=sum(x(:,i).*X(:,3));
+end
+a=A\f;
+% Find rotation of 2D points to be on plane
+% plot3(X(:,1),X(:,2),X(:,3),'o');axis equal
+n=[-a(1) -a(2) 1]';
+n=n/norm(n);
+ez=[0 0 1]';
+ex=cross(n,ez);
+if norm(ex)<1e-6
+    ex=[1 0 0]';
+end
+ex=ex/norm(ex);
+thz=acos(ex'*[1 0 0]');
+if ex(2)<0
+    thz=-thz;
+end
+thx=acos(n'*ez);
+nc=cross(ex,n);
+if nc(3)>0
+    thx=-thx;
+end
+Rz=[cos(thz) -sin(thz) 0
+    sin(thz) cos(thz) 0
+    0          0       1];
+Rx=[1 0 0
+    0 cos(thx) -sin(thx)
+    0 sin(thx) cos(thx)];
+R=Rz*Rx;
+end
+
+function  Plot2D(dJ,dJ0,T,X2D,X2D0,Xf)
+% Plots flat triangulations in 2D
+nele=size(T,1);
+npoints=size(X2D,1);
+figure(1) % initial mesh
+clf
+for i=1:npoints
+    if min(abs(Xf-i))==0
+        plot(X2D(i,1),X2D(i,2),'ro')
+    else
+        plot(X2D(i,1),X2D(i,2),'bo')
+    end
+    hold on
+end
+%
+for e=1:nele
+    Te=[T(e,:) T(e,1)];
+    fill(X2D0(Te,1),X2D0(Te,2),dJ0(e))
+end
+colorbar
+title('det(J) Initial')
+% Final mesh
+figure(2)
+clf
+plot(X2D(:,1),X2D(:,2),'o')
+hold on
+for e=1:nele
+    Te=[T(e,:) T(e,1)];
+    fill(X2D(Te,1),X2D(Te,2),dJ(e))
+end
+title('det(J) Final')
+colorbar
+v=version;
+if str2double(v(1))<10
+    caxis([min(dJ0) max(dJ0)]);
+else
+    clim([min(dJ0) max(dJ0)]);
+end
+end
+%%
+function Plot3D(dJ,dJ0,T,X,X0)
+nele=size(T,1);
+figure(3)
+clf
+figure(4)
+clf
+for e=1:nele
+    Te=[T(e,:) T(e,1)];
+    figure(3)
+    fill3(X0(Te,1),X0(Te,2),X0(Te,3),dJ0(e))
+    hold on;
+    figure(4)
+    fill3(X(Te,1),X(Te,2),X(Te,3),dJ(e))
+    hold on;
+end
+figure(3)
+title('det(J) Initial')
+axis equal
+colorbar
+v=version;
+if str2double(v(1))<10
+    caxis([min(dJ0) max(dJ0)]);
+else
+    clim([min(dJ0) max(dJ0)]);
+end
+figure(4)
+title('det(J) Final')
+axis equal
+colorbar
+if str2double(v(1))<10
+    caxis([min(dJ0) max(dJ0)]);
+else
+    clim([min(dJ0) max(dJ0)]);
+end
+end

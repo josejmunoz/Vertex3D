@@ -37,6 +37,25 @@ else
     Xs_gToDisconnect = XsToDisconnect(ismember(XsToDisconnect, Geo.XgID));
 end 
 
+%% General method
+visualizeTets(oldTets, vertcat(Geo.Cells.X))
+%% Step 1: Keep the boundary of tets not changed.
+% Or remo the edges that pass through inside the tetrahedro
+boundaryNodes = unique(oldTets); % All the nodes should be boundary nodes
+tris = triangulation(oldTets, vertcat(Geo.Cells.X));
+tris.edges
+
+% nodes should be connected with two of the same layer and 1 different in
+% the boundary.
+
+%% Step 2: Get edges that can be added
+
+%% Step 3: Select the edge to add
+
+%% Step 4: Propagate the change to get the remaining tets
+
+
+% Specific method
 if length(Xs_gConnectedNodes) == length(Xs_g) && length(Xs_cConnectedNodes) == length(Xs_cUnconnectedNodes)
     if any(ismember(XsToDisconnect, Xs_gConnectedNodes)) && any(ismember(XsToDisconnect, Xs_cConnectedNodes))
         XsPos(1) = Xs_gToDisconnect;
@@ -102,3 +121,25 @@ else
 end
 end
 
+function nodesExt=GetBoundary3D(T,X)
+np=size(X,1);
+nele=size(T,1);
+nodesExt=zeros(1,np);
+for e=1:nele
+    Te=[T(e,:) T(e,1)];
+    Sides=[0 0 0];
+    for s=1:3
+        n=Te(s:s+1);
+        for d=1:nele
+            if sum(ismember(n,T(d,:)))==2 && d~=e
+                Sides(s)=1;
+                break;
+            end
+        end
+        if Sides(s)==0
+            nodesExt(Te(s:s+1))=Te(s:s+1);
+        end
+    end
+end
+nodesExt(nodesExt==0)=[];
+end

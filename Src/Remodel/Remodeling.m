@@ -44,32 +44,7 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
 
                 [valenceSegment, oldTets, oldYs] = edgeValence(Geo, nodesPair);
                 %% Intercalation
-                switch valenceSegment
-                    case 0
-                        break;
-                    case 2 %??
-                        disp('error: valence tet 2')
-                        sprintf('%s error: valence tet 2\n', Geo.log)
-                        %[Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair)] = Flip23(YsToChange, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                        break;
-                    case 3
-                        disp('error: valence tet 3')
-                        sprintf('%s error: valence tet 3\n', Geo.log)
-                        break;
-                        %[Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair)] = Flip32(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                    case 4
-                        [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair), Tnew] = Flip4N(nodesPair, oldTets, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                    case 5
-                        [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair), Tnew] = Flip5N(nodesPair, oldTets, oldYs, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                    case 6
-                        [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair), Tnew] = Flip6N(nodesPair, oldTets, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                    case 7
-                        [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair), Tnew] = Flip7N(nodesPair, oldTets, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                    otherwise
-                        disp('error: valence number greater than expected')
-                        sprintf('%s error: valence number greater than expected\n', Geo.log);
-                        break;
-                end
+                [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair), Tnew] = FlipNM(nodesPair, cellToIntercalateWith, oldTets, oldYs, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
 
                 allTnew = vertcat(allTnew, Tnew);
 

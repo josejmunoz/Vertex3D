@@ -69,4 +69,54 @@ possibleEdges
 %% Step 4: Propagate the change to get the remaining tets
 % Create tetrahedra
 
+%% Remove edge using TetGen's algorithm
+% Based on https://dl.acm.org/doi/pdf/10.1145/2629697
+if size(oldTets, 1) == 3
+
+else
+    % https://link.springer.com/article/10.1007/s00366-016-0480-z#Fig2
+    possibleEdgesToKeep = [];
+    for numPair = 1:size(possibleEdges, 1)
+        [valence, sharedTets] = edgeValenceT(oldTets, possibleEdges(numPair, :));
+
+        if valence > 0
+            possibleEdgesToKeep(end+1, :) = possibleEdges(numPair, :);
+            sharedTets
+        end
+    end
+
+    arrayfun(@(x) sum(any(ismember(oldTets, x), 2)), unique(oldTets(:)))
+    
+    [Ynew, Tnew_23] = YFlip23(oldYs, oldTets, XsToDisconnect, Geo);
+
+    [Ynew, Tnew_32] = YFlip32(oldYs, oldTets, XsToDisconnect, Geo);
+
+    Tnew_23
+    Tnew_32
+end
+end
+
+function [nodesExt, pairsExt]=GetBoundary2D(T,X)
+np=size(X,1);
+nele=size(T,1);
+nodesExt=zeros(1,np);
+pairsExt=[];
+for e=1:nele
+    Te=[T(e,:) T(e,1)];
+    Sides=[0 0 0];
+    for s=1:3
+        n=Te(s:s+1);
+        for d=1:nele
+            if sum(ismember(n,T(d,:)))==2 && d~=e
+                Sides(s)=1;
+                break;
+            end
+        end
+        if Sides(s)==0
+            nodesExt(Te(s:s+1))=Te(s:s+1);
+            pairsExt(end+1, 1:2) = Te(s:s+1);
+        end
+    end
+end
+nodesExt(nodesExt==0)=[];
 end

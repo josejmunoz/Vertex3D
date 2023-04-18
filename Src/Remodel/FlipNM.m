@@ -1,4 +1,4 @@
-function [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged, Tnew] = FlipNM(segmentToChange, cellToIntercalateWith, oldTets, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds)
+function [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged, Tnew] = FlipNM(segmentToChange, cellToIntercalateWith, oldTets, oldYs, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds)
 %FLIPNM Summary of this function goes here
 %   Detailed explanation goes here
 hasConverged = false;

@@ -77,23 +77,54 @@ else
     % https://link.springer.com/article/10.1007/s00366-016-0480-z#Fig2
     possibleEdgesToKeep = [];
     for numPair = 1:size(possibleEdges, 1)
-        [valence, sharedTets] = edgeValenceT(oldTets, possibleEdges(numPair, :));
-
-        if valence > 0
+        [valence, sharedTets, tetIds] = edgeValenceT(oldTets, possibleEdges(numPair, :));
+        
+        % Valence == 1, is an edge that can be removed.
+        % Valence == 2, a face can be removed.
+        if valence == 2
             possibleEdgesToKeep(end+1, :) = possibleEdges(numPair, :);
-            sharedTets
+            [Ynew, Tnew_23] = YFlip23(oldYs, oldTets, tetIds, Geo);
+            Tnew_23
+            [Ynew, Tnew_32] = YFlip32(oldYs, Tnew_23, [1 2 3], Geo);
+            %% NOW WHAT???
+            % What I've understand is, that you should do a series of
+            % flip2-3 and a flip 3-2 to remove the edge at the end.
         end
     end
-
-    arrayfun(@(x) sum(any(ismember(oldTets, x), 2)), unique(oldTets(:)))
-    
-    [Ynew, Tnew_23] = YFlip23(oldYs, oldTets, XsToDisconnect, Geo);
-
-    [Ynew, Tnew_32] = YFlip32(oldYs, oldTets, XsToDisconnect, Geo);
-
-    Tnew_23
-    Tnew_32
 end
+
+%% By chatGPT
+% Flip edges adjacent to the target edge until it is no longer adjacent to any tetrahedra
+while ~isempty(adjacent_tetrahedra)
+    % Choose a random adjacent tetrahedron
+    tet = adjacent_tetrahedra(1);
+    
+    % Find the other vertex of the tetrahedron
+    other_vertex = setdiff(T(tet,:), edge);
+    
+    % Find the edges opposite to the other vertex
+    opposite_edges = nchoosek(T(tet,:), 3);
+    opposite_edges = opposite_edges(sum(ismember(opposite_edges, other_vertex), 2) == 2, :);
+    
+    % Flip each opposite edge that is adjacent to another tetrahedron
+    for i = 1:size(opposite_edges, 1)
+        opposite_vertex = setdiff(opposite_edges(i,:), [other_vertex, edge]);
+        adjacent_tetrahedra = setdiff(adjacent_tetrahedra, find(sum(ismember(T, opposite_edges(i,:)), 2) == 2));
+        if ~ismember(opposite_vertex, edge)
+            [V, T] = flip_nm(V, T, tet, find(sum(ismember(T, opposite_edges(i,:)), 2) == 2));
+        end
+    end
+    
+    % Update the set of adjacent tetrahedra
+    adjacent_tetrahedra = setdiff(adjacent_tetrahedra, tet);
+end
+
+% Remove the tetrahedra that were adjacent to the target edge
+T_new = T(~sum(ismember(T, edge), 2), :);
+
+% Update the vertex coordinates
+V_new = V;
+
 end
 
 function [nodesExt, pairsExt]=GetBoundary2D(T,X)

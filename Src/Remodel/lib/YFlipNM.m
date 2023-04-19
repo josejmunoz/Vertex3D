@@ -2,6 +2,7 @@ function [Ynew, Tnew] = YFlipNM(oldTets, cellToIntercalateWith, oldYs, XsToDisco
 %YFLIP6N Summary of this function goes here
 %   Detailed explanation goes here
 
+oldTets_original = oldTets;
 Ynew = [];
 allXs = vertcat(Geo.Cells.X);
 ghostNodesWithoutDebris = setdiff(Geo.XgID, Geo.RemovedDebrisCells);
@@ -28,7 +29,7 @@ visualizeTets(oldTets, vertcat(Geo.Cells.X))
 %% Step 1: Keep the boundary of tets not changed.
 % Or remo the edges that pass through inside the tetrahedro
 boundaryNodes = unique(oldTets); % All the nodes should be boundary nodes
-tris = triangulation(oldTets, vertcat(Geo.Cells.X));
+tris = triangulation(oldTets, allXs);
 trisEdges = tris.edges;
 
 % nodes should be connected with two of the same layer.
@@ -72,7 +73,7 @@ possibleEdges
 %% Remove edge using TetGen's algorithm
 % Based on https://dl.acm.org/doi/pdf/10.1145/2629697
 if size(oldTets, 1) == 3
-
+    [Ynew, Tnew] = YFlip32(oldYs, oldTets, [1 2 3], Geo);
 else
     % https://link.springer.com/article/10.1007/s00366-016-0480-z#Fig2
     possibleEdgesToKeep = [];
@@ -84,46 +85,20 @@ else
         if valence == 2
             possibleEdgesToKeep(end+1, :) = possibleEdges(numPair, :);
             [Ynew, Tnew_23] = YFlip23(oldYs, oldTets, tetIds, Geo);
-            Tnew_23
-            [Ynew, Tnew_32] = YFlip32(oldYs, Tnew_23, [1 2 3], Geo);
-            %% NOW WHAT???
-            % What I've understand is, that you should do a series of
-            % flip2-3 and a flip 3-2 to remove the edge at the end.
+            oldTets(tetIds, :) = [];
+            oldTets = vertcat(oldTets, Tnew_23);
+            %Update and get the tets that are associated to that
+            %edgeToDisconnect
+            % Valence should have decreased
+            [~, oldTets, ~] = edgeValenceT(oldTets, XsToDisconnect);
+            [Ynew, Tnew] = YFlipNM(oldTets, cellToIntercalateWith, oldYs, XsToDisconnect, Geo, Set);
+            oldTets = vertcat(oldTets, Tnew);
+            % What should I do after I receive the Tnew from other
+            % How can I get all the correct new tets?
         end
     end
 end
 
-%% By chatGPT
-% Flip edges adjacent to the target edge until it is no longer adjacent to any tetrahedra
-while ~isempty(adjacent_tetrahedra)
-    % Choose a random adjacent tetrahedron
-    tet = adjacent_tetrahedra(1);
-    
-    % Find the other vertex of the tetrahedron
-    other_vertex = setdiff(T(tet,:), edge);
-    
-    % Find the edges opposite to the other vertex
-    opposite_edges = nchoosek(T(tet,:), 3);
-    opposite_edges = opposite_edges(sum(ismember(opposite_edges, other_vertex), 2) == 2, :);
-    
-    % Flip each opposite edge that is adjacent to another tetrahedron
-    for i = 1:size(opposite_edges, 1)
-        opposite_vertex = setdiff(opposite_edges(i,:), [other_vertex, edge]);
-        adjacent_tetrahedra = setdiff(adjacent_tetrahedra, find(sum(ismember(T, opposite_edges(i,:)), 2) == 2));
-        if ~ismember(opposite_vertex, edge)
-            [V, T] = flip_nm(V, T, tet, find(sum(ismember(T, opposite_edges(i,:)), 2) == 2));
-        end
-    end
-    
-    % Update the set of adjacent tetrahedra
-    adjacent_tetrahedra = setdiff(adjacent_tetrahedra, tet);
-end
-
-% Remove the tetrahedra that were adjacent to the target edge
-T_new = T(~sum(ismember(T, edge), 2), :);
-
-% Update the vertex coordinates
-V_new = V;
 
 end
 

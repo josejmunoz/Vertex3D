@@ -72,32 +72,7 @@ possibleEdges
 
 %% Remove edge using TetGen's algorithm
 % Based on https://dl.acm.org/doi/pdf/10.1145/2629697
-if size(oldTets, 1) == 3
-    [Ynew, Tnew] = YFlip32(oldYs, oldTets, [1 2 3], Geo);
-else
-    % https://link.springer.com/article/10.1007/s00366-016-0480-z#Fig2
-    possibleEdgesToKeep = [];
-    for numPair = 1:size(possibleEdges, 1)
-        [valence, sharedTets, tetIds] = edgeValenceT(oldTets, possibleEdges(numPair, :));
-        
-        % Valence == 1, is an edge that can be removed.
-        % Valence == 2, a face can be removed.
-        if valence == 2
-            possibleEdgesToKeep(end+1, :) = possibleEdges(numPair, :);
-            [Ynew, Tnew_23] = YFlip23(oldYs, oldTets, tetIds, Geo);
-            oldTets(tetIds, :) = [];
-            oldTets = vertcat(oldTets, Tnew_23);
-            %Update and get the tets that are associated to that
-            %edgeToDisconnect
-            % Valence should have decreased
-            [~, oldTets, ~] = edgeValenceT(oldTets, XsToDisconnect);
-            [Ynew, Tnew] = YFlipNM(oldTets, cellToIntercalateWith, oldYs, XsToDisconnect, Geo, Set);
-            oldTets = vertcat(oldTets, Tnew);
-            % What should I do after I receive the Tnew from other
-            % How can I get all the correct new tets?
-        end
-    end
-end
+[Ynew, Tnew] = YFlipNM_recursive(oldTets, Ynew, oldYs, Geo, possibleEdges, XsToDisconnect, cellToIntercalateWith, Set);
 
 
 end

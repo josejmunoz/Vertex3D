@@ -72,8 +72,13 @@ possibleEdges
 
 %% Remove edge using TetGen's algorithm
 % Based on https://dl.acm.org/doi/pdf/10.1145/2629697
-[Ynew, Tnew] = YFlipNM_recursive(oldTets, Ynew, oldYs, Geo, possibleEdges, XsToDisconnect, cellToIntercalateWith, Set);
-
+TRemoved = {[]};
+Tnew = {[]};
+Ynew = {[]};
+treeDepth = 1;
+[Ynew, Tnew, TRemoved] = YFlipNM_recursive(oldTets, TRemoved, Tnew, Ynew, oldYs, Geo, possibleEdges, XsToDisconnect, treeDepth);
+Tnew
+TRemoved
 
 end
 

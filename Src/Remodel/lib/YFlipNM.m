@@ -72,14 +72,42 @@ possibleEdges
 
 %% Remove edge using TetGen's algorithm
 % Based on https://dl.acm.org/doi/pdf/10.1145/2629697
-TRemoved = {[]};
-Tnew = {[]};
-Ynew = {[]};
-treeDepth = 1;
-[Ynew, Tnew, TRemoved] = YFlipNM_recursive(oldTets, TRemoved, Tnew, Ynew, oldYs, Geo, possibleEdges, XsToDisconnect, treeDepth);
-Tnew
-TRemoved
+treeOfPossibilities = digraph;
+treeOfPossibilities = addnode(treeOfPossibilities, 2);
+TRemoved = {};
+Tnew = {};
+Ynew = {};
+parentNode = 1;
+arrayPos = 3;
+endNode = 2;
+[Ynew, Tnew, TRemoved, treeOfPossibilities] = YFlipNM_recursive(oldTets, TRemoved, Tnew, Ynew, oldYs, Geo, possibleEdges, XsToDisconnect, treeOfPossibilities, parentNode, arrayPos);
 
+[paths] = allpaths(treeOfPossibilities, parentNode, endNode);
+newTets_tree = {};
+for path =  paths'
+    cPath = path{1};
+    newTets = vertcat(oldTets);
+
+    for posPath = cPath(cPath>2)
+        toAdd = Tnew{posPath};
+        toRemove = TRemoved {posPath};
+        newTets(ismember(sort(newTets, 2), sort(toRemove, 2), 'rows'), :) = [];
+        newTets = vertcat(newTets, toAdd);
+    end
+
+    itWasFound = 0;
+    for numNewTet = 1:length(newTets_tree)
+        newTet_tree = newTets_tree{numNewTet};
+        if all(ismember(sort(newTet_tree, 2), sort(newTets, 2), 'rows'))
+            itWasFound = 1;
+            break
+        end
+    end
+    if ~itWasFound
+        newTets_tree{end+1} = newTets;
+    end
+end
+newTets_tree
 end
 
 function [nodesExt, pairsExt]=GetBoundary2D(T,X)

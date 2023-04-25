@@ -1,28 +1,14 @@
-function [Ynew, Tnew] = YFlipNM(oldTets, cellToIntercalateWith, oldYs, XsToDisconnect, Geo, Set)
+function [Ynew, Tnew] = YFlipNM(oldTets, cellToIntercalateWith, oldYs, XsToDisconnect, Geo)
 %YFLIP6N Summary of this function goes here
 %   Detailed explanation goes here
 
-oldTets_original = oldTets;
-Ynew = [];
 allXs = vertcat(Geo.Cells.X);
-ghostNodesWithoutDebris = setdiff(Geo.XgID, Geo.RemovedDebrisCells);
-
-Xs = unique(oldTets);
-Xs_g = Xs(ismember(Xs, ghostNodesWithoutDebris));
-Xs_c = Xs(~ismember(Xs, ghostNodesWithoutDebris));
-Xs_cToDisconnect = XsToDisconnect(~ismember(XsToDisconnect, Geo.XgID));
 Xs_gToDisconnect = XsToDisconnect(ismember(XsToDisconnect, Geo.XgID));
-intercalationFlip = 0;
-if length(Xs_c) == 4
-    intercalationFlip = 1;
-end
 
 % Temporary remove 4-cell tetrahedra
 [tets4Cells] = get4FoldTets(Geo);
 Geo = RemoveTetrahedra(Geo, tets4Cells);
 
-[Xs_gConnectedNodes, Xs_gUnconnectedNodes] = getConnectedNodesInQuartet(Geo, Xs_g, Xs_g(1));
-[Xs_cConnectedNodes, Xs_cUnconnectedNodes] = getConnectedNodesInQuartet(Geo, Xs_c, Xs_g(1));
 
 %% ----------- General method
 visualizeTets(oldTets, vertcat(Geo.Cells.X))
@@ -30,7 +16,6 @@ visualizeTets(oldTets, vertcat(Geo.Cells.X))
 % Or remo the edges that pass through inside the tetrahedro
 boundaryNodes = unique(oldTets); % All the nodes should be boundary nodes
 tris = triangulation(oldTets, allXs);
-trisEdges = tris.edges;
 
 % nodes should be connected with two of the same layer.
 tets_Ghost = tris.ConnectivityList(sum(ismember(tris.ConnectivityList, Geo.XgID), 2)>2, :);
@@ -52,10 +37,8 @@ boundaryEdges = vertcat(sort(boundary_Ghost, 2), sort(boundary_Cells, 2));
 %% Step 2: Get edges that can be added when removing the other one
 % Find the edges that may be connected and are not connected
 possibleEdges = nchoosek(boundaryNodes, 2);
-possibleEdges(ismember(possibleEdges, boundaryEdges, 'rows'), :) = [];
-possibleEdges(ismember(possibleEdges, XsToDisconnect, 'rows'), :) = [];
-
-%Remove other impossible edges
+% possibleEdges(ismember(possibleEdges, boundaryEdges, 'rows'), :) = [];
+% possibleEdges(ismember(possibleEdges, XsToDisconnect, 'rows'), :) = [];
 
 
 %% Step 3: Select the edge to add
@@ -63,9 +46,7 @@ possibleEdges(ismember(possibleEdges, XsToDisconnect, 'rows'), :) = [];
 % Based on Valence? distance? who should be intercalating with?
 edgeToConnect = [cellToIntercalateWith, Xs_gToDisconnect];
 possibleEdges(ismember(possibleEdges, edgeToConnect, 'rows'), :) = [];
-finalEdges = vertcat(boundaryEdges, edgeToConnect);
-
-possibleEdges
+%finalEdges = vertcat(boundaryEdges, edgeToConnect);
 
 %% Step 4: Propagate the change to get the remaining tets
 % Create tetrahedra
@@ -80,10 +61,11 @@ Ynew = {};
 parentNode = 1;
 arrayPos = 3;
 endNode = 2;
-[Ynew, Tnew, TRemoved, treeOfPossibilities] = YFlipNM_recursive(oldTets, TRemoved, Tnew, Ynew, oldYs, Geo, possibleEdges, XsToDisconnect, treeOfPossibilities, parentNode, arrayPos);
+[~, Tnew, TRemoved, treeOfPossibilities] = YFlipNM_recursive(oldTets, TRemoved, Tnew, Ynew, oldYs, Geo, possibleEdges, XsToDisconnect, treeOfPossibilities, parentNode, arrayPos);
 
 [paths] = allpaths(treeOfPossibilities, parentNode, endNode);
 newTets_tree = {};
+volDiff = [];
 for path =  paths'
     cPath = path{1};
     newTets = vertcat(oldTets);
@@ -104,10 +86,32 @@ for path =  paths'
         end
     end
     if ~itWasFound
-        newTets_tree{end+1} = newTets;
+        volumes = [];
+        for tet = newTets'
+            [vol] = ComputeTetVolume(tet, Geo);
+            volumes(end+1) = vol;
+        end
+        
+        normVols = volumes/max(volumes);
+        newTets = newTets(normVols > 0.05, :);
+        newVol = sum(volumes(normVols > 0.05));
+
+        %% Check if the volume from previous space is the same occupied by the new tets
+        oldVol = 0;
+        for tet = oldTets'
+            [vol] = ComputeTetVolume(tet, Geo);
+            oldVol = oldVol + vol;
+        end
+
+        if abs(newVol - oldVol) / oldVol <= 0.005
+            newTets_tree{end+1} = newTets;
+            volDiff(end+1) = abs(newVol - oldVol) / oldVol;
+        end
     end
 end
-newTets_tree
+[~, minIndex]=min(volDiff);
+Tnew = newTets_tree{minIndex};
+Ynew = [];
 end
 
 function [nodesExt, pairsExt]=GetBoundary2D(T,X)

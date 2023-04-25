@@ -1,4 +1,4 @@
-function [Ynew, Tnew] = YFlipNM(oldTets, cellToIntercalateWith, oldYs, XsToDisconnect, Geo)
+function [Ynew, Tnew] = YFlipNM(oldTets, cellToIntercalateWith, oldYs, XsToDisconnect, Geo, Set)
 %YFLIP6N Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -8,10 +8,16 @@ Xs_gToDisconnect = XsToDisconnect(ismember(XsToDisconnect, Geo.XgID));
 % Temporary remove 4-cell tetrahedra
 [tets4Cells] = get4FoldTets(Geo);
 Geo = RemoveTetrahedra(Geo, tets4Cells);
+ghostNodesWithoutDebris = setdiff(Geo.XgID, Geo.RemovedDebrisCells);
 
+Xs = unique(oldTets);
+Xs_c = Xs(~ismember(Xs, ghostNodesWithoutDebris));
+intercalationFlip = 0;
+if length(Xs_c) == 4
+    intercalationFlip = 1;
+end
 
 %% ----------- General method
-visualizeTets(oldTets, vertcat(Geo.Cells.X))
 %% Step 1: Keep the boundary of tets not changed.
 % Or remo the edges that pass through inside the tetrahedro
 boundaryNodes = unique(oldTets); % All the nodes should be boundary nodes
@@ -104,8 +110,18 @@ for path =  paths'
         end
 
         if abs(newVol - oldVol) / oldVol <= 0.005
-            newTets_tree{end+1} = newTets;
-            volDiff(end+1) = abs(newVol - oldVol) / oldVol;
+            try
+                if intercalationFlip
+                    Xs_c = Xs(~ismember(Xs, ghostNodesWithoutDebris));
+                    newTets(end+1, :) = Xs_c;
+                end
+                [Geo] = RemoveTetrahedra(Geo, oldTets);
+                [Geo] = AddTetrahedra(Geo, newTets, [], Set);
+                Geo   = Rebuild(Geo, Set);
+                newTets_tree{end+1} = newTets;
+                volDiff(end+1) = abs(newVol - oldVol) / oldVol;
+            catch
+            end
         end
     end
 end

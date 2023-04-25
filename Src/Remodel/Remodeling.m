@@ -56,10 +56,6 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
                 else
                     break;
                 end
-
-                remodellingNodeValence = arrayfun(@(x) sum((ismember(getNodeNeighbours(Geo, x), Geo.XgID))), [Geo.Cells.ID]);
-                nodesToAddOrRemove = remodellingNodeValence - initialNodeValence;
-                find(nodesToAddOrRemove ~= 0)
             end
 
 %             while hasConverged(numPair) == 1
@@ -222,40 +218,40 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
             
             %% 
 
-            %% Change nodes position to get a better mesh
-            % Better with vertices?
-            tetsToChange = vertcat(Geo.Cells([gNodes_NeighboursShared]).T);
-            tetsToChange = tetsToChange(sum(ismember(tetsToChange, gNodes_NeighboursShared), 2) > 3, :);
-            triGTets = [];
-            for tet = tetsToChange'
-                gTet = tet(ismember(tet, Geo.XgID));
-                if length(gTet)> 2
-                    triGTets(end+1, 1:3) = sort(gTet);
-                    %triGTets(end+1, 1:3) = gTet;
-                end
-            end
-            triGTets = unique(triGTets, 'rows');
-            X0 = vertcat(Geo.Cells.X);
-            R=RotationMatrix(X0);
-            % plot3(X0(:,1),X0(:,2),X0(:,3),'o')
-            X=(R'*X0')';            
-            [X_ids, ~, T_newIndices] = unique(triGTets);
-            X2D = X(X_ids, 1:2);  % Flatten rotated X
-            X3=X(X_ids,3);
-            T = reshape(T_newIndices, size(triGTets));
-            X2D0=X2D;
-            [X2D,flag,dJ0,dJ,Xf]=RegulariseMesh(T,X2D);
-            % plot 2D meshes
-            % initial mesh
-            Plot2D(dJ,dJ0,T,X2D,X2D0,Xf)
-            X=[X2D X3];
-            X=(R*X')';
-            Plot3D(dJ,dJ0,T,X,X0);
-
-            for numX = 1:length(X_ids)
-                Geo.Cells(X_id).X = X(numX, :);
-                Geo_n.Cells(X_id).X = X(numX, :);
-            end
+%             %% Change nodes position to get a better mesh
+%             % Better with vertices?
+%             tetsToChange = vertcat(Geo.Cells([gNodes_NeighboursShared]).T);
+%             tetsToChange = tetsToChange(sum(ismember(tetsToChange, gNodes_NeighboursShared), 2) > 3, :);
+%             triGTets = [];
+%             for tet = tetsToChange'
+%                 gTet = tet(ismember(tet, Geo.XgID));
+%                 if length(gTet)> 2
+%                     triGTets(end+1, 1:3) = sort(gTet);
+%                     %triGTets(end+1, 1:3) = gTet;
+%                 end
+%             end
+%             triGTets = unique(triGTets, 'rows');
+%             X0 = vertcat(Geo.Cells.X);
+%             R=RotationMatrix(X0);
+%             % plot3(X0(:,1),X0(:,2),X0(:,3),'o')
+%             X=(R'*X0')';            
+%             [X_ids, ~, T_newIndices] = unique(triGTets);
+%             X2D = X(X_ids, 1:2);  % Flatten rotated X
+%             X3=X(X_ids,3);
+%             T = reshape(T_newIndices, size(triGTets));
+%             X2D0=X2D;
+%             [X2D,flag,dJ0,dJ,Xf]=RegulariseMesh(T,X2D);
+%             % plot 2D meshes
+%             % initial mesh
+%             Plot2D(dJ,dJ0,T,X2D,X2D0,Xf)
+%             X=[X2D X3];
+%             X=(R*X')';
+%             Plot3D(dJ,dJ0,T,X,X0);
+% 
+%             for numX = 1:length(X_ids)
+%                 Geo.Cells(X_id).X = X(numX, :);
+%                 Geo_n.Cells(X_id).X = X(numX, :);
+%             end
 
             %% Solve remodelling
             Dofs = GetDOFs(Geo, Set);

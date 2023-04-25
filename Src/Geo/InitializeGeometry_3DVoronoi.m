@@ -90,9 +90,9 @@ xInternal = [1:Set.TotalCells]';
 
 %% Create tetrahedra
 [Twg_bottom] = CreateTetrahedra(trianglesConnectivity, neighboursNetwork, cellEdges, xInternal, X_bottomFaceIds, X_bottomVerticesIds);
-[Twg_bottom, X, X_bottomIds] = upsampleTetMesh(Twg_bottom, X, X_bottomIds);
+%[Twg_bottom, X, X_bottomIds] = upsampleTetMesh(Twg_bottom, X, X_bottomIds);
 [Twg_top] = CreateTetrahedra(trianglesConnectivity_topoChanged, neighboursNetwork_topoChanged, cellEdges_topoChanged, xInternal, X_topFaceIds, X_topVerticesIds);
-[Twg_top, X, X_topIds] = upsampleTetMesh(Twg_top, X, X_topIds);
+%[Twg_top, X, X_topIds] = upsampleTetMesh(Twg_top, X, X_topIds);
 Twg = vertcat(Twg_top, Twg_bottom);
 
 %% Fill Geo info

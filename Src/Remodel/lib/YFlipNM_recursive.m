@@ -1,5 +1,7 @@
 function [Ynew, Tnew, TRemoved, treeOfPossibilities, arrayPos] = YFlipNM_recursive(TOld, TRemoved, Tnew, Ynew, oldYs, Geo, possibleEdges, XsToDisconnect, treeOfPossibilities, parentNode, arrayPos)
 
+% Based on: https://www.researchgate.net/profile/Ideen-Sadrehaghighi/publication/358635395_Tetgen_-A_Delaunay-Based_Quality_Tetrahedral_Mesh_Generator/links/6229bca597401151d20b6ad4/Tetgen-A-Delaunay-Based-Quality-Tetrahedral-Mesh-Generator.pdf
+% https://link.springer.com/article/10.1007/s00366-016-0480-z#Fig2
 endNode = 2;
 
 Told_original = TOld;

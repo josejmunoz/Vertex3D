@@ -125,8 +125,12 @@ for path =  paths'
         end
     end
 end
-[~, minIndex]=min(volDiff);
-Tnew = newTets_tree{minIndex};
+if ~isempty(newTets_tree)
+    [~, minIndex]=min(volDiff);
+    Tnew = newTets_tree{minIndex};
+else
+    Tnew = [];
+end
 Ynew = [];
 end
 

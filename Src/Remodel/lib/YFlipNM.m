@@ -72,6 +72,7 @@ endNode = 2;
 [paths] = allpaths(treeOfPossibilities, parentNode, endNode);
 newTets_tree = {};
 volDiff = [];
+cellWinning = [];
 for path =  paths'
     cPath = path{1};
     newTets = vertcat(oldTets);
@@ -120,6 +121,7 @@ for path =  paths'
                 Rebuild(Geo_new, Set);
                 newTets_tree{end+1} = newTets;
                 volDiff(end+1) = abs(newVol - oldVol) / oldVol;
+                cellWinning(end+1) = sum(any(ismember(newTets, cellToIntercalateWith), 2))/size(newTets, 1);
             catch
             end
         end
@@ -127,7 +129,8 @@ for path =  paths'
 end
 if ~isempty(newTets_tree)
     [~, minIndex]=min(volDiff);
-    Tnew = newTets_tree{minIndex};
+    [~, maxIndex] = max(cellWinning);
+    Tnew = newTets_tree{maxIndex};
 else
     Tnew = [];
 end

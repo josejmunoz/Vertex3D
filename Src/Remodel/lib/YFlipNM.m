@@ -115,9 +115,9 @@ for path =  paths'
                     Xs_c = Xs(~ismember(Xs, ghostNodesWithoutDebris));
                     newTets(end+1, :) = Xs_c;
                 end
-                [Geo] = RemoveTetrahedra(Geo, oldTets);
-                [Geo] = AddTetrahedra(Geo, newTets, [], Set);
-                Geo   = Rebuild(Geo, Set);
+                [Geo_new] = RemoveTetrahedra(Geo, oldTets);
+                [Geo_new] = AddTetrahedra(Geo_new, newTets, [], Set);
+                Rebuild(Geo_new, Set);
                 newTets_tree{end+1} = newTets;
                 volDiff(end+1) = abs(newVol - oldVol) / oldVol;
             catch

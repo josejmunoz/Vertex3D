@@ -7,9 +7,9 @@ Geo_backup = Geo; Geo_n_backup = Geo_n; Geo_0_backup = Geo_0; Dofs_backup = Dofs
 
 Geo.log = sprintf('%s =>> %s-Flip: %i %i.\n', Geo.log, flipName, segmentToChange(1), segmentToChange(2));
 
-[Geo] = AddAndRebuildCells(Geo, oldTets, newTets, Ynew, Set, 1);
-[Geo_0] = AddAndRebuildCells(Geo_0, oldTets, newTets, Ynew, Set, 0);
-[Geo_n] = AddAndRebuildCells(Geo_n, oldTets, newTets, Ynew, Set, 0);
+[Geo] = AddAndRebuildCells(Geo, oldTets, Tnew, Ynew, Set, 1);
+[Geo_0] = AddAndRebuildCells(Geo_0, oldTets, Tnew, Ynew, Set, 0);
+[Geo_n] = AddAndRebuildCells(Geo_n, oldTets, Tnew, Ynew, Set, 0);
         
 %% Update Geo_0 to be reset the vertices that we have changed averaging with previous Geo_0 and current Geo
 percentageGeo = 1 - Set.Reset_PercentageGeo0;

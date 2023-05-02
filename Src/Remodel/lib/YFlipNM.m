@@ -114,28 +114,3 @@ else
 end
 Ynew = [];
 end
-
-function [nodesExt, pairsExt]=GetBoundary2D(T,X)
-np=size(X,1);
-nele=size(T,1);
-nodesExt=zeros(1,np);
-pairsExt=[];
-for e=1:nele
-    Te=[T(e,:) T(e,1)];
-    Sides=[0 0 0];
-    for s=1:3
-        n=Te(s:s+1);
-        for d=1:nele
-            if sum(ismember(n,T(d,:)))==2 && d~=e
-                Sides(s)=1;
-                break;
-            end
-        end
-        if Sides(s)==0
-            nodesExt(Te(s:s+1))=Te(s:s+1);
-            pairsExt(end+1, 1:2) = Te(s:s+1);
-        end
-    end
-end
-nodesExt(nodesExt==0)=[];
-end

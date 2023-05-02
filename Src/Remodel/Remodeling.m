@@ -6,7 +6,7 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
     [segmentFeatures_all] = GetTrisToRemodelOrdered(Geo, Set);
     
     %% loop ENERGY-dependant
-    while ~isempty(segmentFeatures_all)
+    while ~isempty(segmentFeatures_all) 
         Geo_backup = Geo; Geo_n_backup = Geo_n; Geo_0_backup = Geo_0; Dofs_backup = Dofs;
         
         segmentFeatures = segmentFeatures_all{1};
@@ -58,200 +58,110 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
                 end
             end
 
-%             while hasConverged(numPair) == 1
-%                 hasConverged(numPair) = 0;
-%                 
-%                 nodesPairs = [cellNode ghostNode];
-%                 
-%                 nodesToCombineLater(end+1) = ghostNode;
-%                 
-%                 for nodesPair = nodesPairs'
-%                     
-%                     [valenceSegment, oldTets, oldYs] = edgeValence(Geo, nodesPair);
-%                     
-%                     %% Intercalation
-%                     switch valenceSegment
-%                         case 0
-%                             break;
-%                         case 2 %??
-%                             disp('error: valence tet 2')
-%                             sprintf('%s error: valence tet 2\n', Geo.log)
-%                             %[Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair)] = Flip23(YsToChange, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-%                             break;
-%                         case 3
-%                             disp('error: valence tet 3')
-%                             sprintf('%s error: valence tet 3\n', Geo.log)
-%                             break;
-%                             %[Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair)] = Flip32(numFace, numCell, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-%                         case 4
-%                             [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair), Tnew] = Flip4N(nodesPair, oldTets, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-%                         case 5
-%                             [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair), Tnew] = Flip5N(nodesPair, oldTets, oldYs, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-%                         case 6
-%                             [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair), Tnew] = Flip6N(nodesPair, oldTets, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-%                         case 7
-%                             [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair), Tnew] = Flip7N(nodesPair, oldTets, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-%                         otherwise
-%                             disp('error: valence number greater than expected')
-%                             sprintf('%s error: valence number greater than expected\n', Geo.log);
-%                             break;
-%                     end
-%                     
-%                     allTnew = vertcat(allTnew, Tnew);
-%                  
-%                     sharedNodesStill = getNodeNeighboursPerDomain(Geo, cellNode, ghostNode, cellToSplitFrom);
-% 
-%                     if any(ismember(sharedNodesStill, Geo.XgID))
-%                         sharedNodesStill_g = sharedNodesStill(ismember(sharedNodesStill, Geo.XgID));
-%                         ghostNode = sharedNodesStill_g(1);
-%                     else
-%                         PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1);
-%                         nonDeadCells = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID];
-% 
-%                         remodellingNodeValence = arrayfun(@(x) sum((ismember(getNodeNeighbours(Geo, x), Geo.XgID))), [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID]);
-%                         nodesToAddOrRemove = remodellingNodeValence - initialNodeValence;
-% 
-%                         for nodeToChangeValence = find(nodesToAddOrRemove ~= 0)
-%                             %                             remodellingNodeValence = arrayfun(@(x) sum((ismember(getNodeNeighbours(Geo, x), Geo.XgID))), [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID]);
-%                             %                             nodesToAddOrRemove = remodellingNodeValence - initialNodeValence;
-%                             nodesToCombineLater(end+1:abs(nodesToAddOrRemove(nodeToChangeValence))) = nodesToCombineLater(1);
-%                             for numTime = 1:abs(nodesToAddOrRemove(nodeToChangeValence))
-%                                 if nodesToAddOrRemove(nodeToChangeValence) > 0
-%                                     possibleNodesToCombineWith = getNodeNeighboursPerDomain(Geo, nonDeadCells(nodeToChangeValence), nodesToCombineLater(numTime));
-%                                     possibleNodesToCombineWith_g = possibleNodesToCombineWith(ismember(possibleNodesToCombineWith, Geo.XgID));
-%                                     possibleNodesToCombineWith_g = setdiff(possibleNodesToCombineWith_g, nodesToCombineLater);
-% 
-%                                     neighboursOfNodesToCombine = arrayfun(@(x) unique(getNodeNeighbours(Geo, x)), possibleNodesToCombineWith_g, 'UniformOutput', false);
-%                                     neighboursOfNodesToCombine_nCells = cellfun(@(x) sum(ismember(x, nonDeadCells)), neighboursOfNodesToCombine);
-% 
-%                                     [~, index] = min(neighboursOfNodesToCombine_nCells);
-%                                     nodeToRemove = possibleNodesToCombineWith_g(index);
-% 
-%                                     % Node to Keep maybe its closest node?
-%                                     possibleNodesToKeep = setdiff(possibleNodesToCombineWith_g, [nodeToRemove nodesToCombineLater]);
-%                                     [~, index] = pdist2(vertcat(Geo.Cells(possibleNodesToKeep).X), Geo.Cells(nodeToRemove).X, 'euclidean', 'Smallest', 1);
-%                                     nodeToKeep = possibleNodesToKeep(index);
-% 
-%                                     [Geo_0, Geo_n, Geo, Dofs, newYgIds, hasConverged, Tnew] = FlipN0(Geo, Geo_n, Geo_0, Dofs, newYgIds, nodeToRemove, nodeToKeep, Set);
-%                                 else
-%                                     closerNode = getNodeNeighboursPerDomain(Geo, nodesToCombineLater(numTime), nodesToCombineLater(numTime));
-%                                     closerNode_g = closerNode(ismember(closerNode, Geo.XgID));
-%                                     nodesOfCellToAdd = getNodeNeighboursPerDomain(Geo, nonDeadCells(nodeToChangeValence), nodesToCombineLater(numTime));
-%                                     nodesOfCellToAdd_g = nodesOfCellToAdd(ismember(nodesOfCellToAdd, Geo.XgID));
-% 
-%                                     nodeCloserToCell = intersect(closerNode_g, nodesOfCellToAdd_g);
-%                                     if isempty(nodeCloserToCell)
-%                                         error('caca');
-%                                     end
-% 
-%                                     nodesToPick = getNodeNeighboursPerDomain(Geo, nodeCloserToCell(1), nodesToCombineLater(numTime), nonDeadCells(nodeToChangeValence));
-%                                     nodesToPick_g = nodesToPick(ismember(nodesToPick, Geo.XgID));
-% 
-%                                     edgeToBeAddedNode = [nodeCloserToCell(1), nodesToPick_g(1)];
-%                                     newNodes = mean(vertcat(Geo.Cells(edgeToBeAddedNode).X));
-%                                     [~, oldTets, ~] = edgeValence(Geo, edgeToBeAddedNode);
-%                                     surroundingNodes = unique(oldTets(:));
-%                                     [Geo, Geo_n, Geo_0, Dofs, Set, newYgIds, hasConverged, Tnew] = FlipAddNodes(surroundingNodes, oldTets, newNodes, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-%                                 end
-%                                 allTnew = vertcat(allTnew, Tnew);
-%                             end
-%                             PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+2);
-%                         end
-%                         break;
-%                     end
-%                 end
-
-%             %% Vertices connecting the two intercalating cells should be closer
-%             allT = vertcat(Geo.Cells.T);
-%             if ismember(ghostNode, Geo.XgBottom)
-%                 allT_filtered = allT(any(ismember(allT, Geo.XgBottom), 2), :);
-%             elseif ismember(ghostNode, Geo.XgTop)
-%                 allT_filtered = allT(any(ismember(allT, Geo.XgTop), 2), :);
-%             end
-%             
-%             % Vertices of cells (i.e. 3 cell nodes, 1 ghost node)
-%             verticesToChange = allT_filtered(sum(ismember(allT_filtered, cellNodesShared), 2) == 3, :);
-%             verticesToChange = unique(sort(verticesToChange(sum(ismember(verticesToChange, cellNodesShared), 2) == 3, :), 2), 'rows');
-%             
-%             refTet = any(ismember(verticesToChange, cellToSplitFrom), 2);
-%             refPoint = Geo.Cells(cellToSplitFrom).Y(ismember(sort(Geo.Cells(cellToSplitFrom).T, 2), verticesToChange(refTet, :), 'rows'), :);
-%             
-%             if sum(refTet) > 1
-%                 disp('error');
-%             end
-%             
-%             cellsConnected = intersect(verticesToChange(1, :), verticesToChange(2, :));
-%             
-%             verticesToChange(refTet, :) = [];
-%             
-%             middleVertexToChange = allT_filtered(sum(ismember(allT_filtered, cellsConnected), 2) == 2 & sum(ismember(allT_filtered, Geo.XgID), 2) == 2, :);
-%             middleVertexToChange = unique(sort(middleVertexToChange, 2), 'rows');
-%             
-%             verticesToChange = vertcat(verticesToChange, middleVertexToChange);
-%             
-%             closeToNewPoint = 0.4;
-%             
-%             for tetToCheck = verticesToChange'
-%                 for nodeInTet = tetToCheck'
-%                     if ~ismember(nodeInTet, Geo.XgID)
-%                         newPoint = Geo.Cells(nodeInTet).Y(ismember(sort(Geo.Cells(nodeInTet).T, 2), tetToCheck', 'rows'), :);
-% 
-%                         Geo.Cells(nodeInTet).Y(ismember(sort(Geo.Cells(nodeInTet).T, 2), tetToCheck', 'rows'), :) = refPoint*(1-closeToNewPoint) + newPoint*closeToNewPoint;
-%                     end
-%                 end
-%             end
-%             
-%             %closeToNewPoint = 0.5;
-%             % Also the vertex middle Scutoid vertex
-%             for currentCell = cellNodesShared'
-%                 middleVertexTet = all(ismember(Geo.Cells(currentCell).T, cellNodesShared), 2);
-%                 Geo.Cells(currentCell).Y(middleVertexTet, :) = refPoint*(1-closeToNewPoint) + Geo.Cells(currentCell).Y(middleVertexTet, :)*(closeToNewPoint);
-%             end
-%             
-%             Geo   = Rebuild(Geo, Set);
-%             Geo   = BuildGlobalIds(Geo);
-%             Geo   = UpdateMeasures(Geo);
-%             Geo_n = Geo;
-%             Geo_0 = Rebuild(Geo_0, Set);
-%             Geo_0 = BuildGlobalIds(Geo_0);    
-%             PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1);
+            %% Vertices connecting the two intercalating cells should be closer
+            allT = vertcat(Geo.Cells.T);
+            if ismember(ghostNode, Geo.XgBottom)
+                allT_filtered = allT(any(ismember(allT, Geo.XgBottom), 2), :);
+            elseif ismember(ghostNode, Geo.XgTop)
+                allT_filtered = allT(any(ismember(allT, Geo.XgTop), 2), :);
+            end
             
-            %% 
+            % Vertices of cells (i.e. 3 cell nodes, 1 ghost node)
+            verticesToChange = allT_filtered(sum(ismember(allT_filtered, cellNodesShared), 2) == 3, :);
+            verticesToChange = unique(sort(verticesToChange(sum(ismember(verticesToChange, cellNodesShared), 2) == 3, :), 2), 'rows');
+            
+            refTet = any(ismember(verticesToChange, cellToSplitFrom), 2);
+            refPoint = Geo.Cells(cellToSplitFrom).Y(ismember(sort(Geo.Cells(cellToSplitFrom).T, 2), verticesToChange(refTet, :), 'rows'), :);
+            
+            if sum(refTet) > 1
+                disp('error');
+            end
+            
+            cellsConnected = intersect(verticesToChange(1, :), verticesToChange(2, :));
+            
+            verticesToChange(refTet, :) = [];
+            
+            middleVertexToChange = allT_filtered(sum(ismember(allT_filtered, cellsConnected), 2) == 2 & sum(ismember(allT_filtered, Geo.XgID), 2) == 2, :);
+            middleVertexToChange = unique(sort(middleVertexToChange, 2), 'rows');
+            
+            verticesToChange = vertcat(verticesToChange, middleVertexToChange);
+            
+            closeToNewPoint = 0.1;
+            
+            for tetToCheck = verticesToChange'
+                for nodeInTet = tetToCheck'
+                    if ~ismember(nodeInTet, Geo.XgID)
+                        newPoint = Geo.Cells(nodeInTet).Y(ismember(sort(Geo.Cells(nodeInTet).T, 2), tetToCheck', 'rows'), :);
 
-%             %% Change nodes position to get a better mesh
-%             % Better with vertices?
-%             tetsToChange = vertcat(Geo.Cells([gNodes_NeighboursShared]).T);
-%             tetsToChange = tetsToChange(sum(ismember(tetsToChange, gNodes_NeighboursShared), 2) > 3, :);
-%             triGTets = [];
-%             for tet = tetsToChange'
-%                 gTet = tet(ismember(tet, Geo.XgID));
-%                 if length(gTet)> 2
-%                     triGTets(end+1, 1:3) = sort(gTet);
-%                     %triGTets(end+1, 1:3) = gTet;
-%                 end
-%             end
-%             triGTets = unique(triGTets, 'rows');
-%             X0 = vertcat(Geo.Cells.X);
-%             R=RotationMatrix(X0);
-%             % plot3(X0(:,1),X0(:,2),X0(:,3),'o')
-%             X=(R'*X0')';            
-%             [X_ids, ~, T_newIndices] = unique(triGTets);
-%             X2D = X(X_ids, 1:2);  % Flatten rotated X
-%             X3=X(X_ids,3);
-%             T = reshape(T_newIndices, size(triGTets));
-%             X2D0=X2D;
-%             [X2D,flag,dJ0,dJ,Xf]=RegulariseMesh(T,X2D);
-%             % plot 2D meshes
-%             % initial mesh
-%             Plot2D(dJ,dJ0,T,X2D,X2D0,Xf)
-%             X=[X2D X3];
-%             X=(R*X')';
-%             Plot3D(dJ,dJ0,T,X,X0);
-% 
-%             for numX = 1:length(X_ids)
-%                 Geo.Cells(X_id).X = X(numX, :);
-%                 Geo_n.Cells(X_id).X = X(numX, :);
-%             end
+                        Geo.Cells(nodeInTet).Y(ismember(sort(Geo.Cells(nodeInTet).T, 2), tetToCheck', 'rows'), :) = refPoint*(1-closeToNewPoint) + newPoint*closeToNewPoint;
+                    end
+                end
+            end
+            
+            %closeToNewPoint = 0.5;
+            % Also the vertex middle Scutoid vertex
+            for currentCell = cellNodesShared'
+                middleVertexTet = all(ismember(Geo.Cells(currentCell).T, cellNodesShared), 2);
+                Geo.Cells(currentCell).Y(middleVertexTet, :) = refPoint*(1-closeToNewPoint) + Geo.Cells(currentCell).Y(middleVertexTet, :)*(closeToNewPoint);
+            end
+            
+            Geo   = Rebuild(Geo, Set);
+            Geo   = BuildGlobalIds(Geo);
+            Geo   = UpdateMeasures(Geo);
+            Geo_n = Geo;
+            Geo_0 = Rebuild(Geo_0, Set);
+            Geo_0 = BuildGlobalIds(Geo_0);    
+            PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1);
+
+            %% Change vertices position to get a better mesh
+            for numCell = gNodes_NeighboursShared'
+                if isequal(Geo.Cells(numCell).AliveStatus, 1)
+                    Tets = Geo.Cells(numCell).T;
+                    X0 = Geo.Cells(numCell).Y;
+                    % Get bottom or top Ys
+                    if any(any(ismember(Tnew, Geo.XgBottom)))
+                        idsToChange = any(ismember(Tets, Geo.XgBottom), 2);
+                    elseif any(any(ismember(Tnew, Geo.XgTop)))
+                        idsToChange = any(ismember(Tets, Geo.XgTop), 2);
+                    end
+                    
+                    X0 = X0(idsToChange, :);
+                    X=X0;
+                    Tets = Tets(idsToChange, :);
+
+                    %plot3(X0(:,1),X0(:,2),X0(:,3),'o')
+                    X2D = X(:, 1:2);  % Flatten rotated X
+                    X3 = X(:,3);
+                    
+                    T=delaunay(X2D(:,1),X2D(:,2));
+                    % GetBoundary based on tets with 3 cells
+                    Xf_tricellular = find(sum(ismember(Tets, Geo.XgID), 2) == 1);
+                    Xf = GetBoundary2D(T, X2D);
+%                     Xf_toChange = setdiff(Xf, Xf_tricellular);
+%                     for x_boundary = Xf_toChange
+%                         neighboursBoundary = unique(T(any(ismember(T, x_boundary), 2), :));
+%                         neighboursBoundary_InBoundary = intersect(Xf, neighboursBoundary);
+%                         X2D(x_boundary, :) = mean(X2D(neighboursBoundary_InBoundary, :), 1);
+%                     end
+                    X2D0=X2D;
+                    [X2D_new,flag,dJ0,dJ]=RegulariseMesh(T,X2D,Xf);
+                    % plot 2D meshes
+                    % initial mesh
+                    Plot2D(dJ,dJ0,T,X2D_new,X2D0,Xf)
+                    X=[X2D_new X3];
+                    %X=(R*X')';
+                    Geo.Cells(numCell).Y(idsToChange, :) = X;
+%                     Plot3D(dJ,dJ0,T,X,X0);
+                end
+            end
+
+            Geo   = Rebuild(Geo, Set);
+            Geo   = BuildGlobalIds(Geo);
+            Geo   = UpdateMeasures(Geo);
+            Geo_n = Geo;
+            Geo_0 = Rebuild(Geo_0, Set);
+            Geo_0 = BuildGlobalIds(Geo_0);    
+            PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+2);
 
             %% Solve remodelling
             Dofs = GetDOFs(Geo, Set);
@@ -332,6 +242,31 @@ Rx=[1 0 0
     0 cos(thx) -sin(thx)
     0 sin(thx) cos(thx)];
 R=Rz*Rx;
+end
+
+function [nodesExt, pairsExt]=GetBoundary2D(T,X)
+np=size(X,1);
+nele=size(T,1);
+nodesExt=zeros(1,np);
+pairsExt=[];
+for e=1:nele
+    Te=[T(e,:) T(e,1)];
+    Sides=[0 0 0];
+    for s=1:3
+        n=Te(s:s+1);
+        for d=1:nele
+            if sum(ismember(n,T(d,:)))==2 && d~=e
+                Sides(s)=1;
+                break;
+            end
+        end
+        if Sides(s)==0
+            nodesExt(Te(s:s+1))=Te(s:s+1);
+            pairsExt(end+1, 1:2) = Te(s:s+1);
+        end
+    end
+end
+nodesExt(nodesExt==0)=[];
 end
 
 function  Plot2D(dJ,dJ0,T,X2D,X2D0,Xf)

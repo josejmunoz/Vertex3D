@@ -86,7 +86,7 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
             
             verticesToChange = vertcat(verticesToChange, middleVertexToChange);
             
-            closeToNewPoint = 0.1;
+            closeToNewPoint = 0.2;
             
             for tetToCheck = verticesToChange'
                 for nodeInTet = tetToCheck'
@@ -104,7 +104,9 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
                 middleVertexTet = all(ismember(Geo.Cells(currentCell).T, cellNodesShared), 2);
                 Geo.Cells(currentCell).Y(middleVertexTet, :) = refPoint*(1-closeToNewPoint) + Geo.Cells(currentCell).Y(middleVertexTet, :)*(closeToNewPoint);
             end
-            
+
+            Geo = BuildXFromY(Geo_n, Geo);
+
             Geo   = Rebuild(Geo, Set);
             Geo   = BuildGlobalIds(Geo);
             Geo   = UpdateMeasures(Geo);
@@ -137,14 +139,27 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
                     X2D = X(:, 1:2);  % Flatten rotated X
                     X3 = X(:,3);
                     
-                    T=delaunay(X2D(:,1),X2D(:,2));
+                    %T=delaunay(X2D(:,1),X2D(:,2));
+                    T = [];
+                    for f = find(idsToChange_Faces)'
+                        face = Geo.Cells(numCell).Faces(f);
+                        for t = 1:length(face.Tris)
+                            T(end+1, :) = [face.Tris(t).Edge(1), face.Tris(t).Edge(2), f+size(Geo.Cells(numCell).Y, 1)];
+                        end
+            		end
+                    [~,~,c] = unique(T);
+                    T_newIDs = reshape(c, size(T));
                     % GetBoundary based on tets with 3 cells
-                    Xf = GetBoundary2D(T, X2D);
+                    Xf = GetBoundary2D(T_newIDs, X2D);
                     X2D0=X2D;
-                    [X2D_new,flag,dJ0,dJ]=RegulariseMesh(T,X2D,Xf);
+                    [X2D_new,flag,dJ0,dJ]=RegulariseMesh(T_newIDs,X2D,Xf);
+                    if any(any(X2D_new > 1 | X2D_new < 0, 2))
+                        continue
+                    end
+                    X2D_new(Xf, :) = X2D(Xf, :);
                     % plot 2D meshes
                     % initial mesh
-                    Plot2D(dJ,dJ0,T,X2D_new,X2D0,Xf)
+                    %Plot2D(dJ,dJ0,T_newIDs,X2D_new,X2D0,Xf)
                     X=[X2D_new X3];
                     Geo.Cells(numCell).Y(idsToChange, :) = X(1:size(X0, 1), :);
                     idsToChange_id = find(idsToChange_Faces);
@@ -154,14 +169,29 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
 %                     Plot3D(dJ,dJ0,T,X,X0);
                 end
             end
+            Geo = BuildXFromY(Geo_n, Geo);
 
             Geo   = Rebuild(Geo, Set);
             Geo   = BuildGlobalIds(Geo);
             Geo   = UpdateMeasures(Geo);
             Geo_n = Geo;
             Geo_0 = Rebuild(Geo_0, Set);
-            Geo_0 = BuildGlobalIds(Geo_0);    
+            Geo_0 = BuildGlobalIds(Geo_0);
+
             PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+2);
+
+            %% Update Geo_0 to be reset the vertices that we have changed averaging with previous Geo_0 and current Geo
+            percentageGeo = 1 - Set.Reset_PercentageGeo0;
+            for c=1:Geo.nCells
+                if ismember(c, Tnew) && ~isempty(Geo.Cells(c).AliveStatus) && Geo.Cells(c).AliveStatus == 1
+                    Geo_0.Cells(c).X = Set.Reset_PercentageGeo0 * Geo_0.Cells(c).X + percentageGeo * Geo.Cells(c).X;
+                    Geo_0.Cells(c).Y = Set.Reset_PercentageGeo0 * Geo_0.Cells(c).Y + percentageGeo * Geo.Cells(c).Y;
+
+                    for f=1:length(Geo.Cells(c).Faces)
+                        Geo_0.Cells(c).Faces(f).Centre = Set.Reset_PercentageGeo0 * Geo_0.Cells(c).Faces(f).Centre + percentageGeo * Geo.Cells(c).Faces(f).Centre;
+                    end
+                end
+            end
 
             %% Solve remodelling
             Dofs = GetDOFs(Geo, Set);

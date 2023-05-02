@@ -116,18 +116,22 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
             %% Change vertices position to get a better mesh
             for numCell = gNodes_NeighboursShared'
                 if isequal(Geo.Cells(numCell).AliveStatus, 1)
-                    Tets = Geo.Cells(numCell).T;
+                    tets = Geo.Cells(numCell).T;
                     X0 = Geo.Cells(numCell).Y;
                     % Get bottom or top Ys
                     if any(any(ismember(Tnew, Geo.XgBottom)))
-                        idsToChange = any(ismember(Tets, Geo.XgBottom), 2);
+                        idsToChange = any(ismember(tets, Geo.XgBottom), 2);
+                        idsToChange_Faces = ismember(vertcat(Geo.Cells(numCell).Faces.InterfaceType), 'Bottom');
                     elseif any(any(ismember(Tnew, Geo.XgTop)))
-                        idsToChange = any(ismember(Tets, Geo.XgTop), 2);
+                        idsToChange = any(ismember(tets, Geo.XgTop), 2);
+                        idsToChange_Faces = ismember(vertcat(Geo.Cells(numCell).Faces.InterfaceType), 'Top');
                     end
                     
                     X0 = X0(idsToChange, :);
-                    X=X0;
-                    Tets = Tets(idsToChange, :);
+                    faceCentres = vertcat(Geo.Cells(numCell).Faces.Centre);
+                    faceCentres = faceCentres(idsToChange_Faces, :);
+                    X=[X0; faceCentres];
+                    tets = tets(idsToChange, :);
 
                     %plot3(X0(:,1),X0(:,2),X0(:,3),'o')
                     X2D = X(:, 1:2);  % Flatten rotated X
@@ -135,22 +139,18 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
                     
                     T=delaunay(X2D(:,1),X2D(:,2));
                     % GetBoundary based on tets with 3 cells
-                    Xf_tricellular = find(sum(ismember(Tets, Geo.XgID), 2) == 1);
                     Xf = GetBoundary2D(T, X2D);
-%                     Xf_toChange = setdiff(Xf, Xf_tricellular);
-%                     for x_boundary = Xf_toChange
-%                         neighboursBoundary = unique(T(any(ismember(T, x_boundary), 2), :));
-%                         neighboursBoundary_InBoundary = intersect(Xf, neighboursBoundary);
-%                         X2D(x_boundary, :) = mean(X2D(neighboursBoundary_InBoundary, :), 1);
-%                     end
                     X2D0=X2D;
                     [X2D_new,flag,dJ0,dJ]=RegulariseMesh(T,X2D,Xf);
                     % plot 2D meshes
                     % initial mesh
                     Plot2D(dJ,dJ0,T,X2D_new,X2D0,Xf)
                     X=[X2D_new X3];
-                    %X=(R*X')';
-                    Geo.Cells(numCell).Y(idsToChange, :) = X;
+                    Geo.Cells(numCell).Y(idsToChange, :) = X(1:size(X0, 1), :);
+                    idsToChange_id = find(idsToChange_Faces);
+                    for faceID = 1:length(idsToChange_id)
+                        Geo.Cells(numCell).Faces(idsToChange_id(faceID)).Centre = X(faceID + size(X0, 1), :);
+                    end
 %                     Plot3D(dJ,dJ0,T,X,X0);
                 end
             end

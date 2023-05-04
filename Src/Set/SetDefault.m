@@ -68,7 +68,7 @@ function Set = SetDefault(Set)
     DSet.RemodelTol					= 0;
     DSet.contributionOldYs          = 0.2;
     DSet.RemodelStiffness           = 0.9;
-    DSet.Reset_PercentageGeo0       = 0.3; 
+    DSet.Reset_PercentageGeo0       = 0.6; 
     %% ============================ Solution ==============================
     DSet.tol						= 1e-8;
     DSet.MaxIter					= 50;

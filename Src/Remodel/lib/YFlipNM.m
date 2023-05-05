@@ -102,8 +102,8 @@ for path =  paths'
                 volDiff(end+1) = abs(newVol - oldVol) / oldVol;
                 cellWinning(end+1) = sum(any(ismember(newTets, cellToIntercalateWith), 2))/size(newTets, 1);
             catch ex
-                disp(newTets)
-                disp(ex.message)
+                %disp(newTets)
+                %disp(ex.message)
             end
         end
     end

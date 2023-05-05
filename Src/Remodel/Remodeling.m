@@ -57,62 +57,62 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
             end
             
             if hasConverged(numPair)
-                %% Vertices connecting the two intercalating cells should be closer
-                allT = vertcat(Geo.Cells.T);
-                if ismember(ghostNode, Geo.XgBottom)
-                    allT_filtered = allT(any(ismember(allT, Geo.XgBottom), 2), :);
-                elseif ismember(ghostNode, Geo.XgTop)
-                    allT_filtered = allT(any(ismember(allT, Geo.XgTop), 2), :);
-                end
-                
-                % Vertices of cells (i.e. 3 cell nodes, 1 ghost node)
-                verticesToChange = allT_filtered(sum(ismember(allT_filtered, cellNodesShared), 2) == 3, :);
-                verticesToChange = unique(sort(verticesToChange(sum(ismember(verticesToChange, cellNodesShared), 2) == 3, :), 2), 'rows');
-                
-                refTet = any(ismember(verticesToChange, cellToSplitFrom), 2);
-                refPoint = Geo.Cells(cellToSplitFrom).Y(ismember(sort(Geo.Cells(cellToSplitFrom).T, 2), verticesToChange(refTet, :), 'rows'), :);
-                
-                if sum(refTet) > 1
-                    disp('error');
-                end
-                
-                cellsConnected = intersect(verticesToChange(1, :), verticesToChange(2, :));
-                
-                verticesToChange(refTet, :) = [];
-                
-                middleVertexToChange = allT_filtered(sum(ismember(allT_filtered, cellsConnected), 2) == 2 & sum(ismember(allT_filtered, Geo.XgID), 2) == 2, :);
-                middleVertexToChange = unique(sort(middleVertexToChange, 2), 'rows');
-                
-                verticesToChange = vertcat(verticesToChange, middleVertexToChange);
-                
-                closeToNewPoint = 0.2;
-                
-                for tetToCheck = verticesToChange'
-                    for nodeInTet = tetToCheck'
-                        if ~ismember(nodeInTet, Geo.XgID)
-                            newPoint = Geo.Cells(nodeInTet).Y(ismember(sort(Geo.Cells(nodeInTet).T, 2), tetToCheck', 'rows'), :);
+%                 %% Vertices connecting the two intercalating cells should be closer
+%                 allT = vertcat(Geo.Cells.T);
+%                 if ismember(ghostNode, Geo.XgBottom)
+%                     allT_filtered = allT(any(ismember(allT, Geo.XgBottom), 2), :);
+%                 elseif ismember(ghostNode, Geo.XgTop)
+%                     allT_filtered = allT(any(ismember(allT, Geo.XgTop), 2), :);
+%                 end
+%                 
+%                 % Vertices of cells (i.e. 3 cell nodes, 1 ghost node)
+%                 verticesToChange = allT_filtered(sum(ismember(allT_filtered, cellNodesShared), 2) == 3, :);
+%                 verticesToChange = unique(sort(verticesToChange(sum(ismember(verticesToChange, cellNodesShared), 2) == 3, :), 2), 'rows');
+%                 
+%                 refTet = any(ismember(verticesToChange, cellToSplitFrom), 2);
+%                 refPoint = Geo.Cells(cellToSplitFrom).Y(ismember(sort(Geo.Cells(cellToSplitFrom).T, 2), verticesToChange(refTet, :), 'rows'), :);
+%                 
+%                 if sum(refTet) > 1
+%                     disp('error');
+%                 end
+%                 
+%                 cellsConnected = intersect(verticesToChange(1, :), verticesToChange(2, :));
+%                 
+%                 verticesToChange(refTet, :) = [];
+%                 
+%                 middleVertexToChange = allT_filtered(sum(ismember(allT_filtered, cellsConnected), 2) == 2 & sum(ismember(allT_filtered, Geo.XgID), 2) == 2, :);
+%                 middleVertexToChange = unique(sort(middleVertexToChange, 2), 'rows');
+%                 
+%                 verticesToChange = vertcat(verticesToChange, middleVertexToChange);
+%                 
+%                 closeToNewPoint = 0.2;
+%                 
+%                 for tetToCheck = verticesToChange'
+%                     for nodeInTet = tetToCheck'
+%                         if ~ismember(nodeInTet, Geo.XgID)
+%                             newPoint = Geo.Cells(nodeInTet).Y(ismember(sort(Geo.Cells(nodeInTet).T, 2), tetToCheck', 'rows'), :);
+%     
+%                             Geo.Cells(nodeInTet).Y(ismember(sort(Geo.Cells(nodeInTet).T, 2), tetToCheck', 'rows'), :) = refPoint*(1-closeToNewPoint) + newPoint*closeToNewPoint;
+%                         end
+%                     end
+%                 end
+%                 
+%                 %closeToNewPoint = 0.5;
+%                 % Also the vertex middle Scutoid vertex
+%                 for currentCell = cellNodesShared'
+%                     middleVertexTet = all(ismember(Geo.Cells(currentCell).T, cellNodesShared), 2);
+%                     Geo.Cells(currentCell).Y(middleVertexTet, :) = refPoint*(1-closeToNewPoint) + Geo.Cells(currentCell).Y(middleVertexTet, :)*(closeToNewPoint);
+%                 end
+%     
+%                 Geo = BuildXFromY(Geo_n, Geo);
     
-                            Geo.Cells(nodeInTet).Y(ismember(sort(Geo.Cells(nodeInTet).T, 2), tetToCheck', 'rows'), :) = refPoint*(1-closeToNewPoint) + newPoint*closeToNewPoint;
-                        end
-                    end
-                end
-                
-                %closeToNewPoint = 0.5;
-                % Also the vertex middle Scutoid vertex
-                for currentCell = cellNodesShared'
-                    middleVertexTet = all(ismember(Geo.Cells(currentCell).T, cellNodesShared), 2);
-                    Geo.Cells(currentCell).Y(middleVertexTet, :) = refPoint*(1-closeToNewPoint) + Geo.Cells(currentCell).Y(middleVertexTet, :)*(closeToNewPoint);
-                end
-    
-                Geo = BuildXFromY(Geo_n, Geo);
-    
-                Geo   = Rebuild(Geo, Set);
-                Geo   = BuildGlobalIds(Geo);
-                Geo   = UpdateMeasures(Geo);
-                Geo_n = Geo;
-                Geo_0 = Rebuild(Geo_0, Set);
-                Geo_0 = BuildGlobalIds(Geo_0);    
-                PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1);
+%                 Geo   = Rebuild(Geo, Set);
+%                 Geo   = BuildGlobalIds(Geo);
+%                 Geo   = UpdateMeasures(Geo);
+%                 Geo_n = Geo;
+%                 Geo_0 = Rebuild(Geo_0, Set);
+%                 Geo_0 = BuildGlobalIds(Geo_0);    
+%                 PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1);
     
     %             %% Change vertices position to get a better mesh
     %             for numCell = gNodes_NeighboursShared'
@@ -179,18 +179,18 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
     % 
     %             PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+2);
     
-                %% Update Geo_0 to be reset the vertices that we have changed averaging with previous Geo_0 and current Geo
-                percentageGeo = 1 - Set.Reset_PercentageGeo0;
-                for c=cellNode
-                    if ismember(c, Tnew) && ~isempty(Geo.Cells(c).AliveStatus) && Geo.Cells(c).AliveStatus == 1
-                        Geo_0.Cells(c).X = Set.Reset_PercentageGeo0 * Geo_0.Cells(c).X + percentageGeo * Geo.Cells(c).X;
-                        Geo_0.Cells(c).Y = Set.Reset_PercentageGeo0 * Geo_0.Cells(c).Y + percentageGeo * Geo.Cells(c).Y;
-    
-                        for f=1:length(Geo.Cells(c).Faces)
-                            Geo_0.Cells(c).Faces(f).Centre = Set.Reset_PercentageGeo0 * Geo_0.Cells(c).Faces(f).Centre + percentageGeo * Geo.Cells(c).Faces(f).Centre;
-                        end
-                    end
-                end
+%                 %% Update Geo_0 to be reset the vertices that we have changed averaging with previous Geo_0 and current Geo
+%                 percentageGeo = 1 - Set.Reset_PercentageGeo0;
+%                 for c=cellNode
+%                     if ismember(c, Tnew) && ~isempty(Geo.Cells(c).AliveStatus) && Geo.Cells(c).AliveStatus == 1
+%                         Geo_0.Cells(c).X = Set.Reset_PercentageGeo0 * Geo_0.Cells(c).X + percentageGeo * Geo.Cells(c).X;
+%                         Geo_0.Cells(c).Y = Set.Reset_PercentageGeo0 * Geo_0.Cells(c).Y + percentageGeo * Geo.Cells(c).Y;
+%     
+%                         for f=1:length(Geo.Cells(c).Faces)
+%                             Geo_0.Cells(c).Faces(f).Centre = Set.Reset_PercentageGeo0 * Geo_0.Cells(c).Faces(f).Centre + percentageGeo * Geo.Cells(c).Faces(f).Centre;
+%                         end
+%                     end
+%                 end
     
                 %% Solve remodelling
                 Dofs = GetDOFs(Geo, Set);
@@ -205,12 +205,20 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
                     Geo_0 = Geo_0_backup; 
                     PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1);
                     Geo.log = sprintf('%s =>> %s-Flip rejected: did not converge\n', Geo.log, 'Full');
-                    return
+                else
+                    newYgIds = unique([newYgIds; Geo.AssemblegIds]);
+                    Geo   = UpdateMeasures(Geo);
+                    hasConverged = 1;
                 end
-
-                newYgIds = unique([newYgIds; Geo.AssemblegIds]);
-                Geo   = UpdateMeasures(Geo);
-                hasConverged = 1;
+            else
+                % Go back to initial state
+                Geo_backup.log = Geo.log;
+                Geo   = Geo_backup;
+                Geo_n = Geo_n_backup;
+                Dofs = Dofs_backup;
+                Geo_0 = Geo_0_backup;
+                PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1);
+                Geo.log = sprintf('%s =>> %s-Flip rejected: did not converge\n', Geo.log, 'Full');
             end
         end
         

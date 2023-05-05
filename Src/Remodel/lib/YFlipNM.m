@@ -7,6 +7,7 @@ Xs_gToDisconnect = XsToDisconnect(ismember(XsToDisconnect, Geo.XgID));
 % Temporary remove 4-cell tetrahedra
 [tets4Cells] = get4FoldTets(Geo);
 Geo = RemoveTetrahedra(Geo, tets4Cells);
+tets4Cells = unique(sort(tets4Cells, 2), 'rows');
 ghostNodesWithoutDebris = setdiff(Geo.XgID, Geo.RemovedDebrisCells);
 
 Xs = unique(oldTets);
@@ -95,12 +96,14 @@ for path =  paths'
                     newTets(end+1, :) = Xs_c;
                 end
                 [Geo_new] = RemoveTetrahedra(Geo, oldTets);
-                [Geo_new] = AddTetrahedra(Geo_new, newTets, [], Set);
+                [Geo_new] = AddTetrahedra(Geo_new, [newTets; tets4Cells], [], Set);
                 Rebuild(Geo_new, Set);
                 newTets_tree{end+1} = newTets;
                 volDiff(end+1) = abs(newVol - oldVol) / oldVol;
                 cellWinning(end+1) = sum(any(ismember(newTets, cellToIntercalateWith), 2))/size(newTets, 1);
-            catch
+            catch ex
+                disp(newTets)
+                disp(ex.message)
             end
         end
     end

@@ -58,21 +58,6 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
             end
             
             if hasConverged(numPair)
-                %% Update Geo_0 to be reset the vertices that we have changed averaging with previous Geo_0 and current Geo
-                %percentageGeo = 1 - Set.Reset_PercentageGeo0;
-                percentageGeo_0 = 0;
-                percentageGeo = 1 - percentageGeo_0;
-                for c=cellNode
-                    if ismember(c, Tnew) && ~isempty(Geo.Cells(c).AliveStatus) && Geo.Cells(c).AliveStatus == 1
-                        Geo_0.Cells(c).X = percentageGeo_0 * Geo_0.Cells(c).X + percentageGeo * Geo.Cells(c).X;
-                        Geo_0.Cells(c).Y = percentageGeo_0 * Geo_0.Cells(c).Y + percentageGeo * Geo.Cells(c).Y;
-
-                        for f=1:length(Geo.Cells(c).Faces)
-                            Geo_0.Cells(c).Faces(f).Centre = percentageGeo_0 * Geo_0.Cells(c).Faces(f).Centre + percentageGeo * Geo.Cells(c).Faces(f).Centre;
-                        end
-                    end
-                end
-
                 %% Vertices connecting the two intercalating cells should be closer
                 allT = vertcat(Geo.Cells.T);
                 if ismember(ghostNode, Geo.XgBottom)
@@ -101,7 +86,7 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
                 
                 verticesToChange = vertcat(verticesToChange, middleVertexToChange);
                 
-                closeToNewPoint = 0.1;
+                closeToNewPoint = 0.3;
                 
                 for tetToCheck = verticesToChange'
                     for nodeInTet = tetToCheck'
@@ -119,15 +104,14 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
                     middleVertexTet = all(ismember(Geo.Cells(currentCell).T, cellNodesShared), 2);
                     Geo.Cells(currentCell).Y(middleVertexTet, :) = refPoint*(1-closeToNewPoint) + Geo.Cells(currentCell).Y(middleVertexTet, :)*(closeToNewPoint);
                 end
-    
+                
                 Geo = BuildXFromY(Geo_n, Geo);
-    
-                Geo   = Rebuild(Geo, Set);
-                Geo   = BuildGlobalIds(Geo);
+                % Recalculating face centres here based on the previous
+                % change
+                Geo = Rebuild(Geo, Set);
+                Geo = BuildGlobalIds(Geo);
                 Geo   = UpdateMeasures(Geo);
                 Geo_n = Geo;
-                Geo_0 = Rebuild(Geo_0, Set);
-                Geo_0 = BuildGlobalIds(Geo_0);    
                 PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1);
     
     %             %% Change vertices position to get a better mesh
@@ -194,6 +178,24 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
     %             Geo_0 = BuildGlobalIds(Geo_0);
     % 
     %             PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+2);
+% 
+%                 %% Update Geo_0 to be reset the vertices that we have changed averaging with previous Geo_0 and current Geo
+%                 %percentageGeo = 1 - Set.Reset_PercentageGeo0;
+%                 percentageGeo_0 = 0.7;
+%                 percentageGeo = 1 - percentageGeo_0;
+%                 for c=cellNode
+%                     if ismember(c, Tnew) && ~isempty(Geo.Cells(c).AliveStatus) && Geo.Cells(c).AliveStatus == 1
+%                         Geo_0.Cells(c).Y = percentageGeo_0 * Geo_0.Cells(c).Y + percentageGeo * Geo.Cells(c).Y;
+%                     end
+%                 end
+%                 % Change Y positions, and here update face centres based on
+%                 % that
+%                 Geo_0 = Rebuild(Geo_0, Set);
+%                 Geo_0 = BuildGlobalIds(Geo_0);
+%                 %Geo_0   = UpdateMeasures(Geo_0);
+                
+                PostProcessingVTK(Geo_0, Geo_0, Set, Set.iIncr+2);
+
                 %% Solve remodelling
                 Dofs = GetDOFs(Geo, Set);
                 [Dofs, Geo]  = GetRemodelDOFs(allTnew, Dofs, Geo);
@@ -205,7 +207,6 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
                     Geo_n = Geo_n_backup;
                     Dofs = Dofs_backup;
                     Geo_0 = Geo_0_backup; 
-                    PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1);
                     Geo.log = sprintf('%s =>> %s-Flip rejected: did not converge\n', Geo.log, 'Full');
                 else
                     newYgIds = unique([newYgIds; Geo.AssemblegIds]);

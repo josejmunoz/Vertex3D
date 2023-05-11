@@ -18,7 +18,7 @@ function [g, K, energy, Geo] = KgContractility(Geo, Set)
 			end
         end
 
-        if Geo.Cells(c).AliveStatus
+        if Geo.Cells(numCell).AliveStatus
             ge=sparse(size(g, 1), 1);
             
             for numFace = 1:length(currentCell.Faces)

@@ -174,8 +174,6 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
     %             Geo   = BuildGlobalIds(Geo);
     %             Geo   = UpdateMeasures(Geo);
     %             Geo_n = Geo;
-    %             Geo_0 = Rebuild(Geo_0, Set);
-    %             Geo_0 = BuildGlobalIds(Geo_0);
     % 
     %             PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+2);
 % 
@@ -207,7 +205,7 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
                     Geo_n = Geo_n_backup;
                     Dofs = Dofs_backup;
                     Geo_0 = Geo_0_backup; 
-                    Geo.log = sprintf('%s =>> %s-Flip rejected: did not converge\n', Geo.log, 'Full');
+                    Geo.log = sprintf('%s =>> %s-Flip rejected: did not converge1\n', Geo.log, 'Full');
                 else
                     newYgIds = unique([newYgIds; Geo.AssemblegIds]);
                     Geo   = UpdateMeasures(Geo);
@@ -220,9 +218,9 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
                 Geo_n = Geo_n_backup;
                 Dofs = Dofs_backup;
                 Geo_0 = Geo_0_backup;
-                Geo.log = sprintf('%s =>> %s-Flip rejected: did not converge\n', Geo.log, 'Full');
+                Geo.log = sprintf('%s =>> %s-Flip rejected: did not converge2\n', Geo.log, 'Full');
             end
-            PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1);
+            %PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1);
         end
         
         checkedYgIds(end+1:end+size(segmentFeatures, 1), :) = [segmentFeatures{:, 1}, segmentFeatures{:, 2}];

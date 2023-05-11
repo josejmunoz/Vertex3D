@@ -1,8 +1,8 @@
-function [g,K,EnergyV]=KgVolume(Geo, Set)
+function [g,K,Energy_T]=KgVolume(Geo, Set)
 % The residual g and Jacobian K of Volume Energy
 % Energy W_s= sum_cell lambdaV ((V-V0)/V0)^2
     [g, K] = initializeKg(Geo, Set);
-    EnergyV = 0;
+    Energy_T = 0;
 	
 	%% Loop over Cells 
 	% Analytical residual g and Jacobian K
@@ -14,6 +14,7 @@ function [g,K,EnergyV]=KgVolume(Geo, Set)
         end
         
         if Geo.Cells(c).AliveStatus
+            Energy_c = 0;
 		    Cell = Geo.Cells(c);
 		    Ys = Cell.Y;
     	    lambdaV=Set.lambdaV;
@@ -41,9 +42,11 @@ function [g,K,EnergyV]=KgVolume(Geo, Set)
     	    g=g+ge*fact/6; % Volume contribution of each triangle is det(Y1,Y2,Y3)/6
     	    geMatrix = lambdaV*((ge)*(ge')/6/6/Cell.Vol0^2);
     	    K=K+geMatrix;
-    	    EnergyV=EnergyV+lambdaV/2 *((Cell.Vol-Cell.Vol0)/Cell.Vol0)^2;  
+    	    Energy_c=Energy_c+lambdaV/2 *((Cell.Vol-Cell.Vol0)/Cell.Vol0)^2;
+            Energy(c) = Energy_c;
         end
     end
+    Energy_T = sum(Energy);
 end
 
 %%

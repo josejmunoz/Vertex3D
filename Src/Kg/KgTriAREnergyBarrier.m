@@ -1,9 +1,9 @@
-function [g,K,EnergyB]=KgTriAREnergyBarrier(Geo,Set)
+function [g,K,Energy_T]=KgTriAREnergyBarrier(Geo,Set)
 %%KGTRIARENERGYBARRIER Penalise bad aspect ratios
 % The residual g and Jacobian K of  Energy Barrier
 % Energy  WB =
     [g, K] = initializeKg(Geo, Set);
-    EnergyB = 0;
+    Energy_T = 0;
     
     for c = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID]
         if Geo.Remodelling
@@ -13,6 +13,7 @@ function [g,K,EnergyB]=KgTriAREnergyBarrier(Geo,Set)
         end
 
         if Geo.Cells(c).AliveStatus
+            Energy_c = 0;
             Cell = Geo.Cells(c);
             Ys = Cell.Y;
             for f = 1:length(Cell.Faces)
@@ -71,10 +72,12 @@ function [g,K,EnergyB]=KgTriAREnergyBarrier(Geo,Set)
     
                             K= AssembleK(K,Ks,nY);
                         end
-                        EnergyB=EnergyB + Set.lambdaB/2 * sum(w_t);
+                        Energy_c = Energy_c + Set.lambdaB/2 * sum(w_t);
                     end
                 end
             end
+            Energy(c) = Energy_c;
         end
     end
+    Energy_T = sum(Energy);
 end

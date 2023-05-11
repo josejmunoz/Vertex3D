@@ -1,38 +1,39 @@
-function [g, K, energy, Geo] = KgSubstrate(Geo, Set)
+function [g, K, Energy_T, Geo] = KgSubstrate(Geo, Set)
 %KGSUBSTRATE Summary of this function goes here
 %   Detailed explanation goes here
 
     %% Initialize
     [g, K] = initializeKg(Geo, Set); 
     
-    energy = 0;
+    Energy_T = 0;
     
     kSubstrate = Set.kSubstrate;
     
     %% Loop over Cells 
 	% Analytical residual g and Jacobian K
-	for numCell = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID]
-        currentCell = Geo.Cells(numCell);
+	for c = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID]
+        currentCell = Geo.Cells(c);
         if Geo.Remodelling
 			if ~ismember(currentCell.ID, Geo.AssembleNodes)
         		continue
 			end
         end
         
-        if Geo.Cells(numCell).AliveStatus
+        if Geo.Cells(c).AliveStatus
             ge=sparse(size(g, 1), 1);
+            Energy_c = 0;
 
             for numFace = 1:length(currentCell.Faces)
-                currentFace = Geo.Cells(numCell).Faces(numFace);
+                currentFace = Geo.Cells(c).Faces(numFace);
                 if ~isequal(currentFace.InterfaceType, 'Bottom')
                     continue
                 end
                 for currentVertex = unique([currentFace.Tris.Edge currentFace.globalIds])
                     z0 = Set.SubstrateZ;
 
-                    if currentVertex <= length(Geo.Cells(numCell).globalIds)
+                    if currentVertex <= length(Geo.Cells(c).globalIds)
                         currentVertexYs = currentCell.Y(currentVertex, :);
-                        currentGlobalID = Geo.Cells(numCell).globalIds(currentVertex);
+                        currentGlobalID = Geo.Cells(c).globalIds(currentVertex);
                     else
                         currentVertexYs = currentFace.Centre;
                         currentGlobalID = currentVertex;
@@ -43,19 +44,21 @@ function [g, K, energy, Geo] = KgSubstrate(Geo, Set)
                     ge = Assembleg(ge, g_current, currentGlobalID);
 
                     %% Save contractile forces (g) to output
-                    Geo.Cells(numCell).SubstrateG(currentVertex) = g_current(3);
+                    Geo.Cells(c).SubstrateG(currentVertex) = g_current(3);
 
                     %% Calculate Jacobian
                     K_current = computeKSubstrate(kSubstrate);
                     K = AssembleK(K, K_current, currentGlobalID);
 
                     %% Calculate energy
-                    energy = energy + computeEnergySubstrate(kSubstrate, currentVertexYs(:, 3), z0);
+                    Energy_c = Energy_c + computeEnergySubstrate(kSubstrate, currentVertexYs(:, 3), z0);
                 end
             end
             g = g + ge;
+            Energy(c) = Energy_c;
         end
     end
+    Energy_T = sum(Energy);
 end
 
 function [kSubstrate] = computeKSubstrate(K)

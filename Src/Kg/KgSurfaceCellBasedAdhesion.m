@@ -1,6 +1,6 @@
-function [g,K,EnergyS]=KgSurfaceCellBasedAdhesion(Geo, Set)
+function [g,K,Energy_T]=KgSurfaceCellBasedAdhesion(Geo, Set)
 	[g, K] = initializeKg(Geo, Set);
-	EnergyS = 0;
+	Energy_T = 0;
 	for c = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID]
 		if Geo.Remodelling
 			if ~ismember(c,Geo.AssembleNodes)
@@ -11,6 +11,8 @@ function [g,K,EnergyS]=KgSurfaceCellBasedAdhesion(Geo, Set)
 %             continue
 %         end
         
+        Energy_c = 0;
+
 		Cell  = Geo.Cells(c);
 		Ys    = Geo.Cells(c).Y;
 		ge	  = sparse(size(g, 1), 1);
@@ -57,7 +59,9 @@ function [g,K,EnergyS]=KgSurfaceCellBasedAdhesion(Geo, Set)
         end
 		g=g+ge*fact;
 		K=K+(ge)*(ge')/(Cell.Area0^2);
-    	EnergyS=EnergyS+ (1/2)*fact0*fact;
-	end
+    	Energy_c=Energy_c+ (1/2)*fact0*fact;
+        Energy(c) = Energy_c;
+    end
+    Energy_T = sum(Energy);
 end
 

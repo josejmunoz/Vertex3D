@@ -4,10 +4,6 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
     newYgIds = [];
     checkedYgIds = [];
     [segmentFeatures_all] = GetTrisToRemodelOrdered(Geo, Set);
-
-
-    [Geo, Geo_n] = moveVerticesCloserToRefPoint(Geo, Geo_n, Set);
-
     
     %% loop ENERGY-dependant
     while ~isempty(segmentFeatures_all) 
@@ -62,8 +58,8 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
             end
             
             if hasConverged(numPair)
-                [Geo, Geo_n] = moveVerticesCloserToRefPoint(Geo, Geo_n, cellNodesShared, cellToSplitFrom, Set);
-                [Geo_0] = moveVerticesCloserToRefPoint(Geo_0, Geo_n, cellNodesShared, cellToSplitFrom, Set);
+                [Geo, Geo_n] = moveVerticesCloserToRefPoint(Geo, Geo_n, cellNodesShared, cellToSplitFrom, ghostNode, Set);
+                [Geo_0] = moveVerticesCloserToRefPoint(Geo_0, Geo_n, cellNodesShared, cellToSplitFrom, ghostNode, Set);
                 PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1);
                 PostProcessingVTK(Geo_0, Geo_0, Set, Set.iIncr+2);
     

@@ -1,4 +1,4 @@
-function [Geo, Geo_n] = moveVerticesCloserToRefPoint(Geo, Geo_n, cellNodesShared, cellToSplitFrom, Set)
+function [Geo, Geo_n] = moveVerticesCloserToRefPoint(Geo, Geo_n, cellNodesShared, cellToSplitFrom, ghostNode, Set)
 %% Vertices connecting the two intercalating cells should be closer
     
     closeToNewPoint = 0.1;

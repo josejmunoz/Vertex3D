@@ -16,7 +16,7 @@ function [heightLateral, distanceFacesTopBottom] = ComputeCellHeight(Cell)
             allLateralFaceCentres = [allLateralFaceCentres; face];
         end
     end
-    distanceFacesTopBottom = pdist2(mean(allTopFaceCentres), mean(allBottomFaceCentres));
+    distanceFacesTopBottom = pdist2(mean(allTopFaceCentres, 1), mean(allBottomFaceCentres, 1));
     
     %% Get the height as the length of the lateral edges
     lateralEdgesLength = [];

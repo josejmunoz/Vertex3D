@@ -8,11 +8,13 @@ Geo_backup = Geo; Geo_n_backup = Geo_n; Geo_0_backup = Geo_0; Dofs_backup = Dofs
 Geo.log = sprintf('%s =>> %s-Flip: %i %i.\n', Geo.log, flipName, segmentToChange(1), segmentToChange(2));
 
 [Geo] = AddAndRebuildCells(Geo, oldTets, Tnew, Ynew, Set, 1);
+Geo_n = Geo;
 [Geo_0] = AddAndRebuildCells(Geo_0, oldTets, Tnew, Ynew, Set, 0);
-[Geo_n] = AddAndRebuildCells(Geo_n, oldTets, Tnew, Ynew, Set, 0);
+%PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1)
+%PostProcessingVTK(Geo_0, Geo_0, Set, Set.iIncr+2)
 
 if CheckTris(Geo) %%&& ~CheckConvexity(Tnew,Geo_backup)
-    PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1)
+    %PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1)
     if Set.NeedToConverge
         Dofs = GetDOFs(Geo, Set);
         [Dofs, Geo]  = GetRemodelDOFs(Tnew, Dofs, Geo);

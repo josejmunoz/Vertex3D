@@ -107,7 +107,7 @@ function Set = SetDefault(Set)
 	DSet.dt0                        = DSet.tend/DSet.Nincr;
 	DSet.dt                         = DSet.dt0;
 	DSet.MaxIter0					= DSet.MaxIter;
-    DSet.contributionOldFaceCentre  = 0;
+    DSet.contributionOldFaceCentre  = DSet.contributionOldYs;
     %% TODO: ADD IF IN CASE IT IS USED: E.G., Set.InPlaneElasticity
     DSet.OutputFolder=strcat('Result/Remodelling_', Set.InputGeo, '_Cells_', num2str(Set.TotalCells), ...
         '_visc_', num2str(Set.nu), ...

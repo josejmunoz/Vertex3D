@@ -38,8 +38,8 @@ elseif isequal(flipType, 'RemoveNode')
     nodesToCheck = intersect(unique(oldTets), unique(newTets));
     nodesToCheck = nodesToCheck(cellfun(@isempty, {Geo.Cells(nodesToCheck).AliveStatus}));
 
-    [Geo] = RemoveTetrahedra(Geo, oldTets);
-    [Geo] = AddTetrahedra(Geo, newTets);
+    [Geo_new] = RemoveTetrahedra(Geo, Geo, oldTets);
+    [Geo] = AddTetrahedra(Geo_new, Geo, newTets);
     newNeighs = arrayfun(@(x) getNodeNeighbours(Geo, x), nodesToCheck, 'UniformOutput', false);
     newNeighs = cellfun(@(x) x(ismember(x, nodesToCheck)), newNeighs, 'UniformOutput', false);
 
@@ -69,10 +69,10 @@ for numTet = 1:size(newTets, 1)-1
         nextTet = newTets(nextNumTet, :);
         if ~isequal(currentTet, nextTet)
             %% 1st Shape
-            shape1 = vertcat(Geo.Cells(currentTet).X);
+            shape1 = vertcat(Geo_new.Cells(currentTet).X);
             
             %% 2nd Shape
-            shape2 = vertcat(Geo.Cells(nextTet).X);
+            shape2 = vertcat(Geo_new.Cells(nextTet).X);
             reorderingTet = delaunayTriangulation(shape2);
             shape2 = shape2(reorderingTet.ConnectivityList, :);
             

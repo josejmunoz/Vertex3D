@@ -1,9 +1,8 @@
 function Geo = UpdateMeasures(Geo, ids)
 %%
-
-%% SHOULD ONLY BE USED WITH GEO, NOT GEO_0 OR GEO_N
+    %% SHOULD ONLY BE USED WITH GEO, NOT GEO_0 OR GEO_N
     if isequal(Geo.Cells(Geo.nCells).Vol, [])
-        error('Updating measures with an incorrect Geo');
+        disp('Wont update measures with this Geo');
     end
     
     if ~exist('ids', 'var')
@@ -12,7 +11,7 @@ function Geo = UpdateMeasures(Geo, ids)
     else
         resetLengths = 0;
     end
-	for c = ids
+    for c = ids
         if resetLengths
             for f = 1:length(Geo.Cells(c).Faces)
                 [Geo.Cells(c).Faces(f).Area, triAreas]  = ComputeFaceArea(vertcat(Geo.Cells(c).Faces(f).Tris.Edge), Geo.Cells(c).Y, Geo.Cells(c).Faces(f).Centre);
@@ -26,7 +25,7 @@ function Geo = UpdateMeasures(Geo, ids)
                 [Geo.Cells(c).Faces(f).Tris.ContractileG] = deal(0);
             end
         end
-		Geo.Cells(c).Area  = ComputeCellArea(Geo.Cells(c));
-    	Geo.Cells(c).Vol   = ComputeCellVolume(Geo.Cells(c));
+        Geo.Cells(c).Area  = ComputeCellArea(Geo.Cells(c));
+        Geo.Cells(c).Vol   = ComputeCellVolume(Geo.Cells(c));
     end
 end

@@ -58,8 +58,8 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
             end
             
             if hasConverged(numPair)
-                [Geo, Geo_n] = moveVerticesCloserToRefPoint(Geo, Geo_n, cellNodesShared, cellToSplitFrom, ghostNode, Set);
-                [Geo_0] = moveVerticesCloserToRefPoint(Geo_0, Geo_n, cellNodesShared, cellToSplitFrom, ghostNode, Set);
+%                 [Geo, Geo_n] = moveVerticesCloserToRefPoint(Geo, Geo_n, 0.5, cellNodesShared, cellToSplitFrom, ghostNode, Set);
+%                 [Geo_0] = moveVerticesCloserToRefPoint(Geo_0, Geo_n, 0.5, cellNodesShared, cellToSplitFrom, ghostNode, Set);
                 PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1);
                 PostProcessingVTK(Geo_0, Geo_0, Set, Set.iIncr+2);
     
@@ -169,7 +169,7 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
                 Geo_0 = Geo_0_backup;
                 Geo.log = sprintf('%s =>> %s-Flip rejected: did not converge2\n', Geo.log, 'Full');
             end
-            %PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1);
+            PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1);
         end
         
         checkedYgIds(end+1:end+size(segmentFeatures, 1), :) = [segmentFeatures{:, 1}, segmentFeatures{:, 2}];

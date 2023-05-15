@@ -1,8 +1,5 @@
-function [Geo, Geo_n] = moveVerticesCloserToRefPoint(Geo, Geo_n, cellNodesShared, cellToSplitFrom, ghostNode, Set)
+function [Geo, Geo_n] = moveVerticesCloserToRefPoint(Geo, Geo_n, closeToNewPoint, cellNodesShared, cellToSplitFrom, ghostNode, Set)
 %% Vertices connecting the two intercalating cells should be closer
-    
-    closeToNewPoint = 0.1;
-
     allT = vertcat(Geo.Cells.T);
     if ismember(ghostNode, Geo.XgBottom)
         allT_filtered = allT(any(ismember(allT, Geo.XgBottom), 2), :);
@@ -39,8 +36,7 @@ function [Geo, Geo_n] = moveVerticesCloserToRefPoint(Geo, Geo_n, cellNodesShared
             end
         end
     end
-
-    %closeToNewPoint = 0.5;
+    
     % Also the vertex middle Scutoid vertex
     for currentCell = cellNodesShared'
         middleVertexTet = all(ismember(Geo.Cells(currentCell).T, cellNodesShared), 2);

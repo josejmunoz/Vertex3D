@@ -1,12 +1,10 @@
-function [Geo] = AddTetrahedra(Geo, newTets, Ynew, Set)
+function [Geo] = AddTetrahedra(Geo, oldGeo, newTets, Ynew, Set)
 %ADDTETRAHEDRA Summary of this function goes here
 %   Detailed explanation goes here
 
 if ~exist('Ynew', 'var')
     Ynew = [];
 end
-
-oldGeo = Geo;
 
 for newTet = newTets'
     if any(~ismember(newTet, Geo.XgID))

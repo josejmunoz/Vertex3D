@@ -64,7 +64,7 @@ for path =  paths'
     end
 
     %No tets with 4 ghost nodes
-    if all(sum(ismember(newTets, Geo.XgID), 2) < 4)
+    %if all(sum(ismember(newTets, Geo.XgID), 2) < 4)
         itWasFound = 0;
         for numNewTet = 1:length(newTets_tree)
             newTet_tree = newTets_tree{numNewTet};
@@ -98,7 +98,7 @@ for path =  paths'
                         newTets(end+1, :) = Xs_c;
                     end
                     [Geo_new] = RemoveTetrahedra(Geo, oldTets);
-                    [Geo_new] = AddTetrahedra(Geo_new, [newTets; tets4Cells], [], Set);
+                    [Geo_new] = AddTetrahedra(Geo_new, Geo, [newTets; tets4Cells], [], Set);
                     Rebuild(Geo_new, Set);
                     newTets_tree{end+1} = newTets;
                     volDiff(end+1) = abs(newVol - oldVol) / oldVol;
@@ -109,7 +109,7 @@ for path =  paths'
                 end
             end
         end
-    end
+    %end
 end
 if ~isempty(newTets_tree)
     [~, minIndex]=min(volDiff);

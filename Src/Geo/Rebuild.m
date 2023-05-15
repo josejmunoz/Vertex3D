@@ -29,7 +29,10 @@ function Geo = Rebuild(Geo, Set)
                 previousFace = ceil(previousFace/2);
                 oldFaceCentre = oldGeo.Cells(cc).Faces(previousFace).Centre;
             else
+%                 previousFace = any(ismember(vertcat(allCells_oldFaces.ij), cj), 2);
+%                 oldFaceCentre = allCells_oldFaces(previousFace).Centre;
                 oldFaceCentre = [];
+                 %getNodeNeighbours(Geo, 
             end
             
 			Geo.Cells(cc).Faces(j) = BuildFace(cc, cj, face_ids, Geo.nCells, Geo.Cells(cc), Geo.XgID, Set, Geo.XgTop, Geo.XgBottom, oldFaceCentre);            

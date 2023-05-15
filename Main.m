@@ -54,7 +54,7 @@ for numLine = 1:length(Sets)
     prevLog = '';
     tStart = tic;
     didNotConverge = false;
-    %try
+    try
         Geo = Geos{numLine};
         Set = Sets{numLine};
         Geo.log = sprintf('--------- SIMULATION STARTS ---------\n');
@@ -77,10 +77,10 @@ for numLine = 1:length(Sets)
         tEnd = duration(seconds(toc(tStart)));
         tEnd.Format = 'hh:mm:ss';
         Geo.log = sprintf("%s Total real run time %s \n", Geo.log, tEnd);
-%     catch ME
-%         Geo.log = sprintf("%s\n ERROR: %s", Geo.log, ME.message);
-%         fprintf(fopen(Set.log, 'w'), Geo.log);
-%     end
+    catch ME
+        Geo.log = sprintf("%s\n ERROR: %s", Geo.log, ME.message);
+        fprintf(fopen(Set.log, 'w'), Geo.log);
+    end
     fid = fopen(Set.log, 'wt');
     fprintf(fid, '%s\n', Geo.log);
     fclose(fid);

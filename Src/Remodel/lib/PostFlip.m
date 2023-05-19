@@ -9,7 +9,7 @@ Geo.log = sprintf('%s =>> %s-Flip: %i %i.\n', Geo.log, flipName, segmentToChange
 
 [Geo] = AddAndRebuildCells(Geo, oldTets, Tnew, Ynew, Set, 1);
 Geo_n = Geo;
-[Geo_0] = AddAndRebuildCells(Geo_0, oldTets, Tnew, Ynew, Set, 0);
+%[Geo_0] = AddAndRebuildCells(Geo_0, oldTets, Tnew, Ynew, Set, 0);
 %PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1)
 %PostProcessingVTK(Geo_0, Geo_0, Set, Set.iIncr+2)
 

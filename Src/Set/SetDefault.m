@@ -17,7 +17,7 @@ function Set = SetDefault(Set)
     %% Type of inputto obtain  the initial topology of the cells
     DSet.InputGeo               	= 'Voronoi';
     DSet.CellHeight					= 15; %Regarding 1 avg cell diameter
-    DSet.TotalCells					= 9;
+    DSet.TotalCells					= 40;
     %% ===========================  Add Substrate =========================
     DSet.Substrate					= false;
     DSet.kSubstrate					= 0;
@@ -31,7 +31,6 @@ function Set = SetDefault(Set)
     DSet.SurfaceType				= 1;
     DSet.A0eq0						= true;
     DSet.lambdaS1					= 0.5;
-    DSet.lambdaS2					= 0.1;
     DSet.lambdaS1CellFactor			= [];
     DSet.lambdaS2CellFactor			= [];
     DSet.lambdaS3CellFactor			= [];
@@ -66,12 +65,12 @@ function Set = SetDefault(Set)
     %% =========================== Remodelling ============================
     DSet.Remodelling				= true;
     DSet.RemodelTol					= 0;
-    DSet.contributionOldYs          = 0.2;
+    DSet.contributionOldYs          = 0;
     DSet.RemodelStiffness           = 0.9;
-    DSet.Reset_PercentageGeo0       = 0.6; 
+    DSet.Reset_PercentageGeo0       = 0.15; 
     %% ============================ Solution ==============================
     DSet.tol						= 1e-8;
-    DSet.MaxIter					= 50;
+    DSet.MaxIter					= 60;
     DSet.Parallel					= false;
     DSet.Sparse						= false;
     %% ================= Boundary Condition and loading setting ===========
@@ -97,8 +96,9 @@ function Set = SetDefault(Set)
 	%% ========================= Derived variables ========================
     DSet.Nincr                      = DSet.tend*2;
     DSet.RemodelingFrequency        = (DSet.tend/DSet.Nincr);
-    DSet.lambdaS3					= DSet.lambdaS2;
-    DSet.lambdaS4					= DSet.lambdaS2;
+    DSet.lambdaS2					= DSet.lambdaS1 * 0.9;
+    DSet.lambdaS3					= DSet.lambdaS1;
+    DSet.lambdaS4					= DSet.lambdaS1;
     DSet.SubstrateZ                 = -DSet.CellHeight/2;
     DSet.f							= DSet.s/2;
     DSet.nu_LP_Initial				= 1*DSet.nu; %!
@@ -108,16 +108,18 @@ function Set = SetDefault(Set)
 	DSet.dt                         = DSet.dt0;
 	DSet.MaxIter0					= DSet.MaxIter;
     DSet.contributionOldFaceCentre  = DSet.contributionOldYs;
-    %% TODO: ADD IF IN CASE IT IS USED: E.G., Set.InPlaneElasticity
-    DSet.OutputFolder=strcat('Result/Remodelling_', Set.InputGeo, '_Cells_', num2str(Set.TotalCells), ...
-        '_visc_', num2str(Set.nu), ...
-        '_lVol_', num2str(Set.lambdaV), '_muBulk_', num2str(Set.mu_bulk), ...
-        '_lBulk_', num2str(Set.lambda_bulk), '_kSubs_', num2str(Set.kSubstrate), ...
-        '_lt_', num2str(Set.cLineTension), '_pString_', num2str(Set.purseStringStrength),'_deformableL_', num2str(Set.lambdaB), ...
-        '_RemStiff_', num2str(Set.RemodelStiffness), '_shapeElastic_', num2str(Set.Reset_PercentageGeo0), ...
-        '_lS1_', num2str(Set.lambdaS1), '_lS2_', num2str(Set.lambdaS2), ...
-        '_lS3_', num2str(Set.lambdaS3));
         
 	%% ====================== Add missing fields to Set ===================
 	Set = AddDefault(Set, DSet);
+
+    %% TODO: ADD IF IN CASE IT IS USED: E.G., Set.InPlaneElasticity
+    Set.OutputFolder=strcat('Result/', string(datetime('now','Format','MM-dd_SSSSS_')), Set.InputGeo, '_Cells_', num2str(Set.TotalCells), ...
+        '_visc_', num2str(Set.nu), ...
+        '_lVol_', num2str(Set.lambdaV), '_muBulk_', num2str(Set.mu_bulk), ...
+        '_lBulk_', num2str(Set.lambda_bulk), '_kSubs_', num2str(Set.kSubstrate), ...
+        '_lt_', num2str(Set.cLineTension), '_ltInner_', num2str(Set.cLineTensionMembrane), ...
+        '_pString_', num2str(Set.purseStringStrength),'_deformableL_', num2str(Set.lambdaB), ...
+        '_RemStiff_', num2str(Set.RemodelStiffness), '_shapeElastic_', num2str(Set.Reset_PercentageGeo0), ...
+        '_lS1_', num2str(Set.lambdaS1), '_lS2_', num2str(Set.lambdaS2), ...
+        '_lS3_', num2str(Set.lambdaS3));
 end

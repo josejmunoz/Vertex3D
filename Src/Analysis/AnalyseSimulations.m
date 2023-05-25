@@ -6,6 +6,8 @@ function [woundData, paramsPerFile] = AnalyseSimulations(dirToAnalyse, evolution
         paramsPerFile = [];
         dirFiles = dir(dirToAnalyse);
         nameFiles = {};
+        parametersModel = [];
+        steep_curve = [];
         for numDir = 3:length(dirFiles)
             infoFiles = dir(fullfile(dirFiles(numDir).folder, dirFiles(numDir).name, '/status*'));
             if isempty(infoFiles)
@@ -25,15 +27,26 @@ function [woundData, paramsPerFile] = AnalyseSimulations(dirToAnalyse, evolution
             save(fullfile(dirFiles(numDir).folder, strcat('analysisInfo_', dirFiles(numDir).name, '.mat'), 'woundedFeaturesOnly', 'timePoints', 'Set');
             if length(woundedFeaturesOnly)>0
                 woundedFeaturesOnly = [woundedFeaturesOnly{:}];
-                plot(timePoints-timePoints(1), [woundedFeaturesOnly.Area_Top]/woundedFeaturesOnly(1).Area_Top)
+                x = timePoints-timePoints(1);
+                y = [woundedFeaturesOnly.Area_Top]/woundedFeaturesOnly(1).Area_Top;
+                steep_curve(end+1) = y(2);
+                parametersModel(end+1, :) = [Set.cLineTension, Set.cLineTensionMembrane, Set.lambdaV, Set.lambdaS1, Set.lambdaB, Set.nu, Set.kSubstrate, Set.purseStringStrength, Set.lambda_bulk, Set.mu_bulk, x(end)];
+                %y(2) to analyse steep correlation to Set variables
+                xx=[x;x];
+                yy=[y;y];
+                zz=zeros(size(xx));
+                cc = repmat(Set.cLineTension/Set.nu, size(yy));
+                
+                hs=surf(xx,yy,zz,cc,'EdgeColor','interp', 'LineWidth', 4) %// color binded to "y" values
+                
                 hold on;
                 nameFiles{end+1} = dirFiles(numDir).name;
             end
         end
-        %% COLOUR BY A GIVEN PARAMETER OF MODEL
-        %% CORRELATE PARAMETERS WITH VARIABLES
         legend(nameFiles);
-        nameFiles
+        colormap('copper')
+        corr(steep_curve', parametersModel)
+        corr(parametersModel(:, end), parametersModel)
     elseif evolutionAnalysis == 0
         allSetMat = dir(fullfile(dirToAnalyse, '**/Analysis/cellInfo_42.mat'));
         for numFile = 1:length(allSetMat)

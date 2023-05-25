@@ -22,7 +22,7 @@ function [woundData, paramsPerFile] = AnalyseSimulations(dirToAnalyse, evolution
                 end
                 debris_Features = [];
             end
-            save(fullfile(dirFiles(numDir).folder, strcat('analysisInfo_', dirFiles(numDir).name, '.mat'), 'woundedFeaturesOnly', 'timePoints', 'Set');
+            save(fullfile(dirFiles(numDir).folder, strcat('analysisInfo_', dirFiles(numDir).name, '.mat')), 'woundedFeaturesOnly', 'timePoints', 'Set');
             if length(woundedFeaturesOnly)>0
                 woundedFeaturesOnly = [woundedFeaturesOnly{:}];
                 plot(timePoints-timePoints(1), [woundedFeaturesOnly.Area_Top]/woundedFeaturesOnly(1).Area_Top)

@@ -6,24 +6,30 @@ function [woundData, paramsPerFile] = AnalyseSimulations(dirToAnalyse, evolution
         paramsPerFile = [];
         dirFiles = dir(dirToAnalyse);
         nameFiles = {};
-        for numDir = 1:length(dirFiles)
-            infoFiles = dir(fullfile(dirFiles(numDir).folder, dirFiles(numDir).name, '/Analysis/cellInfo_*'));
+        for numDir = 3:length(dirFiles)
+            infoFiles = dir(fullfile(dirFiles(numDir).folder, dirFiles(numDir).name, '/status*'));
             if isempty(infoFiles)
                 continue
             end
-            load(fullfile(dirFiles(numDir).folder, dirFiles(numDir).name, strcat('/Analysis/cellInfo_', num2str(length(infoFiles)), '.mat')));
-            load(fullfile(dirFiles(numDir).folder, dirFiles(numDir).name, 'set.mat'));
-            woundedFeatures = woundFeatures((Set.TInitAblation/Set.tend * Set.Nincr)+1:end);
-            woundedFeaturesOnly = vertcat(woundedFeatures{:});
-            if size(woundedFeaturesOnly, 1) < 7
-                continue
+            woundedFeaturesOnly = {};
+            timePoints = [];
+            for numT = 3:length(infoFiles)
+                load(fullfile(dirFiles(numDir).folder, dirFiles(numDir).name, strcat('status', num2str(numT), '.mat')), 'debris_Features', 't');
+                if length(debris_Features) > 0 
+                    woundedFeaturesOnly{end+1} = debris_Features{1};
+                    timePoints(end+1) = t;
+                end
+                debris_Features = [];
             end
-            apicalArea = woundedFeaturesOnly.wound2DApicalArea;
-            timePoints = (1:length(woundedFeaturesOnly.wound2DApicalArea))*(Set.tend/Set.Nincr*1000);
-            plot(timePoints-timePoints(1), apicalArea/apicalArea(1))
-            hold on;
-            nameFiles{end+1} = dirFiles(numDir).name;
+            if length(woundedFeaturesOnly)>0
+                woundedFeaturesOnly = [woundedFeaturesOnly{:}];
+                plot(timePoints-timePoints(1), [woundedFeaturesOnly.Area_Top]/woundedFeaturesOnly(1).Area_Top)
+                hold on;
+                nameFiles{end+1} = dirFiles(numDir).name;
+            end
         end
+        %% COLOUR BY A GIVEN PARAMETER OF MODEL
+        %% CORRELATE PARAMETERS WITH VARIABLES
         legend(nameFiles);
         nameFiles
     elseif evolutionAnalysis == 0

@@ -1,13 +1,20 @@
-function [woundData, paramsPerFile] = AnalyseSimulations(dirToAnalyse, evolutionAnalysis)
+function [woundData, paramsPerFile, nameFiles] = AnalyseSimulations(dirToAnalyse, evolutionAnalysis)
 %WOUNDFEATURES Summary of this function goes here
 %   Detailed explanation goes here
     if evolutionAnalysis
         woundData = [];
-        paramsPerFile = [];
         dirFiles = dir(dirToAnalyse);
         nameFiles = {};
-        parametersModel = [];
+        nameFiles_onlyClosing = {};
+        paramsPerFile = [];
         steep_curve = [];
+        closingRate = [];
+        figure;
+        ax_all = axes;
+        hold on;
+        figure;
+        ax_onlyClosing = axes;
+        hold on;
         for numDir = 3:length(dirFiles)
             infoFiles = dir(fullfile(dirFiles(numDir).folder, dirFiles(numDir).name, '/status*'));
             if isempty(infoFiles)
@@ -24,29 +31,37 @@ function [woundData, paramsPerFile] = AnalyseSimulations(dirToAnalyse, evolution
                 end
                 debris_Features = [];
             end
-            save(fullfile(dirFiles(numDir).folder, strcat('analysisInfo_', dirFiles(numDir).name, '.mat')), 'woundedFeaturesOnly', 'timePoints', 'Set');
-            if length(woundedFeaturesOnly)>0
+            %save(fullfile(dirFiles(numDir).folder, strcat('analysisInfo_', dirFiles(numDir).name, '.mat')), 'woundedFeaturesOnly', 'timePoints', 'Set');
+            if length(woundedFeaturesOnly)>1
                 woundedFeaturesOnly = [woundedFeaturesOnly{:}];
                 x = timePoints-timePoints(1);
                 y = [woundedFeaturesOnly.Area_Top]/woundedFeaturesOnly(1).Area_Top;
                 steep_curve(end+1) = y(2);
-                parametersModel(end+1, :) = [Set.cLineTension, Set.cLineTensionMembrane, Set.lambdaV, Set.lambdaS1, Set.lambdaB, Set.nu, Set.kSubstrate, Set.purseStringStrength, Set.lambda_bulk, Set.mu_bulk, x(end)];
+                paramsPerFile(end+1, :) = [Set.cLineTension, Set.cLineTensionMembrane, Set.lambdaV, Set.lambdaS1, Set.lambdaB, Set.nu, Set.kSubstrate, Set.purseStringStrength, Set.lambda_bulk, Set.mu_bulk, x(end)];
                 %y(2) to analyse steep correlation to Set variables
                 xx=[x;x];
                 yy=[y;y];
                 zz=zeros(size(xx));
-                cc = repmat(Set.cLineTension/Set.nu, size(yy));
+                cc = repmat(Set.lambdaV/Set.nu, size(yy));
                 
-                hs=surf(xx,yy,zz,cc,'EdgeColor','interp', 'LineWidth', 4) %// color binded to "y" values
-                
-                hold on;
+                sf = surf(ax_all, xx,yy,zz,cc,'EdgeColor','interp', 'LineWidth', 4); %// color binded to "y" values
                 nameFiles{end+1} = dirFiles(numDir).name;
+                closingRate(end+1) = y(end) / max(y);
+
+                woundData(end+1, 1:5) = [y(2), y(end) / max(y), timePoints(end), max([woundedFeaturesOnly.Area_Top]), woundedFeaturesOnly(end).Area_Top];
+
+                if max(y) > y(end)
+                    sf = surf(ax_onlyClosing, xx,yy,zz,cc,'EdgeColor','interp', 'LineWidth', 4); %// color binded to "y" values
+                    nameFiles_onlyClosing{end+1} = dirFiles(numDir).name;
+                end
             end
         end
-        legend(nameFiles);
+        legend(ax_all, nameFiles);
         colormap('copper')
-        corr(steep_curve', parametersModel)
-        corr(parametersModel(:, end), parametersModel)
+        legend(ax_onlyClosing, nameFiles_onlyClosing);
+        corr(woundData(:, 1), paramsPerFile)
+        corr(paramsPerFile(:, end), paramsPerFile)
+        corr(woundData(:, 2), paramsPerFile)
     elseif evolutionAnalysis == 0
         allSetMat = dir(fullfile(dirToAnalyse, '**/Analysis/cellInfo_42.mat'));
         for numFile = 1:length(allSetMat)
@@ -80,4 +95,10 @@ function [woundData, paramsPerFile] = AnalyseSimulations(dirToAnalyse, evolution
         fitglm([paramsPerFile, woundData(1:end-1, 2)])
         fitglm([paramsPerFile, woundData(1:end-1, 3)])
     end
+end
+
+function customLegend(dummyPlot, legendHandles, legendLabels)
+    ax = ancestor(dummyPlot, 'axes'); % Get the axes containing the dummy plot
+    legend(ax, legendHandles, legendLabels, 'Location', 'eastoutside'); % Set the legend with custom handles and labels
+    delete(dummyPlot); % Remove the dummy plot from the plot
 end

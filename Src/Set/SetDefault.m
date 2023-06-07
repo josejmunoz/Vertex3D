@@ -95,6 +95,10 @@ function Set = SetDefault(Set)
 	DSet = Set;
 	%% ========================= Derived variables ========================
     DSet.Nincr                      = DSet.tend*2;
+	%% ====================== Add missing fields to Set ===================
+	Set = AddDefault(Set, DSet);
+    DSet = Set;
+	%% ========================= Derived variables ========================
     DSet.RemodelingFrequency        = (DSet.tend/DSet.Nincr);
     DSet.lambdaS2					= DSet.lambdaS1 * 0.9;
     DSet.lambdaS3					= DSet.lambdaS1;
@@ -119,7 +123,7 @@ function Set = SetDefault(Set)
         '_lBulk_', num2str(Set.lambda_bulk), '_kSubs_', num2str(Set.kSubstrate), ...
         '_lt_', num2str(Set.cLineTension), '_ltInner_', num2str(Set.cLineTensionMembrane), ...
         '_pString_', num2str(Set.purseStringStrength),'_deformableL_', num2str(Set.lambdaB), ...
-        '_RemStiff_', num2str(Set.RemodelStiffness), '_shapeElastic_', num2str(Set.Reset_PercentageGeo0), ...
+        '_RemStiff_', num2str(Set.RemodelStiffness), '_timeFrame_', num2str(Set.dt), ...
         '_lS1_', num2str(Set.lambdaS1), '_lS2_', num2str(Set.lambdaS2), ...
         '_lS3_', num2str(Set.lambdaS3));
 end

@@ -40,6 +40,7 @@ if runningMode == 0
         Sets{end+1} = Set;
         Geos{end+1} = Geo;
         tline = fgetl(fid);
+        clear Set Geo
     end
     fclose(fid);
 else
@@ -48,9 +49,7 @@ else
     tlines = {'"Single execution"'};
 end
 
-%parpool(3);
-
-for numLine = 1:length(Sets) 
+parfor numLine = 1:length(Sets) 
     prevLog = '';
     tStart = tic;
     didNotConverge = false;
@@ -58,10 +57,6 @@ for numLine = 1:length(Sets)
         Geo = Geos{numLine};
         Set = Sets{numLine};
         Geo.log = sprintf('--------- SIMULATION STARTS ---------\n');
-        
-        if isfield(Set, 'OutputFolder')
-            Set = rmfield(Set, 'OutputFolder');
-        end
         
         [Set, Geo, Dofs, t, tr, Geo_0, Geo_b, Geo_n, numStep, relaxingNu, EnergiesPerTimeStep] = InitializeVertexModel(Set, Geo);
         

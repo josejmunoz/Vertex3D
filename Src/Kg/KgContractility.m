@@ -18,18 +18,18 @@ function [g, K, Energy_T, Geo] = KgContractility(Geo, Set)
 			end
         end
 
-        if Geo.Cells(c).AliveStatus
+        if currentCell.AliveStatus
             ge=sparse(size(g, 1), 1);
             Energy_c = 0;
             
             for numFace = 1:length(currentCell.Faces)
-                currentFace = Geo.Cells(c).Faces(numFace);
+                currentFace = currentCell.Faces(numFace);
                 l_i0 = Geo.EdgeLengthAvg_0(double(currentFace.InterfaceType)+1);
                 
                 for numTri = 1:length(currentFace.Tris)
-                    currentTri = Geo.Cells(c).Faces(numFace).Tris(numTri);
-                    n3 = Geo.Cells(c).Faces(numFace).globalIds;
-                    nY_original = [Geo.Cells(c).globalIds(currentTri.Edge)', n3];
+                    currentTri = currentCell.Faces(numFace).Tris(numTri);
+                    n3 = currentCell.Faces(numFace).globalIds;
+                    nY_original = [currentCell.globalIds(currentTri.Edge)', n3];
                     if Geo.Remodelling
                         if ~any(ismember(nY_original, Geo.AssemblegIds))
                             continue
@@ -37,13 +37,18 @@ function [g, K, Energy_T, Geo] = KgContractility(Geo, Set)
                     end
 
                     C = getContractilityBasedOnLocation(currentFace, currentTri, Geo, Set);
-                    if length(currentTri.SharedByCells) == 1
+                    cTensions(2) = C * Set.cLineTensionMembrane;
+                    cTensions(3) = C * Set.cLineTensionMembrane;
+                    
+                    if length(currentTri.SharedByCells) < 2
                         C = C * Set.cLineTensionMembrane;
                     end
 
+                    cTensions(1) = C;
+
                     y1 = currentCell.Y(currentTri.Edge(1), :);
                     y2 = currentCell.Y(currentTri.Edge(2), :);
-                    y3 = Geo.Cells(c).Faces(numFace).Centre;
+                    y3 = currentCell.Faces(numFace).Centre;
 
                     ys(1, :) = {y1, y2};
                     ys(2, :) = {y2, y3};
@@ -53,24 +58,32 @@ function [g, K, Energy_T, Geo] = KgContractility(Geo, Set)
                     nY(2, 1:2) = nY_original([2 3]);
                     nY(3, 1:2) = nY_original([3 1]);
                     
-                    for numY = 1:size(ys, 1)
-                        y_1 = ys{numY, 1}';
-                        y_2 = ys{numY, 2}';
-
-                        %% Calculate residual g
-                        g_current = computeGContractility(l_i0, y_1, y_2, C);
-                        ge = Assembleg(ge, g_current, nY(numY, :));
+%                     if  isequal(currentTri.Location, 'CellCell')
+%                         lengthYs = 1;
+%                     else
+%                         lengthYs = 3;
+%                     end
+                    for numY = 1:2 % 2 because otherwise you go through that one 2 times
+                        if cTensions(numY) > 0
+                            y_1 = ys{numY, 1}';
+                            y_2 = ys{numY, 2}';
     
-                        %% Save contractile forces (g) to output
-                        Geo.Cells(c).Faces(numFace).Tris(numTri).ContractileG = norm(g_current(1:3));
-    
-                        %% Calculate Jacobian
-                        K_current = computeKContractility(l_i0, y_1, y_2, C);
-    
-                        K = AssembleK(K, K_current, nY(numY, :));
-    
-                        %% Calculate energy
-                        Energy_c = Energy_c + computeEnergyContractility(l_i0, norm(y_1 - y_2), C);
+                            %% Calculate residual g
+                            g_current = computeGContractility(l_i0, y_1, y_2, cTensions(numY));
+                            ge = Assembleg(ge, g_current, nY(numY, :));
+                            if numY == 1
+                                %% Save contractile forces (g) to output
+                                currentCell.Faces(numFace).Tris(numTri).ContractileG = norm(g_current(1:3));
+                            end
+        
+                            %% Calculate Jacobian
+                            K_current = computeKContractility(l_i0, y_1, y_2, cTensions(numY));
+        
+                            K = AssembleK(K, K_current, nY(numY, :));
+        
+                            %% Calculate energy
+                            Energy_c = Energy_c + computeEnergyContractility(l_i0, norm(y_1 - y_2), C);
+                        end
                     end
                 end
             end

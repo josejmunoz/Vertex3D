@@ -37,7 +37,7 @@ function [woundData, paramsPerFile, nameFiles] = AnalyseSimulations(dirToAnalyse
                 x = timePoints-timePoints(1);
                 y = [woundedFeaturesOnly.Area_Top]/woundedFeaturesOnly(1).Area_Top;
                 steep_curve(end+1) = y(2);
-                paramsPerFile(end+1, :) = [Set.cLineTension, Set.cLineTensionMembrane, Set.lambdaV, Set.lambdaS1, Set.lambdaB, Set.nu, Set.kSubstrate, Set.purseStringStrength, Set.lambda_bulk, Set.mu_bulk, x(end)];
+                paramsPerFile(end+1, :) = [Set.cLineTension, Set.cLineTensionMembrane, Set.lambdaV, Set.lambdaS1, Set.lambdaB, Set.nu, Set.kSubstrate, Set.purseStringStrength, Set.lambda_bulk, Set.mu_bulk, x(end), Set.dt0];
                 %y(2) to analyse steep correlation to Set variables
                 xx=[x;x];
                 yy=[y;y];

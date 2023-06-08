@@ -79,8 +79,9 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
         end
     else
         Geo.log = sprintf('%s Convergence was not achieved ... \n', Geo.log);
-        Geo.log = sprintf('%s STEP %i has converged ...\n',Geo.log, Set.iIncr);
+        Geo.log = sprintf('%s STEP %i has NOT converged ...\n',Geo.log, Set.iIncr);
         
+        Geo_b.log = Geo.log;
         Geo = Geo_b;
         relaxingNu = false;
         if Set.iter == Set.MaxIter0

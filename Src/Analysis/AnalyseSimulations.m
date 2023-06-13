@@ -33,6 +33,10 @@ function [woundData, paramsPerFile, nameFiles] = AnalyseSimulations(dirToAnalyse
             end
             %save(fullfile(dirFiles(numDir).folder, strcat('analysisInfo_', dirFiles(numDir).name, '.mat')), 'woundedFeaturesOnly', 'timePoints', 'Set');
             if length(woundedFeaturesOnly)>1
+                load(fullfile(dirFiles(numDir).folder, dirFiles(numDir).name, strcat('status', num2str(numT), '.mat')), 'Geo_0', 'Geo_n', 'Geo', 'Set');
+                [~, ~, ~, ~, Energies] = KgGlobal(Geo_0, Geo_n, Geo, Set);
+                energiesCell = struct2cell(Energies);
+                [~, paramIndex] = max([energiesCell{:}]);
                 woundedFeaturesOnly = [woundedFeaturesOnly{:}];
                 x = timePoints-timePoints(1);
                 y = [woundedFeaturesOnly.Area_Top]/woundedFeaturesOnly(1).Area_Top;
@@ -42,7 +46,7 @@ function [woundData, paramsPerFile, nameFiles] = AnalyseSimulations(dirToAnalyse
                 xx=[x;x];
                 yy=[y;y];
                 zz=zeros(size(xx));
-                cc = repmat(Set.lambdaV/Set.nu, size(yy));
+                cc = repmat(paramIndex, size(yy));
                 
                 sf = surf(ax_all, xx,yy,zz,cc,'EdgeColor','interp', 'LineWidth', 4); %// color binded to "y" values
                 nameFiles{end+1} = dirFiles(numDir).name;
@@ -57,7 +61,8 @@ function [woundData, paramsPerFile, nameFiles] = AnalyseSimulations(dirToAnalyse
             end
         end
         legend(ax_all, nameFiles);
-        colormap('copper')
+        colormap('colorcube')
+        colorbar('Ticks', 1:6, 'TickLabels', {'Surface', 'Volume', 'Viscosity', 'TriBarrier', 'Contractility', 'Substrate'});
         legend(ax_onlyClosing, nameFiles_onlyClosing);
         corr(woundData(:, 1), paramsPerFile)
         corr(paramsPerFile(:, end), paramsPerFile)

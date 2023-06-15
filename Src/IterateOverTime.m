@@ -3,7 +3,8 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
 %   Detailed explanation goes here
     
     didNotConverge = false;
-    Set.currentT = t;
+    Set.currentT = t; % For ablation
+    
     
     % Debris cells become Ghost nodes when too small or time has passed
     nonDeadCells = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID];
@@ -64,7 +65,7 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
 
             EnergiesPerTimeStep{end+1} = Energies;
             Geo = BuildXFromY(Geo_n, Geo);
-
+            Set.lastTConverged = t;
             t=t+Set.dt;
             Set.dt=min(Set.dt+Set.dt*0.5, Set.dt0);
             Set.MaxIter=Set.MaxIter0;
@@ -86,14 +87,14 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
         relaxingNu = false;
         if Set.iter == Set.MaxIter0
             Geo.log = sprintf('%s First strategy ---> Repeating the step with higher viscosity... \n', Geo.log);
-            Set.MaxIter=Set.MaxIter0*3;
+            Set.MaxIter=Set.MaxIter0*1.1;
             Set.nu=10*Set.nu0;
-        elseif Set.iter == Set.MaxIter && Set.iter > Set.MaxIter0 && Set.dt>Set.dt0/(2^6)
+        elseif Set.iter == Set.MaxIter && Set.iter > Set.MaxIter0 && Set.dt/Set.dt0 > 1.0000e-10
             Geo.log = sprintf('%s Second strategy ---> Repeating the step with half step-size...\n', Geo.log);
             Set.MaxIter=Set.MaxIter0;
             Set.nu=Set.nu0;
             Set.dt=Set.dt/2;
-            t=t+Set.dt;
+            t=Set.lastTConverged+Set.dt;
         else
             Geo.log = sprintf('%s Step %i did not converge!! \n', Geo.log, Set.iIncr);
             didNotConverge = true;

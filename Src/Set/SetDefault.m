@@ -70,9 +70,10 @@ function Set = SetDefault(Set)
     DSet.Reset_PercentageGeo0       = 0.15; 
     %% ============================ Solution ==============================
     DSet.tol						= 1e-8;
-    DSet.MaxIter					= 60;
+    DSet.MaxIter					= 30;
     DSet.Parallel					= false;
     DSet.Sparse						= false;
+    DSet.lastTConverged             = 0;
     %% ================= Boundary Condition and loading setting ===========
     DSet.BC							= nan;
     DSet.VFixd						= -inf;

@@ -18,7 +18,6 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
     end
     
     if ~relaxingNu
-        Geo_b = Geo;
         Set.iIncr=numStep;
         
         %% Wounding
@@ -70,6 +69,7 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
             Set.dt=min(Set.dt+Set.dt*0.5, Set.dt0);
             Set.MaxIter=Set.MaxIter0;
             numStep=numStep+1;
+            Geo_b = Geo;
             Geo_n = Geo;
             PostProcessingVTK(Geo, Geo_0, Set, numStep)
 
@@ -84,12 +84,13 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
         
         Geo_b.log = Geo.log;
         Geo = Geo_b;
+        Geo_n = Geo;
         relaxingNu = false;
         if Set.iter == Set.MaxIter0
             Geo.log = sprintf('%s First strategy ---> Repeating the step with higher viscosity... \n', Geo.log);
             Set.MaxIter=Set.MaxIter0*1.1;
             Set.nu=10*Set.nu0;
-        elseif Set.iter == Set.MaxIter && Set.iter > Set.MaxIter0 && Set.dt/Set.dt0 > 1.0000e-10
+        elseif Set.iter == Set.MaxIter && Set.iter > Set.MaxIter0 && Set.dt/Set.dt0 > 1.0000e-4
             Geo.log = sprintf('%s Second strategy ---> Repeating the step with half step-size...\n', Geo.log);
             Set.MaxIter=Set.MaxIter0;
             Set.nu=Set.nu0;

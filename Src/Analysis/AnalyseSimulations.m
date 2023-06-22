@@ -22,24 +22,32 @@ function [woundData, paramsPerFile, nameFiles] = AnalyseSimulations(dirToAnalyse
             end
             woundedFeaturesOnly = {};
             timePoints = [];
-            load(fullfile(dirFiles(numDir).folder, dirFiles(numDir).name, 'status1.mat'), 'Set');
-            for numT = 3:length(infoFiles)
-                load(fullfile(dirFiles(numDir).folder, dirFiles(numDir).name, strcat('status', num2str(numT), '.mat')), 'debris_Features', 't');
-                if length(debris_Features) > 0 
-                    woundedFeaturesOnly{end+1} = debris_Features{1};
+            wholeTissue = [];
+            [~, indices] = sortrows(vertcat(infoFiles.date));
+            load(fullfile(dirFiles(numDir).folder, dirFiles(numDir).name, infoFiles(indices(1)).name), 'Set');
+            for numT = indices'
+                load(fullfile(dirFiles(numDir).folder, dirFiles(numDir).name, infoFiles(numT).name), 'debris_Features', 'nonDebris_Features', 't');
+                if length(debris_Features) > 0
+                    nonDebris_Cells = struct2table([nonDebris_Features{:}]);
+                    if isempty(wholeTissue)
+                        debrisCell = debris_Features{1};
+                        wholeTissue = sum(table2array(nonDebris_Cells)) + table2array(struct2table(debrisCell));
+                    end
+                    woundedFeaturesOnly{end+1} = wholeTissue - sum(table2array(nonDebris_Cells));
                     timePoints(end+1) = t;
                 end
                 debris_Features = [];
             end
             %save(fullfile(dirFiles(numDir).folder, strcat('analysisInfo_', dirFiles(numDir).name, '.mat')), 'woundedFeaturesOnly', 'timePoints', 'Set');
             if length(woundedFeaturesOnly)>1
-                woundedFeaturesOnly = [woundedFeaturesOnly{:}];
+                woundedFeaturesOnly = vertcat(woundedFeaturesOnly{:});
                 x = timePoints-timePoints(1);
-                y = [woundedFeaturesOnly.Area_Top]/woundedFeaturesOnly(1).Area_Top;
+                y = [woundedFeaturesOnly(:, 4)]/woundedFeaturesOnly(1, 4);
                 steep_curve(end+1) = y(2);
                 paramsPerFile(end+1, :) = [Set.cLineTension, Set.cLineTensionMembrane, Set.lambdaV, Set.lambdaS1, Set.lambdaB, Set.nu, Set.kSubstrate, Set.purseStringStrength, Set.lambda_bulk, Set.mu_bulk, x(end), Set.dt0];
                 %y(2) to analyse steep correlation to Set variables
                 xx=[x;x];
+                y = y';
                 yy=[y;y];
                 zz=zeros(size(xx));
                 cc = repmat(Set.cLineTension, size(yy));
@@ -48,7 +56,7 @@ function [woundData, paramsPerFile, nameFiles] = AnalyseSimulations(dirToAnalyse
                 nameFiles{end+1} = dirFiles(numDir).name;
                 closingRate(end+1) = y(end) / max(y);
 
-                woundData(end+1, 1:5) = [y(2)/(x(2) - x(1)), y(end) / max(y), timePoints(end), max([woundedFeaturesOnly.Area_Top]), woundedFeaturesOnly(end).Area_Top];
+                woundData(end+1, 1:5) = [y(2)/(x(2) - x(1)), y(end) / max(y), timePoints(end), max([woundedFeaturesOnly(:, 4)]), woundedFeaturesOnly(end, 4)];
 
                 if max(y) > y(end)
                     sf = surf(ax_onlyClosing, xx,yy,zz,cc,'EdgeColor','interp', 'LineWidth', 4); %// color binded to "y" values

@@ -2,7 +2,9 @@ function GeoTests(Geo)
 %GEOTESTS Summary of this function goes here
 %   Detailed explanation goes here
 
-minError = 1e-5;
+minErrorEdge = 1e-5;
+minErrorArea = minErrorEdge^2;
+minErrorVolume = minErrorEdge^3;
 
 %% Test Cells properties:
 % - Volume > 0
@@ -11,10 +13,10 @@ minError = 1e-5;
 % - Area0 > 0
 for cell = Geo.Cells
     if ~isequal(cell.AliveStatus, {}) && ~isequal(cell.AliveStatus, [])
-        assert(cell.Vol > minError)
-        assert(cell.Vol0 > minError)
-        assert(cell.Area > minError)
-        assert(cell.Area0 > minError)
+        assert(cell.Vol > minErrorVolume)
+        assert(cell.Vol0 > minErrorVolume)
+        assert(cell.Area > minErrorArea)
+        assert(cell.Area0 > minErrorArea)
     end
 end
 
@@ -24,8 +26,8 @@ end
 for cell = Geo.Cells
     if ~isequal(cell.AliveStatus, {}) && ~isequal(cell.AliveStatus, [])
         for face = cell.Faces
-            assert(face.Area > minError)
-            assert(face.Area0 > minError)
+            assert(face.Area > minErrorArea)
+            assert(face.Area0 > minErrorArea)
         end
     end
 end
@@ -38,9 +40,9 @@ for cell = Geo.Cells
     if ~isequal(cell.AliveStatus, {}) && ~isequal(cell.AliveStatus, [])
         for face = cell.Faces
             for tris = face.Tris
-                assert(tris.EdgeLength > minError)
-                assert(any(tris.LengthsToCentre > minError))
-                assert(tris.Area > minError)
+                assert(tris.EdgeLength > minErrorEdge)
+                assert(any(tris.LengthsToCentre > minErrorEdge))
+                assert(tris.Area > minErrorArea)
             end
         end
     end

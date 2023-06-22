@@ -57,9 +57,9 @@ function [g,K,Energy_T]=KgTriAREnergyBarrier(Geo,Set)
                             w_t(numY) = norm(v_y1)^2 - norm(v_y2)^2;
                             
                             %% g
-                            gs(1:3, 1) = Set.lambdaB * w_t(numY) * v_y3_1;
-                            gs(4:6, 1) = Set.lambdaB * w_t(numY) * v_y3_2;
-                            gs(7:9, 1) = Set.lambdaB * w_t(numY) * v_y3_3;
+                            gs(1:3, 1) = Set.lambdaR * w_t(numY) * v_y3_1;
+                            gs(4:6, 1) = Set.lambdaR * w_t(numY) * v_y3_2;
+                            gs(7:9, 1) = Set.lambdaR * w_t(numY) * v_y3_3;
 
                             %% gt
                             gt(1:3, 1) = v_y3_1;
@@ -73,11 +73,11 @@ function [g,K,Energy_T]=KgTriAREnergyBarrier(Geo,Set)
                                 -eye(3, 3), eye(3, 3), zeros(3, 3);
                                 eye(3, 3), zeros(3, 3), -eye(3, 3)];
                             
-                            Ks = Set.lambdaB * w_t(numY) * matrixK + Set.lambdaB * (gt * gt');
+                            Ks = Set.lambdaR * w_t(numY) * matrixK + Set.lambdaR * (gt * gt');
     
                             K= AssembleK(K,Ks * 1/(Set.lmin0^4),nY);
                         end
-                        Energy_c = Energy_c + Set.lambdaB/2 * sum(w_t.^2) * 1/(Set.lmin0^4);
+                        Energy_c = Energy_c + Set.lambdaR/2 * sum(w_t.^2) * 1/(Set.lmin0^4);
                     end
                 end
             end

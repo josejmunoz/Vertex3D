@@ -29,25 +29,25 @@ function [g, K, E, Geo, Energies] = KgGlobal(Geo_0, Geo_n, Geo, Set)
 	%% Bending Energy
 	% TODO
     
-% 	%% Triangle Energy Barrier
-% 	if Set.EnergyBarrier
-% 	    [gB,KB,EB] = KgTriEnergyBarrier(Geo, Set);
-%         g = g + gB;
-%         K = K + KB;
-%         E = E + EB;
-%         
-% %         dy_B =-KB\gB;
-%     end
+	%% Triangle Energy Barrier
+    %% TODO: DIFFERENTIATE BETWEEN ENERGY TRI BARRIERS
+	if Set.EnergyBarrierA
+	    [gBA,KBA,EBA] = KgTriEnergyBarrier(Geo, Set);
+        g = g + gBA;
+        K = K + KBA;
+        E = E + EBA;
+        
+        Energies.TriABarrier = EBA;
+    end
     
     %% Triangle Energy Barrier Aspect Ratio
-    if Set.EnergyBarrier
-        [gB,KB,EB] = KgTriAREnergyBarrier(Geo, Set);
-        g = g + gB;
-        K = K + KB;
-        E = E + EB;
-        Energies.TriBarrier = EB;
-
-%         dy_B =-KB\gB;
+    if Set.EnergyBarrierAR
+        [gBAR,KBAR,EBAR] = KgTriAREnergyBarrier(Geo, Set);
+        g = g + gBAR;
+        K = K + KBAR;
+        E = E + EBAR;
+        
+        Energies.TriARBarrier = EBAR;
     end
     
 	%% Propulsion Forces

@@ -69,6 +69,7 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
             GeoTests(Geo)
 
             %% Save
+            PostProcessingVTK(Geo, Geo_0, Set, numStep)
             save(fullfile(pwd, Set.OutputFolder, strcat('status', num2str(numStep),'.mat')), 'Geo', 'Geo_n', 'Geo_0', 'Set', 'Dofs', 'EnergiesPerTimeStep', 't', 'numStep', 'nonDebris_Features', 'debris_Features', 'tr', 'relaxingNu', 'Geo_b')
 
             t=t+Set.dt;
@@ -78,7 +79,6 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
             numStep=numStep+1;
             Geo_b = Geo;
             Geo_n = Geo;
-            PostProcessingVTK(Geo, Geo_0, Set, numStep)
 
             relaxingNu = false;
         else
@@ -97,7 +97,7 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
             Geo.log = sprintf('%s First strategy ---> Repeating the step with higher viscosity... \n', Geo.log);
             Set.MaxIter=Set.MaxIter0*1.1;
             Set.nu=10*Set.nu0;
-        elseif Set.iter == Set.MaxIter && Set.iter > Set.MaxIter0 && Set.dt/Set.dt0 > 1.0000e-4
+        elseif Set.iter == Set.MaxIter && Set.iter > Set.MaxIter0
             Geo.log = sprintf('%s Second strategy ---> Repeating the step with half step-size...\n', Geo.log);
             Set.MaxIter=Set.MaxIter0;
             Set.nu=Set.nu0;

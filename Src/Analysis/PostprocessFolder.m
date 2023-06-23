@@ -4,6 +4,7 @@ dirFiles = dir(dirToAnalyse);
 
 for numDir = 3:length(dirFiles)
     if ~exist(fullfile(dirFiles(numDir).folder, dirFiles(numDir).name, 'Cells'), 'dir')
+        disp(fullfile(dirFiles(numDir).folder, dirFiles(numDir).name))
         infoFiles = dir(fullfile(dirFiles(numDir).folder, dirFiles(numDir).name, '/status*'));
         if isempty(infoFiles)
             continue

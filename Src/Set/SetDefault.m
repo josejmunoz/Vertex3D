@@ -35,10 +35,13 @@ function Set = SetDefault(Set)
     DSet.lambdaS2CellFactor			= [];
     DSet.lambdaS3CellFactor			= [];
     DSet.lambdaS4CellFactor			= [];
-    % Tri energy
-    DSet.EnergyBarrier				= true;
+    % Tri energy Area
+    DSet.EnergyBarrierA				= true;
     DSet.lambdaB					= 5;
     DSet.Beta						= 1;
+    % Tri energy Aspect ratio
+    DSet.EnergyBarrierAR			= true;
+    DSet.lambdaR					= 5;
     % Bending
     DSet.Bending					= false;
     DSet.lambdaBend					= 0.01;
@@ -123,8 +126,8 @@ function Set = SetDefault(Set)
         '_lVol_', num2str(Set.lambdaV), '_muBulk_', num2str(Set.mu_bulk), ...
         '_lBulk_', num2str(Set.lambda_bulk), '_kSubs_', num2str(Set.kSubstrate), ...
         '_lt_', num2str(Set.cLineTension), '_ltInner_', num2str(Set.cLineTensionMembrane), ...
-        '_pString_', num2str(Set.purseStringStrength),'_deformableL_', num2str(Set.lambdaB), ...
-        '_RemStiff_', num2str(Set.RemodelStiffness), '_timeFrame_', num2str(Set.dt), ...
+        '_pString_', num2str(Set.purseStringStrength),'_eTriAreaBarrier_', num2str(Set.lambdaB), ...
+        '_eARBarrier_', num2str(Set.lambdaR), '_RemStiff_', num2str(Set.RemodelStiffness), ...
         '_lS1_', num2str(Set.lambdaS1), '_lS2_', num2str(Set.lambdaS2), ...
         '_lS3_', num2str(Set.lambdaS3));
 end

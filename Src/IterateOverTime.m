@@ -1,24 +1,23 @@
-function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, relaxingNu, Geo_b, didNotConverge] = IterateOverTime(Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, relaxingNu, Geo_b)
+function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, relaxingNu, backupVars, didNotConverge] = IterateOverTime(Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, relaxingNu, backupVars)
 %ITERATEONTIME Summary of this function goes here
 %   Detailed explanation goes here
     
     didNotConverge = false;
     Set.currentT = t; % For ablation
-    
-    
+
     % Debris cells become Ghost nodes when too small or time has passed
     nonDeadCells = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID];
     debrisCells = find([Geo.Cells(nonDeadCells).AliveStatus] == 0);
     nonDebrisCells = find([Geo.Cells(nonDeadCells).AliveStatus] == 1);
     
-    %% REMODELLING
-    if Set.Remodelling && abs(t-tr)>=Set.RemodelingFrequency
-        [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Set);
-        tr = t;
-    end
-    
     if ~relaxingNu
         Set.iIncr=numStep;
+
+        %% REMODELLING
+        if Set.Remodelling && abs(t-tr)>=Set.RemodelingFrequency
+            [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Set);
+            tr = t;
+        end
         
         %% Wounding
         [Geo, Geo_n, Geo_0, Dofs] = ablateCells(Geo, Geo_n, Geo_0, Dofs, Set, t, numStep);
@@ -70,14 +69,15 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
 
             %% Save
             PostProcessingVTK(Geo, Geo_0, Set, numStep)
-            save(fullfile(pwd, Set.OutputFolder, strcat('status', num2str(numStep),'.mat')), 'Geo', 'Geo_n', 'Geo_0', 'Set', 'Dofs', 'EnergiesPerTimeStep', 't', 'numStep', 'nonDebris_Features', 'debris_Features', 'tr', 'relaxingNu', 'Geo_b')
+            save(fullfile(pwd, Set.OutputFolder, strcat('status', num2str(numStep),'.mat')), 'Geo', 'Geo_n', 'Geo_0', 'Set', 'Dofs', 'EnergiesPerTimeStep', 't', 'numStep', 'nonDebris_Features', 'debris_Features', 'tr', 'relaxingNu', 'backupVars.Geo_b')
 
             t=t+Set.dt;
             Set.dt=min(Set.dt+Set.dt*0.5, Set.dt0);
             Set.MaxIter=Set.MaxIter0;
 
             numStep=numStep+1;
-            Geo_b = Geo;
+            backupVars.Geo_b = Geo;
+            backupVars.tr_b = tr;
             Geo_n = Geo;
 
             relaxingNu = false;
@@ -89,8 +89,9 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
         Geo.log = sprintf('%s Convergence was not achieved ... \n', Geo.log);
         Geo.log = sprintf('%s STEP %i has NOT converged ...\n',Geo.log, Set.iIncr);
         
-        Geo_b.log = Geo.log;
-        Geo = Geo_b;
+        backupVars.Geo_b.log = Geo.log;
+        Geo = backupVars.Geo_b;
+        tr = backupVars.tr_b;
         Geo_n = Geo;
         relaxingNu = false;
         if Set.iter == Set.MaxIter0

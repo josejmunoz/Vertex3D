@@ -62,7 +62,7 @@ parfor numLine = 1:length(Sets)
         Set = Sets{numLine};
         Geo.log = sprintf('--------- SIMULATION STARTS ---------\n');
         
-        [Set, Geo, Dofs, t, tr, Geo_0, Geo_b, Geo_n, numStep, relaxingNu, EnergiesPerTimeStep] = InitializeVertexModel(Set, Geo);
+        [Set, Geo, Dofs, t, tr, Geo_0, backupVars, Geo_n, numStep, relaxingNu, EnergiesPerTimeStep] = InitializeVertexModel(Set, Geo);
         
         while t<=Set.tend && ~didNotConverge
             if runningMode == 0
@@ -73,7 +73,7 @@ parfor numLine = 1:length(Sets)
                 disp(strrep(Geo.log, prevLog, ''))
                 prevLog = Geo.log;
             end
-            [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, relaxingNu, Geo_b, didNotConverge] = IterateOverTime(Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, relaxingNu, Geo_b);
+            [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, relaxingNu, backupVars, didNotConverge] = IterateOverTime(Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, relaxingNu, backupVars);
            
         end
     catch ME

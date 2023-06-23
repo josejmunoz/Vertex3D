@@ -1,4 +1,4 @@
-function [Set, Geo, Dofs, t, tr, Geo_0, Geo_b, Geo_n, numStep, relaxingNu, EnergiesPerTimeStep] = InitializeVertexModel(Set, Geo)
+function [Set, Geo, Dofs, t, tr, Geo_0, backupVars, Geo_n, numStep, relaxingNu, EnergiesPerTimeStep] = InitializeVertexModel(Set, Geo)
 %INITIALIZEVERTEXMODEL Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -39,7 +39,8 @@ Geo_n   = Geo;
 [Geo_n.Cells.Vol0] = deal([]);
 [Geo_n.Cells.Area] = deal([]);
 [Geo_n.Cells.Area0] = deal([]);
-Geo_b   = Geo;
+backupVars.Geo_b = Geo;
+backupVars.tr = tr;
 numStep = 1; relaxingNu = false;
 EnergiesPerTimeStep = {};
 

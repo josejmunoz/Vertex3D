@@ -1,4 +1,4 @@
-close all; clear; clc;
+close all; clear all; clc;
 fclose('all');
 addpath(genpath('Src'));
 addpath(genpath('Tests'));
@@ -53,6 +53,8 @@ else
     tlines = {'"Single execution"'};
 end
 
+delete(gcp('nocreate'));
+parpool(8);
 parfor numLine = 1:length(Sets) 
     prevLog = '';
     tStart = tic;

@@ -1,35 +1,42 @@
 function Geo = Rebuild(Geo, Set)
-	% TODO FIXME, whole function needs to be rethought
-	for cc = 1:Geo.nCells
+%%REBUILD 
+% This function HAVE TO rebuild THE WHOLE CELL
+    oldGeo = Geo;
+    nonDeadCells = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID];
+    for cc = nonDeadCells
         Cell = Geo.Cells(cc);
+        
+        for numT = 1:size(Cell.T, 1)
+            tet = Cell.T(numT, :);
+            DT = delaunayTriangulation(vertcat(Geo.Cells(tet).X));
+            if ~any(ismember(tet, Geo.XgID))
+                Geo.Cells(cc).T(numT, :) = tet;
+            else
+                Geo.Cells(cc).T(numT, :) = tet(DT.ConnectivityList);
+            end
+        end
+        
         Neigh_nodes = unique(Geo.Cells(cc).T);
         Neigh_nodes(Neigh_nodes==cc)=[];
-		for j  = 1:length(Neigh_nodes)
-	        cj    = Neigh_nodes(j);
+        for j  = 1:length(Neigh_nodes)
+            cj    = Neigh_nodes(j);
             ij			= [cc, cj];
             face_ids	= sum(ismember(Cell.T,ij),2)==2;
-			% TODO FIXME BAD PROGRAMMING...
-			newFace = true;
-			for jj = 1:length(Geo.Cells(cc).Faces)
-				Face = Geo.Cells(cc).Faces(jj);
-				if ismember(cj, Face.ij)
-					newFace = false;
-					break
-				end
-			end
-			if newFace
-				Geo.Cells(cc).Faces(j+1:length(Geo.Cells(cc).Faces)+1)=Geo.Cells(cc).Faces(j:length(Geo.Cells(cc).Faces));
-				Geo.Cells(cc).Faces(j)=BuildFace(cc, cj, Geo.nCells, Geo.Cells(cc), Geo.XgID, Set);
-				Geo.Cells(cc).Faces(j).Centre = sum(Geo.Cells(cc).Y(face_ids,:),1)/sum(face_ids);
-			else
-				% TODO FIXME, I think this is an unnecessary call most of the time...
-				Geo.Cells(cc).Faces(j).Tris	= BuildEdges(Geo.Cells(cc).T, face_ids, Geo.Cells(cc).Faces(j).Centre, Geo.Cells(cc).X, Geo.Cells(cc).Y);
-            	Geo.Cells(cc).Faces(j).InterfaceType	= BuildInterfaceType(ij, Geo.XgID);
-                Geo.Cells(cc).Faces(j).ij = ij;
-				[Geo.Cells(cc).Faces(j).Area, Geo.Cells(cc).Faces(j).TrisArea] = ComputeFaceArea(Geo.Cells(cc).Faces(j), Geo.Cells(cc).Y);	
-			end
-		end
-		Geo.Cells(cc).Area  = ComputeCellArea(Geo.Cells(cc));
-        Geo.Cells(cc).Vol   = ComputeCellVolume(Geo.Cells(cc));
-	end
+            
+            [oldFaceExists, previousFace] = ismember(cj, [oldGeo.Cells(cc).Faces.ij]);
+            
+            if oldFaceExists
+                previousFace = ceil(previousFace/2);
+                oldFaceCentre = oldGeo.Cells(cc).Faces(previousFace).Centre;
+            else
+%                 previousFace = any(ismember(vertcat(allCells_oldFaces.ij), cj), 2);
+%                 oldFaceCentre = allCells_oldFaces(previousFace).Centre;
+                oldFaceCentre = [];
+                 %getNodeNeighbours(Geo, 
+            end
+            
+			Geo.Cells(cc).Faces(j) = BuildFace(cc, cj, face_ids, Geo.nCells, Geo.Cells(cc), Geo.XgID, Set, Geo.XgTop, Geo.XgBottom, oldFaceCentre);            
+        end
+        Geo.Cells(cc).Faces = Geo.Cells(cc).Faces(1:length(Neigh_nodes));
+    end
 end

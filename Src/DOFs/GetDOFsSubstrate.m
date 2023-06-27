@@ -3,14 +3,11 @@ function [Dofs]=GetDOFsSubstrate(Geo, Set)
     gconstrained = zeros((Geo.numY+Geo.numF+Geo.nCells)*3, 1);
     gprescribed  = zeros((Geo.numY+Geo.numF+Geo.nCells)*3, 1);
 
-    for c = 1:Geo.nCells
+    for c = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID]
         Y     = Geo.Cells(c).Y;
         gIDsY = Geo.Cells(c).globalIds;
         for f = 1:length(Geo.Cells(c).Faces)
             Face = Geo.Cells(c).Faces(f);
-            if length(Face.Tris) == 3
-                continue
-            end
             if Face.Centre(3) <= Set.SubstrateZ
             	gconstrained(dim*(Face.globalIds-1)+3) = 1;
             end

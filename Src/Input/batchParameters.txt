@@ -1,0 +1,1 @@
+Set.nu	= 500; Set.mu_bulk	= 2000; Set.lambda_bulk = 1000;

@@ -1,4 +1,4 @@
-function Face = BuildFace(ci, cj, ncells, Cell, XgID, Set)
+function Face = BuildFace(ci, cj, face_ids, nCells, Cell, XgID, Set, XgTop, XgBottom, oldFaceCentre)
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	% BuildFace:										  
 	%   Completes a single Face struct with already but empty fields. 
@@ -20,16 +20,21 @@ function Face = BuildFace(ci, cj, ncells, Cell, XgID, Set)
 	% Output:															  
 	%   Face : Face struct with filled data        
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%	
-	ij			= [ci, cj];
-	face_ids	= sum(ismember(Cell.T,ij),2)==2; 
+    
+    ij			= [ci, cj];
 
 	Face				= struct();
 	Face.ij				= ij;
 	Face.globalIds		= -1;
-	Face.InterfaceType	= BuildInterfaceType(ij, XgID);
-	Face.Centre			= BuildFaceCentre(ij, ncells,  Cell.X, Cell.Y(face_ids,:), Set.f);
-	Face.Tris			= BuildEdges(Cell.T, face_ids, Face.Centre, Cell.X, Cell.Y);
+	Face.InterfaceType	= BuildInterfaceType(ij, XgID, XgTop, XgBottom);
     
-	[Face.Area, Face.TrisArea]  = ComputeFaceArea(Face, Cell.Y);
+    newFaceCentre = BuildFaceCentre(ij, nCells,  Cell.X, Cell.Y(face_ids,:), Set.f, isequal(Set.InputGeo, 'Bubbles'));
+    if exist('oldFaceCentre', 'var') && ~isempty(oldFaceCentre)
+        newFaceCentre = Set.contributionOldFaceCentre * oldFaceCentre + (1 - Set.contributionOldFaceCentre) * newFaceCentre;
+    end
+    Face.Centre = newFaceCentre;
+	[Face.Tris] = BuildEdges(Cell.T, face_ids, Face.Centre, Face.InterfaceType, Cell.X, Cell.Y, 1:nCells); %%TODO: IMPROVE TO ONLY GET 'NONDEADCELLS'
+    
+	[Face.Area]  = ComputeFaceArea(vertcat(Face.Tris.Edge), Cell.Y, Face.Centre);
     Face.Area0 = Face.Area;
 end

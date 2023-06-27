@@ -1,4 +1,4 @@
-function edges = BuildEdges(Tets, FaceIds, FaceCentre, X, Ys)
+function [Tris] = BuildEdges(Tets, FaceIds, FaceCentre, FaceInterfaceType, X, Ys, nonDeadCells)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % BuildEdges:										  
     %   Obtain the local ids of the edges that define a Face. The order of 
@@ -14,7 +14,10 @@ function edges = BuildEdges(Tets, FaceIds, FaceCentre, X, Ys)
     %	face. That is Geo.Cells(c).Y(edges(e,:),:) will give vertices
     %   defining the edge. Used also for triangle computation
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%	
-	FaceTets = Tets(FaceIds,:);
+	TrisFields = ["Edge", "Area", "AspectRatio", "EdgeLength", "LengthsToCentre", "SharedByCells", "Location", "ContractileG"]; 
+    Tris = BuildStructArray(sum(FaceIds), TrisFields);
+    
+    FaceTets = Tets(FaceIds,:);
 	tet_order = zeros(length(FaceTets),1);
 	% TODO FIXME, initialize, there was a bug here. Is there a more
 	% clean way to write it ?
@@ -29,11 +32,18 @@ function edges = BuildEdges(Tets, FaceIds, FaceCentre, X, Ys)
 		    i = i & ~ismember(1:length(FaceTets),tet_order)';
 		    i = find(i);
             if isempty(i)
-                edges = [];
-                return
+                ME = MException('BuildEdges:TetrahedraOrdering', ... 
+                    sprintf('Cannot create a face with these tetrahedra'));
+                throw(ME);
             end
 		    tet_order(yi) = i(1);
 		    prev_tet = FaceTets(i(1),:);
+        end
+        % Last one should match with the first one
+        if sum(ismember(FaceTets(1, :), prev_tet),2)~=3
+            ME = MException('BuildEdges:TetrahedraOrdering', ...
+                sprintf('Cannot create a face with these tetrahedra'));
+            throw(ME);
         end
     else
         % TODO FIXME is this enough??? will it get flipped later if not
@@ -45,39 +55,59 @@ function edges = BuildEdges(Tets, FaceIds, FaceCentre, X, Ys)
     if length(surf_ids) < 3
 		% Something went really wrong in the simulation, or a flip being 
 		% tested would result in another face being just an edge.
-        edges = [];
-        return
+        ME = MException('BuildEdges:TetrahedraMinSize', ...
+            'Length of the face is lower than 3');
+        throw(ME);
     end
 	surf_ids  = surf_ids(tet_order);
-    % TODO FIXME IS THIS ACCEPTABLE?
-%     if size(FaceTets,1) > 3
 	%% Vertices ordering
 	% The clockwise ordering might be incorrect for some cases, which need
 	% reordering.
-	if size(FaceTets,1) == 3
-		centre = sum(Ys(surf_ids,:))/3;
-	else
-		centre = FaceCentre;
-	end
-    Order=0;
+    Order=zeros(1, length(surf_ids));
     for iii=1:length(surf_ids)
 	    if iii==length(surf_ids)
-		    v1=Ys(surf_ids(iii),:)-centre;
-		    v2=Ys(surf_ids(1),:)-centre;
-		    Order=Order+dot(cross(v1,v2),centre-X)/length(surf_ids);
+		    v1=Ys(surf_ids(iii),:)-FaceCentre;
+		    v2=Ys(surf_ids(1),:)-FaceCentre;
+		    Order(iii)=dot(cross(v1,v2),FaceCentre-X)/length(surf_ids);
 	    else
-		    v1=Ys(surf_ids(iii),:)-centre;
-		    v2=Ys(surf_ids(iii+1),:)-centre;
-		    Order=Order+dot(cross(v1,v2),centre-X)/length(surf_ids);
+		    v1=Ys(surf_ids(iii),:)-FaceCentre;
+		    v2=Ys(surf_ids(iii+1),:)-FaceCentre;
+		    Order(iii)=dot(cross(v1,v2),FaceCentre-X)/length(surf_ids);
 	    end
     end
-	if Order<0 
+	if all(Order<0) 
 	    surf_ids=flip(surf_ids);
+%     elseif any(Order<0)
+%         disp('possible error')
+%         surf_ids(Order < 0)=flip(surf_ids(Order < 0));
     end
-	%% Build edges
-	edges = zeros(length(surf_ids), 2);
-	for yf = 1:length(surf_ids)-1
-		edges(yf,:) = [surf_ids(yf) surf_ids(yf+1)];
+    
+	%% Build edges and identify the ones shared by different cells
+	for currentTri = 1:length(surf_ids)-1
+		Tris(currentTri).Edge = [surf_ids(currentTri) surf_ids(currentTri+1)];
+        %edges shared by different cells
+        currentTris_1 = Tets(Tris(currentTri).Edge(1), :);
+        currentTris_2 = Tets(Tris(currentTri).Edge(2), :);
+        Tris(currentTri).SharedByCells = intersect(currentTris_1(ismember(currentTris_1, nonDeadCells)), currentTris_2(ismember(currentTris_2, nonDeadCells)));
+        
+        % Compute Tris aspect ratio, edge length and LengthsToCentre
+        [Tris(currentTri).EdgeLength, Tris(currentTri).LengthsToCentre, Tris(currentTri).AspectRatio] = ComputeTriLengthMeasurements(Tris, Ys, currentTri, FaceCentre);
 	end
-	edges(end,:) = [surf_ids(end) surf_ids(1)];
+	Tris(length(surf_ids)).Edge = [surf_ids(end) surf_ids(1)];
+    currentTris_1 = Tets(Tris(length(surf_ids)).Edge(1), :);
+    currentTris_2 = Tets(Tris(length(surf_ids)).Edge(2), :);
+    Tris(length(surf_ids)).SharedByCells = intersect(currentTris_1(ismember(currentTris_1, nonDeadCells)), currentTris_2(ismember(currentTris_2, nonDeadCells)));
+    
+    % Compute Tris aspect ratio, edge length and LengthsToCentre
+    [Tris(length(surf_ids)).EdgeLength, Tris(length(surf_ids)).LengthsToCentre, Tris(length(surf_ids)).AspectRatio] = ComputeTriLengthMeasurements(Tris, Ys, length(surf_ids), FaceCentre);
+    
+    % Compute Tris area
+    [~, triAreas] = ComputeFaceArea(vertcat(Tris.Edge), Ys, FaceCentre);
+    [Tris.Area] = triAreas{:};
+    
+    % Add edge location: 'Top/Bottom/Lateral'
+    [Tris.Location] = deal(FaceInterfaceType);
+    
+    % Initialize forces
+    [Tris.ContractileG] = deal(0);
 end

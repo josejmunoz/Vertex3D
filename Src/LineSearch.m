@@ -6,7 +6,7 @@ function [alpha]=LineSearch(Geo_0, Geo_n, Geo, Dofs, Set, gc, dy)
 	[Geo] = UpdateVertices(Geo, Set, dy_reshaped);
 	Geo   = UpdateMeasures(Geo);
 
-	g=KgGlobal(Geo_0, Geo_n, Geo, Set);
+	g = KgGlobal(Geo_0, Geo_n, Geo, Set);
 	dof = Dofs.Free;
 	gr0=norm(gc(dof));   
 	gr=norm(g(dof)); 

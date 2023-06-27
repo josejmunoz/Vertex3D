@@ -15,18 +15,7 @@ function Set = InitiateOutputFolder(Set)
 		end
 	else
 		mkdir(DirOutput)		
-	end
-
-	
-% 	folders = {Set.VTK,      'ResultVTK';
-% 			   Set.VTK_iter, 'ResultVTK_iter'};
-% 
-% 	for f = 1:length(folders)
-% 		newDir = fullfile(DirOutput,'ResultVTK');
-% 		if folders{f,1} && ~exist(newDir,'dir')
-% 			mkdir(newDir)
-% 		end
-%     end
+    end
     Set.log = fullfile(DirOutput, Set.log);
 end
 

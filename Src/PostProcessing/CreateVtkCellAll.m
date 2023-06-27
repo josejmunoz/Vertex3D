@@ -1,5 +1,9 @@
-function CreateVtkCellAll(Geo, Set, Step)
-	%% ============================= INITIATE =============================
+function CreateVtkCellAll(Geo, Geo0, Set, Step)
+
+    %% Create VTKs for each cell
+    [points, ~, cells_type, idCell, measurementsToDisplay] = CreateVtkCell(Geo, Geo0, Set, Step);
+
+    %% 
 	str0=Set.OutputFolder;                          % First Name of the file 
 	fileExtension='.vtk';                            % extension
 	
@@ -15,46 +19,41 @@ function CreateVtkCellAll(Geo, Set, Step)
 	header = header + "Delaunay_vtk\n";
 	header = header + "ASCII\n";
 	header = header + "DATASET UNSTRUCTURED_GRID\n";
-	points = ""; cells = ""; cells_type = "";
-
-	totCells = 0; nverts = 0;
-
-	for c = 1:Geo.nCells
-		Ys = Geo.Cells(c).Y;
-		
-		for yi = 1:length(Ys)
-			points = points + sprintf(" %.8f %.8f %.8f\n",...
-								   Ys(yi,1),Ys(yi,2),Ys(yi,3));
-
-		end
-		nTriFaces = 0;
+	
+    nTris = sum(cellfun(@(x) length(regexp(x, '[\n]')), cells_type));
+    nverts = cellfun(@(x, y) length(x) + length(y), {Geo.Cells.Y}, {Geo.Cells.Faces});
+    
+    %% This needs to be recalculated here since ids are global here and
+    %  local in 'VtkCell'
+    cells = '';
+    for c = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID]
+        lastId = sum(nverts(1:c-1));
 		for f = 1:length(Geo.Cells(c).Faces)
 			Face = Geo.Cells(c).Faces(f);
-			if length(Face.Tris)==3
-				n3 = Face.Tris(2,2)-1;
-				nTriFaces = nTriFaces + 1;
-			else
-				points = points + sprintf(" %.8f %.8f %.8f\n",...
-							Face.Centre(1),Face.Centre(2),Face.Centre(3));
-				n3 = f+length(Ys)-1-nTriFaces;
-			end
-		    for t = 1:length(Face.Tris)
-			    cells    = cells + sprintf("3 %d %d %d\n",...
-							    Face.Tris(t,1)-1+nverts, Face.Tris(t,2)-1+nverts, n3+nverts);
-				totCells = totCells + 1;
-		    end
-		end
-		nverts = nverts + length(Ys) + length(Geo.Cells(c).Faces) - nTriFaces;
-	end
-	for numTries=1:totCells
-    	cells_type = cells_type + sprintf('%d\n',5);
-	end
-	points = sprintf("POINTS %d float\n", nverts) + points;
-	cells  = sprintf("CELLS %d %d\n",totCells,4*totCells) + cells;
-	cells_type = sprintf("CELL_TYPES %d \n", totCells) + cells_type;
-
-	fprintf(fout, header + points + cells + cells_type);
-% 	fprintf(fout, header + points);
-
+            n3 = f+length(Geo.Cells(c).Y)-1;
+            for t = 1:length(Face.Tris)
+                cells = cells + sprintf("3 %d %d %d\n",...
+                    Face.Tris(t).Edge(1)-1+lastId, Face.Tris(t).Edge(2)-1+lastId, n3+lastId);
+            end
+        end
+    end
+    
+	points = sprintf("POINTS %d float\n", sum(nverts)) + strcat(points{:});
+	cells  = sprintf("CELLS %d %d\n",nTris,4*nTris) + cells;
+	cells_type = sprintf("CELL_TYPES %d \n", nTris) + strcat(cells_type{:});
+    idCell = sprintf("CELL_DATA %d \n", nTris) + "SCALARS IDs double\nLOOKUP_TABLE default\n" + strcat(idCell{:});
+    
+    allMeasurements = [measurementsToDisplay{:}];
+    measurementTxt = '';
+    for measurement = fieldnames(allMeasurements)'
+        %if ~contains(measurement{1}, '_')
+            measurementTxt = measurementTxt + "SCALARS " + measurement{1} + " double\nLOOKUP_TABLE default\n";
+            for currentMeasurement = allMeasurements
+                measurementTxt = measurementTxt + currentMeasurement.(measurement{1});
+            end
+        %end
+    end
+    
+	fprintf(fout, header + points + cells + cells_type + idCell + measurementTxt);
 	fclose(fout);
 end

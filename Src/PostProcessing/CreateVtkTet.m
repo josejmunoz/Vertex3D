@@ -18,7 +18,7 @@ function CreateVtkTet(Geo, Set, Step)
 
 	
 	allTets = zeros(0,4);
-	for c = 1:Geo.nCells
+	for c = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID]
 		Ts = Geo.Cells(c).T;
 		allTets(end+1:end+size(Ts,1),:)=Ts-1;
 	end

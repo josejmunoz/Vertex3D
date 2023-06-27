@@ -1,23 +1,29 @@
-function [g,K,EnergyS]=KgSurfaceCellBasedAdhesion(Geo, Set)
+function [g,K,Energy_T]=KgSurfaceCellBasedAdhesion(Geo, Set)
 	[g, K] = initializeKg(Geo, Set);
-	EnergyS = 0;
-	for c = 1:Geo.nCells
+	Energy_T = 0;
+	for c = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID]
 		if Geo.Remodelling
 			if ~ismember(c,Geo.AssembleNodes)
         		continue
 			end
 		end
+%         if Geo.Cells(c).AliveStatus ~= 1
+%             continue
+%         end
+        
+        Energy_c = 0;
+
 		Cell  = Geo.Cells(c);
 		Ys    = Geo.Cells(c).Y;
-		ge	  = zeros(size(g, 1), 1);
+		ge	  = sparse(size(g, 1), 1);
 		fact0 = 0;
 		for f=1:length(Cell.Faces)
 			face = Cell.Faces(f);
-			if face.InterfaceType==0
+			if face.InterfaceType == 'Top'
 				Lambda=Set.lambdaS1*Cell.ExternalLambda;
-			elseif face.InterfaceType==1
+			elseif face.InterfaceType == 'CellCell'
 				Lambda=Set.lambdaS2*Cell.InternalLambda;
-			elseif face.InterfaceType==2
+			elseif face.InterfaceType == 'Bottom'
 				Lambda=Set.lambdaS3*Cell.SubstrateLambda;
 			end
 			fact0=fact0+Lambda*face.Area;
@@ -26,31 +32,22 @@ function [g,K,EnergyS]=KgSurfaceCellBasedAdhesion(Geo, Set)
         for f=1:length(Cell.Faces)
 			face = Cell.Faces(f);
 			Tris=Cell.Faces(f).Tris;
-			if face.InterfaceType==0
+			if face.InterfaceType == 'Top'
 				Lambda=Set.lambdaS1*Cell.ExternalLambda;
-			elseif face.InterfaceType==1
+			elseif face.InterfaceType == 'CellCell'
 				Lambda=Set.lambdaS2*Cell.InternalLambda;
-			elseif face.InterfaceType==2
+			elseif face.InterfaceType == 'Bottom'
 				Lambda=Set.lambdaS3*Cell.SubstrateLambda;
 			end
             for t = 1:length(Tris)
-				y1 = Ys(Tris(t,1),:);
-				y2 = Ys(Tris(t,2),:);
-                if length(Tris) == 3
-					y3 = Ys(Tris(t+1,2),:);
-					n3 = Cell.globalIds(Tris(t+1,2));
-				else
-					y3 = Cell.Faces(f).Centre;
-					n3 = Cell.Faces(f).globalIds;
-                end
-				nY = [Cell.globalIds(Tris(t,:))', n3];
+				y1 = Ys(Tris(t).Edge(1),:);
+				y2 = Ys(Tris(t).Edge(2),:);
+				y3 = Cell.Faces(f).Centre;
+				n3 = Cell.Faces(f).globalIds;
+				nY = [Cell.globalIds(Tris(t).Edge)', n3];
 				if Geo.Remodelling
 					if ~any(ismember(nY,Geo.AssemblegIds))
-                        if length(Tris) == 3
-                            break
-                        else
-                		    continue
-                        end
+                        continue
 					end
 				end
 				[gs,Ks,Kss]=gKSArea(y1,y2,y3);
@@ -58,14 +55,13 @@ function [g,K,EnergyS]=KgSurfaceCellBasedAdhesion(Geo, Set)
             	ge=Assembleg(ge,gs,nY);
 				Ks=fact*Lambda*(Ks+Kss);
 				K = AssembleK(K,Ks,nY);
-				if length(Tris) == 3
-					break
-				end
             end
         end
 		g=g+ge*fact;
 		K=K+(ge)*(ge')/(Cell.Area0^2);
-    	EnergyS=EnergyS+ (1/2)*fact0*fact;
-	end
+    	Energy_c=Energy_c+ (1/2)*fact0*fact;
+        Energy(c) = Energy_c;
+    end
+    Energy_T = sum(Energy);
 end
 

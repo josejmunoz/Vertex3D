@@ -1,96 +1,90 @@
-close all; clear; clc;
+close all; clear all; clc;
 fclose('all');
 addpath(genpath('Src'));
-tStart = tic;
-disp('------------- SIMULATION STARTS -------------');
-% TODO FIXME, I think it would be ideal to call the input on another file,
-% and move the main flow (this file) to another file, so that multiple 
-% simulations can be run from a single file
+addpath(genpath('Tests'));
 
-% Stretch
-Substrate
-% StretchBulk
-% Compress
+runningMode = 0;
 
-Set=SetDefault(Set);
-Set=InitiateOutputFolder(Set);
-Set.flog = fopen(Set.log, 'w+');
+switch runningMode
+    case 1
+        Stretch
+        disp('STRECH SIMULATION');
+    case 2
+        StretchBulk
+        disp('STRECH BULK SIMULATION');
+    case 3
+        Compress
+        disp('COMPRESSION SIMULATION');
+    case 4
+        Remodelling_Bubbles
+        disp('REMODELLING WITH BUBBLES SIMULATION');
+    case 5
+        Remodelling_Voronoi
+        disp('REMODELLING WITH VORONOI SIMULATION');
+    case 0
+        NoBulk
+        disp('REMODELLING WITHOUT BULK');
+%     case 0
+%         BatchSimulations
+%         disp('BATCH SIMULATIONS');
+    otherwise
+        error('Incorrect mode selected');
+end
 
-[Geo, Set] = InitializeGeometry3DVertex(Geo, Set);
-% TODO FIXME, this is bad, should be joined somehow
-if ~Set.Substrate
-    Dofs = GetDOFs(Geo, Set);
+Sets = {};
+Geos = {};
+
+if runningMode == 0
+    fid = fopen(fullfile('Src', 'Input', 'batchParameters.txt'));
+    tline = fgetl(fid);
+    tlines = cell(0,1);
+    while ischar(tline)
+        NoBulk
+        eval(tline)
+        Sets{end+1} = Set;
+        Geos{end+1} = Geo;
+        tline = fgetl(fid);
+        clear Set Geo
+    end
+    fclose(fid);
 else
-    Dofs = GetDOFsSubstrate(Geo, Set);
+    Sets{1} = Set;
+    Geos{1} = Geo;
+    tlines = {'"Single execution"'};
 end
-Geo.Remodelling = false;
 
-t=0; tr=0; tp=0;
-Geo_0   = Geo;
-Geo_n   = Geo;
-numStep = 1; relaxingNu = false;
-
-PostProcessingVTK(Geo, Set, numStep)
-while t<=Set.tend
-	if Set.Remodelling && abs(t-tr)>=Set.RemodelingFrequency
-        [Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Set);
-        tr    = t;
-    end
-    
-    if ~relaxingNu
-	    Geo_b = Geo;
-	    Set.iIncr=numStep;
-        [Geo, Dofs] = ApplyBoundaryCondition(t, Geo, Dofs, Set);
-	    Geo = UpdateMeasures(Geo);
-    end
-    
-	[g,K,E] = KgGlobal(Geo_0, Geo_n, Geo, Set); 
-	[Geo, g, K, Energy, Set, gr, dyr, dy] = NewtonRaphson(Geo_0, Geo_n, Geo, Dofs, Set, K, g, numStep, t);
-
-    if gr<Set.tol && dyr<Set.tol && all(isnan(g(Dofs.Free)) == 0) && all(isnan(dy(Dofs.Free)) == 0) 
-        if Set.nu/Set.nu0 == 1
-	        fprintf('STEP %i has converged ...\n',Set.iIncr)
-    
-            Geo = BuildXFromY(Geo_n, Geo);
-	        tp=t;
-    
-            t=t+Set.dt;
-	        Set.dt=min(Set.dt+Set.dt*0.5, Set.dt0);
-	        Set.MaxIter=Set.MaxIter0;
-	        Set.ApplyBC=true;
-            numStep=numStep+1;
-            Geo_n = Geo;
-            PostProcessingVTK(Geo, Set, numStep)
-            relaxingNu = false;
-        else
-            Set.nu = max(Set.nu/2, Set.nu0);
-            relaxingNu = true;
+delete(gcp('nocreate'));
+parpool(8);
+parfor numLine = 1:length(Sets) 
+    prevLog = '';
+    tStart = tic;
+    didNotConverge = false;
+    try
+        Geo = Geos{numLine};
+        Set = Sets{numLine};
+        Geo.log = sprintf('--------- SIMULATION STARTS ---------\n');
+        
+        [Set, Geo, Dofs, t, tr, Geo_0, backupVars, Geo_n, numStep, relaxingNu, EnergiesPerTimeStep] = InitializeVertexModel(Set, Geo);
+        
+        while t<=Set.tend && ~didNotConverge
+            if runningMode == 0
+                if ~relaxingNu
+                    disp(strcat('Simulation_', num2str(numLine), ' - Time: ', num2str(t)))
+                end 
+            else
+                disp(strrep(Geo.log, prevLog, ''))
+                prevLog = Geo.log;
+            end
+            [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, relaxingNu, backupVars, didNotConverge] = IterateOverTime(Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, relaxingNu, backupVars);
+           
         end
-    else 
-        fprintf('Convergence was not achieved ... \n');
-        Geo = Geo_b;
-        relaxingNu = false;
-        if Set.iter == Set.MaxIter0 
-            fprintf('First strategy ---> Repeating the step with higher viscosity... \n');
-            fprintf(Set.flog, 'First strategy ---> Repeating the step with higher viscosity... \n');
-            Set.MaxIter=Set.MaxIter0*3;
-            Set.nu=10*Set.nu0;
-        elseif Set.iter == Set.MaxIter && Set.iter > Set.MaxIter0 && Set.dt>Set.dt0/(2^6)
-            fprintf('Second strategy ---> Repeating the step with half step-size...\n');
-            fprintf(Set.flog, 'Second strategy ---> Repeating the step with half step-size...\n');
-            Set.MaxIter=Set.MaxIter0;
-            Set.nu=Set.nu0;
-            t=tp;
-            Set.dt=Set.dt/2;
-            t=t+Set.dt;
-        else
-            fprintf('Step %i did not converge!! \n', Set.iIncr);
-            fprintf(Set.flog, 'Step %i did not converge!! \n', Set.iIncr);
-            break;
-        end
+    catch ME
+        Geo.log = sprintf("%s\n ERROR: %s", Geo.log, ME.message);
     end
+    tEnd = duration(seconds(toc(tStart)));
+    tEnd.Format = 'hh:mm:ss';
+    Geo.log = sprintf("%s Total real run time %s \n", Geo.log, tEnd);
+    fid = fopen(Set.log, 'wt');
+    fprintf(fid, '%s\n', Geo.log);
+    fclose(fid);
 end
-tEnd = duration(seconds(toc(tStart)));
-tEnd.Format = 'hh:mm:ss';
-fprintf("Total real run time %s \n",tEnd);
-fprintf(Set.flog, "Total real run time %s \n",tEnd);

@@ -18,3 +18,7 @@ Result
 
 *.xlsx
 *.xls
+
+docs/
+
+*.txt~

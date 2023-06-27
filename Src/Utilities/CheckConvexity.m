@@ -1,4 +1,4 @@
-function [isConvex, tetID]=CheckConvexityCondition(Tnew,Geo)
+function [isConvex, tetID]=CheckConvexity(Tnew,Geo)
 	%CHECKCONVEXITYCONDITION Summary of this function goes here
 	%   Check if the tetrahedron:
 	%   - is already created
@@ -7,7 +7,7 @@ function [isConvex, tetID]=CheckConvexityCondition(Tnew,Geo)
 	
 	isConvex = false;
 	tetID = -1;
-	for c = 1:Geo.nCells
+	for c = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID]
 		Ts = Geo.Cells(c).T;
 	    %% Checking if the same tetrahadron is already on T
 		[foundTets, tetFoundIds] = ismember(sort(Tnew, 2),sort(Ts, 2), 'rows');
@@ -19,7 +19,9 @@ function [isConvex, tetID]=CheckConvexityCondition(Tnew,Geo)
 	end
 	allXs = zeros(length(Geo.Cells),3);
     for c = 1:length(Geo.Cells)
-		allXs(c,:) = Geo.Cells(c).X;
+        if ~isempty(Geo.Cells(c).X)
+            allXs(c,:) = Geo.Cells(c).X;
+        end
     end
 
 	%% Checking if Tnew overlap with other tetrahedra

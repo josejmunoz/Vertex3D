@@ -13,10 +13,11 @@ function Geo = BuildGlobalIds(Geo)
 	%   Geo : Completed Geo struct										  
 	%   Set : User input set struct with added default fields             
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    nonDeadCells = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID];
 
 	gIdsTot = 1;
     gIdsTotf = 1;
-    for ci = 1:Geo.nCells
+    for ci = nonDeadCells
 		Cell = Geo.Cells(ci);
 		% Define two arrays of zeros, for vertices and face centers, 
 		% corresponding to the vertices of the Cell. If any of such 
@@ -29,9 +30,11 @@ function Geo = BuildGlobalIds(Geo)
 			ij = [ci, cj];
 			CellJ = Geo.Cells(cj);
 			face_ids_i	= sum(ismember(Cell.T,ij),2)==2;
-			face_ids_j	= sum(ismember(CellJ.T,ij),2)==2;
-			gIds(face_ids_i) = CellJ.globalIds(face_ids_j);
-
+            
+            for numId = find(face_ids_i)'
+                gIds(numId) = CellJ.globalIds(ismember(sort(CellJ.T, 2), sort(Cell.T(numId, :), 2), 'rows'));
+            end
+            
             for f = 1:length(Cell.Faces)
                 Face = Cell.Faces(f);
 				% Find the Face struct being checked

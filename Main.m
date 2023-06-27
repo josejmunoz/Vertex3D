@@ -3,9 +3,10 @@ fclose('all');
 addpath(genpath('Src'));
 addpath(genpath('Tests'));
 
-runningMode = 0;
+batchMode = 1;
+inputMode = 7;
 
-switch runningMode
+switch inputMode
     case 1
         Stretch
         disp('STRECH SIMULATION');
@@ -21,12 +22,12 @@ switch runningMode
     case 5
         Remodelling_Voronoi
         disp('REMODELLING WITH VORONOI SIMULATION');
-    case 0
+    case 6
         NoBulk
         disp('REMODELLING WITHOUT BULK');
-%     case 0
-%         BatchSimulations
-%         disp('BATCH SIMULATIONS');
+    case 7
+        NoBulk_150
+        disp('REMODELLING WITHOUT BULK 150 CELLS');
     otherwise
         error('Incorrect mode selected');
 end
@@ -34,12 +35,37 @@ end
 Sets = {};
 Geos = {};
 
-if runningMode == 0
+if batchMode
     fid = fopen(fullfile('Src', 'Input', 'batchParameters.txt'));
     tline = fgetl(fid);
     tlines = cell(0,1);
     while ischar(tline)
-        NoBulk
+        switch inputMode
+            case 1
+                Stretch
+                disp('STRECH SIMULATION');
+            case 2
+                StretchBulk
+                disp('STRECH BULK SIMULATION');
+            case 3
+                Compress
+                disp('COMPRESSION SIMULATION');
+            case 4
+                Remodelling_Bubbles
+                disp('REMODELLING WITH BUBBLES SIMULATION');
+            case 5
+                Remodelling_Voronoi
+                disp('REMODELLING WITH VORONOI SIMULATION');
+            case 6
+                NoBulk
+                disp('REMODELLING WITHOUT BULK');
+            case 7
+                NoBulk_150
+                disp('REMODELLING WITHOUT BULK 150 CELLS');
+            otherwise
+                error('Incorrect mode selected');
+        end
+        
         eval(tline)
         Sets{end+1} = Set;
         Geos{end+1} = Geo;
@@ -54,7 +80,7 @@ else
 end
 
 delete(gcp('nocreate'));
-parpool(8);
+parpool(4);
 parfor numLine = 1:length(Sets) 
     prevLog = '';
     tStart = tic;
@@ -67,7 +93,7 @@ parfor numLine = 1:length(Sets)
         [Set, Geo, Dofs, t, tr, Geo_0, backupVars, Geo_n, numStep, relaxingNu, EnergiesPerTimeStep] = InitializeVertexModel(Set, Geo);
         
         while t<=Set.tend && ~didNotConverge
-            if runningMode == 0
+            if batchMode
                 if ~relaxingNu
                     disp(strcat('Simulation_', num2str(numLine), ' - Time: ', num2str(t)))
                 end 

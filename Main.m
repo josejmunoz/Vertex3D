@@ -3,69 +3,18 @@ fclose('all');
 addpath(genpath('Src'));
 addpath(genpath('Tests'));
 
-batchMode = 1;
-inputMode = 7;
-
-switch inputMode
-    case 1
-        Stretch
-        disp('STRECH SIMULATION');
-    case 2
-        StretchBulk
-        disp('STRECH BULK SIMULATION');
-    case 3
-        Compress
-        disp('COMPRESSION SIMULATION');
-    case 4
-        Remodelling_Bubbles
-        disp('REMODELLING WITH BUBBLES SIMULATION');
-    case 5
-        Remodelling_Voronoi
-        disp('REMODELLING WITH VORONOI SIMULATION');
-    case 6
-        NoBulk
-        disp('REMODELLING WITHOUT BULK');
-    case 7
-        NoBulk_150
-        disp('REMODELLING WITHOUT BULK 150 CELLS');
-    otherwise
-        error('Incorrect mode selected');
-end
-
 Sets = {};
 Geos = {};
+
+batchMode = 1;
+inputMode = 7;
 
 if batchMode
     fid = fopen(fullfile('Src', 'Input', 'batchParameters.txt'));
     tline = fgetl(fid);
     tlines = cell(0,1);
     while ischar(tline)
-        switch inputMode
-            case 1
-                Stretch
-                disp('STRECH SIMULATION');
-            case 2
-                StretchBulk
-                disp('STRECH BULK SIMULATION');
-            case 3
-                Compress
-                disp('COMPRESSION SIMULATION');
-            case 4
-                Remodelling_Bubbles
-                disp('REMODELLING WITH BUBBLES SIMULATION');
-            case 5
-                Remodelling_Voronoi
-                disp('REMODELLING WITH VORONOI SIMULATION');
-            case 6
-                NoBulk
-                disp('REMODELLING WITHOUT BULK');
-            case 7
-                NoBulk_150
-                disp('REMODELLING WITHOUT BULK 150 CELLS');
-            otherwise
-                error('Incorrect mode selected');
-        end
-        
+        [Geo, Set] = menu_input(inputMode, batchMode);
         eval(tline)
         Sets{end+1} = Set;
         Geos{end+1} = Geo;
@@ -74,18 +23,21 @@ if batchMode
     end
     fclose(fid);
 else
+    [Geo,Set] = menu_input(inputMode, batchMode);
     Sets{1} = Set;
     Geos{1} = Geo;
     tlines = {'"Single execution"'};
 end
 
+clear Geo Set
+
 delete(gcp('nocreate'));
 parpool(4);
-parfor numLine = 1:length(Sets) 
+for numLine = 1:length(Sets) 
     prevLog = '';
     tStart = tic;
     didNotConverge = false;
-    try
+%     try
         Geo = Geos{numLine};
         Set = Sets{numLine};
         Geo.log = sprintf('--------- SIMULATION STARTS ---------\n');
@@ -104,9 +56,9 @@ parfor numLine = 1:length(Sets)
             [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, relaxingNu, backupVars, didNotConverge] = IterateOverTime(Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, relaxingNu, backupVars);
            
         end
-    catch ME
-        Geo.log = sprintf("%s\n ERROR: %s", Geo.log, ME.message);
-    end
+%     catch ME
+%         Geo.log = sprintf("%s\n ERROR: %s", Geo.log, ME.message);
+%     end
     tEnd = duration(seconds(toc(tStart)));
     tEnd.Format = 'hh:mm:ss';
     Geo.log = sprintf("%s Total real run time %s \n", Geo.log, tEnd);

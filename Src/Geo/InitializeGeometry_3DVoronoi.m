@@ -150,7 +150,7 @@ for c = 1:Geo.nCells
     for f = 1:length(Geo.Cells(c).Faces)
         Face = Cell.Faces(f);
         Set.BarrierTri0=min([vertcat(Face.Tris.Area); Set.BarrierTri0]);
-        Set.lmin0=min([vertcat(Face.Tris.AspectRatio); Set.lmin0]);
+        Set.lmin0=min([min(min(horzcat(vertcat(Face.Tris.LengthsToCentre), vertcat(Face.Tris.EdgeLength)))); Set.lmin0]);
         for tri = Face.Tris
             if tri.Location == 'Top'
                 edgeLengths_Top(end+1) = ComputeEdgeLength(tri.Edge, Geo.Cells(c).Y);
@@ -167,7 +167,7 @@ end
 Geo.AvgEdgeLength_Top = mean(edgeLengths_Top);
 Geo.AvgEdgeLength_Bottom = mean(edgeLengths_Bottom);
 Geo.AvgEdgeLength_Lateral = mean(edgeLengths_Lateral);
-Set.BarrierTri0=Set.BarrierTri0/10;
+Set.BarrierTri0=Set.BarrierTri0/5;
 Set.lmin0 = Set.lmin0*10;
 
 Geo.RemovedDebrisCells = [];

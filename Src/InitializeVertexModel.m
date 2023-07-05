@@ -10,6 +10,8 @@ if isequal(Set.InputGeo, 'Bubbles')
     [Geo, Set] = InitializeGeometry3DVertex(Geo, Set);
 elseif isequal(Set.InputGeo, 'Voronoi')
     [Geo, Set] = InitializeGeometry_3DVoronoi(Geo, Set);
+elseif isequal(Set.InputGeo, 'VertexModelTime')
+    [Geo, Set] = InitializeGeometry_VertexModel2DTime(Geo, Set);
 end
 
 minZs = min(vertcat(Geo.Cells(1:Geo.nCells).Y));

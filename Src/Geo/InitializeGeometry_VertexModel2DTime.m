@@ -49,23 +49,34 @@ function [Geo, Set] = InitializeGeometry_VertexModel2DTime(Geo, Set)
 % end
 % img2DLabelled = uint16(img2DLabelled);
 
-rawImg = imread('input/movie_0000.png');
+indicesToUse = 1:100;
 
-%% TODO: OBTAIN SHAPE OF THE CELLS TO ANALYSE THE ELLIPSE DIAMETER TO OBTAIN ITS REAL CELL HEIGHT
-features2D = regionprops(img2DLabelled, 'all');
-avgDiameter = mean([features2D(1:Set.TotalCells).MajorAxisLength]);
-cellHeight = avgDiameter*Set.CellHeight;
+first = 1;
+imgStackLabelled = tiffreadVolume('input/LblImg_imageSequence.tif');
 
-%% TODO: Reorder here regarding the first cell (?)
+%% Reordering cells based on the centre of the image
+img2DLabelled = imgStackLabelled(:, :, 1);
+centroids = regionprops(img2DLabelled, 'Centroid');
+centroids = round(vertcat(centroids.Centroid));
+imgDims = size(img2DLabelled, 1);
+distanceToMiddle = pdist2([imgDims/2 imgDims/2], centroids);
+[~, sortedId] = sort(distanceToMiddle);
+oldImg2DLabelled = imgStackLabelled;
+newCont = 1;
+for numCell = sortedId
+    imgStackLabelled(oldImg2DLabelled == numCell) = newCont;
+    newCont = newCont + 1;
+end
 
-%% Build 3D topology
-[trianglesConnectivity, neighboursNetwork, cellEdges, verticesOfCell_pos, borderCells] = Build2DVoronoiFromImage(img2DLabelled, watershedImg, 1:Set.TotalCells);
+for numPlane = indicesToUse
+    %% TODO: OBTAIN SHAPE OF THE CELLS TO ANALYSE THE ELLIPSE DIAMETER TO OBTAIN ITS REAL CELL HEIGHT
+    features2D = regionprops(img2DLabelled, 'all');
+    avgDiameter = mean([features2D(1:Set.TotalCells).MajorAxisLength]);
+    cellHeight = avgDiameter*Set.CellHeight;
+    
+    %% Build 3D topology
+[trianglesConnectivity{numPlane}, neighboursNetwork{numPlane}, cellEdges{numPlane}, verticesOfCell_pos{numPlane}, borderCells{numPlane}] = Build2DVoronoiFromImage(img2DLabelled, watershedImg, 1:Set.TotalCells);
 
-seedsXY_topoChanged = [seedsXY(:, 1), seedsXY(:, 2) + rand(size(seedsXY, 1), 1)*distorsion];
-% seedsXY_topoChanged(:, 2) = seedsXY_topoChanged(:, 2) - min(seedsXY_topoChanged(:, 2));
-% seedsXY_topoChanged(:, 2) = seedsXY_topoChanged(:, 2) / max(seedsXY_topoChanged(:, 2));
-
-[trianglesConnectivity_topoChanged, neighboursNetwork_topoChanged, cellEdges_topoChanged, verticesOfCell_pos_topoChanged] = Build2DVoronoiFromImage(img2DLabelled, watershedImg, 1:Set.TotalCells);
 
 %% Create node connections:
 X(:, 1) = mean([seedsXY(:, 1), seedsXY_topoChanged(:, 1)], 2);

@@ -2,56 +2,8 @@ function [Geo, Set] = InitializeGeometry_VertexModel2DTime(Geo, Set)
 %INITIALIZEGEOMETRY_3DVORONOI Summary of this function goes here
 %   Detailed explanation goes here
 
-% nSeeds = Set.TotalCells + 30* Set.TotalCells;
-% imgDims = 3000;
-% lloydIterations = 100;
-% distorsion = 0;
-% 
-% rng default
-% x = randi(imgDims, nSeeds, 1);
-% y = randi(imgDims, nSeeds, 1);
-% 
-% seedsXY = horzcat(x,y);
-% seedsXY = unique(round(seedsXY, 2), 'rows');
-% 
-% %% Get central
-% distanceSeeds = pdist2(seedsXY, [imgDims/2 imgDims/2]);
-% [~, indices] = sort(distanceSeeds);
-% seedsXY = seedsXY(indices, :);
-% 
-% %% Homogeneize voronoi diagram
-% for numIter = 1:lloydIterations
-%     seedsXY(any(isnan(seedsXY), 2), :) = [];
-%     DT = delaunayTriangulation(seedsXY);
-%     [V, D] = voronoiDiagram(DT);
-%     for numCell = 1:size(seedsXY, 1)
-%         currentVertices = V(D{numCell}, :);
-%         seedsXY(numCell, :) = round(mean(currentVertices(all(~isinf(currentVertices), 2), :)));
-%     end
-% end
-% 
-% %% Get an image from it
-% img2D = zeros(imgDims, 'uint16');
-% for numCell = 1:size(seedsXY, 1)
-%     if all(seedsXY(numCell, :) > 0) && all(seedsXY(numCell, :) <= imgDims)
-%         img2D(seedsXY(numCell, 1), seedsXY(numCell, 2)) = 1;
-%     end
-% end
-% 
-% [distances, img2DLabelled] = bwdist(img2D);
-% watershedImg = watershed(distances, 8);
-% 
-% for numCell = 1:size(seedsXY, 1)
-%     if all(seedsXY(numCell, :) > 0) && all(seedsXY(numCell, :) <= imgDims)
-%         oldId = img2DLabelled(seedsXY(numCell, 1), seedsXY(numCell, 2));
-%         img2DLabelled(img2DLabelled == oldId) = numCell;
-%     end
-% end
-% img2DLabelled = uint16(img2DLabelled);
+selectedPlanes = [1, 100];
 
-indicesToUse = 1:100;
-
-first = 1;
 imgStackLabelled = tiffreadVolume('input/LblImg_imageSequence.tif');
 
 %% Reordering cells based on the centre of the image
@@ -68,38 +20,44 @@ for numCell = sortedId
     newCont = newCont + 1;
 end
 
-for numPlane = indicesToUse
-    %% TODO: OBTAIN SHAPE OF THE CELLS TO ANALYSE THE ELLIPSE DIAMETER TO OBTAIN ITS REAL CELL HEIGHT
-    features2D = regionprops(img2DLabelled, 'all');
-    avgDiameter = mean([features2D(1:Set.TotalCells).MajorAxisLength]);
-    cellHeight = avgDiameter*Set.CellHeight;
-    
-    %% Build 3D topology
-[trianglesConnectivity{numPlane}, neighboursNetwork{numPlane}, cellEdges{numPlane}, verticesOfCell_pos{numPlane}, borderCells{numPlane}] = Build2DVoronoiFromImage(img2DLabelled, watershedImg, 1:Set.TotalCells);
+%% Obtaining the aspect ratio of the wing disc
+features2D = regionprops(img2DLabelled, 'all');
+avgDiameter = mean([features2D(1:Set.TotalCells).MajorAxisLength]);
+cellHeight = avgDiameter*Set.CellHeight;
 
+%% Building the topology of each plane
+for numPlane = selectedPlanes
+    [trianglesConnectivity{numPlane}, neighboursNetwork{numPlane}, cellEdges{numPlane}, verticesOfCell_pos{numPlane}, borderCells{numPlane}] = Build2DVoronoiFromImage(imgStackLabelled(:, :, numPlane), imgStackLabelled(:, :, numPlane), 1:Set.TotalCells);
+end
 
-%% Create node connections:
-X(:, 1) = mean([seedsXY(:, 1), seedsXY_topoChanged(:, 1)], 2);
-X(:, 2) = mean([seedsXY(:, 2), seedsXY_topoChanged(:, 2)], 2);
+%% Select nodes from images
+% Using the centroids in 3D as main nodes
+img3DProperties = regionprops3(imgStackLabelled);
+X(:, 1:2) = img3DProperties.Centroid(1:Set.TotalCells, 1:2);
 X(:, 3) = zeros(1, size(X, 1));
-XgTopFaceCentre = horzcat(seedsXY, repmat(cellHeight, length(seedsXY), 1));
-XgBottomFaceCentre = horzcat(seedsXY_topoChanged, repmat(-cellHeight, length(seedsXY_topoChanged), 1));
-XgTopVertices = [verticesOfCell_pos, repmat(cellHeight, size(verticesOfCell_pos, 1), 1)];
-XgBottomVertices = [verticesOfCell_pos_topoChanged, repmat(-cellHeight, size(verticesOfCell_pos_topoChanged, 1), 1)];
 
-X_bottomNodes = vertcat(XgBottomFaceCentre, XgBottomVertices);
-X_bottomIds = size(X, 1) + 1: size(X, 1) + size(X_bottomNodes, 1);
-X_bottomFaceIds = X_bottomIds(1:size(XgBottomFaceCentre, 1));
-X_bottomVerticesIds = X_bottomIds(size(XgBottomFaceCentre, 1)+1:end);
-X = vertcat(X, X_bottomNodes);
+% Using the centroids and vertices of the cells of each 2D image as ghost nodes
+% For now, we will only select 2 planes (top and bottom)
+for numPlane = selectedPlanes
+    XgTopFaceCentre = horzcat(seedsXY, repmat(cellHeight, length(seedsXY), 1));
+    XgBottomFaceCentre = horzcat(seedsXY_topoChanged, repmat(-cellHeight, length(seedsXY_topoChanged), 1));
+    XgTopVertices = [verticesOfCell_pos, repmat(cellHeight, size(verticesOfCell_pos, 1), 1)];
+    XgBottomVertices = [verticesOfCell_pos_topoChanged, repmat(-cellHeight, size(verticesOfCell_pos_topoChanged, 1), 1)];
 
-X_topNodes = vertcat(XgTopFaceCentre, XgTopVertices);
-X_topIds = size(X, 1) + 1: size(X, 1) + size(X_topNodes, 1);
-X_topFaceIds = X_topIds(1:size(XgTopFaceCentre, 1));
-X_topVerticesIds = X_topIds(size(XgTopFaceCentre, 1)+1:end);
-X = vertcat(X, X_topNodes);
+    X_bottomNodes = vertcat(XgBottomFaceCentre, XgBottomVertices);
+    X_bottomIds = size(X, 1) + 1: size(X, 1) + size(X_bottomNodes, 1);
+    X_bottomFaceIds = X_bottomIds(1:size(XgBottomFaceCentre, 1));
+    X_bottomVerticesIds = X_bottomIds(size(XgBottomFaceCentre, 1)+1:end);
+    X = vertcat(X, X_bottomNodes);
 
-xInternal = [1:Set.TotalCells]';
+    X_topNodes = vertcat(XgTopFaceCentre, XgTopVertices);
+    X_topIds = size(X, 1) + 1: size(X, 1) + size(X_topNodes, 1);
+    X_topFaceIds = X_topIds(1:size(XgTopFaceCentre, 1));
+    X_topVerticesIds = X_topIds(size(XgTopFaceCentre, 1)+1:end);
+    X = vertcat(X, X_topNodes);
+
+end
+xInternal = (1:Set.TotalCells)';
 
 %% Create tetrahedra
 [Twg_bottom] = CreateTetrahedra(trianglesConnectivity, neighboursNetwork, cellEdges, xInternal, X_bottomFaceIds, X_bottomVerticesIds);

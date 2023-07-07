@@ -47,7 +47,7 @@ for idPlane = 1:length(selectedPlanes)
     centroids = regionprops(img2DLabelled, 'Centroid');
     centroids = round(vertcat(centroids.Centroid));
     Xg_faceCentres2D = horzcat(centroids, repmat(zCoordinate(idPlane), length(centroids), 1));
-    Xg_vertices2D = [verticesOfCell_pos{numPlane}, repmat(cellHeight, size(verticesOfCell_pos{numPlane}, 1), 1)];
+    Xg_vertices2D = [verticesOfCell_pos{numPlane}, repmat(zCoordinate(idPlane), size(verticesOfCell_pos{numPlane}, 1), 1)];
 
     Xg_nodes = vertcat(Xg_faceCentres2D, Xg_vertices2D);
     Xg_ids = size(X, 1) + 1: size(X, 1) + size(Xg_nodes, 1);

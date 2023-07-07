@@ -3,6 +3,7 @@ function [Geo, Set] = InitializeGeometry_VertexModel2DTime(Geo, Set)
 %   Detailed explanation goes here
 
 selectedPlanes = [1, 100];
+xInternal = (1:Set.TotalCells)';
 
 imgStackLabelled = tiffreadVolume('input/LblImg_imageSequence.tif');
 
@@ -38,40 +39,37 @@ X(:, 3) = zeros(1, size(X, 1));
 
 % Using the centroids and vertices of the cells of each 2D image as ghost nodes
 % For now, we will only select 2 planes (top and bottom)
-for numPlane = selectedPlanes
-    XgTopFaceCentre = horzcat(seedsXY, repmat(cellHeight, length(seedsXY), 1));
-    XgBottomFaceCentre = horzcat(seedsXY_topoChanged, repmat(-cellHeight, length(seedsXY_topoChanged), 1));
-    XgTopVertices = [verticesOfCell_pos, repmat(cellHeight, size(verticesOfCell_pos, 1), 1)];
-    XgBottomVertices = [verticesOfCell_pos_topoChanged, repmat(-cellHeight, size(verticesOfCell_pos_topoChanged, 1), 1)];
+zCoordinate = [cellHeight, -cellHeight];
+Twg = [];
+for idPlane = 1:length(selectedPlanes)
+    numPlane = selectedPlanes(idPlane);
+    img2DLabelled = imgStackLabelled(:, :, numPlane);
+    centroids = regionprops(img2DLabelled, 'Centroid');
+    Xg_faceCentres2D = horzcat(centroids, repmat(zCoordinate(idPlane), length(centroids), 1));
+    Xg_vertices2D = [verticesOfCell_pos{numPlane}, repmat(cellHeight, size(verticesOfCell_pos{numPlane}, 1), 1)];
 
-    X_bottomNodes = vertcat(XgBottomFaceCentre, XgBottomVertices);
-    X_bottomIds = size(X, 1) + 1: size(X, 1) + size(X_bottomNodes, 1);
-    X_bottomFaceIds = X_bottomIds(1:size(XgBottomFaceCentre, 1));
-    X_bottomVerticesIds = X_bottomIds(size(XgBottomFaceCentre, 1)+1:end);
-    X = vertcat(X, X_bottomNodes);
+    Xg_nodes = vertcat(Xg_faceCentres2D, Xg_vertices2D);
+    Xg_ids = size(X, 1) + 1: size(X, 1) + size(Xg_nodes, 1);
+    Xg_faceIds = Xg_ids(1:size(Xg_faceCentres2D, 1));
+    Xg_verticesIds = Xg_ids(size(Xg_faceCentres2D, 1)+1:end);
+    X(Xg_ids) = Xg_nodes;
+    
+    % Fill Geo info
+    if idPlane == 1
+        Geo.XgBottom = Xg_ids;
+    elseif idPlane == 2
+        Geo.XgTop = X_topIds;
+    end
 
-    X_topNodes = vertcat(XgTopFaceCentre, XgTopVertices);
-    X_topIds = size(X, 1) + 1: size(X, 1) + size(X_topNodes, 1);
-    X_topFaceIds = X_topIds(1:size(XgTopFaceCentre, 1));
-    X_topVerticesIds = X_topIds(size(XgTopFaceCentre, 1)+1:end);
-    X = vertcat(X, X_topNodes);
+    %% Create tetrahedra
+    [Twg_numPlane] = CreateTetrahedra(trianglesConnectivity{numPlane}, neighboursNetwork{numPlane}, cellEdges{numPlane}, xInternal, Xg_faceIds, Xg_verticesIds);
 
+    Twg = vertcat(Twg, Twg_numPlane);
 end
-xInternal = (1:Set.TotalCells)';
-
-%% Create tetrahedra
-[Twg_bottom] = CreateTetrahedra(trianglesConnectivity, neighboursNetwork, cellEdges, xInternal, X_bottomFaceIds, X_bottomVerticesIds);
-%[Twg_bottom, X, X_bottomIds] = upsampleTetMesh(Twg_bottom, X, X_bottomIds);
-[Twg_top] = CreateTetrahedra(trianglesConnectivity_topoChanged, neighboursNetwork_topoChanged, cellEdges_topoChanged, xInternal, X_topFaceIds, X_topVerticesIds);
-%[Twg_top, X, X_topIds] = upsampleTetMesh(Twg_top, X, X_topIds);
-Twg = vertcat(Twg_top, Twg_bottom);
 
 %% Fill Geo info
 Geo.nCells = length(xInternal);
-
-Geo.XgBottom = X_bottomIds;
-Geo.XgTop = X_topIds;
-Geo.XgLateral = setdiff(1:size(seedsXY, 1), xInternal);
+Geo.XgLateral = setdiff(1:size(centroids, 1), xInternal);
 
 %% Ghost cells and tets
 Geo.XgID = setdiff(1:size(X, 1), xInternal);

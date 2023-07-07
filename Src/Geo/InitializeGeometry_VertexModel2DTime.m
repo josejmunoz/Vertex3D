@@ -45,6 +45,7 @@ for idPlane = 1:length(selectedPlanes)
     numPlane = selectedPlanes(idPlane);
     img2DLabelled = imgStackLabelled(:, :, numPlane);
     centroids = regionprops(img2DLabelled, 'Centroid');
+    centroids = round(vertcat(centroids.Centroid));
     Xg_faceCentres2D = horzcat(centroids, repmat(zCoordinate(idPlane), length(centroids), 1));
     Xg_vertices2D = [verticesOfCell_pos{numPlane}, repmat(cellHeight, size(verticesOfCell_pos{numPlane}, 1), 1)];
 
@@ -52,13 +53,13 @@ for idPlane = 1:length(selectedPlanes)
     Xg_ids = size(X, 1) + 1: size(X, 1) + size(Xg_nodes, 1);
     Xg_faceIds = Xg_ids(1:size(Xg_faceCentres2D, 1));
     Xg_verticesIds = Xg_ids(size(Xg_faceCentres2D, 1)+1:end);
-    X(Xg_ids) = Xg_nodes;
+    X(Xg_ids, :) = Xg_nodes;
     
     % Fill Geo info
     if idPlane == 1
         Geo.XgBottom = Xg_ids;
     elseif idPlane == 2
-        Geo.XgTop = X_topIds;
+        Geo.XgTop = Xg_ids;
     end
 
     %% Create tetrahedra
@@ -79,12 +80,16 @@ Twg(all(ismember(Twg,Geo.XgID),2),:)=[];
 % that is, not a part of any tetrahedra. Therefore, they should be
 % removed from X
 % Re-number the surviving tets
-% uniqueTets = unique(Twg);
-% Geo.XgID = Geo.nCells+1:length(uniqueTets);
-% X    = X(uniqueTets,:);
-% conv = zeros(size(X,1),1);
-% conv(uniqueTets) = 1:size(X);
-% Twg = conv(clTwg);
+[oldIds, ~, oldTwgNewIds] = unique(Twg);
+newIds = 1:length(oldIds);
+X = X(oldIds,:);
+Twg = reshape(oldTwgNewIds, size(Twg));
+Geo.XgBottom = newIds(ismember(oldIds, Geo.XgBottom));
+Geo.XgTop = newIds(ismember(oldIds, Geo.XgTop));
+
+
+%% Create new tetrahedra based on intercalations
+
 
 %% Normalise Xs
 X = X / imgDims;

@@ -86,10 +86,26 @@ X = X(oldIds,:);
 Twg = reshape(oldTwgNewIds, size(Twg));
 Geo.XgBottom = newIds(ismember(oldIds, Geo.XgBottom));
 Geo.XgTop = newIds(ismember(oldIds, Geo.XgTop));
-
+Geo.XgLateral = newIds(ismember(oldIds, Geo.XgLateral));
+Geo.XgID = newIds(ismember(oldIds, Geo.XgID));
 
 %% Create new tetrahedra based on intercalations
+for numCell = xInternal'
+    Twg_cCell = Twg(any(ismember(Twg, numCell), 2), :);
 
+    Twg_cCell_bottom = Twg_cCell(any(ismember(Twg_cCell, Geo.XgBottom), 2), :);
+    neighbours_bottom = xInternal(ismember(xInternal, Twg_cCell_bottom));
+    
+    Twg_cCell_top = Twg_cCell(any(ismember(Twg_cCell, Geo.XgTop), 2), :);
+    neighbours_top = xInternal(ismember(xInternal, Twg_cCell_top));
+
+    neighboursMissing{numCell} = setxor(neighbours_bottom, neighbours_top);
+    for missingCell = neighboursMissing{numCell}'
+        tetsToAdd = xInternal(ismember(xInternal, Twg_cCell(any(ismember(Twg_cCell, missingCell), 2), :)));
+        assert(length(tetsToAdd) == 4);
+        Twg(end+1, :) = tetsToAdd;
+    end
+end
 
 %% Normalise Xs
 X = X / imgDims;

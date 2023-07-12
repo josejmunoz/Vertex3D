@@ -21,6 +21,27 @@ for numCell = sortedId
     newCont = newCont + 1;
 end
 
+%% Filling edge spaces
+for numZ = 1:size(imgStackLabelled, 3)
+    originalImage = imgStackLabelled(:, :, numZ);
+    img2DLabelled_closed = imclose(imgStackLabelled(:, :, numZ)>0, strel("disk", 3));
+    img2DLabelled_closed_filled = imfill(img2DLabelled_closed, 'holes');
+    img2DLabelled_eroded = imerode(imgStackLabelled(:, :, numZ)>0, strel('disk', 2));
+    distanceTransform = bwdist(~img2DLabelled_eroded==0);
+    watershedImage = watershed(distanceTransform);
+    %watershedImage(img2DLabelled_closed_filled==0) = 0;
+    % Find the nearest pixel value for each pixel
+    filledImage = originalImage;
+    for label = 1:max(watershedImage(:))
+        mask = watershedImage == label;
+        pixelValues = originalImage(mask);
+        [nearestValue] = mode(pixelValues);
+        filledImage(mask & img2DLabelled_closed_filled) = nearestValue;
+    end
+    imgStackLabelled(:, :, numZ) = filledImage;
+end
+save('data.mat', 'imgStackLabelled')
+
 %% Obtaining the aspect ratio of the wing disc
 features2D = regionprops(img2DLabelled, 'all');
 avgDiameter = mean([features2D(1:Set.TotalCells).MajorAxisLength]);

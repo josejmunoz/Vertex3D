@@ -14,34 +14,35 @@ borderCellsAndMainCells = double(unique(vertcat(imgNeighbours{mainCells})));
 borderGhostCells = setdiff(borderCellsAndMainCells, mainCells); 
 borderCells = intersect(mainCells, double(unique(vertcat(imgNeighbours{borderGhostCells}))));
 
-labelledImg(~ismember(labelledImg, 1:max(borderCellsAndMainCells))) = 0;
+borderOfborderCellsAndMainCells = double(unique(vertcat(imgNeighbours{borderCellsAndMainCells})));
+labelledImg(~ismember(labelledImg, 1:max(borderOfborderCellsAndMainCells))) = 0;
 [imgNeighbours] = calculateNeighbours(labelledImg, ratio);
 
-%% Remove quartets
-[quartets] = getFourFoldVertices(imgNeighbours, labelledImg);
-for numQuartets = 1:size(quartets, 1)
-    currentCentroids = faceCentresVertices(quartets(numQuartets, :), :);
-    distanceBetweenCentroids = squareform(pdist(currentCentroids));
-    [maxDistance] = max(distanceBetweenCentroids(:));
-    [row, col] = find(distanceBetweenCentroids == maxDistance);
-    
-    % Remove first neighbour from the furthest pair of neighbour
-    currentNeighs = imgNeighbours{quartets(numQuartets, col(1))};
-    currentNeighs(currentNeighs == quartets(numQuartets, row(1))) = [];
-    imgNeighbours{quartets(numQuartets, col(1))} = currentNeighs;
-    
-    % Remove the second of the same pair
-    currentNeighs = imgNeighbours{quartets(numQuartets, row(1))};
-    currentNeighs(currentNeighs == quartets(numQuartets, col(1))) = [];
-    imgNeighbours{quartets(numQuartets, row(1))} = currentNeighs;
-end
+% %% Remove quartets
+[quartets] = getFourFoldVertices(imgNeighbours);
+% for numQuartets = 1:size(quartets, 1)
+%     currentCentroids = faceCentresVertices(quartets(numQuartets, :), :);
+%     distanceBetweenCentroids = squareform(pdist(currentCentroids));
+%     [maxDistance] = max(distanceBetweenCentroids(:));
+%     [row, col] = find(distanceBetweenCentroids == maxDistance);
+%     
+%     % Remove first neighbour from the furthest pair of neighbour
+%     currentNeighs = imgNeighbours{quartets(numQuartets, col(1))};
+%     currentNeighs(currentNeighs == quartets(numQuartets, row(1))) = [];
+%     imgNeighbours{quartets(numQuartets, col(1))} = currentNeighs;
+%     
+%     % Remove the second of the same pair
+%     currentNeighs = imgNeighbours{quartets(numQuartets, row(1))};
+%     currentNeighs(currentNeighs == quartets(numQuartets, col(1))) = [];
+%     imgNeighbours{quartets(numQuartets, row(1))} = currentNeighs;
+% end
 
 [ verticesInfo ] = calculateVertices(labelledImg, imgNeighbours, ratio);
 
 %faceCentres = regionprops(labelledImg, 'centroid');
 %faceCentresVertices = fliplr(vertcat(faceCentres.Centroid)) / imgSize;
 
-totalCells = max(verticesInfo.connectedCells(:));
+totalCells = max(borderCellsAndMainCells);
 verticesInfo.PerCell = cell(totalCells, 1);
 
 for numCell = 1:max(borderCellsAndMainCells)
@@ -65,6 +66,8 @@ for numCell = 1:max(borderCellsAndMainCells)
     
     neighboursNetwork = vertcat(neighboursNetwork, currentCellNeighbours);
 end
+
+%% Final assigning
 trianglesConnectivity = double(verticesInfo.connectedCells);
 cellEdges = verticesInfo.edges;
 verticesLocation = verticesInfo.location;

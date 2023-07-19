@@ -2,9 +2,7 @@ function [trianglesConnectivity, neighboursNetwork, cellEdges, verticesLocation,
 %BUILD3DVORONOITOPO Summary of this function goes here
 %   Detailed explanation goes here
 
-ratio = 3;
-faceCentres = regionprops(labelledImg, 'centroid');
-faceCentresVertices = fliplr(vertcat(faceCentres.Centroid));
+ratio = 4;
 
 labelledImg(watershedImg == 0) = 0;
 
@@ -20,22 +18,24 @@ labelledImg(~ismember(labelledImg, 1:max(borderOfborderCellsAndMainCells))) = 0;
 
 % %% Remove quartets
 [quartets] = getFourFoldVertices(imgNeighbours);
-% for numQuartets = 1:size(quartets, 1)
-%     currentCentroids = faceCentresVertices(quartets(numQuartets, :), :);
-%     distanceBetweenCentroids = squareform(pdist(currentCentroids));
-%     [maxDistance] = max(distanceBetweenCentroids(:));
-%     [row, col] = find(distanceBetweenCentroids == maxDistance);
-%     
-%     % Remove first neighbour from the furthest pair of neighbour
-%     currentNeighs = imgNeighbours{quartets(numQuartets, col(1))};
-%     currentNeighs(currentNeighs == quartets(numQuartets, row(1))) = [];
-%     imgNeighbours{quartets(numQuartets, col(1))} = currentNeighs;
-%     
-%     % Remove the second of the same pair
-%     currentNeighs = imgNeighbours{quartets(numQuartets, row(1))};
-%     currentNeighs(currentNeighs == quartets(numQuartets, col(1))) = [];
-%     imgNeighbours{quartets(numQuartets, row(1))} = currentNeighs;
-% end
+faceCentres = regionprops(labelledImg, 'centroid');
+faceCentresVertices = fliplr(vertcat(faceCentres.Centroid));
+for numQuartets = 1:size(quartets, 1)
+    currentCentroids = faceCentresVertices(quartets(numQuartets, :), :);
+    distanceBetweenCentroids = squareform(pdist(currentCentroids));
+    [maxDistance] = max(distanceBetweenCentroids(:));
+    [row, col] = find(distanceBetweenCentroids == maxDistance);
+    
+    % Remove first neighbour from the furthest pair of neighbour
+    currentNeighs = imgNeighbours{quartets(numQuartets, col(1))};
+    currentNeighs(currentNeighs == quartets(numQuartets, row(1))) = [];
+    imgNeighbours{quartets(numQuartets, col(1))} = currentNeighs;
+    
+    % Remove the second of the same pair
+    currentNeighs = imgNeighbours{quartets(numQuartets, row(1))};
+    currentNeighs(currentNeighs == quartets(numQuartets, col(1))) = [];
+    imgNeighbours{quartets(numQuartets, row(1))} = currentNeighs;
+end
 
 [ verticesInfo ] = calculateVertices(labelledImg, imgNeighbours, ratio);
 

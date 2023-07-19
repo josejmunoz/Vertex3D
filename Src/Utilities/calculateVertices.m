@@ -22,7 +22,7 @@ function [ verticesInfo ] = calculateVertices( labelledImg, neighbours, ratio)
     
     %the overlapping between labelledImg cells will be the vertex
     borderImg=zeros(size(labelledImg));
-    borderImg(labelledImg==0)=1;
+    borderImg(labelledImg>-1)=1;
     for numTriplet = 1 : size(neighboursVertices,1)
               
         BW1_dilate=dilatedCells{neighboursVertices(numTriplet, 1),1};

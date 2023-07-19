@@ -55,6 +55,7 @@ end
 %% Select nodes from images
 % Using the centroids in 3D as main nodes
 img3DProperties = regionprops3(imgStackLabelled);
+X = [];
 X(:, 1:2) = img3DProperties.Centroid(1:Set.TotalCells, 1:2);
 X(:, 3) = zeros(1, size(X, 1));
 
@@ -68,7 +69,7 @@ for idPlane = 1:length(selectedPlanes)
     centroids = regionprops(img2DLabelled, 'Centroid');
     centroids = round(vertcat(centroids.Centroid));
     Xg_faceCentres2D = horzcat(centroids, repmat(zCoordinate(idPlane), length(centroids), 1));
-    Xg_vertices2D = [verticesOfCell_pos{numPlane}, repmat(zCoordinate(idPlane), size(verticesOfCell_pos{numPlane}, 1), 1)];
+    Xg_vertices2D = [fliplr(verticesOfCell_pos{numPlane}), repmat(zCoordinate(idPlane), size(verticesOfCell_pos{numPlane}, 1), 1)];
 
     Xg_nodes = vertcat(Xg_faceCentres2D, Xg_vertices2D);
     Xg_ids = size(X, 1) + 1: size(X, 1) + size(Xg_nodes, 1);
@@ -84,7 +85,7 @@ for idPlane = 1:length(selectedPlanes)
     end
 
     %% Create tetrahedra
-    [Twg_numPlane] = CreateTetrahedra(trianglesConnectivity{numPlane}, neighboursNetwork{numPlane}, cellEdges{numPlane}, xInternal, Xg_faceIds, Xg_verticesIds);
+    [Twg_numPlane] = CreateTetrahedra(trianglesConnectivity{numPlane}, neighboursNetwork{numPlane}, cellEdges{numPlane}, xInternal, Xg_faceIds, Xg_verticesIds, X);
 
     Twg = vertcat(Twg, Twg_numPlane);
 end
@@ -124,7 +125,9 @@ for numCell = xInternal'
     for missingCell = neighboursMissing{numCell}'
         tetsToAdd = xInternal(ismember(xInternal, Twg_cCell(any(ismember(Twg_cCell, missingCell), 2), :)));
         assert(length(tetsToAdd) == 4);
-        Twg(end+1, :) = tetsToAdd;
+        if ~ismember(sort(tetsToAdd, 2), Twg)
+            Twg(end+1, :) = tetsToAdd;
+        end
     end
 end
 

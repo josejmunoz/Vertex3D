@@ -1,4 +1,4 @@
-function [trianglesConnectivity, neighboursNetwork, cellEdges, verticesLocation, borderCells] = Build2DVoronoiFromImage(labelledImg, watershedImg, mainCells)
+function [trianglesConnectivity, neighboursNetwork, cellEdges, verticesLocation, borderCells, borderOfborderCellsAndMainCells] = Build2DVoronoiFromImage(labelledImg, watershedImg, mainCells)
 %BUILD3DVORONOITOPO Summary of this function goes here
 %   Detailed explanation goes here
 

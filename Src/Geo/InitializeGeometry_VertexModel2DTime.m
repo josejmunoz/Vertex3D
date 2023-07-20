@@ -49,14 +49,14 @@ cellHeight = avgDiameter*Set.CellHeight;
 
 %% Building the topology of each plane
 for numPlane = selectedPlanes
-    [trianglesConnectivity{numPlane}, neighboursNetwork{numPlane}, cellEdges{numPlane}, verticesOfCell_pos{numPlane}, borderCells{numPlane}] = Build2DVoronoiFromImage(imgStackLabelled(:, :, numPlane), imgStackLabelled(:, :, numPlane), 1:Set.TotalCells);
+    [trianglesConnectivity{numPlane}, neighboursNetwork{numPlane}, cellEdges{numPlane}, verticesOfCell_pos{numPlane}, borderCells{numPlane}, borderOfborderCellsAndMainCells{numPlane}] = Build2DVoronoiFromImage(imgStackLabelled(:, :, numPlane), imgStackLabelled(:, :, numPlane), 1:Set.TotalCells);
 end
 
 %% Select nodes from images
 % Using the centroids in 3D as main nodes
 img3DProperties = regionprops3(imgStackLabelled);
 X = [];
-X(:, 1:2) = img3DProperties.Centroid(1:Set.TotalCells, 1:2);
+X(:, 1:2) = img3DProperties.Centroid(1:max([borderOfborderCellsAndMainCells{:}]), 1:2);
 X(:, 3) = zeros(1, size(X, 1));
 
 % Using the centroids and vertices of the cells of each 2D image as ghost nodes
@@ -92,13 +92,13 @@ end
 
 %% Fill Geo info
 Geo.nCells = length(xInternal);
-Geo.XgLateral = setdiff(1:size(centroids, 1), xInternal);
+Geo.XgLateral = setdiff(1:max([borderOfborderCellsAndMainCells{:}]), xInternal);
 
 %% Ghost cells and tets
 Geo.XgID = setdiff(1:size(X, 1), xInternal);
 
 %% Create new tetrahedra based on intercalations
-allCellIds = 1:size(centroids, 1);
+allCellIds = [xInternal', Geo.XgLateral];
 for numCell = xInternal'
     Twg_cCell = Twg(any(ismember(Twg, numCell), 2), :);
 
@@ -109,10 +109,10 @@ for numCell = xInternal'
     neighbours_top = allCellIds(ismember(allCellIds, Twg_cCell_top));
 
     neighboursMissing{numCell} = setxor(neighbours_bottom, neighbours_top);
-    for missingCell = neighboursMissing{numCell}'
+    for missingCell = neighboursMissing{numCell}
         tetsToAdd = allCellIds(ismember(allCellIds, Twg_cCell(any(ismember(Twg_cCell, missingCell), 2), :)));
-        assert(length(tetsToAdd) == 4);
-        if ~ismember(sort(tetsToAdd', 2), Twg, 'rows')
+        assert(length(tetsToAdd) == 4, 'Missing 4-fold at Cell %i', numCell);
+        if ~ismember(sort(tetsToAdd, 2), Twg, 'rows')
             Twg(end+1, :) = tetsToAdd;
         end
     end

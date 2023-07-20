@@ -104,7 +104,7 @@ Geo.XgLateral = setdiff(1:max([borderOfborderCellsAndMainCells{:}]), xInternal);
 Geo.XgID = setdiff(1:size(X, 1), xInternal);
 
 %% Define border cells
-Geo.BorderCells = unique([borderCells{numPlane}]);
+Geo.BorderCells = unique([borderCells{numPlane}])';
 Geo.BorderGhostNodes = Geo.XgLateral;
 
 %% Create new tetrahedra based on intercalations

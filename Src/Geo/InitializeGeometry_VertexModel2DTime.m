@@ -67,7 +67,15 @@ X(:, 3) = zeros(1, size(X, 1));
 
 % Using the centroids and vertices of the cells of each 2D image as ghost nodes
 % For now, we will only select 2 planes (top and bottom)
-zCoordinate = [cellHeight, -cellHeight];
+
+bottomPlane = 1;
+topPlane = 2;
+
+if bottomPlane ==1 
+    zCoordinate = [-cellHeight, cellHeight];
+else
+    zCoordinate = [cellHeight, -cellHeight];
+end
 Twg = [];
 for idPlane = 1:length(selectedPlanes)
     numPlane = selectedPlanes(idPlane);
@@ -84,9 +92,9 @@ for idPlane = 1:length(selectedPlanes)
     X(Xg_ids, :) = Xg_nodes;
     
     % Fill Geo info
-    if idPlane == 1
+    if idPlane == bottomPlane
         Geo.XgBottom = Xg_ids;
-    elseif idPlane == 2
+    elseif idPlane == topPlane
         Geo.XgTop = Xg_ids;
     end
 

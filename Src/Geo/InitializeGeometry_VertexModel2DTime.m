@@ -5,42 +5,48 @@ function [Geo, Set] = InitializeGeometry_VertexModel2DTime(Geo, Set)
 selectedPlanes = [1, 100];
 xInternal = (1:Set.TotalCells)';
 
-imgStackLabelled = tiffreadVolume('input/LblImg_imageSequence.tif');
-
-%% Reordering cells based on the centre of the image
-img2DLabelled = imgStackLabelled(:, :, 1);
-centroids = regionprops(img2DLabelled, 'Centroid');
-centroids = round(vertcat(centroids.Centroid));
-imgDims = size(img2DLabelled, 1);
-distanceToMiddle = pdist2([imgDims/2 imgDims/2], centroids);
-[~, sortedId] = sort(distanceToMiddle);
-oldImg2DLabelled = imgStackLabelled;
-newCont = 1;
-for numCell = sortedId
-    imgStackLabelled(oldImg2DLabelled == numCell) = newCont;
-    newCont = newCont + 1;
-end
-
-%% Filling edge spaces
-for numZ = 1:size(imgStackLabelled, 3)
-    originalImage = imgStackLabelled(:, :, numZ);
-    img2DLabelled_closed = imclose(imgStackLabelled(:, :, numZ)>0, strel("disk", 3));
-    img2DLabelled_closed_filled = imfill(img2DLabelled_closed, 'holes');
-    img2DLabelled_eroded = imerode(imgStackLabelled(:, :, numZ)>0, strel('disk', 2));
-    distanceTransform = bwdist(~img2DLabelled_eroded==0);
-    watershedImage = watershed(distanceTransform);
-    %watershedImage(img2DLabelled_closed_filled==0) = 0;
-    % Find the nearest pixel value for each pixel
-    filledImage = originalImage;
-    for label = 1:max(watershedImage(:))
-        mask = watershedImage == label;
-        pixelValues = originalImage(mask);
-        [nearestValue] = mode(pixelValues);
-        filledImage(mask & img2DLabelled_closed_filled) = nearestValue;
+if ~exist("input/LblImg_imageSequence.mat", 'file')
+    imgStackLabelled = tiffreadVolume('input/LblImg_imageSequence.tif');
+    
+    %% Reordering cells based on the centre of the image
+    img2DLabelled = imgStackLabelled(:, :, 1);
+    centroids = regionprops(img2DLabelled, 'Centroid');
+    centroids = round(vertcat(centroids.Centroid));
+    imgDims = size(img2DLabelled, 1);
+    distanceToMiddle = pdist2([imgDims/2 imgDims/2], centroids);
+    [~, sortedId] = sort(distanceToMiddle);
+    oldImg2DLabelled = imgStackLabelled;
+    newCont = 1;
+    for numCell = sortedId
+        imgStackLabelled(oldImg2DLabelled == numCell) = newCont;
+        newCont = newCont + 1;
     end
-    imgStackLabelled(:, :, numZ) = filledImage;
+    
+    %% Filling edge spaces
+    for numZ = 1:size(imgStackLabelled, 3)
+        originalImage = imgStackLabelled(:, :, numZ);
+        img2DLabelled_closed = imclose(imgStackLabelled(:, :, numZ)>0, strel("disk", 3));
+        img2DLabelled_closed_filled = imfill(img2DLabelled_closed, 'holes');
+        img2DLabelled_eroded = imerode(imgStackLabelled(:, :, numZ)>0, strel('disk', 2));
+        distanceTransform = bwdist(~img2DLabelled_eroded==0);
+        watershedImage = watershed(distanceTransform);
+        %watershedImage(img2DLabelled_closed_filled==0) = 0;
+        % Find the nearest pixel value for each pixel
+        filledImage = originalImage;
+        for label = 1:max(watershedImage(:))
+            mask = watershedImage == label;
+            pixelValues = originalImage(mask);
+            [nearestValue] = mode(pixelValues);
+            filledImage(mask & img2DLabelled_closed_filled) = nearestValue;
+        end
+        imgStackLabelled(:, :, numZ) = filledImage;
+    end
+    save('input/LblImg_imageSequence.mat', 'imgStackLabelled')
+else
+    load('input/LblImg_imageSequence.mat', 'imgStackLabelled')
+    img2DLabelled = imgStackLabelled(:, :, 1);
+    imgDims = size(img2DLabelled, 1);
 end
-save('data.mat', 'imgStackLabelled')
 
 %% Obtaining the aspect ratio of the wing disc
 features2D = regionprops(img2DLabelled, 'all');
@@ -97,6 +103,10 @@ Geo.XgLateral = setdiff(1:max([borderOfborderCellsAndMainCells{:}]), xInternal);
 %% Ghost cells and tets
 Geo.XgID = setdiff(1:size(X, 1), xInternal);
 
+%% Define border cells
+Geo.BorderCells = unique([borderCells{numPlane}]);
+Geo.BorderGhostNodes = Geo.XgLateral;
+
 %% Create new tetrahedra based on intercalations
 allCellIds = [xInternal', Geo.XgLateral];
 for numCell = xInternal'
@@ -131,6 +141,7 @@ Geo.XgBottom = newIds(ismember(oldIds, Geo.XgBottom));
 Geo.XgTop = newIds(ismember(oldIds, Geo.XgTop));
 Geo.XgLateral = newIds(ismember(oldIds, Geo.XgLateral));
 Geo.XgID = newIds(ismember(oldIds, Geo.XgID));
+Geo.BorderGhostNodes = Geo.XgLateral;
 
 %% Normalise Xs
 X = X / imgDims;
@@ -145,12 +156,6 @@ avgArea = mean([allTris.Area]);
 stdArea = std([allTris.Area]);
 Set.upperAreaThreshold = avgArea + stdArea;
 Set.lowerAreaThreshold = avgArea - stdArea;
-
-%% Define border cells
-Geo.BorderCells = borderCells;
-
-Geo.BorderGhostNodes = setdiff(1:size(seedsXY, 1), 1:Geo.nCells);
-Geo.BorderGhostNodes = [Geo.BorderGhostNodes'; setdiff(getNodeNeighbours(Geo, Geo.BorderGhostNodes), 1:Geo.nCells)];
 
 % TODO FIXME bad; PVM: better?
 Geo.AssembleNodes = find(cellfun(@isempty, {Geo.Cells.AliveStatus})==0);

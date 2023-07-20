@@ -45,7 +45,7 @@ end
 totalCells = max(borderCellsAndMainCells);
 verticesInfo.PerCell = cell(totalCells, 1);
 
-for numCell = 1:max(borderCellsAndMainCells)
+for numCell = 1:max(mainCells)
     verticesOfCell = find(any(ismember(verticesInfo.connectedCells, numCell), 2));
     verticesInfo.PerCell{numCell} = verticesOfCell;
     currentVertices = verticesInfo.location(verticesOfCell, :);
@@ -53,14 +53,12 @@ for numCell = 1:max(borderCellsAndMainCells)
     currentConnectedCells(currentConnectedCells == numCell) = [];
     currentConnectedCells = vertcat(currentConnectedCells(1:2:length(currentConnectedCells)), currentConnectedCells(2:2:length(currentConnectedCells)))';
     verticesInfo.edges{numCell, 1} = verticesOfCell(BoundaryOfCell(currentVertices, currentConnectedCells));
-    if size(verticesInfo.edges{numCell, 1}, 1) < length(imgNeighbours{numCell})
-        verticesInfo.edges{numCell, 1} = [];
-    end
+    assert(size(verticesInfo.edges{numCell, 1}, 1) == length(imgNeighbours{numCell}), 'Error missing vertices of neighbours')
 end
 
 neighboursNetwork = [];
 
-for numCell = 1:max(borderCellsAndMainCells)
+for numCell = 1:max(mainCells)
     currentNeighbours = double(imgNeighbours{numCell});
     currentCellNeighbours = [ones(length(currentNeighbours), 1) * numCell, currentNeighbours];
     

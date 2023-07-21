@@ -2,7 +2,7 @@ function [trianglesConnectivity, neighboursNetwork, cellEdges, verticesLocation,
 %BUILD3DVORONOITOPO Summary of this function goes here
 %   Detailed explanation goes here
 
-ratio = 4;
+ratio = 6;
 
 labelledImg(watershedImg == 0) = 0;
 
@@ -12,7 +12,7 @@ borderCellsAndMainCells = double(unique(vertcat(imgNeighbours{mainCells})));
 borderGhostCells = setdiff(borderCellsAndMainCells, mainCells); 
 borderCells = intersect(mainCells, double(unique(vertcat(imgNeighbours{borderGhostCells}))));
 
-borderOfborderCellsAndMainCells = double(unique(vertcat(imgNeighbours{borderCellsAndMainCells})));
+borderOfborderCellsAndMainCells = double(unique(vertcat(imgNeighbours{borderCellsAndMainCells})))';
 labelledImg(~ismember(labelledImg, 1:max(borderOfborderCellsAndMainCells))) = 0;
 [imgNeighbours] = calculateNeighbours(labelledImg, ratio);
 

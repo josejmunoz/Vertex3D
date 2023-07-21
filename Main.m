@@ -7,7 +7,7 @@ Sets = {};
 Geos = {};
 
 batchMode = 1;
-inputMode = 7;
+inputMode = 6;
 
 if batchMode
     fid = fopen(fullfile('Src', 'Input', 'batchParameters.txt'));
@@ -32,8 +32,8 @@ end
 clear Geo Set
 
 delete(gcp('nocreate'));
-parpool(4);
-for numLine = 1:length(Sets) 
+parpool(3);
+for numLine = 1:length(Sets)
     prevLog = '';
     tStart = tic;
     didNotConverge = false;

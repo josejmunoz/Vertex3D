@@ -22,25 +22,25 @@ if ~exist("input/LblImg_imageSequence.mat", 'file')
         newCont = newCont + 1;
     end
     
-    %% Filling edge spaces
-    for numZ = 1:size(imgStackLabelled, 3)
-        originalImage = imgStackLabelled(:, :, numZ);
-        img2DLabelled_closed = imclose(imgStackLabelled(:, :, numZ)>0, strel("disk", 3));
-        img2DLabelled_closed_filled = imfill(img2DLabelled_closed, 'holes');
-        img2DLabelled_eroded = imerode(imgStackLabelled(:, :, numZ)>0, strel('disk', 2));
-        distanceTransform = bwdist(~img2DLabelled_eroded==0);
-        watershedImage = watershed(distanceTransform);
-        %watershedImage(img2DLabelled_closed_filled==0) = 0;
-        % Find the nearest pixel value for each pixel
-        filledImage = originalImage;
-        for label = 1:max(watershedImage(:))
-            mask = watershedImage == label;
-            pixelValues = originalImage(mask);
-            [nearestValue] = mode(pixelValues);
-            filledImage(mask & img2DLabelled_closed_filled) = nearestValue;
-        end
-        imgStackLabelled(:, :, numZ) = filledImage;
-    end
+%     %% Filling edge spaces
+%     for numZ = 1:size(imgStackLabelled, 3)
+%         originalImage = imgStackLabelled(:, :, numZ);
+%         img2DLabelled_closed = imclose(imgStackLabelled(:, :, numZ)>0, strel("disk", 3));
+%         img2DLabelled_closed_filled = imfill(img2DLabelled_closed, 'holes');
+%         img2DLabelled_eroded = imerode(imgStackLabelled(:, :, numZ)>0, strel('disk', 2));
+%         distanceTransform = bwdist(~img2DLabelled_eroded==0);
+%         watershedImage = watershed(distanceTransform);
+%         %watershedImage(img2DLabelled_closed_filled==0) = 0;
+%         % Find the nearest pixel value for each pixel
+%         filledImage = originalImage;
+%         for label = 1:max(watershedImage(:))
+%             mask = watershedImage == label;
+%             pixelValues = originalImage(mask);
+%             [nearestValue] = mode(pixelValues);
+%             filledImage(mask & img2DLabelled_closed_filled) = nearestValue;
+%         end
+%         imgStackLabelled(:, :, numZ) = filledImage;
+%     end
     save('input/LblImg_imageSequence.mat', 'imgStackLabelled')
 else
     load('input/LblImg_imageSequence.mat', 'imgStackLabelled')
@@ -62,7 +62,7 @@ end
 % Using the centroids in 3D as main nodes
 img3DProperties = regionprops3(imgStackLabelled);
 X = [];
-X(:, 1:2) = img3DProperties.Centroid(1:max([borderOfborderCellsAndMainCells{:}]), 1:2);
+X(:, 1:2) = img3DProperties.Centroid(1:max(horzcat(borderOfborderCellsAndMainCells{:})), 1:2);
 X(:, 3) = zeros(1, size(X, 1));
 
 % Using the centroids and vertices of the cells of each 2D image as ghost nodes
@@ -106,7 +106,7 @@ end
 
 %% Fill Geo info
 Geo.nCells = length(xInternal);
-Geo.XgLateral = setdiff(1:max([borderOfborderCellsAndMainCells{:}]), xInternal);
+Geo.XgLateral = setdiff(1:max(horzcat(borderOfborderCellsAndMainCells{:})), xInternal);
 
 %% Ghost cells and tets
 Geo.XgID = setdiff(1:size(X, 1), xInternal);

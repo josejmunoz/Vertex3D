@@ -2,6 +2,8 @@ function [contractilityValue] = getContractilityBasedOnLocation(currentFace, cur
 %GETCONTRACTILITYBASEDONLOCATION Summary of this function goes here
 %   Detailed explanation goes here
     
+    noiseContractility = 0.1;
+
     timeAfterAblation = Set.currentT - Set.TInitAblation;
     if timeAfterAblation >= 0
         distanceToTimeVariables = abs(Set.Contractility_TimeVariability - timeAfterAblation)/Set.Contractility_TimeVariability(2);
@@ -31,5 +33,9 @@ function [contractilityValue] = getContractilityBasedOnLocation(currentFace, cur
         otherwise
             contractilityValue = Set.cLineTension;
     end
+    %% Adding noise to contractility
+    minContractility = contractilityValue - contractilityValue*noiseContractility;
+    maxContractility = contractilityValue + contractilityValue*noiseContractility;
+    contractilityValue = minContractility + (maxContractility-minContractility)*rand();
 end
 

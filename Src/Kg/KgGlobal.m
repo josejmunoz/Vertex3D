@@ -74,9 +74,9 @@ function [g, K, E, Geo, Energies] = KgGlobal(Geo_0, Geo_n, Geo, Set)
 %         dy_Sub =-KSub\gSub;
     end
 
-    dy =-K\g;
+    %dy =-K\g;
 %     dy_VAndS = -(Kv+Ks)\(gv+gs);
-    dy_reshaped = reshape(dy, 3, (Geo.numF+Geo.numY+Geo.nCells))';
+    %dy_reshaped = reshape(dy, 3, (Geo.numF+Geo.numY+Geo.nCells))';
 
 %     dy_reshaped(Geo.Cells(1).Faces(16).globalIds,:)
 %     dy_reshaped(Geo.Cells(1).globalIds(2),:)

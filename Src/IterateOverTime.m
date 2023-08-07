@@ -71,6 +71,19 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
             PostProcessingVTK(Geo, Geo_0, Set, numStep)
             save(fullfile(pwd, Set.OutputFolder, strcat('status', num2str(numStep),'.mat')), 'Geo', 'Geo_n', 'Geo_0', 'Set', 'Dofs', 'EnergiesPerTimeStep', 't', 'numStep', 'nonDebris_Features', 'debris_Features', 'tr', 'relaxingNu', 'backupVars')
 
+            %% 
+            for numCell = 1:length(Geo.Cells)
+                cCell = Geo.Cells(numCell);
+                for nFace = 1:length(cCell.Faces)
+                    face = Geo.Cells(numCell).Faces(nFace);
+                    for nTri = 1:length(face.Tris)
+                        Geo.Cells(numCell).Faces(nFace).Tris(nTri) = rmfield(Geo.Cells(numCell).Faces(nFace).Tris(nTri), 'ContractilityValue');
+                    end
+                end
+            end
+
+
+            %% New Step
             t=t+Set.dt;
             Set.dt=min(Set.dt+Set.dt*0.5, Set.dt0);
             Set.MaxIter=Set.MaxIter0;

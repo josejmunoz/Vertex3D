@@ -1,10 +1,10 @@
-function [contractilityValue] = getContractilityBasedOnLocation(currentFace, currentTri, Geo, Set)
+function [contractilityValue, Geo] = getContractilityBasedOnLocation(currentFace, currentTri, Geo, Set)
 %GETCONTRACTILITYBASEDONLOCATION Summary of this function goes here
 %   Detailed explanation goes here
     
-    noiseContractility = 0.1;
+    noiseContractility = 0.01;
     
-    if ~isfield(currentTri, "ContractilityValue")
+    if isempty(currentTri.ContractilityValue)
         timeAfterAblation = Set.currentT - Set.TInitAblation;
         if timeAfterAblation >= 0
             distanceToTimeVariables = abs(Set.Contractility_TimeVariability - timeAfterAblation)/Set.Contractility_TimeVariability(2);
@@ -53,7 +53,7 @@ function [contractilityValue] = getContractilityBasedOnLocation(currentFace, cur
             end
         end
     else
-        contractilityValue = currentTris.ContractilityValue;
+        contractilityValue = currentTri.ContractilityValue;
     end
 
 end

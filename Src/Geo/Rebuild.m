@@ -9,7 +9,7 @@ function Geo = Rebuild(Geo, Set)
         for numT = 1:size(Cell.T, 1)
             tet = Cell.T(numT, :);
             DT = delaunayTriangulation(vertcat(Geo.Cells(tet).X));
-            if ~any(ismember(tet, Geo.XgID))
+            if ~any(ismember(tet, Geo.XgID)) || isempty(DT.ConnectivityList)
                 Geo.Cells(cc).T(numT, :) = tet;
             else
                 Geo.Cells(cc).T(numT, :) = tet(DT.ConnectivityList);

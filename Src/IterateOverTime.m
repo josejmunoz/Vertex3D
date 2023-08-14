@@ -91,6 +91,7 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
             numStep=numStep+1;
             backupVars.Geo_b = Geo;
             backupVars.tr_b = tr;
+            backupVars.Dofs = Dofs;
             Geo_n = Geo;
 
             relaxingNu = false;
@@ -105,6 +106,7 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
         backupVars.Geo_b.log = Geo.log;
         Geo = backupVars.Geo_b;
         tr = backupVars.tr_b;
+        Dofs = backupVars.Dofs;
         Geo_n = Geo;
         relaxingNu = false;
         if Set.iter == Set.MaxIter0

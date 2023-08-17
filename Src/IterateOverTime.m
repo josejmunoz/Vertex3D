@@ -82,7 +82,6 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
                 end
             end
 
-
             %% New Step
             t=t+Set.dt;
             Set.dt=min(Set.dt+Set.dt*0.5, Set.dt0);

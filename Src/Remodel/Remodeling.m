@@ -58,7 +58,8 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
             end
             
             if hasConverged(numPair)
-                [Geo, Geo_n] = moveVerticesCloserToRefPoint(Geo, Geo_n, 0.8, cellNodesShared, cellToSplitFrom, ghostNode, Set);
+                [Geo, Geo_n] = moveVerticesCloserToRefPoint(Geo, Geo_n, 0.1, cellNodesShared, cellToSplitFrom, ghostNode, Set);
+                PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1);
 
                 %% Solve remodelling
                 Dofs = GetDOFs(Geo, Set);

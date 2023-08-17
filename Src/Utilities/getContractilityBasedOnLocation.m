@@ -2,7 +2,7 @@ function [contractilityValue, Geo] = getContractilityBasedOnLocation(currentFace
 %GETCONTRACTILITYBASEDONLOCATION Summary of this function goes here
 %   Detailed explanation goes here
     
-    noiseContractility = 0.01;
+    noiseContractility = 0.1;
     
     if isempty(currentTri.ContractilityValue)
         timeAfterAblation = Set.currentT - Set.TInitAblation;

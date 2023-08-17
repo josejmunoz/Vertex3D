@@ -28,7 +28,7 @@ function [Geo, Set, DidNotConverge]=SolveRemodelingStep(Geo_0, Geo_n, Geo, Dofs,
         if IncreaseEta && (gr>Set.tol || dyr>Set.tol)
             Geo=Geop;
             Geo.log = sprintf('%s\n Convergence was not achieved ...\n', Geo.log);
-            Geo.log = sprintf('%s\n First strategy ---> Restart iterating while higher viscosity... \n', Geo.log, Set.iter);
+            Geo.log = sprintf('%s\n First strategy ---> Restart iterating while higher viscosity... \n', Geo.log);
             Set.nu=Set.nu*10;
             Set.MaxIter=Set.MaxIter0*4;
             IncreaseEta=false;

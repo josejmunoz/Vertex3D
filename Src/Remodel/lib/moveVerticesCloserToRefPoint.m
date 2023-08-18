@@ -1,4 +1,4 @@
-function [Geo_new, Geo_n] = moveVerticesCloserToRefPoint(Geo, Geo_n, closeToNewPoint, cellNodesShared, cellToSplitFrom, ghostNode, Set)
+function [Geo_new, Geo_n] = moveVerticesCloserToRefPoint(Geo, Geo_n, closeToNewPoint, cellNodesShared, cellToSplitFrom, ghostNode, Tnew, Set)
 %% Vertices connecting the two intercalating cells should be closer
     allT = vertcat(Geo.Cells.T);
     if ismember(ghostNode, Geo.XgBottom)
@@ -18,26 +18,28 @@ function [Geo_new, Geo_n] = moveVerticesCloserToRefPoint(Geo, Geo_n, closeToNewP
     end
 
     %% Obtain vertices to change
-    id_cellsToChange = setdiff(cellNodesShared, Geo.XgID);
-    id_cellsToChange = id_cellsToChange([Geo.Cells(id_cellsToChange).AliveStatus] == 1);
-    verticesToChange = [];
-    for numCell = id_cellsToChange'
-        news = sum(ismember(Geo.Cells(numCell).T, Geo.XgID), 2) > 2;
-        news(sum(ismember(Geo.Cells(numCell).T, id_cellsToChange), 2) == 2 & sum(ismember(Geo.Cells(numCell).T, Geo.XgID), 2) == 2) = 1;
-        news(sum(ismember(Geo.Cells(numCell).T, id_cellsToChange), 2) >= 3) = 1;
-    
-        % Remove only the tets from the domain it is not changing
-        if ismember(ghostNode, Geo.XgBottom)
-            news(any(ismember(Geo.Cells(numCell).T, Geo.XgTop), 2)) = 0;
-        else
-            news(any(ismember(Geo.Cells(numCell).T, Geo.XgBottom), 2)) = 0;
-        end
-        verticesToChange = vertcat(verticesToChange, Geo.Cells(numCell).T(news, :));
-    end
+%     id_cellsToChange = setdiff(cellNodesShared, Geo.XgID);
+%     id_cellsToChange = id_cellsToChange([Geo.Cells(id_cellsToChange).AliveStatus] == 1);
+%     verticesToChange = [];
+%     for numCell = id_cellsToChange'
+%         news = sum(ismember(Geo.Cells(numCell).T, Geo.XgID), 2) > 2;
+%         news(sum(ismember(Geo.Cells(numCell).T, id_cellsToChange), 2) == 2 & sum(ismember(Geo.Cells(numCell).T, Geo.XgID), 2) == 2) = 1;
+%         news(sum(ismember(Geo.Cells(numCell).T, id_cellsToChange), 2) >= 3) = 1;
+%     
+%         % Remove only the tets from the domain it is not changing
+%         if ismember(ghostNode, Geo.XgBottom)
+%             news(any(ismember(Geo.Cells(numCell).T, Geo.XgTop), 2)) = 0;
+%         else
+%             news(any(ismember(Geo.Cells(numCell).T, Geo.XgBottom), 2)) = 0;
+%         end
+%         verticesToChange = vertcat(verticesToChange, Geo.Cells(numCell).T(news, :));
+%     end
+% 
+%     verticesToChange = unique(sort(verticesToChange, 2), 'rows');
+% 
+%     verticesToChange(~any(ismember(verticesToChange, Geo.XgID), 2), :) = [];
 
-    verticesToChange = unique(sort(verticesToChange, 2), 'rows');
-
-    verticesToChange(~any(ismember(verticesToChange, Geo.XgID), 2), :) = [];
+    verticesToChange = sort(Tnew, 2);
 
     % Remove debris cells (those won't move)
     idCells = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID];

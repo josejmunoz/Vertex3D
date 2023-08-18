@@ -58,13 +58,13 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
             end
             
             if hasConverged(numPair)
-                [Geo, Geo_n] = moveVerticesCloserToRefPoint(Geo, Geo_n, 0.1, cellNodesShared, cellToSplitFrom, ghostNode, Set);
-                PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1);
+                %% MOVE ONLY ALLTNEW tets
+                [Geo, Geo_n] = moveVerticesCloserToRefPoint(Geo, Geo_n, 0.001, cellNodesShared, cellToSplitFrom, ghostNode, Tnew, Set);
+                %PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1);
 
                 %% Solve remodelling
                 Dofs = GetDOFs(Geo, Set);
                 [Dofs, Geo]  = GetRemodelDOFs(allTnew, Dofs, Geo);
-                [Geo, Geo_n] = moveVerticesCloserToRefPoint(Geo, Geo_n, 0.8, cellNodesShared, cellToSplitFrom, ghostNode, Set);
                 [Geo, Set, DidNotConverge] = SolveRemodelingStep(Geo_0, Geo_n, Geo, Dofs, Set);
                 if DidNotConverge
                     % Go back to initial state
@@ -106,7 +106,7 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
         segmentFeatures_all(rowsToRemove) = [];
     end
     
-    [g, K, E, Geo, Energies] = KgGlobal(Geo_0, Geo_n, Geo, Set);
+    %[g, K, E, Geo, Energies] = KgGlobal(Geo_0, Geo_n, Geo, Set);
 end
 
 function R=RotationMatrix(X)

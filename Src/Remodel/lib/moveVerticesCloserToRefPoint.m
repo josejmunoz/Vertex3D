@@ -54,6 +54,7 @@ function [Geo, Geo_n] = moveVerticesCloserToRefPoint(Geo, Geo_n, closeToNewPoint
     farFromNewPoint = closeToNewPoint;
 
     [movementByCell{cellNodesShared}] = deal([]);
+    [distanceToRefPointByCell{cellNodesShared}] = deal([]);
 
     for tetToCheck = verticesToChange'
         if any(ismember(tetToCheck, cellsToGetCloser))
@@ -73,6 +74,7 @@ function [Geo, Geo_n] = moveVerticesCloserToRefPoint(Geo, Geo_n, closeToNewPoint
 
                 if sum(ismember(tetToCheck, Geo.XgID)) == 3
                     movementByCell{nodeInTet} = vertcat(newPoint - avgPoint, movementByCell{nodeInTet});
+                    distanceToRefPointByCell{nodeInTet} = vertcat(pdist2(newPoint, refPoint_further), distanceToRefPointByCell{nodeInTet});
                 else
                     Geo.Cells(nodeInTet).Y(ismember(sort(Geo.Cells(nodeInTet).T, 2), tetToCheck', 'rows'), :) = refPoint_closer*(1-closeToNewPoint) + newPoint*closeToNewPoint;
                 end
@@ -81,6 +83,8 @@ function [Geo, Geo_n] = moveVerticesCloserToRefPoint(Geo, Geo_n, closeToNewPoint
     end
 
     movementByCell_avg = cellfun(@(x) median(x, 1), movementByCell, 'UniformOutput', false);
+    distanceToRefPointByCell_min = cellfun(@min, distanceToRefPointByCell, 'UniformOutput', false);
+    distanceToRefPointByCell_min = min([distanceToRefPointByCell_min{:}]);
 
     vertices_only1Cell = verticesToChange(sum(ismember(verticesToChange, Geo.XgID), 2) == 3, :);
 
@@ -100,10 +104,8 @@ function [Geo, Geo_n] = moveVerticesCloserToRefPoint(Geo, Geo_n, closeToNewPoint
         if ~isempty(currentVertices)
             for tetToCheck = currentVertices'
                 newPoint = Geo.Cells(idCell).Y(ismember(sort(Geo.Cells(idCell).T, 2), tetToCheck', 'rows'), :);
-                if gettingCloser
-                    Geo.Cells(idCell).Y(ismember(sort(Geo.Cells(idCell).T, 2), tetToCheck', 'rows'), :) = newPoint - avgPoint;
-                else
-                    Geo.Cells(idCell).Y(ismember(sort(Geo.Cells(idCell).T, 2), tetToCheck', 'rows'), :) = newPoint + avgPoint;
+                if ~gettingCloser
+                    Geo.Cells(idCell).Y(ismember(sort(Geo.Cells(idCell).T, 2), tetToCheck', 'rows'), :) = newPoint + (avgPoint *  distanceToRefPointByCell_min / pdist2(newPoint, refPoint_further));
                 end
             end
         end

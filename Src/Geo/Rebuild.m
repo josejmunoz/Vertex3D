@@ -3,7 +3,9 @@ function Geo = Rebuild(Geo, Set)
 % This function HAVE TO rebuild THE WHOLE CELL
     oldGeo = Geo;
     nonDeadCells = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID];
-    for cc = nonDeadCells
+    aliveCells = nonDeadCells([Geo.Cells(nonDeadCells).AliveStatus] == 1);
+    debrisCells = nonDeadCells([Geo.Cells(nonDeadCells).AliveStatus] == 0);
+    for cc = [aliveCells, debrisCells]
         Cell = Geo.Cells(cc);
         
         for numT = 1:size(Cell.T, 1)

@@ -8,5 +8,7 @@ Geo_new   = BuildGlobalIds(Geo_new);
 %if updateMeasurements
     Geo_new   = UpdateMeasures(Geo_new);
 %end
+
+Geo_new = CheckYsAndFacesHaveNotChanged(Geo, newTets, Geo_new);
 end
 

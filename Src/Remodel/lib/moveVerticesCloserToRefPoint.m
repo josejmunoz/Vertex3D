@@ -1,4 +1,4 @@
-function [Geo, Geo_n] = moveVerticesCloserToRefPoint(Geo, Geo_n, closeToNewPoint, cellNodesShared, cellToSplitFrom, ghostNode, Set)
+function [Geo_new, Geo_n] = moveVerticesCloserToRefPoint(Geo, Geo_n, closeToNewPoint, cellNodesShared, cellToSplitFrom, ghostNode, Set)
 %% Vertices connecting the two intercalating cells should be closer
     allT = vertcat(Geo.Cells.T);
     if ismember(ghostNode, Geo.XgBottom)
@@ -72,44 +72,46 @@ function [Geo, Geo_n] = moveVerticesCloserToRefPoint(Geo, Geo_n, closeToNewPoint
                     avgPoint = refPoint_further*(1-farFromNewPoint) + newPoint*farFromNewPoint;
                 end
 
-                if sum(ismember(tetToCheck, Geo.XgID)) == 3
-                    movementByCell{nodeInTet} = vertcat(newPoint - avgPoint, movementByCell{nodeInTet});
-                    distanceToRefPointByCell{nodeInTet} = vertcat(pdist2(newPoint, refPoint_further), distanceToRefPointByCell{nodeInTet});
-                else
-                    Geo.Cells(nodeInTet).Y(ismember(sort(Geo.Cells(nodeInTet).T, 2), tetToCheck', 'rows'), :) = refPoint_closer*(1-closeToNewPoint) + newPoint*closeToNewPoint;
-                end
+%                 if sum(ismember(tetToCheck, Geo.XgID)) == 3
+%                     movementByCell{nodeInTet} = vertcat(newPoint - avgPoint, movementByCell{nodeInTet});
+%                     distanceToRefPointByCell{nodeInTet} = vertcat(pdist2(newPoint, refPoint_further), distanceToRefPointByCell{nodeInTet});
+%                 else
+%                     Geo.Cells(nodeInTet).Y(ismember(sort(Geo.Cells(nodeInTet).T, 2), tetToCheck', 'rows'), :) = refPoint_closer*(1-closeToNewPoint) + newPoint*closeToNewPoint;
+%                 end
+
+                Geo.Cells(nodeInTet).Y(ismember(sort(Geo.Cells(nodeInTet).T, 2), tetToCheck', 'rows'), :) = refPoint_closer*(1-closeToNewPoint) + newPoint*closeToNewPoint;
             end
         end
     end
 
-    movementByCell_avg = cellfun(@(x) median(x, 1), movementByCell, 'UniformOutput', false);
-    distanceToRefPointByCell_min = cellfun(@min, distanceToRefPointByCell, 'UniformOutput', false);
-    distanceToRefPointByCell_min = min([distanceToRefPointByCell_min{:}]);
-
-    vertices_only1Cell = verticesToChange(sum(ismember(verticesToChange, Geo.XgID), 2) == 3, :);
-
-    %% MOVING CELLS TO ACCOMODATE
-    % Should be a gradient where closer cells move more and further cell
-    % less
-    for idCell = cellNodesShared'
-        if any(ismember(idCell, cellsToGetCloser))
-            gettingCloser = 1;
-        else
-            gettingCloser = 0;
-        end
-        currentVertices = vertices_only1Cell(any(ismember(vertices_only1Cell, idCell), 2), :);
-        
-        avgPoint = movementByCell_avg{idCell};
-
-        if ~isempty(currentVertices)
-            for tetToCheck = currentVertices'
-                newPoint = Geo.Cells(idCell).Y(ismember(sort(Geo.Cells(idCell).T, 2), tetToCheck', 'rows'), :);
-                if ~gettingCloser
-                    Geo.Cells(idCell).Y(ismember(sort(Geo.Cells(idCell).T, 2), tetToCheck', 'rows'), :) = newPoint + (avgPoint *  distanceToRefPointByCell_min / pdist2(newPoint, refPoint_further));
-                end
-            end
-        end
-    end
+%     movementByCell_avg = cellfun(@(x) median(x, 1), movementByCell, 'UniformOutput', false);
+%     distanceToRefPointByCell_min = cellfun(@min, distanceToRefPointByCell, 'UniformOutput', false);
+%     distanceToRefPointByCell_min = min([distanceToRefPointByCell_min{:}]);
+% 
+%     vertices_only1Cell = verticesToChange(sum(ismember(verticesToChange, Geo.XgID), 2) == 3, :);
+% 
+%     %% MOVING CELLS TO ACCOMODATE
+%     % Should be a gradient where closer cells move more and further cell
+%     % less
+%     for idCell = cellNodesShared'
+%         if any(ismember(idCell, cellsToGetCloser))
+%             gettingCloser = 1;
+%         else
+%             gettingCloser = 0;
+%         end
+%         currentVertices = vertices_only1Cell(any(ismember(vertices_only1Cell, idCell), 2), :);
+%         
+%         avgPoint = movementByCell_avg{idCell};
+% 
+%         if ~isempty(currentVertices)
+%             for tetToCheck = currentVertices'
+%                 newPoint = Geo.Cells(idCell).Y(ismember(sort(Geo.Cells(idCell).T, 2), tetToCheck', 'rows'), :);
+%                 if ~gettingCloser
+%                     Geo.Cells(idCell).Y(ismember(sort(Geo.Cells(idCell).T, 2), tetToCheck', 'rows'), :) = newPoint + (avgPoint *  (distanceToRefPointByCell_min / pdist2(newPoint, refPoint_further))^(1));
+%                 end
+%             end
+%         end
+%     end
 
     %% Also the vertex middle Scutoid vertex
     for currentCell = cellNodesShared'
@@ -118,11 +120,13 @@ function [Geo, Geo_n] = moveVerticesCloserToRefPoint(Geo, Geo_n, closeToNewPoint
     end
 
     %% Rebuild
-    Geo = BuildXFromY(Geo_n, Geo);
+    Geo_new = BuildXFromY(Geo_n, Geo);
     % Recalculating face centres here based on the previous
     % change
-    Geo = Rebuild(Geo, Set);
-    Geo = BuildGlobalIds(Geo);
-    Geo   = UpdateMeasures(Geo);
-    Geo_n = Geo;
+    Geo_new = Rebuild(Geo_new, Set);
+    Geo_new = BuildGlobalIds(Geo_new);
+    Geo_new   = UpdateMeasures(Geo_new);
+
+    Geo_new = CheckYsAndFacesHaveNotChanged(Geo, verticesToChange, Geo_new);
+    Geo_n = Geo_new;
 end

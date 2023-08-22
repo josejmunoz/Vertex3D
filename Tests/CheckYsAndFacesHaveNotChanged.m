@@ -17,7 +17,7 @@ function Geo_new = CheckYsAndFacesHaveNotChanged(Geo, newTets, Geo_new)
         
         %% Check that faces that were not changed, are not changing.
         for face = Geo.Cells(cellId).Faces
-            if face.InterfaceType ~= interfaceType
+            if face.InterfaceType ~= interfaceType || ~ismember(cellId, newTets(:))
                 idWithGeo_new = ismember(vertcat(Geo_new.Cells(cellId).Faces.ij), face.ij, 'rows');
                 assert(sum(idWithGeo_new)==1)
                 if ~isequal(Geo_new.Cells(cellId).Faces(idWithGeo_new).Centre, face.Centre)

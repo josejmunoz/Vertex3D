@@ -14,12 +14,12 @@ for newTet = newTets'
                 Geo.Cells(numNode).T(ismember(sort(Geo.Cells(numNode).T, 2), sort(newTet)', 'rows'), :) = [];
             else
                 if isempty(Geo.Cells(numNode).T) || ~ismember(sort(newTet)', sort(Geo.Cells(numNode).T, 2), 'rows')
-                    DT = delaunayTriangulation(vertcat(Geo.Cells(newTet).X));
-                    if ~any(ismember(newTet, Geo.XgID))
-                        Geo.Cells(numNode).T(end+1, :) = newTet;
-                    else
-                        Geo.Cells(numNode).T(end+1, :) = newTet(DT.ConnectivityList);
-                    end
+                    %DT = delaunayTriangulation(vertcat(Geo.Cells(newTet).X));
+                    %if ~any(ismember(newTet, Geo.XgID))
+                    Geo.Cells(numNode).T(end+1, :) = newTet;
+                    %else
+                        %Geo.Cells(numNode).T(end+1, :) = newTet(DT.ConnectivityList);
+                    %end
                     if ~isempty(Geo.Cells(numNode).AliveStatus) && exist('Set', 'var')
                         if ~isempty(Ynew)
                             Geo.Cells(numNode).Y(end+1, :) = Ynew(ismember(newTets, newTet', 'rows'), :);

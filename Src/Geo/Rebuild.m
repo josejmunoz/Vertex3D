@@ -10,12 +10,12 @@ function Geo = Rebuild(Geo, Set)
         
         for numT = 1:size(Cell.T, 1)
             tet = Cell.T(numT, :);
-            DT = delaunayTriangulation(vertcat(Geo.Cells(tet).X));
-            if ~any(ismember(tet, Geo.XgID)) || isempty(DT.ConnectivityList)
-                Geo.Cells(cc).T(numT, :) = tet;
-            else
-                Geo.Cells(cc).T(numT, :) = tet(DT.ConnectivityList);
-            end
+            %DT = delaunayTriangulation(vertcat(Geo.Cells(tet).X));
+            %if ~any(ismember(tet, Geo.XgID)) || isempty(DT.ConnectivityList)
+            Geo.Cells(cc).T(numT, :) = tet;
+            %else
+            %    Geo.Cells(cc).T(numT, :) = tet(DT.ConnectivityList);
+            %end
         end
         
         Neigh_nodes = unique(Geo.Cells(cc).T);
@@ -25,10 +25,9 @@ function Geo = Rebuild(Geo, Set)
             ij			= [cc, cj];
             face_ids	= sum(ismember(Cell.T,ij),2)==2;
             
-            [oldFaceExists, previousFace] = ismember(cj, [oldGeo.Cells(cc).Faces.ij]);
+            [oldFaceExists, previousFace] = ismember(ij, vertcat(oldGeo.Cells(cc).Faces.ij), 'rows');
             
             if oldFaceExists
-                previousFace = ceil(previousFace/2);
                 oldFaceCentre = oldGeo.Cells(cc).Faces(previousFace).Centre;
             else
 %                 previousFace = any(ismember(vertcat(allCells_oldFaces.ij), cj), 2);

@@ -19,7 +19,7 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
         end
         gNodes_NeighboursShared = unique(vertcat(gNodeNeighbours{:}));
         cellNodesShared = gNodes_NeighboursShared(~ismember(gNodes_NeighboursShared, Geo.XgID));
-        if sum([Geo.Cells(cellNodesShared).AliveStatus]) > 2 && length(cellNodesShared) > 3
+        if sum([Geo.Cells(cellNodesShared).AliveStatus]) > 2 && length(cellNodesShared) > 3 && length(unique(segmentFeatures.cellToSplitFrom)) == 1
             Set.NeedToConverge = 0;
             allTnew = [];
             numPair = 1;

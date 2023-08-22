@@ -48,6 +48,10 @@ function [Geo_new, Geo_n] = moveVerticesCloserToRefPoint(Geo, Geo_n, closeToNewP
 
     %% cells that were splitted need to get closer
     % Cells that were joined need to get further
+    if size(possibleRefTets, 1) <= 1
+        Geo_new = Geo;
+        return
+    end
     cellsToGetFurther = intersect(possibleRefTets(1, :), possibleRefTets(2, :));
     cellsToGetCloser = setdiff(cellNodesShared, cellsToGetFurther);
     cellsToGetCloser = cellsToGetCloser([Geo.Cells(cellsToGetCloser).AliveStatus] == 1);
@@ -127,8 +131,10 @@ function [Geo_new, Geo_n] = moveVerticesCloserToRefPoint(Geo, Geo_n, closeToNewP
     % change
     Geo_new = Rebuild(Geo_new, Set);
     Geo_new = BuildGlobalIds(Geo_new);
-    Geo_new   = UpdateMeasures(Geo_new);
 
     Geo_new = CheckYsAndFacesHaveNotChanged(Geo, verticesToChange, Geo_new);
+
+    Geo_new   = UpdateMeasures(Geo_new);
+
     Geo_n = Geo_new;
 end

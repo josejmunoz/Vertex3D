@@ -5,10 +5,12 @@ function [Geo_new] = AddAndRebuildCells(Geo, oldTets, newTets, Ynew, Set, update
 [Geo_new] = AddTetrahedra(Geo_new, Geo, newTets, Ynew, Set);
 Geo_new = Rebuild(Geo_new, Set);
 Geo_new   = BuildGlobalIds(Geo_new);
+
+Geo_new = CheckYsAndFacesHaveNotChanged(Geo, newTets, Geo_new);
+
 %if updateMeasurements
     Geo_new   = UpdateMeasures(Geo_new);
 %end
 
-Geo_new = CheckYsAndFacesHaveNotChanged(Geo, newTets, Geo_new);
 end
 

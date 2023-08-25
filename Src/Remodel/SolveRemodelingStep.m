@@ -15,7 +15,7 @@ function [Geo, Set, DidNotConverge]=SolveRemodelingStep(Geo_0, Geo_n, Geo, Dofs,
     
     Set.nu0=Set.nu;
     Set.nu=Set.nu_LP_Initial;
-    Set.MaxIter=Set.MaxIter0;
+    Set.MaxIter=Set.MaxIter0*3;
     while 1
         [g,K]=KgGlobal(Geo_0, Geo_n, Geo, Set);
         

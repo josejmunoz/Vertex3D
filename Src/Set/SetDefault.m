@@ -69,7 +69,7 @@ function Set = SetDefault(Set)
     DSet.Remodelling				= true;
     DSet.RemodelTol					= 0;
     DSet.contributionOldYs          = 0;
-    DSet.RemodelStiffness           = 0.70;
+    DSet.RemodelStiffness           = 0.60;
     DSet.Reset_PercentageGeo0       = 0.15; 
     %% ============================ Solution ==============================
     DSet.tol						= 1e-8;
@@ -109,7 +109,7 @@ function Set = SetDefault(Set)
     DSet.lambdaS4					= DSet.lambdaS1/10;
     DSet.SubstrateZ                 = -DSet.CellHeight/2;
     DSet.f							= DSet.s/2;
-    DSet.nu_LP_Initial				= 1*DSet.nu; %!
+    DSet.nu_LP_Initial				= DSet.nu; %!
     DSet.BarrierTri0				= 1e-3*DSet.s; %!
 	DSet.nu0                        = DSet.nu;
 	DSet.dt0                        = DSet.tend/DSet.Nincr;

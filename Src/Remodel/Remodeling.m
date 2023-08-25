@@ -58,8 +58,16 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
             end
             
             if hasConverged(numPair)
+                %[~, ~, Energy_before, ~, Energies_before] = KgGlobal(Geo_0_backup, Geo_n_backup, Geo_backup, Set);
+                %[~, ~, Energy1, ~, Energies1] = KgGlobal(Geo_0, Geo_n, Geo, Set);
                 %% MOVE ONLY ALLTNEW tets
-                [Geo, Geo_n] = moveVerticesCloserToRefPoint(Geo, Geo_n, 0.001, cellNodesShared, cellToSplitFrom, ghostNode, Tnew, Set);
+%                 for numClose = 0.1:0.1:1
+%                     [Geo1, Geo_n1] = moveVerticesCloserToRefPoint(Geo, Geo_n, numClose, cellNodesShared, cellToSplitFrom, ghostNode, Tnew, Set);
+%                     [~, ~, Energy_After, ~, Energies_After] = KgGlobal(Geo_0, Geo_n1, Geo1, Set)
+%                 end
+                numClose = 0.7;
+                [Geo, Geo_n] = moveVerticesCloserToRefPoint(Geo, Geo_n, numClose, cellNodesShared, cellToSplitFrom, ghostNode, Tnew, Set);
+                %[~, ~, Energy_After, ~, Energies_After] = KgGlobal(Geo_0, Geo_n, Geo, Set);
                 %PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1);
 
                 %% Solve remodelling

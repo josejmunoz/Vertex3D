@@ -1,5 +1,6 @@
 function smoothed_data = weighted_moving_average(data, weights, cutoff)
     smoothed_data = [];
+    minValue = 1;
     weights_normalised = weights/sum(weights);
     for numElem = 1:length(data)
         valueElem = 0;
@@ -11,6 +12,7 @@ function smoothed_data = weighted_moving_average(data, weights, cutoff)
         end
         smoothed_data(numElem) = valueElem;
     end
+    smoothed_data(smoothed_data < 1) = minValue;
     smoothed_data(smoothed_data > cutoff) = cutoff;
 end
 

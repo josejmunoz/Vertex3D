@@ -10,27 +10,34 @@ function [contractilityValue, Geo] = getContractilityBasedOnLocation(currentFace
             distanceToTimeVariables = abs(Set.Contractility_TimeVariability - timeAfterAblation)/Set.Contractility_TimeVariability(2);
             [closestTimePointsDistance, indicesOfClosestTimePoints] = sort(distanceToTimeVariables);
             closestTimePointsDistance = 1 - closestTimePointsDistance; %To get percentages
+            contractilityValue = Set.Contractility_Variability_PurseString(indicesOfClosestTimePoints(1)) * closestTimePointsDistance(1) + ...
+                        Set.Contractility_Variability_PurseString(indicesOfClosestTimePoints(2)) * closestTimePointsDistance(2);
+
+            %% THE VALUE OF THE CONTRACTILITY IS THE ONE THAT WAS 6 SECONDS AGO
+            %% USE THE SAME FUNCTION IN CONTRACTILITY TO OBTAIN THE 
+            CORRESPONDING_EDGELENGTH_6SECONDS_AGO = 
+            purseString_theory = (CORRESPONDING_EDGELENGTH_6SECONDS_AGO / currentTri.EdgeLength_time(1, 2)) ^ 4.5;
+            % THERE SHOULD BE A CUTTOFF OF MAX OF CONTRACTILITY
         end
 
         switch (currentFace.InterfaceType)
             case 'Top' % Top
                 if any([Geo.Cells(currentTri.SharedByCells).AliveStatus] == 0)
-                    contractilityValue = Set.Contractility_Variability_PurseString(indicesOfClosestTimePoints(1)) * closestTimePointsDistance(1) + ...
-                        Set.Contractility_Variability_PurseString(indicesOfClosestTimePoints(2)) * closestTimePointsDistance(2);
+                    
+
+
                     contractilityValue = contractilityValue * Set.cLineTension;
                 else
                     contractilityValue = Set.cLineTension;
                 end
             case 'CellCell' % Lateral
                 if any([Geo.Cells(currentTri.SharedByCells).AliveStatus] == 0)
-                    contractilityValue = Set.Contractility_Variability_LateralCables(indicesOfClosestTimePoints(1)) * closestTimePointsDistance(1) + ...
-                        Set.Contractility_Variability_LateralCables(indicesOfClosestTimePoints(2)) * closestTimePointsDistance(2);
                     contractilityValue = contractilityValue * Set.cLineTension;
                 else
-                    contractilityValue = Set.cLineTension/10000;
+                    contractilityValue = Set.cLineTension/100;
                 end
             case 'Bottom' % Bottom/Substrate
-                contractilityValue = Set.cLineTension/10000;
+                contractilityValue = Set.cLineTension/100;
             otherwise
                 contractilityValue = Set.cLineTension;
         end

@@ -2,19 +2,37 @@
 dirFiles = dir('Result/Relevant/');
 numDir = 13;
 woundedFeaturesOnly = {};
+edgeLength_evo = [];
 timePoints = [];
 infoFiles = dir(fullfile(dirFiles(numDir).folder, dirFiles(numDir).name, '/status*'));
 load(fullfile(dirFiles(numDir).folder, dirFiles(numDir).name, 'status1.mat'), 'Set');
 for numT = 3:length(infoFiles)
-    load(fullfile(dirFiles(numDir).folder, dirFiles(numDir).name, strcat('status', num2str(numT), '.mat')), 'debris_Features', 't');
+    load(fullfile(dirFiles(numDir).folder, dirFiles(numDir).name, strcat('status', num2str(numT), '.mat')), 'Geo', 'debris_Features', 't');
     if length(debris_Features) > 0 
         currentFeatures = debris_Features{1};
         woundedFeaturesOnly{end+1} = currentFeatures.Tilting;
         timePoints(end+1) = t;
+        edgeLength_evo(end+1, 1:2) = [Geo.Cells(4).Faces(end-4).Tris(4).EdgeLength, t];
     end
     debris_Features = [];
 end
 
+%% Edge length evolution
+
+% PEAK OF RECOLING IS AT 6 SECONDS. THUS, THAT SHOULD BE THE TIME THAT
+% IT TAKES TO REACT (DELAY?).
+weights = ones(3, 1);
+weights(end+1:end+12) = 0;
+purseString_theory = weighted_moving_average(edgeLength_evo(:, 1) / edgeLength_evo(1, 1), weights, 10);
+purseString_theory = purseString_theory .^4.5; % One that is really close.
+
+timePoints_norm = timePoints - timePoints(1);
+
+%plot(0:3:60, [0.45 0.53 0.76 1.15 1.28 1.22 1.38 1.33 1.28 1.4 1.25 1.298 1.45 1.31 1.29 1.42 1.31 1.41 1.42 1.37 1.28]); hold on,
+figure, plot(0:3:60, [1, 0.96, 1.087, 1.74, 2.37, 2.61, 2.487, 2.536, 2.46, 2.52, 2.606, 2.456, 2.387, 2.52, 2.31, 2.328, 2.134, 2.07, 2.055, 1.9, 1.9]), hold on;
+plot(timePoints_norm, purseString_theory)
+
+%% Tilting
 tilting = [woundedFeaturesOnly{:}];
 tiltingNormalised = tilting -tilting(1);
 

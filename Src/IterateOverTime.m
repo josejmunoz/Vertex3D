@@ -12,12 +12,6 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
     
     if ~relaxingNu
         Set.iIncr=numStep;
-
-        %% REMODELLING
-        if Set.Remodelling && abs(t-tr)>=Set.RemodelingFrequency
-            [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Set);
-            tr = t;
-        end
         
         %% Wounding
         [Geo] = ablateCells(Geo, Set, t);
@@ -39,9 +33,17 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
     [g, K, ~, Geo, Energies] = KgGlobal(Geo_0, Geo_n, Geo, Set);
     [Geo, g, ~, ~, Set, gr, dyr, dy] = NewtonRaphson(Geo_0, Geo_n, Geo, Dofs, Set, K, g, numStep, t);
 
+
+
     if gr<Set.tol && dyr<Set.tol && all(isnan(g(Dofs.Free)) == 0) && all(isnan(dy(Dofs.Free)) == 0)
         if Set.nu/Set.nu0 == 1
             Geo.log = sprintf('%s STEP %i has converged ...\n',Geo.log, Set.iIncr);
+
+            %% REMODELLING
+            if Set.Remodelling && abs(t-tr)>=Set.RemodelingFrequency
+                [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Set);
+                tr = t;
+            end
 
             EnergiesPerTimeStep{end+1} = Energies;
             Geo = BuildXFromY(Geo_n, Geo);

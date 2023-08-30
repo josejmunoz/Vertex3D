@@ -3,29 +3,36 @@ function [contractilityValue, Geo] = getContractilityBasedOnLocation(currentFace
 %   Detailed explanation goes here
     
     noiseContractility = 0.1;
+    CUTOFF = 10;
     
     if isempty(currentTri.ContractilityValue)
-        timeAfterAblation = Set.currentT - Set.TInitAblation;
-        if timeAfterAblation >= 0
-            distanceToTimeVariables = abs(Set.Contractility_TimeVariability - timeAfterAblation)/Set.Contractility_TimeVariability(2);
-            [closestTimePointsDistance, indicesOfClosestTimePoints] = sort(distanceToTimeVariables);
-            closestTimePointsDistance = 1 - closestTimePointsDistance; %To get percentages
-            contractilityValue = Set.Contractility_Variability_PurseString(indicesOfClosestTimePoints(1)) * closestTimePointsDistance(1) + ...
-                        Set.Contractility_Variability_PurseString(indicesOfClosestTimePoints(2)) * closestTimePointsDistance(2);
 
-            %% THE VALUE OF THE CONTRACTILITY IS THE ONE THAT WAS 6 SECONDS AGO
-            %% USE THE SAME FUNCTION IN CONTRACTILITY TO OBTAIN THE 
-            CORRESPONDING_EDGELENGTH_6SECONDS_AGO = 
-            purseString_theory = (CORRESPONDING_EDGELENGTH_6SECONDS_AGO / currentTri.EdgeLength_time(1, 2)) ^ 4.5;
-            % THERE SHOULD BE A CUTTOFF OF MAX OF CONTRACTILITY
+        %% THE VALUE OF THE CONTRACTILITY IS THE ONE THAT WAS 6 minutes AGO
+        delayMinutes = 6;
+
+        distanceToTimeVariables = (Set.currentT - delayMinutes) - currentTri.EdgeLength_time(:, 1);
+        contractilityValue = 0;
+        if any(distanceToTimeVariables >= 0)
+            [closestTimePointsDistance, indicesOfClosestTimePoints] = sort(abs(distanceToTimeVariables));
+            closestTimePointsDistance = 1 - closestTimePointsDistance; %To get percentages
+            closestTimePointsDistance = closestTimePointsDistance / sum(closestTimePointsDistance(1:2)); %% Average between the two closest elements
+            CORRESPONDING_EDGELENGTH_6MINUTES_AGO = currentTri.EdgeLength_time(indicesOfClosestTimePoints(1), 2) * closestTimePointsDistance(1) + ...
+                currentTri.EdgeLength_time(indicesOfClosestTimePoints(2), 2) * closestTimePointsDistance(2);
+            contractilityValue = (CORRESPONDING_EDGELENGTH_6MINUTES_AGO / currentTri.EdgeLength_time(1, 2)) ^ Set.purseStringStrength;
+        end
+
+        if contractilityValue < 1
+            contractilityValue = 1;
+        end
+
+        % THERE SHOULD BE A CUTTOFF OF MAX OF CONTRACTILITY
+        if contractilityValue > CUTOFF
+            %contractilityValue = CUTOFF;
         end
 
         switch (currentFace.InterfaceType)
             case 'Top' % Top
                 if any([Geo.Cells(currentTri.SharedByCells).AliveStatus] == 0)
-                    
-
-
                     contractilityValue = contractilityValue * Set.cLineTension;
                 else
                     contractilityValue = Set.cLineTension;

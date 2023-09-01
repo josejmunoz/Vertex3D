@@ -28,16 +28,30 @@ function Geo = Rebuild(Geo, Set)
             [oldFaceExists, previousFace] = ismember(ij, vertcat(oldGeo.Cells(cc).Faces.ij), 'rows');
             
             if oldFaceExists
-                oldFaceCentre = oldGeo.Cells(cc).Faces(previousFace).Centre;
+                oldFace = oldGeo.Cells(cc).Faces(previousFace);
+                
             else
 %                 previousFace = any(ismember(vertcat(allCells_oldFaces.ij), cj), 2);
 %                 oldFaceCentre = allCells_oldFaces(previousFace).Centre;
-                oldFaceCentre = [];
+                oldFace = [];
                  %getNodeNeighbours(Geo, 
             end
             
-			Geo.Cells(cc).Faces(j) = BuildFace(cc, cj, face_ids, Geo.nCells, Geo.Cells(cc), Geo.XgID, Set, Geo.XgTop, Geo.XgBottom, oldFaceCentre);            
+			Geo.Cells(cc).Faces(j) = BuildFace(cc, cj, face_ids, Geo.nCells, Geo.Cells(cc), Geo.XgID, Set, Geo.XgTop, Geo.XgBottom, oldFace);
+            woundEdgeTris = [Geo.Cells([Geo.Cells(cc).Faces(j).Tris.SharedByCells]).AliveStatus] == 0;
+            if any(woundEdgeTris) && ~oldFaceExists
+                for woundTriID = find(woundEdgeTris)
+                    woundTri = Geo.Cells(cc).Faces(j).Tris(woundTriID);
+                    allTris = [oldGeo.Cells(cc).Faces.Tris];
+                    matchingTris = allTris(cellfun(@(x) isequal(x, woundTri.SharedByCells), {allTris.SharedByCells}));
+                    [~, matchingID] = min(sum(pdist2(Geo.Cells(cc).Y(woundTri.Edge, :), oldGeo.Cells(cc).Y([matchingTris.Edge], :))));
+                    Geo.Cells(cc).Faces(j).Tris(woundTriID).EdgeLength_time = matchingTris(matchingID).EdgeLength_time;
+                end
+            end
+
+            %% TODO: CHECK FOR EDGELENGTH_TIME ON TRIS
         end
         Geo.Cells(cc).Faces = Geo.Cells(cc).Faces(1:length(Neigh_nodes));
+
     end
 end

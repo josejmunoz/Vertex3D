@@ -33,8 +33,6 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
     [g, K, ~, Geo, Energies] = KgGlobal(Geo_0, Geo_n, Geo, Set);
     [Geo, g, ~, ~, Set, gr, dyr, dy] = NewtonRaphson(Geo_0, Geo_n, Geo, Dofs, Set, K, g, numStep, t);
 
-
-
     if gr<Set.tol && dyr<Set.tol && all(isnan(g(Dofs.Free)) == 0) && all(isnan(dy(Dofs.Free)) == 0)
         if Set.nu/Set.nu0 == 1
             Geo.log = sprintf('%s STEP %i has converged ...\n',Geo.log, Set.iIncr);
@@ -80,6 +78,7 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
                     face = Geo.Cells(numCell).Faces(nFace);
                     for nTri = 1:length(face.Tris)
                         Geo.Cells(numCell).Faces(nFace).Tris(nTri).ContractilityValue = [];
+                        Geo.Cells(numCell).Faces(nFace).Tris(nTri).EdgeLength_time(end+1, 1:2) = [t, Geo.Cells(numCell).Faces(nFace).Tris(nTri).EdgeLength];
                     end
                 end
             end

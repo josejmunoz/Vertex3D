@@ -18,7 +18,7 @@ function [contractilityValue, Geo] = getContractilityBasedOnLocation(currentFace
             closestTimePointsDistance = closestTimePointsDistance / sum(closestTimePointsDistance(1:2)); %% Average between the two closest elements
             CORRESPONDING_EDGELENGTH_6MINUTES_AGO = currentTri.EdgeLength_time(indicesOfClosestTimePoints(1), 2) * closestTimePointsDistance(1) + ...
                 currentTri.EdgeLength_time(indicesOfClosestTimePoints(2), 2) * closestTimePointsDistance(2);
-            contractilityValue = (CORRESPONDING_EDGELENGTH_6MINUTES_AGO / currentTri.EdgeLength_time(1, 2)) ^ Set.purseStringStrength;
+            contractilityValue = ((CORRESPONDING_EDGELENGTH_6MINUTES_AGO / currentTri.EdgeLength_time(1, 2)) ^ 4.5) * Set.purseStringStrength;
         end
 
         if contractilityValue < 1
@@ -38,6 +38,8 @@ function [contractilityValue, Geo] = getContractilityBasedOnLocation(currentFace
                     contractilityValue = Set.cLineTension;
                 end
             case 'CellCell' % Lateral
+                %% DO LATERAL CABLES HAVE A DIFFERENT MINUTES DELAY
+                %% CAN IT BE BASED ON HOW FAST IT IS STRAINED?
                 if any([Geo.Cells(currentTri.SharedByCells).AliveStatus] == 0)
                     contractilityValue = contractilityValue * Set.cLineTension;
                 else

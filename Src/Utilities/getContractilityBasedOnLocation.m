@@ -3,32 +3,11 @@ function [contractilityValue, Geo] = getContractilityBasedOnLocation(currentFace
 %   Detailed explanation goes here
     
     noiseContractility = 0.1;
-    CUTOFF = 10;
+    CUTOFF = 3;
     
     if isempty(currentTri.ContractilityValue)
-
-        %% THE VALUE OF THE CONTRACTILITY IS THE ONE THAT WAS 6 minutes AGO
-        delayMinutes = 6;
-
-        distanceToTimeVariables = (Set.currentT - delayMinutes) - currentTri.EdgeLength_time(:, 1);
-        contractilityValue = 0;
-        if any(distanceToTimeVariables >= 0)
-            [closestTimePointsDistance, indicesOfClosestTimePoints] = sort(abs(distanceToTimeVariables));
-            closestTimePointsDistance = 1 - closestTimePointsDistance; %To get percentages
-            closestTimePointsDistance = closestTimePointsDistance / sum(closestTimePointsDistance(1:2)); %% Average between the two closest elements
-            CORRESPONDING_EDGELENGTH_6MINUTES_AGO = currentTri.EdgeLength_time(indicesOfClosestTimePoints(1), 2) * closestTimePointsDistance(1) + ...
-                currentTri.EdgeLength_time(indicesOfClosestTimePoints(2), 2) * closestTimePointsDistance(2);
-            contractilityValue = ((CORRESPONDING_EDGELENGTH_6MINUTES_AGO / currentTri.EdgeLength_time(1, 2)) ^ 4.5) * Set.purseStringStrength;
-        end
-
-        if contractilityValue < 1
-            contractilityValue = 1;
-        end
-
-        % THERE SHOULD BE A CUTTOFF OF MAX OF CONTRACTILITY
-        if contractilityValue > CUTOFF
-            %contractilityValue = CUTOFF;
-        end
+        
+        contractilityValue = getDelayedContractility(Set.currentT, Set.purseStringStrength, currentTri, CUTOFF * Set.purseStringStrength);
 
         switch (currentFace.InterfaceType)
             case 'Top' % Top

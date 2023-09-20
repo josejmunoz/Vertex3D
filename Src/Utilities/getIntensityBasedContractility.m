@@ -1,5 +1,6 @@
 function contractilityValue = getIntensityBasedContractility(Set, currentFace)
     timeAfterAblation = Set.currentT - Set.TInitAblation;
+    contractilityValue = 0;
     if timeAfterAblation >= 0
         distanceToTimeVariables = abs(Set.Contractility_TimeVariability - timeAfterAblation)/Set.Contractility_TimeVariability(2);
         [closestTimePointsDistance, indicesOfClosestTimePoints] = sort(distanceToTimeVariables);

@@ -2,12 +2,11 @@ function [contractilityValue, Geo] = getContractilityBasedOnLocation(currentFace
 %GETCONTRACTILITYBASEDONLOCATION Summary of this function goes here
 %   Detailed explanation goes here
     
-    noiseContractility = 0.1;
     CUTOFF = 3;
     
     if isempty(currentTri.ContractilityValue)
         
-        if Set.DelayedContractility == 1
+        if Set.DelayedAdditionalContractility == 1
             contractilityValue = getDelayedContractility(Set.currentT, Set.purseStringStrength, currentTri, CUTOFF * Set.purseStringStrength);
         else
             contractilityValue = getIntensityBasedContractility(Set, currentFace);
@@ -34,8 +33,8 @@ function [contractilityValue, Geo] = getContractilityBasedOnLocation(currentFace
                 contractilityValue = Set.cLineTension;
         end
         %% Adding noise to contractility
-        minContractility = contractilityValue - contractilityValue*noiseContractility;
-        maxContractility = contractilityValue + contractilityValue*noiseContractility;
+        minContractility = contractilityValue - contractilityValue*Set.noiseContractility;
+        maxContractility = contractilityValue + contractilityValue*Set.noiseContractility;
         contractilityValue = minContractility + (maxContractility-minContractility)*rand();
     
         for cellToCheck = currentTri.SharedByCells

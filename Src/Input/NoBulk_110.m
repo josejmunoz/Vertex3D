@@ -19,7 +19,7 @@ Set.lambdaV = 10;
 Set.kSubstrate = 100;
 
 Set.cLineTension = 0.05;
-Set.purseStringStrength = 30;
+Set.purseStringStrength = 15;
 
 Set.lambdaS1 = 20;
 Set.lambdaS3 = Set.lambdaS1/10;

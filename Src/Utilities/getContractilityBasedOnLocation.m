@@ -7,7 +7,11 @@ function [contractilityValue, Geo] = getContractilityBasedOnLocation(currentFace
     
     if isempty(currentTri.ContractilityValue)
         
-        contractilityValue = getDelayedContractility(Set.currentT, Set.purseStringStrength, currentTri, CUTOFF * Set.purseStringStrength);
+        if Set.DelayedContractility == 1
+            contractilityValue = getDelayedContractility(Set.currentT, Set.purseStringStrength, currentTri, CUTOFF * Set.purseStringStrength);
+        else
+            contractilityValue = getIntensityBasedContractility(Set, currentFace);
+        end
 
         switch (currentFace.InterfaceType)
             case 'Top' % Top

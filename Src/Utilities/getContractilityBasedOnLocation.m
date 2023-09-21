@@ -35,6 +35,9 @@ function [contractilityValue, Geo] = getContractilityBasedOnLocation(currentFace
         %% Adding noise to contractility
         minContractility = contractilityValue - contractilityValue*Set.noiseContractility;
         maxContractility = contractilityValue + contractilityValue*Set.noiseContractility;
+        if minContractility < 0
+            minContractility = eps;
+        end
         contractilityValue = minContractility + (maxContractility-minContractility)*rand();
     
         for cellToCheck = currentTri.SharedByCells

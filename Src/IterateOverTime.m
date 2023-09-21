@@ -113,7 +113,7 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
             Geo.log = sprintf('%s First strategy ---> Repeating the step with higher viscosity... \n', Geo.log);
             Set.MaxIter=Set.MaxIter0*1.1;
             Set.nu=10*Set.nu0;
-        elseif Set.iter == Set.MaxIter && Set.iter > Set.MaxIter0
+        elseif Set.iter == Set.MaxIter && Set.iter > Set.MaxIter0 && Set.dt/Set.dt0 > 1/20
             Geo.log = sprintf('%s Second strategy ---> Repeating the step with half step-size...\n', Geo.log);
             Set.MaxIter=Set.MaxIter0;
             Set.nu=Set.nu0;

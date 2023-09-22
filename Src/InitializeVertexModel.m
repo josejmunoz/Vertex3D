@@ -43,6 +43,7 @@ Geo_n   = Geo;
 [Geo_n.Cells.Area0] = deal([]);
 backupVars.Geo_b = Geo;
 backupVars.tr_b = tr;
+backupVars.Dofs = Dofs;
 numStep = 1; relaxingNu = false;
 EnergiesPerTimeStep = {};
 

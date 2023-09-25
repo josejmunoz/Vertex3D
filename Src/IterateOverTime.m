@@ -77,6 +77,7 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
                 for nFace = 1:length(cCell.Faces)
                     face = Geo.Cells(numCell).Faces(nFace);
                     for nTri = 1:length(face.Tris)
+                        Geo.Cells(numCell).Faces(nFace).Tris(nTri).pastContractilityValue = Geo.Cells(numCell).Faces(nFace).Tris(nTri).ContractilityValue;
                         Geo.Cells(numCell).Faces(nFace).Tris(nTri).ContractilityValue = [];
                         Geo.Cells(numCell).Faces(nFace).Tris(nTri).EdgeLength_time(end+1, 1:2) = [t, Geo.Cells(numCell).Faces(nFace).Tris(nTri).EdgeLength];
                     end

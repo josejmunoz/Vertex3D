@@ -61,7 +61,10 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
             end
 
             if ~isempty(debris_Features)
+                [wound_features] = ComputeWoundFeatures(Geo);
                 %writetable(vertcat(debris_Features{:}), fullfile(pwd, Set.OutputFolder, strcat('debris_features_', num2str(numStep),'.csv')))
+            else
+                wound_features = [];
             end
 
             %% Test to see if something is wrong:
@@ -69,7 +72,7 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
 
             %% Save
             PostProcessingVTK(Geo, Geo_0, Set, numStep)
-            save(fullfile(pwd, Set.OutputFolder, strcat('status', num2str(numStep),'.mat')), 'Geo', 'Geo_n', 'Geo_0', 'Set', 'Dofs', 'EnergiesPerTimeStep', 't', 'numStep', 'nonDebris_Features', 'debris_Features', 'tr', 'relaxingNu', 'backupVars')
+            save(fullfile(pwd, Set.OutputFolder, strcat('status', num2str(numStep),'.mat')), 'Geo', 'Geo_n', 'Geo_0', 'Set', 'Dofs', 'EnergiesPerTimeStep', 't', 'numStep', 'nonDebris_Features', 'debris_Features', 'wound_features', 'tr', 'relaxingNu', 'backupVars')
 
             %% 
             for numCell = 1:length(Geo.Cells)

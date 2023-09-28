@@ -17,7 +17,5 @@ function [features] = ComputeCellFeatures(cell)
     %TODO: Other cell measurements
     %ComputeCellCircularity
 
-    % Compute different measurements from the WOUND
-
 end
 

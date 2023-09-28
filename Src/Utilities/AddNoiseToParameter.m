@@ -6,9 +6,9 @@ if minValue < 0
 end
 finalValue = minValue + (maxValue-minValue)*rand();
 
-if exist('currentTri', 'var')
-    if ~isempty(currentTri.pastContractilityValue)
-        finalValue = mean([finalValue, currentTri.pastContractilityValue]);
-    end
-end
+% if exist('currentTri', 'var')
+%     if ~isempty(currentTri.pastContractilityValue)
+%         finalValue = mean([finalValue, currentTri.pastContractilityValue]);
+%     end
+% end
 end

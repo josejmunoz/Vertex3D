@@ -6,8 +6,7 @@ c_features.ID = Geo.Cells(currentCell).ID;
 c_features.BorderCell = IsBorderCell(Geo, currentCell);
 
 % Compute different measurements from the WOUND
-allCells = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus}))];
-debrisCells = [allCells([allCells.AliveStatus] == 0).ID];
+debrisCells = getDebrisCells(Geo);
 
 [c_features.WoundEdgeCell, c_features.WoundEdgeCell_Top, ...
     c_features.WoundEdgeCell_Bottom, c_features.DebrisCell] = IsWoundEdgeCell(cell, debrisCells);

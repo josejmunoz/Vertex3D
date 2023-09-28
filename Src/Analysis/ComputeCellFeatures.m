@@ -16,6 +16,6 @@ function [features] = ComputeCellFeatures(cell)
 
     %TODO: Other cell measurements
     %ComputeCellCircularity
-
+    
 end
 

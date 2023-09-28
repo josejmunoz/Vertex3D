@@ -12,4 +12,3 @@ debrisCells = [allCells([allCells.AliveStatus] == 0).ID];
 [c_features.WoundEdgeCell, c_features.WoundEdgeCell_Top, ...
     c_features.WoundEdgeCell_Bottom, c_features.DebrisCell] = IsWoundEdgeCell(cell, debrisCells);
 end
-

@@ -3,7 +3,7 @@ function [neighbours] = ComputeCellNeighbours(cell, locationFilter)
 %   Detailed explanation goes here
     allSharedByCells = [];
     for face = cell.Faces
-        if exist('filtering', 'var')
+        if exist('locationFilter', 'var')
             if face.InterfaceType == locationFilter
                 allSharedByCells = [allSharedByCells, face.Tris.SharedByCells];
             end

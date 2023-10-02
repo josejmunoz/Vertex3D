@@ -4,6 +4,8 @@ function [booleanWoundEdgeCell, booleanWoundEdgeCell_Top, booleanWoundEdgeCell_B
     if ismember(cell.ID, debrisCells)
         booleanDebrisCell = 1;
         booleanWoundEdgeCell = 0;
+        booleanWoundEdgeCell_Top = 0;
+        booleanWoundEdgeCell_Bottom = 0;
     else
         booleanDebrisCell = 0;
         booleanWoundEdgeCell = any(ismember(ComputeCellNeighbours(cell), debrisCells));

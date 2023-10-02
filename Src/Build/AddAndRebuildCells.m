@@ -12,5 +12,20 @@ Geo_new = CheckYsAndFacesHaveNotChanged(Geo, newTets, Geo_new);
     Geo_new   = UpdateMeasures(Geo_new);
 %end
 
+%% Check here how many neighbours they're loosing and winning and change the number of lambdaA_perc accordingly
+neighbours_init = [];
+for cell = Geo.Cells(1:Geo.nCells)
+    neighbours_init(end+1) = length(getNodeNeighbours(Geo, cell.ID));
+end
+
+neighbours_end = [];
+for cell = Geo_new.Cells(1:Geo_new.nCells)
+    neighbours_end(end+1) = length(getNodeNeighbours(Geo_new, cell.ID));
+end
+
+difference = neighbours_init - neighbours_end;
+
+for numCell = 1:Geo.nCells
+    Geo.Cells(numCell).lambdaA_perc = Geo.Cells(numCell).lambdaA_perc - (0.01 * difference(numCell));
 end
 

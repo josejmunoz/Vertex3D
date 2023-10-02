@@ -4,7 +4,7 @@ function [Geo] = BuildCells(Geo, Set, X, Twg)
 	% TODO FIXME Fields that structs in the Cells array and Faces in a Cell 
 	% struct have. This works as a reference, so maybe it should go 
 	% somewhere else.
-	CellFields = ["ID", "X", "T", "Y", "Faces", "Vol", "Vol0", "Area", "Area0", "globalIds", "cglobalIds", "AliveStatus", "lambdaA_perc"];
+	CellFields = ["ID", "X", "T", "Y", "Faces", "Vol", "Vol0", "Area", "Area0", "globalIds", "cglobalIds", "AliveStatus", "lambdaB_perc"];
 	FaceFields = ["ij", "Centre", "Tris", "globalIds", "InterfaceType", "Area", "Area0"];
     % Build the Cells struct Array
 	Geo.Cells = BuildStructArray(length(X), CellFields);
@@ -49,7 +49,7 @@ function [Geo] = BuildCells(Geo, Set, X, Twg)
         Geo.Cells(c).ExternalLambda = 1;
 		Geo.Cells(c).InternalLambda = 1;
 		Geo.Cells(c).SubstrateLambda = 1;
-        Geo.Cells(c).lambdaA_perc = 1;
+        Geo.Cells(c).lambdaB_perc = 1;
     end
     
     % Edge lengths 0 as average of all cells by location (Top, bottom or

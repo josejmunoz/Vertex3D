@@ -26,6 +26,6 @@ end
 difference = neighbours_init - neighbours_end;
 
 for numCell = 1:Geo.nCells
-    Geo.Cells(numCell).lambdaA_perc = Geo.Cells(numCell).lambdaA_perc - (0.01 * difference(numCell));
+    Geo.Cells(numCell).lambdaB_perc = Geo.Cells(numCell).lambdaB_perc - (0.01 * difference(numCell));
 end
 

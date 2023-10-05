@@ -4,7 +4,7 @@ function [] = AnalyseSimulation(inputDir)
 
 infoFiles = dir(fullfile(inputDir, '/status*'));
 if isempty(infoFiles)
-    return
+    error('No files!')
 end
 
 outputDir = 'Analysis';
@@ -24,22 +24,30 @@ for numT = indices'
     nonDebris_Features_table = struct2table(vertcat(nonDebris_Features{:}));
     if ~isempty(debris_Features)
         debris_Features_time{end+1} = struct2table([debris_Features{:}]);
+        if ~exist('wound_features', 'var')
+            load(fullfile(inputDir, infoFiles(numT).name), 'Geo');
+            wound_features = ComputeWoundFeatures(Geo);
+        end
         wound_Features_time{end+1} = struct2table(ComputeFeaturesPerRow(Geo, cellsToAblate, wound_features));
 
-        %writetable(vertcat(debris_Features{:}), fullfile(inputDir, outpuDir, strcat('debris_features_', num2str(numT),'.csv')))
+        writetable(debris_Features_time{end}, fullfile(inputDir, outputDir, strcat('debris_features_', num2str(t),'.csv')))
 
         timePoints_debris(end+1) = t;
     else
         beforeWounding_debris = nonDebris_Features_table(ismember(nonDebris_Features_table.ID, cellsToAblate), :);
         beforeWounding_nonDebris = nonDebris_Features_table(~ismember(nonDebris_Features_table.ID, cellsToAblate), :);
         beforeWounding_wound = ComputeWoundFeatures(Geo, cellsToAblate);
-        beforeWounding_wound = ComputeFeaturesPerRow(Geo, cellsToAblate, beforeWounding_wound);
+        beforeWounding_wound = struct2table(ComputeFeaturesPerRow(Geo, cellsToAblate, beforeWounding_wound));
     end
 
     nonDebris_Features_time{end+1} = nonDebris_Features_table;
     timePoints_nonDebris(end+1) = t;
-    %writetable(nonDebris_Features_table, fullfile(inputDir, outputDir, strcat('cell_features_', num2str(numT),'.csv')))
+    writetable(nonDebris_Features_table, fullfile(inputDir, outputDir, strcat('cell_features_', num2str(t),'.csv')))
+
+    clearvars 'wound_features'
 end
+
+writetable(vertcat(wound_Features_time{:}), fullfile(inputDir, outputDir, strcat('wound_features.csv')))
 
 %% Write summary results with the following features:
 % Wound: area (apical, basal), volume.
@@ -60,6 +68,11 @@ initialCells_features_std = std(table2array(beforeWounding_nonDebris));
 nonDebris_Features_6Mins = distanceTime_Features(Set, timePoints_nonDebris, nonDebris_Features_time, 6);
 debris_Features_6Mins = distanceTime_Features(Set, timePoints_debris, debris_Features_time, 6);
 wound_Features_6Mins = distanceTime_Features(Set, timePoints_debris, wound_Features_time, 6);
+
+%% Features at timepoint 15 after wounding.
+nonDebris_Features_15Mins = distanceTime_Features(Set, timePoints_nonDebris, nonDebris_Features_time, 15);
+debris_Features_15Mins = distanceTime_Features(Set, timePoints_debris, debris_Features_time, 15);
+wound_Features_15Mins = distanceTime_Features(Set, timePoints_debris, wound_Features_time, 15);
 
 %% Features at timepoint 30 after wounding.
 nonDebris_Features_30Mins = distanceTime_Features(Set, timePoints_nonDebris, nonDebris_Features_time, 30);

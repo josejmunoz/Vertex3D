@@ -16,14 +16,15 @@ cellsToAblate = Geo.cellsToAblate;
 %% Write individual results
 nonDebris_Features_time = {};
 debris_Features_time = {};
+wound_Features_time = {};
 timePoints_nonDebris = [];
 timePoints_debris = [];
 for numT = indices'
-    load(fullfile(inputDir, infoFiles(numT).name), 'debris_Features', 'nonDebris_Features', 't');
+    load(fullfile(inputDir, infoFiles(numT).name), 'debris_Features', 'nonDebris_Features', 'wound_features', 't');
     nonDebris_Features_table = struct2table(vertcat(nonDebris_Features{:}));
     if ~isempty(debris_Features)
-        nonDebris_Cells = struct2table([nonDebris_Features{:}]);
-        debris_Features_time{end+1} = nonDebris_Cells;
+        debris_Features_time{end+1} = struct2table([debris_Features{:}]);
+        wound_Features_time{end+1} = struct2table(ComputeFeaturesPerRow(Geo, cellsToAblate, wound_features));
 
         %writetable(vertcat(debris_Features{:}), fullfile(inputDir, outpuDir, strcat('debris_features_', num2str(numT),'.csv')))
 
@@ -31,6 +32,8 @@ for numT = indices'
     else
         beforeWounding_debris = nonDebris_Features_table(ismember(nonDebris_Features_table.ID, cellsToAblate), :);
         beforeWounding_nonDebris = nonDebris_Features_table(~ismember(nonDebris_Features_table.ID, cellsToAblate), :);
+        beforeWounding_wound = ComputeWoundFeatures(Geo, cellsToAblate);
+        beforeWounding_wound = ComputeFeaturesPerRow(Geo, cellsToAblate, beforeWounding_wound);
     end
 
     nonDebris_Features_time{end+1} = nonDebris_Features_table;
@@ -44,24 +47,24 @@ end
 % intercalations, number of neighbours (3D, apical, basal), area (apical
 % and basal).
 % Cells not at the wound edge: same features as before.
-initialWound_features = sum(beforeWounding_debris);
+initialWound_features_sum = sum(table2array(beforeWounding_debris));
+initialWound_features_avg = mean(table2array(beforeWounding_debris));
+initialWound_features_std = std(table2array(beforeWounding_debris));
+
+initialCells_features_sum = sum(table2array(beforeWounding_nonDebris));
+initialCells_features_avg = mean(table2array(beforeWounding_nonDebris));
+initialCells_features_std = std(table2array(beforeWounding_nonDebris));
 
 
 %% Features at timepoint 6 after wounding.
-distanceToTimeVariables = (Set.TInitAblation + 6) - timePoints_nonDebris;
-[closestTimePointsDistance, indicesOfClosestTimePoints] = sort(abs(distanceToTimeVariables));
-closestTimePointsDistance = 1 - closestTimePointsDistance; %To get percentages
-if sum(closestTimePointsDistance == 1)
-
-else
-    closestTimePointsDistance = closestTimePointsDistance / sum(closestTimePointsDistance(1:2)); %% Average between the two closest elements
-    CORRESPONDING_EDGELENGTH_6MINUTES_AGO = currentTri.EdgeLength_time(indicesOfClosestTimePoints(1), 2) * closestTimePointsDistance(1) + ...
-        currentTri.EdgeLength_time(indicesOfClosestTimePoints(2), 2) * closestTimePointsDistance(2);
-end
-
-nonDebris_Features_time
+nonDebris_Features_6Mins = distanceTime_Features(Set, timePoints_nonDebris, nonDebris_Features_time, 6);
+debris_Features_6Mins = distanceTime_Features(Set, timePoints_debris, debris_Features_time, 6);
+wound_Features_6Mins = distanceTime_Features(Set, timePoints_debris, wound_Features_time, 6);
 
 %% Features at timepoint 30 after wounding.
+nonDebris_Features_30Mins = distanceTime_Features(Set, timePoints_nonDebris, nonDebris_Features_time, 30);
+debris_Features_30Mins = distanceTime_Features(Set, timePoints_debris, debris_Features_time, 30);
+wound_Features_30Mins = distanceTime_Features(Set, timePoints_debris, wound_Features_time, 30);
 
 %% Features at timepoint end.
 

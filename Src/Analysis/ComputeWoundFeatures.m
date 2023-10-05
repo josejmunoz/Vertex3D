@@ -1,4 +1,4 @@
-function [features] = ComputeWoundFeatures(Geo)
+function [features] = ComputeWoundFeatures(Geo, debrisCells)
 %COMPUTEWOUNDFEATURES Summary of this function goes here
 %   Detailed explanation goes here
     %% Init features
@@ -6,7 +6,9 @@ function [features] = ComputeWoundFeatures(Geo)
     
     %% Compute features
     % Wound area: top and bottom
-    debrisCells = getDebrisCells(Geo);
+    if ~exist('debrisCells', 'var')
+        debrisCells = getDebrisCells(Geo);
+    end
     booleanWoundEdgeCell = [];
     for cell = Geo.Cells
         [booleanWoundEdgeCell(end+1)] = IsWoundEdgeCell(cell, debrisCells);

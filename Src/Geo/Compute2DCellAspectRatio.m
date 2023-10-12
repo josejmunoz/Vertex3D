@@ -1,4 +1,4 @@
-function [] = Compute2DCellAspectRatio(cell, location)
+function [aspectRatio] = Compute2DCellAspectRatio(cell, location)
 %COMPUTE2DCELLASPECTRATIO Summary of this function goes here
 %   Detailed explanation goes here
 vertices = [];
@@ -13,5 +13,6 @@ x = vertices(:, 1);
 y = vertices(:, 2);
 
 ellipse_t = fit_ellipse( x,y );
+aspectRatio = ellipse_t.long_axis/ellipse_t.short_axis;
 end
 

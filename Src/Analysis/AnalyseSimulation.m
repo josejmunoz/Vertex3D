@@ -10,6 +10,7 @@ wound_Features_time = {};
 timePoints_nonDebris = [];
 timePoints_debris = [];
 beforeWounding_wound = [];
+allFeatures = [];
 if isempty(infoFiles)
     disp('No files!')
     return
@@ -21,10 +22,28 @@ mkdir(fullfile(inputDir, outputDir))
 [~, indices] = sortrows(vertcat(infoFiles.date));
 load(fullfile(inputDir, infoFiles(indices(1)).name), 'Set', 'Geo');
 cellsToAblate = Geo.cellsToAblate;
-%if ~exist(fullfile(inputDir, outputDir, 'info.mat'), 'file')
+if exist(fullfile(inputDir, outputDir, 'info.mat'), 'file')
     for numT = indices'
-        load(fullfile(inputDir, infoFiles(numT).name), 'debris_Features', 'nonDebris_Features', 'wound_features', 't');
+        load(fullfile(inputDir, infoFiles(numT).name), 'Geo', 't');
+        nonDeadCells = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID];
+        debrisCells = find([Geo.Cells(nonDeadCells).AliveStatus] == 0);
+        nonDebrisCells = find([Geo.Cells(nonDeadCells).AliveStatus] == 1);
+        nonDebris_Features = {};
+        for c = nonDebrisCells
+            nonDebris_Features{end+1} = AnalyseCell(Geo, c);
+        end
         nonDebris_Features_table = struct2table(vertcat(nonDebris_Features{:}));
+        
+        debris_Features = {};
+        for c = debrisCells
+            debris_Features{end+1} = AnalyseCell(Geo, c);
+        end
+
+        if ~isempty(debris_Features)
+            [wound_features] = ComputeWoundFeatures(Geo);
+        else
+            wound_features = [];
+        end
         if ~isempty(debris_Features)
             debris_Features_time{end+1} = struct2table([debris_Features{:}]);
             if ~exist('wound_features', 'var')
@@ -53,9 +72,9 @@ cellsToAblate = Geo.cellsToAblate;
     save(fullfile(inputDir, outputDir, 'info.mat'), 'beforeWounding_debris', 'timePoints_nonDebris', ...
         "nonDebris_Features_time", "beforeWounding_wound", "beforeWounding_nonDebris", ...
         "timePoints_debris", "wound_Features_time", "debris_Features_time")
-% else
-%     load(fullfile(inputDir, outputDir, 'info.mat'))
-% end
+else
+    load(fullfile(inputDir, outputDir, 'info.mat'))
+end
 
 if length(wound_Features_time)>1
     %% Write summary results with the following features:
@@ -78,7 +97,7 @@ if length(wound_Features_time)>1
     cells_features_sum = array2table(initialCells_features_sum, "VariableNames", cellfun(@(x) strcat('sum_', x), beforeWounding_nonDebris.Properties.VariableNames, 'UniformOutput', false));
     cells_features_avg = array2table(initialCells_features_avg, "VariableNames", cellfun(@(x) strcat('avg_', x), beforeWounding_nonDebris.Properties.VariableNames, 'UniformOutput', false));
     cells_features_std = array2table(initialCells_features_std, "VariableNames", cellfun(@(x) strcat('std_', x), beforeWounding_nonDebris.Properties.VariableNames, 'UniformOutput', false));
-    wound_Features = array2table(zeros(size(wound_Features_time{1})), "VariableNames", wound_Features_time{1}.Properties.VariableNames);
+    wound_Features = beforeWounding_wound;
     for numTime = 1:60
         if numTime > timePoints_nonDebris(end)
             break
@@ -94,18 +113,35 @@ if length(wound_Features_time)>1
     allFeatures = [cells_features_sum, cells_features_avg, cells_features_std, wound_Features];
     allFeatures.time = [1:numTime]';
 
+    writetable(allFeatures, fullfile(inputDir, outputDir, strcat('cell_features.csv')))
+
     %% Figure of features evolution.
-
-
-
-    %% Figure of area evolution to overlap with others
     woundedFeaturesOnly = table2array(allFeatures);
 
+    woundVariablesIds = find(cellfun(@(x) contains (x, 'wound'), allFeatures.Properties.VariableNames));
+    nonWoundVariableIds = 1:min(woundVariablesIds);
+
+    for numColumn = nonWoundVariableIds
+        figure ('WindowState','maximized','Visible','off');
+        ax_all = axes;
+        x = woundedFeaturesOnly(:, end);
+        y = woundedFeaturesOnly(:, numColumn);
+        plot(x,y)
+        lgd = legend(allFeatures.Properties.VariableNames(numColumn), 'FontSize', 6);
+        xlim(ax_all, [0 60])
+        xlabel(ax_all, 'time')
+        saveas(ax_all, fullfile(inputDir, outputDir, strcat(allFeatures.Properties.VariableNames{numColumn}, '.png')))
+        legend(ax_all, 'hide')
+        saveas(ax_all, fullfile(inputDir, outputDir, strcat(allFeatures.Properties.VariableNames{numColumn}, '_noLegend.png')))
+        close all
+    end
+
+    %% Figure of area evolution to overlap with others
     figure ('WindowState','maximized','Visible','off');
     ax_all = axes;
     hold on;
-    for numColumn = 2:size(woundedFeaturesOnly, 2)
-        x = timePoints_debris-timePoints_debris(1);
+    for numColumn = woundVariablesIds
+        x = woundedFeaturesOnly(:, end)';
         y = [woundedFeaturesOnly(:, numColumn)]/woundedFeaturesOnly(1, numColumn);
         %y(2) to analyse steep correlation to Set variables
         xx=[x;x];
@@ -115,15 +151,15 @@ if length(wound_Features_time)>1
         cc = repmat(numColumn, size(yy));
         surf(ax_all, xx,yy,zz,cc,'EdgeColor', 'interp','LineWidth', 4);
     end
-    lgd = legend(allFeatures{1}.Properties.VariableNames, 'FontSize', 6);
+    lgd = legend(allFeatures.Properties.VariableNames(woundVariablesIds), 'FontSize', 6);
     lgd.NumColumns = 2;
     ylim(ax_all, [0 2]);
     xlim(ax_all, [0 60])
     xlabel(ax_all, 'time')
     ylabel(ax_all, 'Percentage of Area')
-    saveas(ax_all, fullfile(inputDir, outputDir, 'AreaEvolution.png'))
+    saveas(ax_all, fullfile(inputDir, outputDir, 'WoundAreaEvolution.png'))
     legend(ax_all, 'hide')
-    saveas(ax_all, fullfile(inputDir, outputDir, 'AreaEvolution_noLegend.png'))
+    saveas(ax_all, fullfile(inputDir, outputDir, 'WoundAreaEvolution_noLegend.png'))
     close all;
 end
 end

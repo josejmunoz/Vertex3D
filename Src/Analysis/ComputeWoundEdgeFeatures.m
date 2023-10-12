@@ -15,7 +15,6 @@ function [woundEdgeFeatures] = ComputeWoundEdgeFeatures(Geo, debrisCells)
     for woundEdgeCell = woundEdgeCells
         woundEdgeFeatures{end+1} = ComputeCellFeatures(woundEdgeCell);
     end
-    woundEdgeFeatures = mean(vertcat(woundEdgeFeatures{:}));
     woundEdgeFeatures_mean = mean(table2array(struct2table(vertcat(woundEdgeFeatures{:}))));
     woundEdgeFeatures_mean = table(woundEdgeFeatures_mean, 'VariableNames', woundEdgeFeatures.Properties.VariableNames);
 end

@@ -1,4 +1,4 @@
-function [woundEdgeFeatures] = ComputeWoundEdgeFeatures(Geo, debrisCells)
+function [woundEdgeFeatures_mean] = ComputeWoundEdgeFeatures(Geo, debrisCells)
 %COMPUTEWOUNDEDGEFEATURES Summary of this function goes here
 %   Detailed explanation goes here
     %% Compute features

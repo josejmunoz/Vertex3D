@@ -22,12 +22,12 @@ mkdir(fullfile(inputDir, outputDir))
 [~, indices] = sortrows(vertcat(infoFiles.date));
 load(fullfile(inputDir, infoFiles(indices(1)).name), 'Set', 'Geo');
 cellsToAblate = Geo.cellsToAblate;
-if exist(fullfile(inputDir, outputDir, 'info.mat'), 'file')
+if ~exist(fullfile(inputDir, outputDir, 'info.mat'), 'file')
     for numT = indices'
         load(fullfile(inputDir, infoFiles(numT).name), 'Geo', 't');
         nonDeadCells = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID];
-        debrisCells = find([Geo.Cells(nonDeadCells).AliveStatus] == 0);
-        nonDebrisCells = find([Geo.Cells(nonDeadCells).AliveStatus] == 1);
+        debrisCells = nonDeadCells([Geo.Cells(nonDeadCells).AliveStatus] == 0);
+        nonDebrisCells = nonDeadCells([Geo.Cells(nonDeadCells).AliveStatus] == 1);
         nonDebris_Features = {};
         for c = nonDebrisCells
             nonDebris_Features{end+1} = AnalyseCell(Geo, c);
@@ -100,6 +100,7 @@ if length(wound_Features_time)>1
     wound_Features = beforeWounding_wound;
     for numTime = 1:60
         if numTime > timePoints_nonDebris(end)
+            numTime = numTime - 1;
             break
         end
         nonDebris_Features{numTime} = distanceTime_Features(Set, timePoints_nonDebris, nonDebris_Features_time, numTime);
@@ -111,7 +112,7 @@ if length(wound_Features_time)>1
         wound_Features(end+1, :) = array2table(table2array(distanceTime_Features(Set, timePoints_debris, wound_Features_time, numTime)));
     end
     allFeatures = [cells_features_sum, cells_features_avg, cells_features_std, wound_Features];
-    allFeatures.time = [1:numTime]';
+    allFeatures.time = [0:numTime]';
 
     writetable(allFeatures, fullfile(inputDir, outputDir, strcat('cell_features.csv')))
 

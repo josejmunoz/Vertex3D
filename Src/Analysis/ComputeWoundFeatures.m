@@ -31,12 +31,12 @@ function [features] = ComputeWoundFeatures(Geo, debrisCells)
         end
     end
 
+    [features] = ComputeWoundEdgeFeatures(Geo, debrisCells);
+
     k = boundary(borderVertices_Top(:, 1), borderVertices_Top(:, 2), 0);
     features.woundArea_Top = polyarea(borderVertices_Top(k(1:end-1), 1), borderVertices_Top(k(1:end-1), 2));
     k = boundary(borderVertices_Bottom(:, 1), borderVertices_Bottom(:, 2), 0);
     features.woundArea_Bottom = polyarea(borderVertices_Bottom(k(1:end-1), 1), borderVertices_Bottom(k(1:end-1), 2));
     
-    [woundEdgeFeatures] = ComputeWoundEdgeFeatures(Geo, debrisCells);
-    features = vertcat(features, woundEdgeFeatures);
 end
 

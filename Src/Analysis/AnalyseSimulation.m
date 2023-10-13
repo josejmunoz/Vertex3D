@@ -22,7 +22,7 @@ mkdir(fullfile(inputDir, outputDir))
 [~, indices] = sortrows(vertcat(infoFiles.date));
 load(fullfile(inputDir, infoFiles(indices(1)).name), 'Set', 'Geo');
 cellsToAblate = Geo.cellsToAblate;
-if ~exist(fullfile(inputDir, outputDir, 'info.mat'), 'file')
+%if ~exist(fullfile(inputDir, outputDir, 'info.mat'), 'file')
     for numT = indices'
         load(fullfile(inputDir, infoFiles(numT).name), 'Geo', 't');
         nonDeadCells = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID];
@@ -40,16 +40,8 @@ if ~exist(fullfile(inputDir, outputDir, 'info.mat'), 'file')
         end
 
         if ~isempty(debris_Features)
-            [wound_features] = ComputeWoundFeatures(Geo);
-        else
-            wound_features = [];
-        end
-        if ~isempty(debris_Features)
             debris_Features_time{end+1} = struct2table([debris_Features{:}]);
-            if ~exist('wound_features', 'var')
-                load(fullfile(inputDir, infoFiles(numT).name), 'Geo');
-                wound_features = ComputeWoundFeatures(Geo);
-            end
+            wound_features = ComputeWoundFeatures(Geo);
             wound_Features_time{end+1} = struct2table(ComputeFeaturesPerRow(Geo, cellsToAblate, wound_features));
     
             writetable(debris_Features_time{end}, fullfile(inputDir, outputDir, strcat('debris_features_', num2str(t),'.csv')))
@@ -63,6 +55,8 @@ if ~exist(fullfile(inputDir, outputDir, 'info.mat'), 'file')
         end
     
         nonDebris_Features_time{end+1} = nonDebris_Features_table;
+    
+        
         timePoints_nonDebris(end+1) = t;
         writetable(nonDebris_Features_table, fullfile(inputDir, outputDir, strcat('cell_features_', num2str(t),'.csv')))
     
@@ -72,9 +66,9 @@ if ~exist(fullfile(inputDir, outputDir, 'info.mat'), 'file')
     save(fullfile(inputDir, outputDir, 'info.mat'), 'beforeWounding_debris', 'timePoints_nonDebris', ...
         "nonDebris_Features_time", "beforeWounding_wound", "beforeWounding_nonDebris", ...
         "timePoints_debris", "wound_Features_time", "debris_Features_time")
-else
-    load(fullfile(inputDir, outputDir, 'info.mat'))
-end
+% else
+%     load(fullfile(inputDir, outputDir, 'info.mat'))
+% end
 
 if length(wound_Features_time)>1
     %% Write summary results with the following features:
@@ -119,10 +113,12 @@ if length(wound_Features_time)>1
     %% Figure of features evolution.
     woundedFeaturesOnly = table2array(allFeatures);
 
-    woundVariablesIds = find(cellfun(@(x) contains (x, 'wound'), allFeatures.Properties.VariableNames));
-    nonWoundVariableIds = 1:min(woundVariablesIds);
+    rowVariablesIds = allFeatures.Properties.VariableNames(cellfun(@(x) contains (x, 'Row1'), allFeatures.Properties.VariableNames));
+    featuresWithRowsIds = cellfun(@(x) strrep(x, 'Row1_', ''), rowVariablesIds, 'UniformOutput', false);
 
-    for numColumn = nonWoundVariableIds
+    nonRowVariablesIds = find(cellfun(@(x) contains(x, 'sum') | contains(x, 'avg') | contains(x, 'std'), allFeatures.Properties.VariableNames));
+
+    for numColumn = nonRowVariablesIds
         figure ('WindowState','maximized','Visible','off');
         ax_all = axes;
         x = woundedFeaturesOnly(:, end);
@@ -137,31 +133,35 @@ if length(wound_Features_time)>1
         close all
     end
 
-    %% Figure of area evolution to overlap with others
-    figure ('WindowState','maximized','Visible','off');
-    ax_all = axes;
-    hold on;
-    for numColumn = woundVariablesIds
-        x = woundedFeaturesOnly(:, end)';
-        y = [woundedFeaturesOnly(:, numColumn)]/woundedFeaturesOnly(1, numColumn);
-        %y(2) to analyse steep correlation to Set variables
-        xx=[x;x];
-        y = y';
-        yy=[y;y];
-        zz=zeros(size(xx));
-        cc = repmat(numColumn, size(yy));
-        surf(ax_all, xx,yy,zz,cc,'EdgeColor', 'interp','LineWidth', 4);
+    %% Figure of features evolution to overlap with others
+    for nameFeature = featuresWithRowsIds
+        figure ('WindowState','maximized','Visible','off');
+        ax_all = axes;
+        hold on;
+        rowVariablesIds = find(cellfun(@(x) endsWith(x, nameFeature{1}) & ~contains(x, 'sum') & ~contains(x, 'avg') & ~contains(x, 'std'), allFeatures.Properties.VariableNames));
+        for numColumn = rowVariablesIds
+            x = woundedFeaturesOnly(:, end)';
+            y = [woundedFeaturesOnly(:, numColumn)]/woundedFeaturesOnly(1, numColumn);
+            %y(2) to analyse steep correlation to Set variables
+            xx=[x;x];
+            y = y';
+            yy=[y;y];
+            zz=zeros(size(xx));
+            cc = repmat(numColumn, size(yy));
+            surf(ax_all, xx,yy,zz,cc,'EdgeColor', 'interp','LineWidth', 4);
+        end
+        lgd = legend(allFeatures.Properties.VariableNames(rowVariablesIds), 'FontSize', 6);
+        lgd.NumColumns = 2;
+        ylimAxis = ylim(ax_all);
+        ylim(ax_all, [0 ylimAxis(2)]);
+        xlim(ax_all, [0 60])
+        xlabel(ax_all, 'time')
+        ylabel(ax_all, 'Change')
+        saveas(ax_all, fullfile(inputDir, outputDir, strcat(nameFeature{1}, 'Evolution.png')))
+        legend(ax_all, 'hide')
+        saveas(ax_all, fullfile(inputDir, outputDir, strcat(nameFeature{1}, 'Evolution_noLegend.png')))
+        close all;
     end
-    lgd = legend(allFeatures.Properties.VariableNames(woundVariablesIds), 'FontSize', 6);
-    lgd.NumColumns = 2;
-    ylim(ax_all, [0 2]);
-    xlim(ax_all, [0 60])
-    xlabel(ax_all, 'time')
-    ylabel(ax_all, 'Percentage of Area')
-    saveas(ax_all, fullfile(inputDir, outputDir, 'WoundAreaEvolution.png'))
-    legend(ax_all, 'hide')
-    saveas(ax_all, fullfile(inputDir, outputDir, 'WoundAreaEvolution_noLegend.png'))
-    close all;
 end
 end
 

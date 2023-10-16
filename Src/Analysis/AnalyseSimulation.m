@@ -22,7 +22,7 @@ mkdir(fullfile(inputDir, outputDir))
 [~, indices] = sortrows(vertcat(infoFiles.date));
 load(fullfile(inputDir, infoFiles(indices(1)).name), 'Set', 'Geo');
 cellsToAblate = Geo.cellsToAblate;
-%if ~exist(fullfile(inputDir, outputDir, 'info.mat'), 'file')
+if ~exist(fullfile(inputDir, outputDir, 'info.mat'), 'file')
     for numT = indices'
         load(fullfile(inputDir, infoFiles(numT).name), 'Geo', 't');
         nonDeadCells = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID];
@@ -66,9 +66,9 @@ cellsToAblate = Geo.cellsToAblate;
     save(fullfile(inputDir, outputDir, 'info.mat'), 'beforeWounding_debris', 'timePoints_nonDebris', ...
         "nonDebris_Features_time", "beforeWounding_wound", "beforeWounding_nonDebris", ...
         "timePoints_debris", "wound_Features_time", "debris_Features_time")
-% else
-%     load(fullfile(inputDir, outputDir, 'info.mat'))
-% end
+else
+    load(fullfile(inputDir, outputDir, 'info.mat'))
+end
 
 if length(wound_Features_time)>1
     %% Write summary results with the following features:

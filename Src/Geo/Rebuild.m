@@ -29,23 +29,39 @@ function Geo = Rebuild(Geo, Set)
             
             if oldFaceExists
                 oldFace = oldGeo.Cells(cc).Faces(previousFace);
-                
+
+                if max(max(vertcat(oldFace.Tris.Edge))) > size(Cell.Y, 1)
+                    oldFace = [];
+                end
             else
 %                 previousFace = any(ismember(vertcat(allCells_oldFaces.ij), cj), 2);
 %                 oldFaceCentre = allCells_oldFaces(previousFace).Centre;
                 oldFace = [];
                  %getNodeNeighbours(Geo, 
             end
-            
+
 			Geo.Cells(cc).Faces(j) = BuildFace(cc, cj, face_ids, Geo.nCells, Geo.Cells(cc), Geo.XgID, Set, Geo.XgTop, Geo.XgBottom, oldFace);
-            woundEdgeTris = [Geo.Cells([Geo.Cells(cc).Faces(j).Tris.SharedByCells]).AliveStatus] == 0;
+            woundEdgeTris = [];
+            for tris_sharedCells = {Geo.Cells(cc).Faces(j).Tris.SharedByCells}
+                woundEdgeTris(end+1) = any([Geo.Cells(tris_sharedCells{1}).AliveStatus] == 0);
+            end
             if any(woundEdgeTris) && ~oldFaceExists
                 for woundTriID = find(woundEdgeTris)
                     woundTri = Geo.Cells(cc).Faces(j).Tris(woundTriID);
                     allTris = [oldGeo.Cells(cc).Faces.Tris];
-                    matchingTris = allTris(cellfun(@(x) isequal(x, woundTri.SharedByCells), {allTris.SharedByCells}));
-                    [~, matchingID] = min(sum(pdist2(Geo.Cells(cc).Y(woundTri.Edge, :), oldGeo.Cells(cc).Y([matchingTris.Edge], :))));
-                    Geo.Cells(cc).Faces(j).Tris(woundTriID).EdgeLength_time = matchingTris(matchingID).EdgeLength_time;
+                    matchingTris = allTris(cellfun(@(x) sum(ismember(x, woundTri.SharedByCells))/length(woundTri.SharedByCells) > 0.5, {allTris.SharedByCells}));
+
+                    meanDistanceToTris = [];
+                    for c_Edge = vertcat(matchingTris.Edge)'
+                        meanDistanceToTris(end+1) = mean(mean(pdist2(Geo.Cells(cc).Y(woundTri.Edge, :), oldGeo.Cells(cc).Y(c_Edge, :))));
+                    end
+                    
+                    if ~isempty(meanDistanceToTris)
+                        [~, matchingID] = min(meanDistanceToTris);
+                        Geo.Cells(cc).Faces(j).Tris(woundTriID).EdgeLength_time = matchingTris(matchingID).EdgeLength_time;
+                    else
+                        Geo.Cells(cc).Faces(j).Tris(woundTriID).EdgeLength_time = [];
+                    end
                 end
             end
 

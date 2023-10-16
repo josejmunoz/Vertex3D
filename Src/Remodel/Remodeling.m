@@ -13,91 +13,90 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
         [~, ids] = unique(segmentFeatures(:, 1:2), 'rows');
         segmentFeatures = segmentFeatures(ids, :);
         segmentFeatures = sortrows(segmentFeatures, 6);
-        gNodeNeighbours = {};
-        for numRow = 1:size(segmentFeatures, 1)
-            gNodeNeighbours{numRow} = getNodeNeighbours(Geo, segmentFeatures{numRow, 2});
-        end
-        gNodes_NeighboursShared = unique(vertcat(gNodeNeighbours{:}));
-        cellNodesShared = gNodes_NeighboursShared(~ismember(gNodes_NeighboursShared, Geo.XgID));
-        if sum([Geo.Cells(cellNodesShared).AliveStatus]) > 2 && length(cellNodesShared) > 3 && length(unique(segmentFeatures.cellToSplitFrom)) == 1
-            Set.NeedToConverge = 0;
-            allTnew = [];
-            numPair = 1;
-                
-            cellNode = segmentFeatures{numPair, 1};
-            ghostNode = segmentFeatures{numPair, 2};
-            cellToIntercalateWith = segmentFeatures{numPair, 3};
-            cellToSplitFrom = segmentFeatures{numPair, 4};
+        Set.NeedToConverge = 0;
+        allTnew = [];
+        numPair = 1;
 
-            hasConverged(numPair) = 1;
+        cellNode = segmentFeatures{numPair, 1};
+        ghostNode = segmentFeatures{numPair, 2};
+        cellToIntercalateWith = segmentFeatures{numPair, 3};
+        cellToSplitFrom = segmentFeatures{numPair, 4};
 
-            while hasConverged(numPair) == 1
-                hasConverged(numPair) = 0;
+        hasConverged(numPair) = 1;
 
-                %if ~all(ghostNodes) &&
-                % If the shared nodes are all ghost nodes, we won't remodel
+        while hasConverged(numPair) == 1
+            hasConverged(numPair) = 0;
 
-                %%if sum([Geo.Cells(cellNodes).AliveStatus]) >= 2 %&& ~any(ismember(faceGlobalId, newYgIds))
-                nodesPair = [cellNode ghostNode];
+            %if ~all(ghostNodes) &&
+            % If the shared nodes are all ghost nodes, we won't remodel
 
-                [valenceSegment, oldTets, oldYs] = edgeValence(Geo, nodesPair);
-                %% Intercalation
-                [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair), Tnew] = FlipNM(nodesPair, cellToIntercalateWith, oldTets, oldYs, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                
-                %PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1);
-                allTnew = vertcat(allTnew, Tnew);
+            %%if sum([Geo.Cells(cellNodes).AliveStatus]) >= 2 %&& ~any(ismember(faceGlobalId, newYgIds))
+            nodesPair = [cellNode ghostNode];
 
-                sharedNodesStill = getNodeNeighboursPerDomain(Geo, cellNode, ghostNode, cellToSplitFrom);
-                
-                if any(ismember(sharedNodesStill, Geo.XgID))
-                    sharedNodesStill_g = sharedNodesStill(ismember(sharedNodesStill, Geo.XgID));
-                    ghostNode = sharedNodesStill_g(1);
-                else
-                    break;
-                end
-            end
-            
-            if hasConverged(numPair)
-                %[~, ~, Energy_before, ~, Energies_before] = KgGlobal(Geo_0_backup, Geo_n_backup, Geo_backup, Set);
-                %[~, ~, Energy1, ~, Energies1] = KgGlobal(Geo_0, Geo_n, Geo, Set);
-                %% MOVE ONLY ALLTNEW tets
-%                 for numClose = 0.1:0.1:1
-%                     [Geo1, Geo_n1] = moveVerticesCloserToRefPoint(Geo, Geo_n, numClose, cellNodesShared, cellToSplitFrom, ghostNode, Tnew, Set);
-%                     [~, ~, Energy_After, ~, Energies_After] = KgGlobal(Geo_0, Geo_n1, Geo1, Set)
-%                 end
-                numClose = 0.7;
-                [Geo, Geo_n] = moveVerticesCloserToRefPoint(Geo, Geo_n, numClose, cellNodesShared, cellToSplitFrom, ghostNode, Tnew, Set);
-                %[~, ~, Energy_After, ~, Energies_After] = KgGlobal(Geo_0, Geo_n, Geo, Set);
-                %PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1);
+            [valenceSegment, oldTets, oldYs] = edgeValence(Geo, nodesPair);
+            %% Intercalation
+            [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair), Tnew] = FlipNM(nodesPair, cellToIntercalateWith, oldTets, oldYs, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
 
-                %% Solve remodelling
-                Dofs = GetDOFs(Geo, Set);
-                [Dofs, Geo]  = GetRemodelDOFs(allTnew, Dofs, Geo);
-                [Geo, Set, DidNotConverge] = SolveRemodelingStep(Geo_0, Geo_n, Geo, Dofs, Set);
-                if DidNotConverge
-                    % Go back to initial state
-                    Geo_backup.log = Geo.log;
-                    Geo   = Geo_backup;
-                    Geo_n = Geo_n_backup;
-                    Dofs = Dofs_backup;
-                    Geo_0 = Geo_0_backup; 
-                    Geo.log = sprintf('%s =>> %s-Flip rejected: did not converge1\n', Geo.log, 'Full');
-                else
-                    newYgIds = unique([newYgIds; Geo.AssemblegIds]);
-                    Geo   = UpdateMeasures(Geo);
-                    hasConverged = 1;
-                end
+            %PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1);
+            allTnew = vertcat(allTnew, Tnew);
+
+            sharedNodesStill = getNodeNeighboursPerDomain(Geo, cellNode, ghostNode, cellToSplitFrom);
+
+            if any(ismember(sharedNodesStill, Geo.XgID))
+                sharedNodesStill_g = sharedNodesStill(ismember(sharedNodesStill, Geo.XgID));
+                ghostNode = sharedNodesStill_g(1);
             else
+                break;
+            end
+        end
+
+        if hasConverged(numPair)
+            %[~, ~, Energy_before, ~, Energies_before] = KgGlobal(Geo_0_backup, Geo_n_backup, Geo_backup, Set);
+            %[~, ~, Energy1, ~, Energies1] = KgGlobal(Geo_0, Geo_n, Geo, Set);
+            %% MOVE ONLY ALLTNEW tets
+            %                 for numClose = 0.1:0.1:1
+            %                     [Geo1, Geo_n1] = moveVerticesCloserToRefPoint(Geo, Geo_n, numClose, cellNodesShared, cellToSplitFrom, ghostNode, Tnew, Set);
+            %                     [~, ~, Energy_After, ~, Energies_After] = KgGlobal(Geo_0, Geo_n1, Geo1, Set)
+            %                 end
+            
+            gNodeNeighbours = {};
+            for numRow = 1:size(segmentFeatures, 1)
+                gNodeNeighbours{numRow} = getNodeNeighbours(Geo, segmentFeatures{numRow, 2});
+            end
+            gNodes_NeighboursShared = unique(vertcat(gNodeNeighbours{:}));
+            cellNodesShared = gNodes_NeighboursShared(~ismember(gNodes_NeighboursShared, Geo.XgID));
+            numClose = 0.7;
+            [Geo, Geo_n] = moveVerticesCloserToRefPoint(Geo, Geo_n, numClose, cellNodesShared, cellToSplitFrom, ghostNode, Tnew, Set);
+            %[~, ~, Energy_After, ~, Energies_After] = KgGlobal(Geo_0, Geo_n, Geo, Set);
+            %PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1);
+
+            %% Solve remodelling
+            Dofs = GetDOFs(Geo, Set);
+            [Dofs, Geo]  = GetRemodelDOFs(allTnew, Dofs, Geo);
+            [Geo, Set, DidNotConverge] = SolveRemodelingStep(Geo_0, Geo_n, Geo, Dofs, Set);
+            if DidNotConverge
                 % Go back to initial state
                 Geo_backup.log = Geo.log;
                 Geo   = Geo_backup;
                 Geo_n = Geo_n_backup;
                 Dofs = Dofs_backup;
                 Geo_0 = Geo_0_backup;
-                Geo.log = sprintf('%s =>> %s-Flip rejected: did not converge2\n', Geo.log, 'Full');
+                Geo.log = sprintf('%s =>> %s-Flip rejected: did not converge1\n', Geo.log, 'Full');
+            else
+                newYgIds = unique([newYgIds; Geo.AssemblegIds]);
+                Geo   = UpdateMeasures(Geo);
+                hasConverged = 1;
             end
-            PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1);
+        else
+            % Go back to initial state
+            Geo_backup.log = Geo.log;
+            Geo   = Geo_backup;
+            Geo_n = Geo_n_backup;
+            Dofs = Dofs_backup;
+            Geo_0 = Geo_0_backup;
+            Geo.log = sprintf('%s =>> %s-Flip rejected: did not converge2\n', Geo.log, 'Full');
         end
+        PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1);
         
         checkedYgIds(end+1:end+size(segmentFeatures, 1), :) = [segmentFeatures{:, 1}, segmentFeatures{:, 2}];
         

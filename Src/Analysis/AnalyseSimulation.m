@@ -44,7 +44,7 @@ if ~exist(fullfile(inputDir, outputDir, 'info.mat'), 'file')
             wound_features = ComputeWoundFeatures(Geo);
             wound_Features_time{end+1} = struct2table(ComputeFeaturesPerRow(Geo, cellsToAblate, wound_features));
     
-            writetable(debris_Features_time{end}, fullfile(inputDir, outputDir, strcat('debris_features_', num2str(t),'.csv')))
+            %writetable(debris_Features_time{end}, fullfile(inputDir, outputDir, strcat('debris_features_', num2str(t),'.csv')))
     
             timePoints_debris(end+1) = t;
         else
@@ -58,7 +58,7 @@ if ~exist(fullfile(inputDir, outputDir, 'info.mat'), 'file')
     
         
         timePoints_nonDebris(end+1) = t;
-        writetable(nonDebris_Features_table, fullfile(inputDir, outputDir, strcat('cell_features_', num2str(t),'.csv')))
+        %writetable(nonDebris_Features_table, fullfile(inputDir, outputDir, strcat('cell_features_', num2str(t),'.csv')))
     
         clearvars 'wound_features'
     end

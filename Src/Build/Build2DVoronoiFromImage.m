@@ -2,9 +2,20 @@ function [trianglesConnectivity, neighboursNetwork, cellEdges, verticesLocation,
 %BUILD3DVORONOITOPO Summary of this function goes here
 %   Detailed explanation goes here
 
-ratio = 6;
+ratio = 2;
 
 labelledImg(watershedImg == 0) = 0;
+
+% Create a mask for the edges with ID 0
+edgeMask = labelledImg == 0;
+
+% Get the closest labeled polygon for each edge pixel
+closestID = imdilate(labelledImg, true(5));
+
+filledImage = closestID;
+filledImage(~edgeMask) = labelledImg(~edgeMask);
+
+labelledImg = filledImage;
 
 [imgNeighbours] = calculateNeighbours(labelledImg, ratio);
 

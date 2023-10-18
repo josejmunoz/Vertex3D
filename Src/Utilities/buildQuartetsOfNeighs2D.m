@@ -17,8 +17,9 @@ function [ quartetsOfNeighs ] = buildQuartetsOfNeighs2D(neighbours)
         if ~isempty(interceptCells)
             for indexA=1:length(interceptCells)-1
                 for indexB=indexA+1:length(interceptCells)
-                    if length(intersect(interceptCells{indexA},interceptCells{indexB})) >= 4
-                        quartetsOfNeighs{end+1,1}=intersect(interceptCells{indexA},interceptCells{indexB});
+                    intersectionCells = intersect(interceptCells{indexA},interceptCells{indexB});
+                    if length(intersectionCells) >= 4
+                        quartetsOfNeighs{end+1,1}=nchoosek(intersectionCells, 4);
                     end
                 end
             end

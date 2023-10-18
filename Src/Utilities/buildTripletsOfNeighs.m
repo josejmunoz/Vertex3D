@@ -19,8 +19,6 @@ function [ tripletsOfNeighs ] = buildTripletsOfNeighs( neighbours )
                 end
             end
         end
-        
-
     end
     tripletsOfNeighs=unique(sort(tripletsOfNeighs, 2),'rows');
 end

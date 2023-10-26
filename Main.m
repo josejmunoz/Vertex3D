@@ -6,7 +6,7 @@ addpath(genpath('Tests'));
 Sets = {};
 Geos = {};
 
-batchMode = 1;
+batchMode = 0;
 inputMode = 7;
 
 if batchMode
@@ -31,34 +31,32 @@ end
 
 clear Geo Set
 
-delete(gcp('nocreate'));
-parpool(3);
-parfor numLine = 1:length(Sets)
+%delete(gcp('nocreate'));
+%parpool(3);
+for numLine = 1:length(Sets)
     prevLog = '';
     tStart = tic;
     didNotConverge = false;
-    try
-        Geo = Geos{numLine};
-        Set = Sets{numLine};
-        Geo.log = sprintf('--------- SIMULATION STARTS ---------\n');
-        
-        [Set, Geo, Dofs, t, tr, Geo_0, backupVars, Geo_n, numStep, relaxingNu, EnergiesPerTimeStep] = InitializeVertexModel(Set, Geo);
-        
-        while t<=Set.tend && ~didNotConverge
-            if batchMode
-                if ~relaxingNu
-                    disp(strcat('Simulation_', num2str(numLine), ' - Time: ', num2str(t)))
-                end 
-            else
-                disp(strrep(Geo.log, prevLog, ''))
-                prevLog = Geo.log;
-            end
-            [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, relaxingNu, backupVars, didNotConverge] = IterateOverTime(Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, relaxingNu, backupVars);
-           
+
+    Geo = Geos{numLine};
+    Set = Sets{numLine};
+    Geo.log = sprintf('--------- SIMULATION STARTS ---------\n');
+    
+    [Set, Geo, Dofs, t, tr, Geo_0, backupVars, Geo_n, numStep, relaxingNu, EnergiesPerTimeStep] = InitializeVertexModel(Set, Geo);
+    
+    while t<=Set.tend && ~didNotConverge
+        if batchMode
+            if ~relaxingNu
+                disp(strcat('Simulation_', num2str(numLine), ' - Time: ', num2str(t)))
+            end 
+        else
+            disp(strrep(Geo.log, prevLog, ''))
+            prevLog = Geo.log;
         end
-    catch ME
-        Geo.log = sprintf("%s\n ERROR: %s", Geo.log, ME.message);
+        [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, relaxingNu, backupVars, didNotConverge] = IterateOverTime(Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, relaxingNu, backupVars);
+       
     end
+
     tEnd = duration(seconds(toc(tStart)));
     tEnd.Format = 'hh:mm:ss';
     Geo.log = sprintf("%s Total real run time %s \n", Geo.log, tEnd);

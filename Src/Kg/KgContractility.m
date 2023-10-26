@@ -5,9 +5,13 @@ function [g, K, Energy_T, Geo] = KgContractility(Geo, Set)
 %   K: is a matrix
 
     %% Initialize
-    [g, K] = initializeKg(Geo, Set); 
-	
-    Energy_T = 0;
+    [g, K] = initializeKg(Geo, Set);
+
+    %% Reduce dimensionality of K because we won't use any FaceCentre
+    % It will increase the efficienciy of 'AssembleK'
+    oldSize = size(K, 1);
+    K = K(1:Geo.numY*3, 1:Geo.numY*3);
+
     %% Loop over Cells 
 	% Analytical residual g and Jacobian K
 	for c = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID]
@@ -29,7 +33,7 @@ function [g, K, Energy_T, Geo] = KgContractility(Geo, Set)
                 for numTri = 1:length(currentFace.Tris)
                     currentTri = Geo.Cells(c).Faces(numFace).Tris(numTri);
                     if length(currentTri.SharedByCells) > 1
-                        C = getContractilityBasedOnLocation(currentFace, currentTri, Geo, Set);
+                        [C, Geo] = getContractilityBasedOnLocation(currentFace, currentTri, Geo, Set);
                         
                         y_1 = currentCell.Y(currentTri.Edge(1), :);
                         y_2 = currentCell.Y(currentTri.Edge(2), :);
@@ -56,6 +60,9 @@ function [g, K, Energy_T, Geo] = KgContractility(Geo, Set)
             Energy(c) = Energy_c;
         end
     end
+    
+    %% Add zeros and increase size to make it comparable
+    K(end+1:oldSize, end+1:oldSize) = 0;
 
     Energy_T = sum(Energy);
 end

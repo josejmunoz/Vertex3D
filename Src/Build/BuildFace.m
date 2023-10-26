@@ -1,4 +1,4 @@
-function Face = BuildFace(ci, cj, face_ids, nCells, Cell, XgID, Set, XgTop, XgBottom, oldFaceCentre)
+function Face = BuildFace(ci, cj, face_ids, nCells, Cell, XgID, Set, XgTop, XgBottom, oldFace)
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	% BuildFace:										  
 	%   Completes a single Face struct with already but empty fields. 
@@ -29,12 +29,14 @@ function Face = BuildFace(ci, cj, face_ids, nCells, Cell, XgID, Set, XgTop, XgBo
 	Face.InterfaceType	= BuildInterfaceType(ij, XgID, XgTop, XgBottom);
     
     newFaceCentre = BuildFaceCentre(ij, nCells,  Cell.X, Cell.Y(face_ids,:), Set.f, isequal(Set.InputGeo, 'Bubbles'));
-    if exist('oldFaceCentre', 'var') && ~isempty(oldFaceCentre)
-        newFaceCentre = Set.contributionOldFaceCentre * oldFaceCentre + (1 - Set.contributionOldFaceCentre) * newFaceCentre;
+    if exist('oldFace', 'var') && ~isempty(oldFace)
+        Face.Centre = oldFace.Centre;
+        %Face.Tris = oldFace.Tris;
+    else
+        Face.Centre = newFaceCentre;
     end
-    Face.Centre = newFaceCentre;
-	[Face.Tris] = BuildEdges(Cell.T, face_ids, Face.Centre, Face.InterfaceType, Cell.X, Cell.Y, 1:nCells); %%TODO: IMPROVE TO ONLY GET 'NONDEADCELLS'
-    
+    %% DON'T KNOW WHY BUT I HAVE TO CREATE THE TRIS ALL THE TIME (CAN'T USE THE OLD FACE TRIS)
+    [Face.Tris] = BuildEdges(Cell.T, face_ids, Face.Centre, Face.InterfaceType, Cell.X, Cell.Y, 1:nCells); %%TODO: IMPROVE TO ONLY GET 'NONDEADCELLS'
 	[Face.Area]  = ComputeFaceArea(vertcat(Face.Tris.Edge), Cell.Y, Face.Centre);
     Face.Area0 = Face.Area;
 end

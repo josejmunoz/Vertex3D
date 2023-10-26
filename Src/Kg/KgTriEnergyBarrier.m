@@ -14,12 +14,12 @@ function [g,K,EnergyB]=KgTriEnergyBarrier(Geo,Set)
         if Geo.Cells(c).AliveStatus
 		    Cell = Geo.Cells(c);
 		    Ys = Cell.Y;
-		    lambdaB=Set.lambdaB;
+		    lambdaB = Set.lambdaB * Geo.Cells(c).lambdaB_perc;
 		    for f = 1:length(Cell.Faces)
                 Face = Cell.Faces(f);
 			    Tris = Cell.Faces(f).Tris;
 			    for t = 1:length(Tris)
-				    fact=-((lambdaB*Set.Beta)/Set.BarrierTri0)* ... % * ...
+				    fact=-((lambdaB*Set.Beta)/Set.BarrierTri0)* ...
 				                        exp(lambdaB*(1-Set.Beta*Face.Tris(t).Area/Set.BarrierTri0));
 				    fact2=fact*-((lambdaB*Set.Beta)/Set.BarrierTri0);
 				    y1 = Ys(Tris(t).Edge(1),:);

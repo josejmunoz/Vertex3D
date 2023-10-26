@@ -12,15 +12,9 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
     
     if ~relaxingNu
         Set.iIncr=numStep;
-
-        %% REMODELLING
-        if Set.Remodelling && abs(t-tr)>=Set.RemodelingFrequency
-            [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Set);
-            tr = t;
-        end
         
         %% Wounding
-        [Geo] = ablateCells(Geo, Set, t)
+        [Geo] = ablateCells(Geo, Set, t);
 %         for debrisCell = debrisCells
 %             if t > 0.15*Set.TEndAblation %%|| Geo.Cells(debrisCell).Vol < 0.5*mean([Geo.Cells(nonDebrisCells).Vol])
 %                 [Geo] = RemoveNode(Geo, debrisCell);
@@ -43,6 +37,12 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
         if Set.nu/Set.nu0 == 1
             Geo.log = sprintf('%s STEP %i has converged ...\n',Geo.log, Set.iIncr);
 
+            %% REMODELLING
+            if Set.Remodelling && abs(t-tr)>=Set.RemodelingFrequency
+                [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Set);
+                tr = t;
+            end
+
             EnergiesPerTimeStep{end+1} = Energies;
             Geo = BuildXFromY(Geo_n, Geo);
             Set.lastTConverged = t;
@@ -61,7 +61,10 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
             end
 
             if ~isempty(debris_Features)
+                [wound_features] = ComputeWoundFeatures(Geo);
                 %writetable(vertcat(debris_Features{:}), fullfile(pwd, Set.OutputFolder, strcat('debris_features_', num2str(numStep),'.csv')))
+            else
+                wound_features = [];
             end
 
             %% Test to see if something is wrong:
@@ -69,8 +72,22 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
 
             %% Save
             PostProcessingVTK(Geo, Geo_0, Set, numStep)
-            save(fullfile(pwd, Set.OutputFolder, strcat('status', num2str(numStep),'.mat')), 'Geo', 'Geo_n', 'Geo_0', 'Set', 'Dofs', 'EnergiesPerTimeStep', 't', 'numStep', 'nonDebris_Features', 'debris_Features', 'tr', 'relaxingNu', 'backupVars')
+            save(fullfile(pwd, Set.OutputFolder, strcat('status', num2str(numStep),'.mat')), 'Geo', 'Geo_n', 'Geo_0', 'Set', 'Dofs', 'EnergiesPerTimeStep', 't', 'numStep', 'nonDebris_Features', 'debris_Features', 'wound_features', 'tr', 'relaxingNu', 'backupVars')
 
+            %% 
+            for numCell = 1:length(Geo.Cells)
+                cCell = Geo.Cells(numCell);
+                for nFace = 1:length(cCell.Faces)
+                    face = Geo.Cells(numCell).Faces(nFace);
+                    for nTri = 1:length(face.Tris)
+                        Geo.Cells(numCell).Faces(nFace).Tris(nTri).pastContractilityValue = Geo.Cells(numCell).Faces(nFace).Tris(nTri).ContractilityValue;
+                        Geo.Cells(numCell).Faces(nFace).Tris(nTri).ContractilityValue = [];
+                        Geo.Cells(numCell).Faces(nFace).Tris(nTri).EdgeLength_time(end+1, 1:2) = [t, Geo.Cells(numCell).Faces(nFace).Tris(nTri).EdgeLength];
+                    end
+                end
+            end
+
+            %% New Step
             t=t+Set.dt;
             Set.dt=min(Set.dt+Set.dt*0.5, Set.dt0);
             Set.MaxIter=Set.MaxIter0;
@@ -78,6 +95,7 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
             numStep=numStep+1;
             backupVars.Geo_b = Geo;
             backupVars.tr_b = tr;
+            backupVars.Dofs = Dofs;
             Geo_n = Geo;
 
             relaxingNu = false;
@@ -92,13 +110,14 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
         backupVars.Geo_b.log = Geo.log;
         Geo = backupVars.Geo_b;
         tr = backupVars.tr_b;
+        Dofs = backupVars.Dofs;
         Geo_n = Geo;
         relaxingNu = false;
         if Set.iter == Set.MaxIter0
             Geo.log = sprintf('%s First strategy ---> Repeating the step with higher viscosity... \n', Geo.log);
             Set.MaxIter=Set.MaxIter0*1.1;
             Set.nu=10*Set.nu0;
-        elseif Set.iter == Set.MaxIter && Set.iter > Set.MaxIter0
+        elseif Set.iter >= Set.MaxIter && Set.iter > Set.MaxIter0 && Set.dt/Set.dt0 > 1/100
             Geo.log = sprintf('%s Second strategy ---> Repeating the step with half step-size...\n', Geo.log);
             Set.MaxIter=Set.MaxIter0;
             Set.nu=Set.nu0;

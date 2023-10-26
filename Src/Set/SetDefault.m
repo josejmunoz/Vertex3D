@@ -53,6 +53,7 @@ function Set = SetDefault(Set)
     % Contractility
     DSet.Contractility              = true;
     DSet.cLineTension               = 0.0001;
+    DSet.noiseContractility         = 0.1;
     % In plane elasticity
 	DSet.InPlaneElasticity          = true;
 	DSet.mu_bulk					= 3000; 
@@ -69,7 +70,7 @@ function Set = SetDefault(Set)
     DSet.Remodelling				= true;
     DSet.RemodelTol					= 0;
     DSet.contributionOldYs          = 0;
-    DSet.RemodelStiffness           = 0.9;
+    DSet.RemodelStiffness           = 0.60;
     DSet.Reset_PercentageGeo0       = 0.15; 
     %% ============================ Solution ==============================
     DSet.tol						= 1e-8;
@@ -104,12 +105,12 @@ function Set = SetDefault(Set)
     DSet = Set;
 	%% ========================= Derived variables ========================
     DSet.RemodelingFrequency        = (DSet.tend/DSet.Nincr);
-    DSet.lambdaS2					= DSet.lambdaS1 * 0.9;
-    DSet.lambdaS3					= DSet.lambdaS1;
-    DSet.lambdaS4					= DSet.lambdaS1;
+    DSet.lambdaS2					= DSet.lambdaS1 * 0.1;
+    DSet.lambdaS3					= DSet.lambdaS1/10;
+    DSet.lambdaS4					= DSet.lambdaS1/10;
     DSet.SubstrateZ                 = -DSet.CellHeight/2;
     DSet.f							= DSet.s/2;
-    DSet.nu_LP_Initial				= 1*DSet.nu; %!
+    DSet.nu_LP_Initial				= DSet.nu; %!
     DSet.BarrierTri0				= 1e-3*DSet.s; %!
 	DSet.nu0                        = DSet.nu;
 	DSet.dt0                        = DSet.tend/DSet.Nincr;
@@ -125,7 +126,7 @@ function Set = SetDefault(Set)
         '_visc_', num2str(Set.nu), ...
         '_lVol_', num2str(Set.lambdaV), '_muBulk_', num2str(Set.mu_bulk), ...
         '_lBulk_', num2str(Set.lambda_bulk), '_kSubs_', num2str(Set.kSubstrate), ...
-        '_lt_', num2str(Set.cLineTension), ...
+        '_lt_', num2str(Set.cLineTension), '_noise_', num2str(Set.noiseContractility),...
         '_pString_', num2str(Set.purseStringStrength),'_eTriAreaBarrier_', num2str(Set.lambdaB), ...
         '_eARBarrier_', num2str(Set.lambdaR), '_RemStiff_', num2str(Set.RemodelStiffness), ...
         '_lS1_', num2str(Set.lambdaS1), '_lS2_', num2str(Set.lambdaS2), ...

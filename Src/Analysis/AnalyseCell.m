@@ -3,11 +3,11 @@ function [c_features] = AnalyseCell(Geo, currentCell)
 %   Detailed explanation goes here
 c_features = ComputeCellFeatures(Geo.Cells(currentCell));
 c_features.ID = Geo.Cells(currentCell).ID;
-if ismember(Geo.Cells(currentCell).ID, Geo.BorderCells)
-    c_features.BorderCell = 1;
-else
-    c_features.BorderCell = 0;
-end
+c_features.BorderCell = IsBorderCell(Geo, currentCell);
 
-end
+% Compute different measurements from the WOUND
+debrisCells = getDebrisCells(Geo);
 
+[c_features.WoundEdgeCell, c_features.WoundEdgeCell_Top, ...
+    c_features.WoundEdgeCell_Bottom, c_features.DebrisCell] = IsWoundEdgeCell(Geo.Cells(currentCell), debrisCells);
+end

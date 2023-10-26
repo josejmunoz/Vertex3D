@@ -32,8 +32,8 @@ end
 clear Geo Set
 
 delete(gcp('nocreate'));
-parpool(4);
-for numLine = 1:length(Sets) 
+parpool(3);
+parfor numLine = 1:length(Sets)
     prevLog = '';
     tStart = tic;
     didNotConverge = false;

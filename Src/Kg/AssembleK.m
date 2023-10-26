@@ -10,6 +10,15 @@ for I = 1:length(nY)
     jdofg((I-1)*dim+1:I*dim) = (nY(I)-1)*dim+1:nY(I)*dim; % global dof
 end
 
+% % Compute global DOF indices in a vectorized manner
+% [numI, numJ] = meshgrid(idofg, jdofg);
+% idx = sub2ind(size(K), numI(:), numJ(:));
+% 
+% % Reshape Ke to match the linear indices for assembly
+% Ke_flat = reshape(Ke, dim^4, 1);
+
+% Update the matrix K using sparse matrix addition
+%K(idx) = K(idx) + Ke_flat;
 K(idofg,jdofg) = K(idofg,jdofg) + Ke;
 
 end

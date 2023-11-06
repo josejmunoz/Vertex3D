@@ -74,7 +74,7 @@ function Set = SetDefault(Set)
     DSet.Reset_PercentageGeo0       = 0.15; 
     %% ============================ Solution ==============================
     DSet.tol						= 1e-8;
-    DSet.MaxIter					= 30;
+    DSet.MaxIter					= 50;
     DSet.Parallel					= false;
     DSet.Sparse						= false;
     DSet.lastTConverged             = 0;
@@ -116,6 +116,7 @@ function Set = SetDefault(Set)
 	DSet.dt0                        = DSet.tend/DSet.Nincr;
 	DSet.dt                         = DSet.dt0;
 	DSet.MaxIter0					= DSet.MaxIter;
+    DSet.purseStringStrength        = 1;
     DSet.contributionOldFaceCentre  = DSet.contributionOldYs;
         
 	%% ====================== Add missing fields to Set ===================

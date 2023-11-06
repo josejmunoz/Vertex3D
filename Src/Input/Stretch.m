@@ -1,6 +1,6 @@
 Geo = struct();
-Geo.nx = 1;
-Geo.ny = 3;
+Geo.nx = 10;
+Geo.ny = 10;
 Set.tend=300;
 Set.Nincr=300;
 Set.BC = 1;

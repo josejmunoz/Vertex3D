@@ -76,13 +76,36 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
     Geo.BorderCells = [];
     
     %% Define BarrierTri0 
-    Set.BarrierTri0=realmax; 
+    Set.BarrierTri0=realmax;
+    Set.lmin0 = realmax;
+    edgeLengths_Top = [];
+    edgeLengths_Bottom = [];
+    edgeLengths_Lateral = [];
     for c = 1:Geo.nCells
         Cell = Geo.Cells(c);
         for f = 1:length(Geo.Cells(c).Faces)
             Face = Cell.Faces(f);
             Set.BarrierTri0=min([vertcat(Face.Tris.Area); Set.BarrierTri0]);
+            Set.lmin0=min([min(min(horzcat(vertcat(Face.Tris.LengthsToCentre), vertcat(Face.Tris.EdgeLength)))); Set.lmin0]);
+            for nTris = 1:length(Face.Tris)
+                tri = Face.Tris(nTris);
+                if tri.Location == 'Top'
+                    edgeLengths_Top(end+1) = ComputeEdgeLength(tri.Edge, Geo.Cells(c).Y);
+                elseif tri.Location == 'Bottom'
+                    edgeLengths_Bottom(end+1) = ComputeEdgeLength(tri.Edge, Geo.Cells(c).Y);
+                else
+                    edgeLengths_Lateral(end+1) = ComputeEdgeLength(tri.Edge, Geo.Cells(c).Y);
+                end
+    
+                %Geo.Cells(c).Faces(f).Tris(nTris).EdgeLength_time(1, 1:2) = [0, tri.EdgeLength];
+            end
         end
+        
+        %Geo.Cells(c).Vol0 = mean([Geo.Cells(1:Geo.nCells).Vol]);
     end
-    Set.BarrierTri0=Set.BarrierTri0/10;
+    Geo.AvgEdgeLength_Top = mean(edgeLengths_Top);
+    Geo.AvgEdgeLength_Bottom = mean(edgeLengths_Bottom);
+    Geo.AvgEdgeLength_Lateral = mean(edgeLengths_Lateral);
+    Set.BarrierTri0=Set.BarrierTri0/5;
+    Set.lmin0 = Set.lmin0*10;
 end

@@ -9,34 +9,8 @@ function [XgID,X]=SeedWithBoundingBox(X,s)
 
     %% 1)  Define bounding Nodes
     
-    % Bounding Box 1
-    %rr=mean(X);
-    % Xg=[r  r  r;
-    %    -r  r  r;
-    %    -r -r  r;
-    %    -r  r -r;
-    %     r -r  r;
-    %    -r -r -r;
-    %     r -r -r;
-    %     r  r -r;
-    %     0  0  r;
-    %     0  0 -r;
-    %     r  0  0;
-    %     -r 0  0;
-    %     0 -r  0;
-    %     0  r  0]+rr;
-    
     
     % Bounding Box 2
-    rr=mean(X);
-    Xg=[r  r  r;
-       -r  r  r;
-       -r -r  r;
-       -r  r -r;
-        r -r  r;
-       -r -r -r;
-        r -r -r;
-        r  r -r]+rr;
     
     %  Bounding Shpere 
     theta=linspace(0,2*pi,5);

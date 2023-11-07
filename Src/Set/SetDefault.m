@@ -118,6 +118,7 @@ function Set = SetDefault(Set)
 	DSet.MaxIter0					= DSet.MaxIter;
     DSet.purseStringStrength        = 1;
     DSet.contributionOldFaceCentre  = DSet.contributionOldYs;
+    DSet.purseStringStrength        = -1;
         
 	%% ====================== Add missing fields to Set ===================
 	Set = AddDefault(Set, DSet);

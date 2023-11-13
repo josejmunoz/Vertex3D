@@ -29,9 +29,9 @@ for numCell = nonDeadCells
                     sharedCells = currentTri.SharedByCells;
                     sharedCells(sharedCells == numCell) = [];
                     for numSharedCell = sharedCells
-                        if cFace.InterfaceType == 'Top'
+                        if cFace.InterfaceType == 1
                             edgeLengths_Top(numSharedCell) = edgeLengths_Top(numSharedCell) + currentTri.EdgeLength / (cFace.Area*100);
-                        elseif cFace.InterfaceType == 'Bottom'
+                        elseif cFace.InterfaceType == 3
                             edgeLengths_Bottom(numSharedCell) = edgeLengths_Bottom(numSharedCell) + currentTri.EdgeLength / (cFace.Area*100);
                         end
                     end

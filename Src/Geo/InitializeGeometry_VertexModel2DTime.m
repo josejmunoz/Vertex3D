@@ -181,9 +181,9 @@ for c = 1:Geo.nCells
         Set.lmin0=min([min(min(horzcat(vertcat(Face.Tris.LengthsToCentre), vertcat(Face.Tris.EdgeLength)))); Set.lmin0]);
         for nTris = 1:length(Face.Tris)
             tri = Face.Tris(nTris);
-            if tri.Location == 'Top'
+            if tri.Location == 1
                 edgeLengths_Top(end+1) = ComputeEdgeLength(tri.Edge, Geo.Cells(c).Y);
-            elseif tri.Location == 'Bottom'
+            elseif tri.Location == 3
                 edgeLengths_Bottom(end+1) = ComputeEdgeLength(tri.Edge, Geo.Cells(c).Y);
             else
                 edgeLengths_Lateral(end+1) = ComputeEdgeLength(tri.Edge, Geo.Cells(c).Y);

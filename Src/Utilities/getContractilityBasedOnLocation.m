@@ -2,7 +2,7 @@ function [contractilityValue, Geo] = getContractilityBasedOnLocation(currentFace
 %GETCONTRACTILITYBASEDONLOCATION Summary of this function goes here
 %   Detailed explanation goes here
     
-    CUTOFF = 3;
+    CUTOFF = 100;
     
     if isempty(currentTri.ContractilityValue)
         
@@ -13,13 +13,13 @@ function [contractilityValue, Geo] = getContractilityBasedOnLocation(currentFace
         end
 
         switch (currentFace.InterfaceType)
-            case 'Top' % Top
+            case 1 % Top
                 if any([Geo.Cells(currentTri.SharedByCells).AliveStatus] == 0)
                     contractilityValue = contractilityValue * Set.cLineTension;
                 else
                     contractilityValue = Set.cLineTension;
                 end
-            case 'CellCell' % Lateral
+            case 2 % Lateral
                 %% DO LATERAL CABLES HAVE A DIFFERENT MINUTES DELAY
                 %% CAN IT BE BASED ON HOW FAST IT IS STRAINED?
                 if any([Geo.Cells(currentTri.SharedByCells).AliveStatus] == 0)
@@ -27,7 +27,7 @@ function [contractilityValue, Geo] = getContractilityBasedOnLocation(currentFace
                 else
                     contractilityValue = Set.cLineTension/100;
                 end
-            case 'Bottom' % Bottom/Substrate
+            case 3 % Bottom/Substrate
                 contractilityValue = Set.cLineTension/100;
             otherwise
                 contractilityValue = Set.cLineTension;

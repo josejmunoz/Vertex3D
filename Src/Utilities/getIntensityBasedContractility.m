@@ -7,10 +7,10 @@ function contractilityValue = getIntensityBasedContractility(Set, currentFace)
         closestTimePointsDistance = 1 - closestTimePointsDistance; %To get percentages
 
         switch (currentFace.InterfaceType)
-            case 'Top' % Top
+            case 1 % Top
                 contractilityValue = Set.Contractility_Variability_PurseString(indicesOfClosestTimePoints(1)) * closestTimePointsDistance(1) + ...
                     Set.Contractility_Variability_PurseString(indicesOfClosestTimePoints(2)) * closestTimePointsDistance(2);
-            case 'CellCell'
+            case 2
                 contractilityValue = Set.Contractility_Variability_LateralCables(indicesOfClosestTimePoints(1)) * closestTimePointsDistance(1) + ...
                     Set.Contractility_Variability_LateralCables(indicesOfClosestTimePoints(2)) * closestTimePointsDistance(2);
         end

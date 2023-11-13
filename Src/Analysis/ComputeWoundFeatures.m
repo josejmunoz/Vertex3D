@@ -21,9 +21,9 @@ function [features] = ComputeWoundFeatures(Geo, debrisCells)
         for face = woundEdgeCell.Faces
             for tri = face.Tris
                 if any(ismember(tri.SharedByCells, debrisCells))
-                    if face.InterfaceType == 'Top'
+                    if face.InterfaceType == 1
                         borderVertices_Top = vertcat(borderVertices_Top, vertcat(woundEdgeCell.Y(tri.Edge, :)));
-                    elseif face.InterfaceType == 'Bottom'
+                    elseif face.InterfaceType == 3
                         borderVertices_Bottom = vertcat(borderVertices_Bottom, vertcat(woundEdgeCell.Y(tri.Edge, :)));
                     end
                 end

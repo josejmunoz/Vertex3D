@@ -8,9 +8,9 @@ function [heightLateral, distanceFacesTopBottom] = ComputeCellHeight(Cell)
     allBottomFaceCentres = [];
     allLateralFaceCentres = [];
     for face = Cell.Faces
-        if face.InterfaceType == 'Top'
+        if face.InterfaceType == 1
             allTopFaceCentres = [allTopFaceCentres; face.Centre];
-        elseif face.InterfaceType == 'Bottom'
+        elseif face.InterfaceType == 3
             allBottomFaceCentres = [allBottomFaceCentres; face.Centre];
         else
             allLateralFaceCentres = [allLateralFaceCentres; face];

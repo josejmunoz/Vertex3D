@@ -152,9 +152,9 @@ for c = 1:Geo.nCells
         Set.BarrierTri0=min([vertcat(Face.Tris.Area); Set.BarrierTri0]);
         Set.lmin0=min([min(min(horzcat(vertcat(Face.Tris.LengthsToCentre), vertcat(Face.Tris.EdgeLength)))); Set.lmin0]);
         for tri = Face.Tris
-            if tri.Location == 'Top'
+            if tri.Location == 1
                 edgeLengths_Top(end+1) = ComputeEdgeLength(tri.Edge, Geo.Cells(c).Y);
-            elseif tri.Location == 'Bottom'
+            elseif tri.Location == 3
                 edgeLengths_Bottom(end+1) = ComputeEdgeLength(tri.Edge, Geo.Cells(c).Y);
             else
                 edgeLengths_Lateral(end+1) = ComputeEdgeLength(tri.Edge, Geo.Cells(c).Y);

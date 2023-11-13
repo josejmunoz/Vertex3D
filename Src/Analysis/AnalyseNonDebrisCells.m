@@ -1,4 +1,5 @@
 
+
 dirFiles = dir('Result/Relevant/');
 numDir = 13;
 woundedFeaturesOnly = {};
@@ -21,7 +22,7 @@ end
 
 % PEAK OF RECOLING IS AT 6 SECONDS. THUS, THAT SHOULD BE THE TIME THAT
 % IT TAKES TO REACT (DELAY?).
-weights = ones(3, 1);
+weights = ones(1, 1);
 weights(end+1:end+12) = 0;
 purseString_theory = weighted_moving_average(edgeLength_evo(:, 1) / edgeLength_evo(1, 1), weights, 10);
 purseString_theory = purseString_theory .^4.5; % One that is really close.

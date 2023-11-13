@@ -18,14 +18,14 @@ Set.lambdaV = 10;
 
 Set.kSubstrate = 100;
 
-Set.cLineTension = 0.1;
+Set.cLineTension = 0.05;
 Set.purseStringStrength = 12; % 11 for an hour looks good % 25 for tests
-Set.noiseContractility = 0.2;
+Set.noiseContractility = 0;
 Set.DelayedAdditionalContractility = 0;
 
 % Soft < 0
 % Stiff > 0
-Set.RemodelStiffness = -0.1;
+Set.RemodelStiffness = 0;
 
 Set.lambdaS1 = 10;
 Set.lambdaS2 = Set.lambdaS1/10;

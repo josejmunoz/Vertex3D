@@ -1,1 +1,3 @@
-Set.nu	= 500; Set.mu_bulk	= 2000; Set.lambda_bulk = 1000;
+Set.noiseContractility = 0.4;
+Set.noiseContractility = 0.6;
+Set.noiseContractility = 0.8;

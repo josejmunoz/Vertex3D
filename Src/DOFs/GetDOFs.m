@@ -45,8 +45,13 @@ function [Dofs]=GetDOFs(Geo, Set)
             idx = idx(ff);
             gconstrained(dim*(gIDsY(idx)-1)+1:dim*gIDsY(idx)) = 1;
         end
+
+        for ff = 1:length(find(preY))
+            idx = find(preY);
+            idx = idx(ff);
+            gprescribed(dim*(gIDsY(idx)-1)+1:dim*gIDsY(idx)) = 1;
+        end
         
-        gprescribed(dim*(gIDsY(preY)-1)+1:dim*(gIDsY(preY)-1)) = 1;
 % 		if Set.BC == 1 % TODO FIXME Do not constrain this in compress...
 %         	gconstrained(dim*(gIDsY(preY)-1)+1) = 1;
 %         	gconstrained(dim*(gIDsY(preY)-1)+3) = 1;

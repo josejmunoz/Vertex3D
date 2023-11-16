@@ -6,7 +6,8 @@ function [Geo, g,K,Energy, Set, gr, dyr, dy] = NewtonRaphson(Geo_0, Geo_n, Geo, 
     	dof=Dofs.Free;
 	end
 	dy=zeros((Geo.numY+Geo.numF+Geo.nCells)*3, 1);
-	dyr=norm(dy(dof)); gr=norm(g(dof));
+	dyr=norm(dy(dof)); 
+    gr=norm(g(dof));
 	gr0=gr;
 
 	Geo.log = sprintf('%s Step: %i,Iter: %i ||gr||= %e ||dyr||= %e dt/dt0=%.3g\n',Geo.log, numStep,0,gr,dyr,Set.dt/Set.dt0);
@@ -19,7 +20,6 @@ function [Geo, g,K,Energy, Set, gr, dyr, dy] = NewtonRaphson(Geo_0, Geo_n, Geo, 
 	ig = 1;
 	while (gr>Set.tol || dyr>Set.tol) && Set.iter<Set.MaxIter
     	dy(dof)=-K(dof,dof)\g(dof);
-        save("lineSearch_data.mat", "Geo", "Geo_n", "Geo_0", "Dofs", "Set", "g", "dy")
     	alpha = LineSearch(Geo_0, Geo_n, Geo, Dofs, Set, g, dy);
     	%% Update mechanical nodes
     	dy_reshaped = reshape(dy * alpha, 3, (Geo.numF+Geo.numY+Geo.nCells))';

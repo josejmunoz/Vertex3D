@@ -18,7 +18,7 @@ function [g,K,Energy_T]=KgTriAREnergyBarrier(Geo,Set)
             Ys = Cell.Y;
             for f = 1:length(Cell.Faces)
                 Face = Cell.Faces(f);
-                if ~isequal(Face.InterfaceType, 'CellCell')
+                if ~isequal(Face.InterfaceType, 2)
                     Tris = Cell.Faces(f).Tris;
                     for t = 1:length(Tris)
                         n3 = Cell.Faces(f).globalIds;

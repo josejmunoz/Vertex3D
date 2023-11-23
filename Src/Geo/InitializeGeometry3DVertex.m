@@ -19,7 +19,7 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
     elseif isequal(Set.InputGeo, 'Bubbles_Cyst')
        % Sphere with Cyst cells
        [X,Y,Z,~] = mySphere(Set.TotalCells);
-       X=[X' Y' Z'].*1.5;
+       X=[X' Y' Z'].*1;
        % Lumen as the first cell
        lumenCell = mean(X, 1);
        X = vertcat(lumenCell, X);
@@ -86,6 +86,7 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 	% TODO FIXME bad; PVM: better?
 	Geo.AssembleNodes = find(cellfun(@isempty, {Geo.Cells.AliveStatus})==0);
     Geo.BorderCells = [];
+    Geo.BorderGhostNodes = [];
     
     %% Define BarrierTri0 
     Set.BarrierTri0=realmax;

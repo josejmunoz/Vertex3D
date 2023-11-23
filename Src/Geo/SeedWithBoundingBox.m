@@ -8,10 +8,6 @@ function [XgID,X]=SeedWithBoundingBox(X,s)
     r=5*max(max(abs(X-r0)));
 
     %% 1)  Define bounding Nodes
-    
-    
-    % Bounding Box 2
-    
     %  Bounding Shpere 
     theta=linspace(0,2*pi,5);
     phi=linspace(0,pi,5);

@@ -50,14 +50,18 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
             %%  Analise cells
             nonDebris_Features = {};
             for c = nonDebrisCells
-                nonDebris_Features{end+1} = AnalyseCell(Geo, c);
+                if ~ismember(c, Geo.XgBottom)
+                    nonDebris_Features{end+1} = AnalyseCell(Geo, c);
+                end
             end
             nonDebris_Features_table = struct2table(vertcat(nonDebris_Features{:}));
             %writetable(nonDebris_Features_table, fullfile(pwd, Set.OutputFolder, strcat('cell_features_', num2str(numStep),'.csv')))
 
             debris_Features = {};
             for c = debrisCells
-                debris_Features{end+1} = AnalyseCell(Geo, c);
+                if ~ismember(c, Geo.XgBottom)
+                    debris_Features{end+1} = AnalyseCell(Geo, c);
+                end
             end
 
             if ~isempty(debris_Features)

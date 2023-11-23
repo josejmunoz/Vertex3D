@@ -13,6 +13,10 @@ x = vertices(:, 1);
 y = vertices(:, 2);
 
 ellipse_t = fit_ellipse( x,y );
-aspectRatio = ellipse_t.long_axis/ellipse_t.short_axis;
+if ~isempty(ellipse_t)
+    aspectRatio = ellipse_t.long_axis/ellipse_t.short_axis;
+else
+    aspectRatio = 0;
+end
 end
 

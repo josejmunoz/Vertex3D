@@ -13,8 +13,19 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 	%   Set : User input set struct with added default fields             
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-	%% Build nodal mesh 
-    X = BuildTopo(Geo.nx, Geo.ny, Geo.nz, 0);
+	%% Build nodal mesh
+    if isequal(Set.InputGeo, 'Bubbles')
+        X = BuildTopo(Geo.nx, Geo.ny, Geo.nz, 0);
+    elseif isequal(Set.InputGeo, 'Bubbles_Cyst')
+       % Sphere with Cyst cells
+       [X,Y,Z,~] = mySphere(Set.TotalCells);
+       X=[X' Y' Z'].*1.5;
+       % Lumen as the first cell
+       lumenCell = mean(X, 1);
+       X = vertcat(lumenCell, X);
+       Set.TotalCells = Set.TotalCells + 1;
+    end
+
 	Geo.nCells = size(X,1);
 
 	%% Centre Nodal position at (0,0)
@@ -59,8 +70,8 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 %     bottomDelaunay = delaunay([mean(X(:,1)), mean(X(:,2)), -50; Xg]);
 %     Geo.XgBottom = find(any(ismember(bottomDelaunay, 1), 2)) - 1;
     
-    Geo.XgBottom = Geo.XgID(Xg(:,3)<mean(X(:,3)));
-    Geo.XgTop = Geo.XgID(Xg(:,3)>mean(X(:,3)));
+    Geo.XgBottom = 1;
+    Geo.XgTop = Geo.XgID;
 	
     [Geo] = BuildCells(Geo, Set, X, Twg);
     

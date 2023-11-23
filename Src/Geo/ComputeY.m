@@ -7,14 +7,14 @@ function [newY] = ComputeY(Geo, T, cellCentre, Set)
     x = vertcat(Geo.Cells(T).X);
     newY = mean(x);
     
-    if length([Geo.Cells(T).AliveStatus]) == 1 && isequal(Set.InputGeo, 'Bubbles')
+    if length([Geo.Cells(T).AliveStatus]) == 1 && contains(Set.InputGeo, 'Bubbles')
         vc=newY-cellCentre;
         dir=vc/norm(vc);
         offset=Set.f*dir;
         newY = cellCentre+offset;
     end
     
-    if ~isequal(Set.InputGeo, 'Bubbles')
+    if ~contains(Set.InputGeo, 'Bubbles')
         if sum(ismember(T, Geo.XgTop)) > 0
             newY(3) = newY(3) / (sum(ismember(T, Geo.XgTop))/2);
         elseif sum(ismember(T, Geo.XgBottom)) > 0

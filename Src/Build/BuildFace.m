@@ -28,7 +28,7 @@ function Face = BuildFace(ci, cj, face_ids, nCells, Cell, XgID, Set, XgTop, XgBo
 	Face.globalIds		= -1;
 	Face.InterfaceType	= BuildInterfaceType(ij, XgID, XgTop, XgBottom);
     
-    newFaceCentre = BuildFaceCentre(ij, nCells,  Cell.X, Cell.Y(face_ids,:), Set.f, isequal(Set.InputGeo, 'Bubbles'));
+    newFaceCentre = BuildFaceCentre(ij, nCells,  Cell.X, Cell.Y(face_ids,:), Set.f, contains(Set.InputGeo, 'Bubbles'));
     if exist('oldFace', 'var') && ~isempty(oldFace)
         Face.Centre = oldFace.Centre;
         %Face.Tris = oldFace.Tris;

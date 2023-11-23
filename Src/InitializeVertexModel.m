@@ -46,6 +46,7 @@ backupVars.tr_b = tr;
 backupVars.Dofs = Dofs;
 numStep = 1; relaxingNu = false;
 EnergiesPerTimeStep = {};
+Geo.RemovedDebrisCells = [];
 
 PostProcessingVTK(Geo, Geo_0, Set, numStep);
 end

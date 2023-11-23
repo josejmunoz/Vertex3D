@@ -1,6 +1,10 @@
 function [Geo,Set] = menu_input(inputMode, batchMode)
 %MENU_INPUT Summary of this function goes here
 %   Detailed explanation goes here
+
+Set = struct();
+Geo = struct();
+
 switch inputMode
     case 1
         Stretch
@@ -36,6 +40,11 @@ switch inputMode
         NoBulk_110
         if ~batchMode
             disp('REMODELLING WITHOUT BULK 110 CELLS');
+        end
+    case 8
+        CystSimulation
+        if ~batchMode
+            disp('CYST SIMULATION');
         end
     otherwise
         error('Incorrect mode selected');

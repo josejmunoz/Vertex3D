@@ -7,7 +7,7 @@ Sets = {};
 Geos = {};
 
 batchMode = 0;
-inputMode = 1;
+inputMode = 8;
 
 if batchMode
     fid = fopen(fullfile('Src', 'Input', 'batchParameters.txt'));

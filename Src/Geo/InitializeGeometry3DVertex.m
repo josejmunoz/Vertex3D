@@ -19,11 +19,13 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
     elseif isequal(Set.InputGeo, 'Bubbles_Cyst')
        % Sphere with Cyst cells
        [X,Y,Z,~] = mySphere(Set.TotalCells);
-       X=[X' Y' Z'].*0.5;
+       X=[X' Y' Z']*10;
        % Lumen as the first cell
        lumenCell = mean(X, 1);
        X = vertcat(lumenCell, X);
        Set.TotalCells = Set.TotalCells + 1;
+       %Set.s = Set.s / (abs(max(X(:, 1))) - abs(min(X(:, 1))));
+       %Set.f = Set.f * (abs(max(X(:, 1))) - abs(min(X(:, 1))));
     end
 
 	Geo.nCells = size(X,1);

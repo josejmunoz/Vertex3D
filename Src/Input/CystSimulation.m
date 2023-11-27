@@ -25,5 +25,5 @@ Set.lambdaS3 = Set.lambdaS2;
 Set.lambdaS4 = Set.lambdaS2;
 
 Set.Remodelling = 1;
-Set.RemodelingFrequency = 0.05;
+Set.RemodelingFrequency = 0.5;
 Set.VTK = true;

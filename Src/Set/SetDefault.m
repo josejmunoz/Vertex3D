@@ -24,6 +24,7 @@ function Set = SetDefault(Set)
     %% ============================ Time ==================================
     DSet.tend						= 61; % 60 minutes after ablation
     %% ============================ Mechanics =============================
+    DSet.BrownianMotion = 0.01;
     % Volumes
     DSet.lambdaV					= 5;
     DSet.lambdaV_Debris				= 0.001;

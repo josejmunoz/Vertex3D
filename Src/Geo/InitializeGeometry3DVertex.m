@@ -72,8 +72,14 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 %     bottomDelaunay = delaunay([mean(X(:,1)), mean(X(:,2)), -50; Xg]);
 %     Geo.XgBottom = find(any(ismember(bottomDelaunay, 1), 2)) - 1;
     
-    Geo.XgBottom = 1;
-    Geo.XgTop = Geo.XgID;
+    if isequal(Set.InputGeo, 'Bubbles_Cyst')
+        Geo.XgBottom = 1;
+        Geo.XgTop = Geo.XgID;
+        Geo.XgID(end+1) = 1;
+    else
+        Geo.XgBottom = Geo.XgID(Xg(:,3)<mean(X(:,3)));
+        Geo.XgTop = Geo.XgID(Xg(:,3)>mean(X(:,3)));
+    end
 	
     [Geo] = BuildCells(Geo, Set, X, Twg);
     

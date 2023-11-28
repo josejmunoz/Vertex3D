@@ -30,26 +30,27 @@ for numCell = nonDeadCells
                     sharedCells(sharedCells == numCell) = [];
                     for numSharedCell = sharedCells
                         if cFace.InterfaceType == 1
-                            edgeLengths_Top(numSharedCell) = edgeLengths_Top(numSharedCell) + currentTri.EdgeLength / (cFace.Area);
-                            lastFaceArea_Top = cFace.Area;
+                            edgeLengths_Top(numSharedCell) = edgeLengths_Top(numSharedCell) + currentTri.EdgeLength / cFace.Area;
                         elseif cFace.InterfaceType == 3
-                            edgeLengths_Bottom(numSharedCell) = edgeLengths_Bottom(numSharedCell) + currentTri.EdgeLength / (cFace.Area);
-                            lastFaceArea_Bottom = cFace.Area;
+                            edgeLengths_Bottom(numSharedCell) = edgeLengths_Bottom(numSharedCell) + currentTri.EdgeLength / cFace.Area;
                         end
                     end
                 end
             end 
         end
+
         if any(edgeLengths_Top>0)
-            edgesToIntercalate_Top = edgeLengths_Top < Geo.AvgEdgeLength_Top/lastFaceArea_Top - (Set.RemodelStiffness * Geo.AvgEdgeLength_Top/lastFaceArea_Top) & edgeLengths_Top > 0;
+            avgEdgeLength = mean(edgeLengths_Top(edgeLengths_Top>0));
+            edgesToIntercalate_Top = edgeLengths_Top < avgEdgeLength - (Set.RemodelStiffness * avgEdgeLength) & edgeLengths_Top > 0;
+            [segmentFeatures{end+1}] = AddEdgeToIntercalate(Geo, numCell, table(), edgeLengths_Top, edgesToIntercalate_Top, Geo.XgTop(1));
         end
 
-        if any(edgeLengths_Bottom)
-            edgesToIntercalate_Bottom = edgeLengths_Bottom < Geo.AvgEdgeLength_Bottom/lastFaceArea_Bottom - (Set.RemodelStiffness * Geo.AvgEdgeLength_Bottom/lastFaceArea_Bottom) & edgeLengths_Bottom > 0;
+        if any(edgeLengths_Bottom>0)
+            %avgEdgeLength = Geo.AvgEdgeLength_Bottom/lastFaceArea_Bottom;
+            avgEdgeLength = mean(edgeLengths_Bottom(edgeLengths_Bottom>0));
+            edgesToIntercalate_Bottom = edgeLengths_Bottom < avgEdgeLength - (Set.RemodelStiffness * avgEdgeLength) & edgeLengths_Bottom > 0;
+            [segmentFeatures{end+1}] = AddEdgeToIntercalate(Geo, numCell, table(), edgeLengths_Bottom, edgesToIntercalate_Bottom, Geo.XgBottom(1));
         end
-        
-        [segmentFeatures{end+1}] = AddEdgeToIntercalate(Geo, numCell, table(), edgeLengths_Top, edgesToIntercalate_Top, Geo.XgTop(1));
-        [segmentFeatures{end+1}] = AddEdgeToIntercalate(Geo, numCell, table(), edgeLengths_Bottom, edgesToIntercalate_Bottom, Geo.XgBottom(1));
     end
 end
 

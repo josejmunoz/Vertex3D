@@ -98,7 +98,9 @@ for path =  paths'
                         newTets(end+1, :) = Xs_c;
                     end
                     [Geo_new] = RemoveTetrahedra(Geo, oldTets);
+                    Set.TryingFlips = 1;
                     [Geo_new] = AddTetrahedra(Geo_new, Geo, [newTets; tets4Cells], [], Set);
+                    Set.TryingFlips = 0;
                     Rebuild(Geo_new, Set);
                     newTets_tree{end+1} = newTets;
                     volDiff(end+1) = abs(newVol - oldVol) / oldVol;

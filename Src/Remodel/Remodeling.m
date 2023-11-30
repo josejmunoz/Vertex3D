@@ -4,6 +4,7 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
     newYgIds = [];
     checkedYgIds = [];
     [segmentFeatures_all] = GetTrisToRemodelOrdered(Geo, Set);
+    nonDeadCells = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID];
     
     %% loop ENERGY-dependant
     while ~isempty(segmentFeatures_all) 
@@ -34,11 +35,17 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
             nodesPair = [cellNode ghostNode];
 
             [valenceSegment, oldTets, oldYs] = edgeValence(Geo, nodesPair);
-            %% Intercalation
-            [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair), Tnew] = FlipNM(nodesPair, cellToIntercalateWith, oldTets, oldYs, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
 
-            %PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1);
-            allTnew = vertcat(allTnew, Tnew);
+            if sum(ismember(nonDeadCells, oldTets(:))) > 2
+                %% Intercalation
+                [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair), Tnew] = FlipNM(nodesPair, cellToIntercalateWith, oldTets, oldYs, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
+    
+                %PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1);
+                allTnew = vertcat(allTnew, Tnew);
+            else
+                disp('Possible error on remodelling before FlipNM')
+                hasConverged(numPair) = 1;
+            end
 
             sharedNodesStill = getNodeNeighboursPerDomain(Geo, cellNode, ghostNode, cellToSplitFrom);
 
@@ -65,7 +72,7 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
             end
             gNodes_NeighboursShared = unique(vertcat(gNodeNeighbours{:}));
             cellNodesShared = gNodes_NeighboursShared(~ismember(gNodes_NeighboursShared, Geo.XgID));
-            numClose = 0.7;
+            numClose = 1;
             [Geo, Geo_n] = moveVerticesCloserToRefPoint(Geo, Geo_n, numClose, cellNodesShared, cellToSplitFrom, ghostNode, Tnew, Set);
             %[~, ~, Energy_After, ~, Energies_After] = KgGlobal(Geo_0, Geo_n, Geo, Set);
             %PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1);

@@ -40,14 +40,14 @@ for numCell = nonDeadCells
         end
 
         if any(edgeLengths_Top>0)
-            avgEdgeLength = mean(edgeLengths_Top(edgeLengths_Top>0));
+            avgEdgeLength = median(edgeLengths_Top(edgeLengths_Top>0));
             edgesToIntercalate_Top = edgeLengths_Top < avgEdgeLength - (Set.RemodelStiffness * avgEdgeLength) & edgeLengths_Top > 0;
             [segmentFeatures{end+1}] = AddEdgeToIntercalate(Geo, numCell, table(), edgeLengths_Top, edgesToIntercalate_Top, Geo.XgTop(1));
         end
 
         if any(edgeLengths_Bottom>0)
             %avgEdgeLength = Geo.AvgEdgeLength_Bottom/lastFaceArea_Bottom;
-            avgEdgeLength = mean(edgeLengths_Bottom(edgeLengths_Bottom>0));
+            avgEdgeLength = median(edgeLengths_Bottom(edgeLengths_Bottom>0));
             edgesToIntercalate_Bottom = edgeLengths_Bottom < avgEdgeLength - (Set.RemodelStiffness * avgEdgeLength) & edgeLengths_Bottom > 0;
             [segmentFeatures{end+1}] = AddEdgeToIntercalate(Geo, numCell, table(), edgeLengths_Bottom, edgesToIntercalate_Bottom, Geo.XgBottom(1));
         end

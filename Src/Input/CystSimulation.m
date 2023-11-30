@@ -25,5 +25,5 @@ Set.lambdaS3 = Set.lambdaS2;
 Set.lambdaS4 = Set.lambdaS2;
 
 Set.Remodelling = 1;
-Set.RemodelStiffness = 0.1;
+Set.RemodelStiffness = 0.5;
 Set.VTK = true;

@@ -54,7 +54,7 @@ function Set = SetDefault(Set)
     % Contractility
     DSet.Contractility              = true;
     DSet.cLineTension               = 0.0001;
-    DSet.noiseContractility         = 0.1;
+    DSet.noiseContractility         = 0;
     % In plane elasticity
 	DSet.InPlaneElasticity          = true;
 	DSet.mu_bulk					= 3000; 

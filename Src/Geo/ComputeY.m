@@ -21,12 +21,5 @@ function [newY] = ComputeY(Geo, T, cellCentre, Set)
             newY(3) = newY(3) / (sum(ismember(T, Geo.XgBottom))/2);
         end
     end
-
-    % function moveVertexToSurfaceOfCells
-    if Set.TryingFlips == 0
-        if sum(arrayfun(@(x) size(x.T, 1) == size(x.Y, 1), Geo.Cells(T))) == sum(~cellfun(@isempty, {Geo.Cells(T).AliveStatus}))
-            newY = moveVertexToSurfaceOfCell(Geo, T, newY);
-        end
-    end
 end
 

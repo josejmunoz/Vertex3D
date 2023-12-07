@@ -37,6 +37,10 @@ function Face = BuildFace(ci, cj, face_ids, nCells, Cell, XgID, Set, XgTop, XgBo
     end
     %% DON'T KNOW WHY BUT I HAVE TO CREATE THE TRIS ALL THE TIME (CAN'T USE THE OLD FACE TRIS)
     [Face.Tris] = BuildEdges(Cell.T, face_ids, Face.Centre, Face.InterfaceType, Cell.X, Cell.Y, 1:nCells); %%TODO: IMPROVE TO ONLY GET 'NONDEADCELLS'
-	[Face.Area]  = ComputeFaceArea(vertcat(Face.Tris.Edge), Cell.Y, Face.Centre);
+	
+    %% Move face centre to the centre of the vertices
+    Face.Centre = mean(Cell.Y(unique([Face.Tris.Edge]), :));
+    
+    [Face.Area]  = ComputeFaceArea(vertcat(Face.Tris.Edge), Cell.Y, Face.Centre);
     Face.Area0 = Face.Area;
 end

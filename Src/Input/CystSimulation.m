@@ -1,5 +1,5 @@
 Set.InputGeo = 'Bubbles_Cyst';
-Set.TotalCells = 20;
+Set.TotalCells = 30;
 Set.s = 1.5*10;
 Set.f = 0.5*10;
 

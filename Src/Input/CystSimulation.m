@@ -1,4 +1,8 @@
 Set.InputGeo = 'Bubbles_Cyst';
+Set.typeOfEllipsoid = 'ellipsoid';
+Set.ellipsoid_axis1 = 33;
+Set.ellipsoid_axis2 = 31;
+Set.ellipsoid_axis3 = 23;
 Set.TotalCells = 30;
 Set.s = 1.5*10;
 Set.f = 0.5*10;

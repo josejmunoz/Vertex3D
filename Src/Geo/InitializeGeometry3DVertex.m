@@ -17,15 +17,19 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
     if isequal(Set.InputGeo, 'Bubbles')
         X = BuildTopo(Geo.nx, Geo.ny, Geo.nz, 0);
     elseif isequal(Set.InputGeo, 'Bubbles_Cyst')
-       % Sphere with Cyst cells
-       [X,Y,Z,~] = mySphere(Set.TotalCells);
-       X=[X' Y' Z']*10;
-       % Lumen as the first cell
-       lumenCell = mean(X, 1);
-       X = vertcat(lumenCell, X);
-       Set.TotalCells = Set.TotalCells + 1;
-       %Set.s = Set.s / (abs(max(X(:, 1))) - abs(min(X(:, 1))));
-       %Set.f = Set.f * (abs(max(X(:, 1))) - abs(min(X(:, 1))));
+%         switch (Set.typeOfEllipsoid)
+            %case 'sphere'
+                [X,Y,Z,~] = mySphere(Set.TotalCells);
+            %case 'ellipsoid'
+%                 [X, Y, Z] = myEllipsoid(Set.ellipsoid_axis1, ...
+%                     Set.ellipsoid_axis2, Set.ellipsoid_axis3, Set.TotalCells);
+% 
+%         end
+        X=[X' Y' Z']*10;
+        % Lumen as the first cell
+        lumenCell = mean(X, 1);
+        X = vertcat(lumenCell, X);
+        Set.TotalCells = size(X,1); %% HERE IT CHANGES THE NUMBER OF CELLS
     end
 
 	Geo.nCells = size(X,1);
@@ -34,6 +38,10 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 	X(:,1)=X(:,1)-mean(X(:,1));
 	X(:,2)=X(:,2)-mean(X(:,2));
 	X(:,3)=X(:,3)-mean(X(:,3));
+
+    if isequal(Set.typeOfEllipsoid, 'ellipsoid')
+        X = extrapolateToEllipsoid(X, Set.ellipsoid_axis1, Set.ellipsoid_axis2, Set.ellipsoid_axis3);
+    end
 
 	%% Perform Delaunay
 	[Geo.XgID,X]=SeedWithBoundingBox(X,Set.s);
@@ -82,6 +90,30 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
     end
 	
     [Geo] = BuildCells(Geo, Set, X, Twg);
+
+    %% Extrapolate face centres, Xs, and Ys
+    if isequal(Set.typeOfEllipsoid, 'ellipsoid')
+        for numCell = 1
+            [Geo.Cells(numCell).Y] = extrapolateToEllipsoid(Geo.Cells(numCell).Y, ...
+                Set.ellipsoid_axis1, Set.ellipsoid_axis2, Set.ellipsoid_axis3);
+            
+            % Changes vertices of other cells
+            for tetToCheck = Geo.Cells(numCell).T'
+                for nodeInTet = tetToCheck'
+                    if ~ismember(nodeInTet, Geo.XgID)
+                        newPoint = Geo.Cells(nodeInTet).Y(ismember(sort(Geo.Cells(nodeInTet).T, 2), tetToCheck', 'rows'), :);
+                        Geo.Cells(nodeInTet).Y(ismember(sort(Geo.Cells(nodeInTet).T, 2), tetToCheck', 'rows'), :) = refPoint_closer*(1-closeToNewPoint) + newPoint*closeToNewPoint;
+                    end
+                end
+            end
+
+            % Change faces
+            for numFace = length(Geo.Cells(numCell).Faces)
+                [Geo.Cells(numCell).Faces(numFace).Centre] = extrapolateToEllipsoid(Geo.Cells(numCell).Faces(numFace).Centre, ...
+                    Set.ellipsoid_axis1, Set.ellipsoid_axis2, Set.ellipsoid_axis3);
+            end
+        end
+    end
     
     %% Define upper and lower area threshold for remodelling
     allFaces = [Geo.Cells.Faces];

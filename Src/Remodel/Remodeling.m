@@ -35,17 +35,12 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
             nodesPair = [cellNode ghostNode];
 
             [valenceSegment, oldTets, oldYs] = edgeValence(Geo, nodesPair);
+            
+            %% Intercalation
+            [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair), Tnew] = FlipNM(nodesPair, cellToIntercalateWith, oldTets, oldYs, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
 
-            if sum(ismember(nonDeadCells, oldTets(:))) > 2
-                %% Intercalation
-                [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair), Tnew] = FlipNM(nodesPair, cellToIntercalateWith, oldTets, oldYs, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-    
-                %PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1);
-                allTnew = vertcat(allTnew, Tnew);
-            else
-                disp('Possible error on remodelling before FlipNM')
-                hasConverged(numPair) = 1;
-            end
+            %PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1);
+            allTnew = vertcat(allTnew, Tnew);
 
             sharedNodesStill = getNodeNeighboursPerDomain(Geo, cellNode, ghostNode, cellToSplitFrom);
 

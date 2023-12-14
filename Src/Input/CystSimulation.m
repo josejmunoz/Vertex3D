@@ -17,7 +17,7 @@ Set.Ablation = false;
 
 Set.InPlaneElasticity = false;
 Set.nu	= 1;
-Set.Nincr = 61;
+Set.Nincr = 61*2;
 
 Set.lambdaB	= 1; % Smaller number, more energy
 Set.lambdaR	= 0.3; 

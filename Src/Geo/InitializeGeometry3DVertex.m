@@ -159,6 +159,7 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
             Geo = UpdateMeasures(Geo);
             [Geo.Cells.Area0] = deal(Set.cell_A0);
             [Geo.Cells.Vol0]  = deal(Set.cell_V0);
+            Geo.Cells(1).Area0 = Set.lumen_V0 * (Set.cell_A0/Set.cell_V0);
             Geo.Cells(1).Vol0 = Set.lumen_V0;
             
             % Calculate the mean volume excluding the first cell

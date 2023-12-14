@@ -5,7 +5,7 @@ function [points_ellipsoid] = extrapolateToEllipsoid(points, a, b, c)
 % Each row of 'points' contains the (x, y, z) coordinates of a point
 
     % Define the number of points
-    points_ellipsoid = [points(:, 1) * a/max([a,b,c]), points(:, 2) * b/max([a,b,c]), points(:, 3) * c/max([a,b,c])];
+    points_ellipsoid = [points(:, 1) * a, points(:, 2) * b, points(:, 3) * c];
     
 %     % Plot the points on the original sphere-like surface and the extrapolated ellipsoid
 %     figure;

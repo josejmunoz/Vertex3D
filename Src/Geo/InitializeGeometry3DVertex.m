@@ -39,10 +39,6 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 	X(:,2)=X(:,2)-mean(X(:,2));
 	X(:,3)=X(:,3)-mean(X(:,3));
 
-    if isequal(Set.typeOfEllipsoid, 'ellipsoid')
-        X = extrapolateToEllipsoid(X, Set.ellipsoid_axis1, Set.ellipsoid_axis2, Set.ellipsoid_axis3);
-    end
-
 	%% Perform Delaunay
 	[Geo.XgID,X]=SeedWithBoundingBox(X,Set.s);
     
@@ -93,26 +89,63 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 
     %% Extrapolate face centres, Xs, and Ys
     if isequal(Set.typeOfEllipsoid, 'ellipsoid')
-        for numCell = 1
-            [Geo.Cells(numCell).Y] = extrapolateToEllipsoid(Geo.Cells(numCell).Y, ...
-                Set.ellipsoid_axis1, Set.ellipsoid_axis2, Set.ellipsoid_axis3);
-            
-            % Changes vertices of other cells
-            for tetToCheck = Geo.Cells(numCell).T'
-                for nodeInTet = tetToCheck'
-                    if ~ismember(nodeInTet, Geo.XgID)
-                        newPoint = Geo.Cells(nodeInTet).Y(ismember(sort(Geo.Cells(nodeInTet).T, 2), tetToCheck', 'rows'), :);
-                        Geo.Cells(nodeInTet).Y(ismember(sort(Geo.Cells(nodeInTet).T, 2), tetToCheck', 'rows'), :) = refPoint_closer*(1-closeToNewPoint) + newPoint*closeToNewPoint;
-                    end
+        % Original axis values
+        [a, b, c, paramsOptimized_top] = fitEllipsoidToPoints( ...
+            vertcat(Geo.Cells(2:Set.TotalCells).Y));
+
+        [a, b, c, paramsOptimized_bottom] = fitEllipsoidToPoints( ...
+            vertcat(Geo.Cells(1).Y));
+
+        ellipsoid_axis_normalised1 = Set.ellipsoid_axis1/paramsOptimized_top(1);
+        ellipsoid_axis_normalised2 = Set.ellipsoid_axis2/paramsOptimized_top(2);
+        ellipsoid_axis_normalised3 = Set.ellipsoid_axis3/paramsOptimized_top(3);
+
+        lumen_axis_normalised1 = Set.lumen_axis1/paramsOptimized_bottom(1);
+        lumen_axis_normalised2 = Set.lumen_axis2/paramsOptimized_bottom(2);
+        lumen_axis_normalised3 = Set.lumen_axis3/paramsOptimized_bottom(3);
+
+        % Extrapolate Xs
+        X = extrapolateToEllipsoid(X, mean([ellipsoid_axis_normalised1, lumen_axis_normalised1]), ...
+            mean([ellipsoid_axis_normalised2, lumen_axis_normalised2]), ...
+            mean([ellipsoid_axis_normalised3, lumen_axis_normalised3]));
+
+        % Extrapolate top layer as the outer ellipsoid, the botom layer as
+        % the lumen, and lateral is rebuilt.
+        allTs = vertcat(Geo.Cells(1:Set.TotalCells).T);
+        [allTs, ~] = unique(sort(allTs, 2), "rows");
+        topTs = allTs(any(ismember(allTs, Geo.XgTop), 2), :);
+        bottomsTs = allTs(any(ismember(allTs, Geo.XgBottom), 2), :);
+
+        % Changes vertices of other cells
+        for tetToCheck = topTs'
+            for nodeInTet = tetToCheck'
+                if ~ismember(nodeInTet, Geo.XgTop)
+                    newPoint = Geo.Cells(nodeInTet).Y(ismember(sort(Geo.Cells(nodeInTet).T, 2), tetToCheck', 'rows'), :);
+                    newPoint_extrapolated = extrapolateToEllipsoid(newPoint, ...
+                        ellipsoid_axis_normalised1, ellipsoid_axis_normalised2, ellipsoid_axis_normalised3);
+                    Geo.Cells(nodeInTet).Y(ismember(sort(Geo.Cells(nodeInTet).T, 2), tetToCheck', 'rows'), :) = newPoint_extrapolated;
                 end
             end
+        end
 
-            % Change faces
-            for numFace = length(Geo.Cells(numCell).Faces)
-                [Geo.Cells(numCell).Faces(numFace).Centre] = extrapolateToEllipsoid(Geo.Cells(numCell).Faces(numFace).Centre, ...
-                    Set.ellipsoid_axis1, Set.ellipsoid_axis2, Set.ellipsoid_axis3);
+        for tetToCheck = bottomsTs'
+            for nodeInTet = tetToCheck'
+                if ~ismember(nodeInTet, Geo.XgTop)
+                    newPoint = Geo.Cells(nodeInTet).Y(ismember(sort(Geo.Cells(nodeInTet).T, 2), tetToCheck', 'rows'), :);
+                    newPoint_extrapolated = extrapolateToEllipsoid(newPoint, ...
+                        lumen_axis_normalised1, lumen_axis_normalised2, lumen_axis_normalised3);
+                    Geo.Cells(nodeInTet).Y(ismember(sort(Geo.Cells(nodeInTet).T, 2), tetToCheck', 'rows'), :) = newPoint_extrapolated;
+                end
             end
         end
+
+        % Recalculating face centres here based on the previous
+        % change
+        Geo = Rebuild(Geo, Set);
+        Geo = BuildGlobalIds(Geo);
+        Geo = UpdateMeasures(Geo);
+        [Geo.Cells.Area0] = deal(mean([Geo.Cells(1:Set.TotalCells).Area]));
+        [Geo.Cells.Vol0]  = deal(mean([Geo.Cells(1:Set.TotalCells).Vol]));
     end
     
     %% Define upper and lower area threshold for remodelling

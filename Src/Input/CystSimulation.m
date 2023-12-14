@@ -1,8 +1,11 @@
 Set.InputGeo = 'Bubbles_Cyst';
 Set.typeOfEllipsoid = 'ellipsoid';
-Set.ellipsoid_axis1 = 33;
-Set.ellipsoid_axis2 = 31;
-Set.ellipsoid_axis3 = 23;
+Set.ellipsoid_axis1 = 33/2;
+Set.ellipsoid_axis2 = 31/2;
+Set.ellipsoid_axis3 = 23/2;
+Set.lumen_axis1 = 23/2;
+Set.lumen_axis2 = 20/2;
+Set.lumen_axis3 = 12/2;
 Set.TotalCells = 30;
 Set.s = 1.5*10;
 Set.f = 0.5*10;

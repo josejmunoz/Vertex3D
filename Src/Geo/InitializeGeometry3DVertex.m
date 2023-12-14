@@ -157,8 +157,27 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
             Geo = Rebuild(Geo, Set);
             Geo = BuildGlobalIds(Geo);
             Geo = UpdateMeasures(Geo);
-            [Geo.Cells.Area0] = deal(mean([Geo.Cells(1:Set.TotalCells).Area]));
-            [Geo.Cells.Vol0]  = deal(mean([Geo.Cells(1:Set.TotalCells).Vol]));
+            [Geo.Cells.Area0] = deal(mean([Geo.Cells(2:Set.TotalCells).Area]));
+            [Geo.Cells.Vol0]  = deal(Set.cell_V0);
+            Geo.Cells(1).Vol0 = Set.lumen_V0;
+            
+            % Calculate the mean volume excluding the first cell
+            meanVolume = mean([Geo.Cells(2:Set.TotalCells).Vol]);
+            disp(['Average Cell Volume: ', num2str(meanVolume)]);
+            
+            % Calculate the standard deviation of volumes excluding the first cell
+            stdVolume = std([Geo.Cells(2:Set.TotalCells).Vol]);
+            disp(['Standard Deviation of Cell Volumes: ', num2str(stdVolume)]);
+            
+            % Display the volume of the first cell
+            firstCellVolume = Geo.Cells(1).Vol;
+            disp(['Volume of Lumen: ', num2str(firstCellVolume)]);
+            
+            % Calculate the sum of volumes excluding the first cell
+            sumVolumes = sum([Geo.Cells(2:Set.TotalCells).Vol]);
+            disp(['Tissue Volume: ', num2str(sumVolumes)]);
+
+
         end
     end
     

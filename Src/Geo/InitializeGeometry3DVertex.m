@@ -157,7 +157,7 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
             Geo = Rebuild(Geo, Set);
             Geo = BuildGlobalIds(Geo);
             Geo = UpdateMeasures(Geo);
-            [Geo.Cells.Area0] = deal(mean([Geo.Cells(2:Set.TotalCells).Area]));
+            [Geo.Cells.Area0] = deal(Set.cell_A0);
             [Geo.Cells.Vol0]  = deal(Set.cell_V0);
             Geo.Cells(1).Vol0 = Set.lumen_V0;
             
@@ -227,4 +227,6 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
     Geo.AvgEdgeLength_Lateral = mean(edgeLengths_Lateral);
     Set.BarrierTri0=Set.BarrierTri0/5;
     Set.lmin0 = Set.lmin0*10;
+
+    Geo.RemovedDebrisCells = [];
 end

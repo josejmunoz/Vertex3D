@@ -6,7 +6,7 @@ addpath(genpath('Tests'));
 Sets = {};
 Geos = {};
 
-batchMode = 0;
+batchMode = 1;
 inputMode = 8;
 
 if batchMode
@@ -31,9 +31,9 @@ end
 
 clear Geo Set
 
-%delete(gcp('nocreate'));
-%parpool(3);
-for numLine = 1:length(Sets)
+delete(gcp('nocreate'));
+parpool(5);
+parfor numLine = 1:length(Sets)
     prevLog = '';
     tStart = tic;
     didNotConverge = false;

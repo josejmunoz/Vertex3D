@@ -22,7 +22,7 @@ Set.Nincr = 61*2;
 Set.lambdaB	= 1; % Smaller number, more energy
 Set.lambdaR	= 0.3; 
 
-Set.lambdaV = 100;
+Set.lambdaV = 400;
 
 Set.Substrate = 0;
 Set.kSubstrate = 0;
@@ -34,6 +34,8 @@ Set.lambdaS2 = 0.01*Set.lambdaS1;
 Set.lambdaS3 = Set.lambdaS2;
 Set.lambdaS4 = Set.lambdaS2;
 
+Set.BrownianMotion = 0.05;
+
 Set.Remodelling = 1;
-Set.RemodelStiffness = 0.5;
+Set.RemodelStiffness = 0.1;
 Set.VTK = true;

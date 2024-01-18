@@ -105,7 +105,6 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
     if isequal(Set.InputGeo, 'Bubbles_Cyst')
         if isequal(Set.typeOfEllipsoid, 'ellipsoid')
             %% Extrapolate face centres, and Ys
-
             % Original axis values
             [a, b, c, paramsOptimized_top] = fitEllipsoidToPoints( ...
                 vertcat(Geo.Cells(2:Set.TotalCells).Y));
@@ -230,4 +229,5 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
     Set.lmin0 = Set.lmin0*10;
 
     Geo.RemovedDebrisCells = [];
+    Geo.cellsToAblate = [];
 end

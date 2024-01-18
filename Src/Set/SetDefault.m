@@ -24,7 +24,7 @@ function Set = SetDefault(Set)
     %% ============================ Time ==================================
     DSet.tend						= 61; % 60 minutes after ablation
     %% ============================ Mechanics =============================
-    DSet.BrownianMotion = 0.1;
+    DSet.BrownianMotion = 0;
     % Volumes
     DSet.lambdaV					= 5;
     DSet.lambdaV_Debris				= 0.001;
@@ -54,7 +54,7 @@ function Set = SetDefault(Set)
     % Contractility
     DSet.Contractility              = true;
     DSet.cLineTension               = 0.0001;
-    DSet.noiseContractility         = 0.1;
+    DSet.noiseContractility         = 0;
     % In plane elasticity
 	DSet.InPlaneElasticity          = true;
 	DSet.mu_bulk					= 3000; 
@@ -126,7 +126,7 @@ function Set = SetDefault(Set)
 	Set = AddDefault(Set, DSet);
 
     %% TODO: ADD IF IN CASE IT IS USED: E.G., Set.InPlaneElasticity
-    Set.OutputFolder=strcat('Result/', string(datetime('now','Format','MM-dd_SSSSS_')), Set.InputGeo, '_Cells_', num2str(Set.TotalCells), ...
+    DSet.OutputFolder=strcat('Result/', string(datetime('now','Format','MM-dd_SSSSS_')), Set.InputGeo, '_Cells_', num2str(Set.TotalCells), ...
         '_visc_', num2str(Set.nu), ...
         '_lVol_', num2str(Set.lambdaV), '_muBulk_', num2str(Set.mu_bulk), ...
         '_lBulk_', num2str(Set.lambda_bulk), '_kSubs_', num2str(Set.kSubstrate), ...
@@ -135,4 +135,7 @@ function Set = SetDefault(Set)
         '_eARBarrier_', num2str(Set.lambdaR), '_RemStiff_', num2str(Set.RemodelStiffness), ...
         '_lS1_', num2str(Set.lambdaS1), '_lS2_', num2str(Set.lambdaS2), ...
         '_lS3_', num2str(Set.lambdaS3));
+
+    %% ====================== Add missing fields to Set ===================
+	Set = AddDefault(Set, DSet);
 end

@@ -13,7 +13,7 @@ function [points, cells_localIDs, cells_type, idCell, measurementsToDisplay] = C
 	for c = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID]
 		Ys = Geo.Cells(c).Y;
 
-		nameout=fullfile(newSubFolder, ['Cell_', num2str(c, '%04d'), '_t', num2str(Step, '%04d'), fileExtension]);
+		nameout=fullfile(newSubFolder, ['Cell_', num2str(c, '%04d'), '.', num2str(Step, '%04d'), fileExtension]);
 		fout=fopen(nameout,'w');
 
 		header = "# vtk DataFile Version 3.98\n";

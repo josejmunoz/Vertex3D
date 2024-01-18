@@ -29,7 +29,7 @@ function [XgID,X]=SeedWithBoundingBox(X,s)
     
     %% 3) intitilize 
     Side=[1 2 3; 1 2 4; 2 3 4; 1 3 4];
-    Edges=[1 2; 2 3; 3 4; 1 3; 1 4; 3 4; 1 4];  
+    Edges=[1 2; 2 3; 3 4; 1 3; 1 4; 3 4];  
     % find real tests 
     Vol=zeros(size(Twg,1),1);
     AreaFaces=zeros(size(Twg,1)*3,4);

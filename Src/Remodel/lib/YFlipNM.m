@@ -29,7 +29,7 @@ possibleEdges = nchoosek(boundaryNodes, 2);
 %% Step 3: Select the edge to add
 % Aim: connecting the XsToDisconnect_c to another gNode
 % Based on Valence? distance? who should be intercalating with?
-edgeToConnect = [cellToIntercalateWith, Xs_gToDisconnect];
+edgeToConnect = sort([cellToIntercalateWith, Xs_gToDisconnect]);
 possibleEdges(ismember(possibleEdges, edgeToConnect, 'rows'), :) = [];
 %finalEdges = vertcat(boundaryEdges, edgeToConnect);
 

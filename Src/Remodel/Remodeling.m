@@ -7,10 +7,10 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
     nonDeadCells = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID];
     
     %% loop ENERGY-dependant
-    while ~isempty(segmentFeatures_all) 
+    while ~isempty(segmentFeatures_all)
         Geo_backup = Geo; Geo_n_backup = Geo_n; Geo_0_backup = Geo_0; Dofs_backup = Dofs;
         
-        segmentFeatures = segmentFeatures_all{1};
+        segmentFeatures = segmentFeatures_all(1,:);
         [~, ids] = unique(segmentFeatures(:, 1:2), 'rows');
         segmentFeatures = segmentFeatures(ids, :);
         segmentFeatures = sortrows(segmentFeatures, 6);
@@ -99,7 +99,7 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
         rowsToRemove = [];
         if ~isempty(segmentFeatures_all)
             for numRow = 1:length(segmentFeatures_all)
-                cSegFea = segmentFeatures_all{numRow};
+                cSegFea = segmentFeatures_all(numRow, :);
                 if all(ismember([cSegFea{:, 1:2}], checkedYgIds, 'rows'))
                     rowsToRemove(end+1) = numRow;
                 end

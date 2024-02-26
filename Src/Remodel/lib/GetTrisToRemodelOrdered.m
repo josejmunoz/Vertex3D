@@ -54,19 +54,21 @@ for numCell = nonDeadCells
     end
 end
 
-segmentFeatures(cellfun(@isempty, segmentFeatures)) = [];
-segmentFeatures_filtered = {};
-for segmentFeature = segmentFeatures
-    segmentFeature = segmentFeature{1};
-    gNodeNeighbours = {};
-    for numRow = 1:size(segmentFeature, 1)
-        gNodeNeighbours{numRow} = getNodeNeighbours(Geo, segmentFeature{numRow, 2});
-    end
-    gNodes_NeighboursShared = unique(vertcat(gNodeNeighbours{:}));
-    cellNodesShared = gNodes_NeighboursShared(~ismember(gNodes_NeighboursShared, Geo.XgID));
-    if sum([Geo.Cells(cellNodesShared).AliveStatus]==0) < 2 && length(cellNodesShared) > 3 && length(unique(segmentFeature.cellToSplitFrom)) == 1
-        segmentFeatures_filtered{end+1} = segmentFeature;
-    end
-end
+segmentFeatures_filtered = vertcat(segmentFeatures{:});
+
+% segmentFeatures(cellfun(@isempty, segmentFeatures)) = [];
+% segmentFeatures_filtered = {};
+% for segmentFeature = segmentFeatures
+%     segmentFeature = segmentFeature{1};
+%     gNodeNeighbours = {};
+%     for numRow = 1:size(segmentFeature, 1)
+%         gNodeNeighbours{numRow} = getNodeNeighbours(Geo, segmentFeature{numRow, 2});
+%     end
+%     gNodes_NeighboursShared = unique(vertcat(gNodeNeighbours{:}));
+%     cellNodesShared = gNodes_NeighboursShared(~ismember(gNodes_NeighboursShared, Geo.XgID));
+%     if sum([Geo.Cells(cellNodesShared).AliveStatus]==0) < 2 && length(cellNodesShared) > 3 && length(unique(segmentFeature.cellToSplitFrom)) == 1
+%         segmentFeatures_filtered{end+1} = segmentFeature;
+%     end
+% end
 end
 

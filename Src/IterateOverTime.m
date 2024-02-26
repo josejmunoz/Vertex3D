@@ -64,12 +64,13 @@ function [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, rel
                 end
             end
 
-            if ~isempty(debris_Features)
-                [wound_features] = ComputeWoundFeatures(Geo);
-                %writetable(vertcat(debris_Features{:}), fullfile(pwd, Set.OutputFolder, strcat('debris_features_', num2str(numStep),'.csv')))
-            else
-                wound_features = [];
-            end
+            wound_features = [];
+%             if ~isempty(debris_Features)
+%                 [wound_features] = ComputeWoundFeatures(Geo);
+%                 %writetable(vertcat(debris_Features{:}), fullfile(pwd, Set.OutputFolder, strcat('debris_features_', num2str(numStep),'.csv')))
+%             else
+%                 wound_features = [];
+%             end
 
             %% Test to see if something is wrong:
             GeoTests(Geo)

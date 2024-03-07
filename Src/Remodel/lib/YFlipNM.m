@@ -95,6 +95,7 @@ for path =  paths'
                 try
                     if intercalationFlip
                         Xs_c = Xs(~ismember(Xs, ghostNodesWithoutDebris));
+                    if ~ismember(sort(Xs_c)', sort(newTets, 2), 'rows')
                         newTets(end+1, :) = Xs_c;
                     end
                     [Geo_new] = RemoveTetrahedra(Geo, oldTets);

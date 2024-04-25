@@ -18,34 +18,12 @@ function [Geo, g,K,Energy, Set, gr, dyr, dy] = NewtonRaphson(Geo_0, Geo_n, Geo, 
     auxgr=zeros(3,1);
     auxgr(1)=gr;
 	ig = 1;
-	while (gr>Set.tol || dyr>Set.tol) && Set.iter<Set.MaxIter
-    	dy(dof)=-K(dof,dof)\g(dof);
-    	alpha = LineSearch(Geo_0, Geo_n, Geo, Dofs, Set, g, dy);
-    	%% Update mechanical nodes
-    	dy_reshaped = reshape(dy * alpha, 3, (Geo.numF+Geo.numY+Geo.nCells))';
-    	Geo = UpdateVertices(Geo, Set, dy_reshaped);
-		Geo = UpdateMeasures(Geo);
 
-    	%% ----------- Compute K, g ---------------------------------------
-    	[g, K, Energy, Geo, Energies] = KgGlobal(Geo_0, Geo_n, Geo, Set);
-    	dyr=norm(dy(dof)); gr=norm(g(dof));
-    	Geo.log = sprintf('%s Step: % i,Iter: %i, Time: %g ||gr||= %.3e ||dyr||= %.3e alpha= %.3e  nu/nu0=%.3g \n', Geo.log, numStep,Set.iter,t,gr,dyr,alpha,Set.nu/Set.nu0);
-        Geo.log;
-        
-    	Set.iter=Set.iter+1;
-		auxgr(ig+1)=gr;
-		% TODO FIXME, what even is this ?! PVM: In other words, WTF!?
-    	if ig ==2
-        	ig=0;
-    	else
-        	ig=ig+1;
-    	end
-    	if (abs(auxgr(1)-auxgr(2))/auxgr(1)<1e-3 &&...
-            	abs(auxgr(1)-auxgr(3))/auxgr(1)<1e-3 &&...
-            	abs(auxgr(3)-auxgr(2))/auxgr(3)<1e-3)...
-            	|| abs((gr0-gr)./gr0)>1e3
-        	Set.iter=Set.MaxIter;
-    	end
-	end
+	dy(dof)=-Set.dt/Set.nu * g(dof);
+    
+	%% Update mechanical nodes
+	dy_reshaped = reshape(dy, 3, (Geo.numF+Geo.numY+Geo.nCells))';
+	Geo = UpdateVertices(Geo, Set, dy_reshaped);
+	Geo = UpdateMeasures(Geo);
 end
 

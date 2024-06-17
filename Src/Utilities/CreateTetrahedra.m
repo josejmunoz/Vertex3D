@@ -1,4 +1,4 @@
-function [Twg] = CreateTetrahedra(trianglesConnectivity, neighboursNetwork, edgesOfVertices, xInternal, X_FaceIds, X_VerticesIds)
+function [Twg] = CreateTetrahedra(trianglesConnectivity, neighboursNetwork, edgesOfVertices, xInternal, X_FaceIds, X_VerticesIds, X)
 %CREATETETRAHEDRA Add connections between real nodes and ghost cells
 %   Detailed explanation goes here
 
@@ -15,7 +15,7 @@ Twg = vertcat(Twg_vertices, Twg_faces);
 %% Relationships: 1 cell node and 3 ghost nodes
 % These are the ones are with the face ghost cell on top and bottom
 % 1 cell node: 1 face centre of and 2 vertices ghost nodes.
-
+%visualizeTets(Twg(any(ismember(Twg, 1), 2), :), X)
 newAdditions = [];
 
 % Cells and faces share the same order of Ids

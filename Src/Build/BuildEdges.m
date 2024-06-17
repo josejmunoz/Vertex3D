@@ -14,7 +14,7 @@ function [Tris] = BuildEdges(Tets, FaceIds, FaceCentre, FaceInterfaceType, X, Ys
     %	face. That is Geo.Cells(c).Y(edges(e,:),:) will give vertices
     %   defining the edge. Used also for triangle computation
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%	
-	TrisFields = ["Edge", "Area", "AspectRatio", "EdgeLength", "LengthsToCentre", "SharedByCells", "Location", "ContractileG"]; 
+	TrisFields = ["Edge", "Area", "AspectRatio", "EdgeLength", "LengthsToCentre", "SharedByCells", "Location", "ContractileG", "ContractilityValue", "EdgeLength_time", "pastContractilityValue"]; 
     Tris = BuildStructArray(sum(FaceIds), TrisFields);
     
     FaceTets = Tets(FaceIds,:);
@@ -92,6 +92,7 @@ function [Tris] = BuildEdges(Tets, FaceIds, FaceCentre, FaceInterfaceType, X, Ys
         
         % Compute Tris aspect ratio, edge length and LengthsToCentre
         [Tris(currentTri).EdgeLength, Tris(currentTri).LengthsToCentre, Tris(currentTri).AspectRatio] = ComputeTriLengthMeasurements(Tris, Ys, currentTri, FaceCentre);
+        Tris(currentTri).EdgeLength_time = [0, Tris(currentTri).EdgeLength];
 	end
 	Tris(length(surf_ids)).Edge = [surf_ids(end) surf_ids(1)];
     currentTris_1 = Tets(Tris(length(surf_ids)).Edge(1), :);
@@ -100,7 +101,8 @@ function [Tris] = BuildEdges(Tets, FaceIds, FaceCentre, FaceInterfaceType, X, Ys
     
     % Compute Tris aspect ratio, edge length and LengthsToCentre
     [Tris(length(surf_ids)).EdgeLength, Tris(length(surf_ids)).LengthsToCentre, Tris(length(surf_ids)).AspectRatio] = ComputeTriLengthMeasurements(Tris, Ys, length(surf_ids), FaceCentre);
-    
+    Tris(length(surf_ids)).EdgeLength_time = [0, Tris(length(surf_ids)).EdgeLength];
+
     % Compute Tris area
     [~, triAreas] = ComputeFaceArea(vertcat(Tris.Edge), Ys, FaceCentre);
     [Tris.Area] = triAreas{:};

@@ -7,7 +7,7 @@ Sets = {};
 Geos = {};
 
 batchMode = 1;
-inputMode = 7;
+inputMode = 8;
 
 if batchMode
     fid = fopen(fullfile('Src', 'Input', 'batchParameters.txt'));
@@ -32,8 +32,8 @@ end
 clear Geo Set
 
 delete(gcp('nocreate'));
-parpool(4);
-for numLine = 1:length(Sets) 
+parpool(5);
+parfor numLine = 1:length(Sets)
     prevLog = '';
     tStart = tic;
     didNotConverge = false;
@@ -54,11 +54,11 @@ for numLine = 1:length(Sets)
                 prevLog = Geo.log;
             end
             [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, relaxingNu, backupVars, didNotConverge] = IterateOverTime(Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, relaxingNu, backupVars);
-           
         end
     catch ME
         Geo.log = sprintf("%s\n ERROR: %s", Geo.log, ME.message);
     end
+
     tEnd = duration(seconds(toc(tStart)));
     tEnd.Format = 'hh:mm:ss';
     Geo.log = sprintf("%s Total real run time %s \n", Geo.log, tEnd);

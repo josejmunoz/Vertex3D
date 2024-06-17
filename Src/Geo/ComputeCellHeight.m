@@ -8,15 +8,21 @@ function [heightLateral, distanceFacesTopBottom] = ComputeCellHeight(Cell)
     allBottomFaceCentres = [];
     allLateralFaceCentres = [];
     for face = Cell.Faces
-        if face.InterfaceType == 'Top'
+        if face.InterfaceType == 1
             allTopFaceCentres = [allTopFaceCentres; face.Centre];
-        elseif face.InterfaceType == 'Bottom'
+        elseif face.InterfaceType == 3
             allBottomFaceCentres = [allBottomFaceCentres; face.Centre];
         else
             allLateralFaceCentres = [allLateralFaceCentres; face];
         end
     end
-    distanceFacesTopBottom = pdist2(mean(allTopFaceCentres, 1), mean(allBottomFaceCentres, 1));
+    try
+        distanceFacesTopBottom = pdist2(mean(allTopFaceCentres, 1), mean(allBottomFaceCentres, 1));
+    catch
+        disp('Possible error on ComputeCellHeight')
+        distanceFacesTopBottom = -1;
+    end
+
     
     %% Get the height as the length of the lateral edges
     lateralEdgesLength = [];

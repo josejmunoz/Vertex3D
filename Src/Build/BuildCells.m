@@ -4,7 +4,7 @@ function [Geo] = BuildCells(Geo, Set, X, Twg)
 	% TODO FIXME Fields that structs in the Cells array and Faces in a Cell 
 	% struct have. This works as a reference, so maybe it should go 
 	% somewhere else.
-	CellFields = ["ID", "X", "T", "Y", "Faces", "Vol", "Vol0", "Area", "Area0", "globalIds", "cglobalIds", "AliveStatus"];
+	CellFields = ["ID", "X", "T", "Y", "Faces", "Vol", "Vol0", "Area", "Area0", "globalIds", "cglobalIds", "AliveStatus", "lambdaB_perc"];
 	FaceFields = ["ij", "Centre", "Tris", "globalIds", "InterfaceType", "Area", "Area0"];
     % Build the Cells struct Array
 	Geo.Cells = BuildStructArray(length(X), CellFields);
@@ -43,13 +43,14 @@ function [Geo] = BuildCells(Geo, Set, X, Twg)
 			Geo.Cells(c).Faces(j) = BuildFace(c, cj, face_ids, Geo.nCells, Geo.Cells(c), Geo.XgID, Set, Geo.XgTop, Geo.XgBottom);
         end
         Geo.Cells(c).Area  = ComputeCellArea(Geo.Cells(c));
-        Geo.Cells(c).Area0 = Geo.Cells(c).Area;
         Geo.Cells(c).Vol   = ComputeCellVolume(Geo.Cells(c));
-        Geo.Cells(c).Vol0  = Geo.Cells(c).Vol;
         Geo.Cells(c).ExternalLambda = 1;
 		Geo.Cells(c).InternalLambda = 1;
 		Geo.Cells(c).SubstrateLambda = 1;
+        Geo.Cells(c).lambdaB_perc = 1;
     end
+    [Geo.Cells.Area0] = deal(mean([Geo.Cells(1:Set.TotalCells).Area]));
+    [Geo.Cells.Vol0]  = deal(mean([Geo.Cells(1:Set.TotalCells).Vol]));
     
     % Edge lengths 0 as average of all cells by location (Top, bottom or
     % lateral)

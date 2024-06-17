@@ -1,6 +1,6 @@
-function [Ynew] = RecalculateYsFromPrevious(Geo, Tnew, mainNodesToConnect, Set)
+function [Ynew] = RecalculateYsFromPrevious(Geo, Tnew, mainNodesToConnect, Set) 
 %RECALCULATEYS Summary of this function goes here
-%   Detailed explanation goes here
+%   Detailed explanation goes here   
 
 allTs = vertcat(Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).T);
 allYs = vertcat(Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).Y);
@@ -9,7 +9,7 @@ Ynew = [];
 
 possibleDebrisCells = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).AliveStatus] == 0;
 if any(possibleDebrisCells)
-    debrisCells = Geo.Cells(possibleDebrisCells).ID;
+    debrisCells = [Geo.Cells(possibleDebrisCells).ID];
 else
     debrisCells = -1;
 end
@@ -18,6 +18,10 @@ for numTet = 1:size(Tnew, 1)
     nGhostNodes_cTet = sum(ismember(Tnew(numTet, :), Geo.XgID));
     YnewlyComputed = ComputeY(Geo, Tnew(numTet, :), Geo.Cells(mainNode_current(1)).X, Set);
     
+    %%  IF CELLS VERTEX IS NOT ON THE SURFACE OF PREVIOUS OBJECT, IT SHOULD BE CHANGED
+    %% INTERPOLATE TO WHERE IT SHOULD BE
+    
+
     if any(ismember(Tnew(numTet, :), debrisCells))
         contributionOldYs = 1;
     else

@@ -6,10 +6,12 @@ Set=SetDefault(Set);
 Set=WoundDefault(Set);
 Set=InitiateOutputFolder(Set);
 
-if isequal(Set.InputGeo, 'Bubbles')
+if contains(Set.InputGeo, 'Bubbles')
     [Geo, Set] = InitializeGeometry3DVertex(Geo, Set);
 elseif isequal(Set.InputGeo, 'Voronoi')
     [Geo, Set] = InitializeGeometry_3DVoronoi(Geo, Set);
+elseif isequal(Set.InputGeo, 'VertexModelTime')
+    [Geo, Set] = InitializeGeometry_VertexModel2DTime(Geo, Set);
 end
 
 minZs = min(vertcat(Geo.Cells(1:Geo.nCells).Y));
@@ -41,8 +43,10 @@ Geo_n   = Geo;
 [Geo_n.Cells.Area0] = deal([]);
 backupVars.Geo_b = Geo;
 backupVars.tr_b = tr;
+backupVars.Dofs = Dofs;
 numStep = 1; relaxingNu = false;
 EnergiesPerTimeStep = {};
+Geo.RemovedDebrisCells = [];
 
 PostProcessingVTK(Geo, Geo_0, Set, numStep);
 end

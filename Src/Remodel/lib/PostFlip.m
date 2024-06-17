@@ -27,10 +27,10 @@ if CheckTris(Geo) %%&& ~CheckConvexity(Tnew,Geo_backup)
             Geo.log = sprintf('%s =>> %s-Flip rejected: did not converge\n', Geo.log, flipName);
             return
         end
+        Geo   = UpdateMeasures(Geo);
     end
     
     newYgIds = unique([newYgIds; Geo.AssemblegIds]);
-    Geo   = UpdateMeasures(Geo);
     
     hasConverged = 1;
 else

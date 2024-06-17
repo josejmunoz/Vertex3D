@@ -25,7 +25,7 @@ function [g, K, Energy_T, Geo] = KgSubstrate(Geo, Set)
 
             for numFace = 1:length(currentCell.Faces)
                 currentFace = Geo.Cells(c).Faces(numFace);
-                if ~isequal(currentFace.InterfaceType, 'Bottom')
+                if ~isequal(currentFace.InterfaceType, 3)
                     continue
                 end
                 for currentVertex = unique([currentFace.Tris.Edge currentFace.globalIds])

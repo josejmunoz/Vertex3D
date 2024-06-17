@@ -6,7 +6,8 @@ function [Geo, g,K,Energy, Set, gr, dyr, dy] = NewtonRaphson(Geo_0, Geo_n, Geo, 
     	dof=Dofs.Free;
 	end
 	dy=zeros((Geo.numY+Geo.numF+Geo.nCells)*3, 1);
-	dyr=norm(dy(dof)); gr=norm(g(dof));
+	dyr=norm(dy(dof)); 
+    gr=norm(g(dof));
 	gr0=gr;
 
 	Geo.log = sprintf('%s Step: %i,Iter: %i ||gr||= %e ||dyr||= %e dt/dt0=%.3g\n',Geo.log, numStep,0,gr,dyr,Set.dt/Set.dt0);

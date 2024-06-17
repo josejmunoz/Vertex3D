@@ -1,12 +1,21 @@
-function [trianglesConnectivity, neighboursNetwork, cellEdges, verticesLocation, borderCells] = Build2DVoronoiFromImage(labelledImg, watershedImg, mainCells)
+function [trianglesConnectivity, neighboursNetwork, cellEdges, verticesLocation, borderCells, borderOfborderCellsAndMainCells] = Build2DVoronoiFromImage(labelledImg, watershedImg, mainCells)
 %BUILD3DVORONOITOPO Summary of this function goes here
 %   Detailed explanation goes here
 
-ratio = 3;
-faceCentres = regionprops(labelledImg, 'centroid');
-faceCentresVertices = fliplr(vertcat(faceCentres.Centroid));
+ratio = 2;
 
 labelledImg(watershedImg == 0) = 0;
+
+% Create a mask for the edges with ID 0
+edgeMask = labelledImg == 0;
+
+% Get the closest labeled polygon for each edge pixel
+closestID = imdilate(labelledImg, true(5));
+
+filledImage = closestID;
+filledImage(~edgeMask) = labelledImg(~edgeMask);
+
+labelledImg = filledImage;
 
 [imgNeighbours] = calculateNeighbours(labelledImg, ratio);
 
@@ -14,11 +23,14 @@ borderCellsAndMainCells = double(unique(vertcat(imgNeighbours{mainCells})));
 borderGhostCells = setdiff(borderCellsAndMainCells, mainCells); 
 borderCells = intersect(mainCells, double(unique(vertcat(imgNeighbours{borderGhostCells}))));
 
-labelledImg(~ismember(labelledImg, 1:max(borderCellsAndMainCells))) = 0;
+borderOfborderCellsAndMainCells = double(unique(vertcat(imgNeighbours{borderCellsAndMainCells})))';
+labelledImg(~ismember(labelledImg, 1:max(borderOfborderCellsAndMainCells))) = 0;
 [imgNeighbours] = calculateNeighbours(labelledImg, ratio);
 
-%% Remove quartets
-[quartets] = getFourFoldVertices(imgNeighbours, labelledImg);
+% %% Remove quartets
+[quartets] = getFourFoldVertices(imgNeighbours);
+faceCentres = regionprops(labelledImg, 'centroid');
+faceCentresVertices = fliplr(vertcat(faceCentres.Centroid));
 for numQuartets = 1:size(quartets, 1)
     currentCentroids = faceCentresVertices(quartets(numQuartets, :), :);
     distanceBetweenCentroids = squareform(pdist(currentCentroids));
@@ -41,10 +53,10 @@ end
 %faceCentres = regionprops(labelledImg, 'centroid');
 %faceCentresVertices = fliplr(vertcat(faceCentres.Centroid)) / imgSize;
 
-totalCells = max(verticesInfo.connectedCells(:));
+totalCells = max(borderCellsAndMainCells);
 verticesInfo.PerCell = cell(totalCells, 1);
 
-for numCell = 1:max(borderCellsAndMainCells)
+for numCell = 1:max(mainCells)
     verticesOfCell = find(any(ismember(verticesInfo.connectedCells, numCell), 2));
     verticesInfo.PerCell{numCell} = verticesOfCell;
     currentVertices = verticesInfo.location(verticesOfCell, :);
@@ -52,19 +64,19 @@ for numCell = 1:max(borderCellsAndMainCells)
     currentConnectedCells(currentConnectedCells == numCell) = [];
     currentConnectedCells = vertcat(currentConnectedCells(1:2:length(currentConnectedCells)), currentConnectedCells(2:2:length(currentConnectedCells)))';
     verticesInfo.edges{numCell, 1} = verticesOfCell(BoundaryOfCell(currentVertices, currentConnectedCells));
-    if size(verticesInfo.edges{numCell, 1}, 1) < length(imgNeighbours{numCell})
-        verticesInfo.edges{numCell, 1} = [];
-    end
+    assert(size(verticesInfo.edges{numCell, 1}, 1) == length(imgNeighbours{numCell}), 'Error missing vertices of neighbours')
 end
 
 neighboursNetwork = [];
 
-for numCell = 1:max(borderCellsAndMainCells)
+for numCell = 1:max(mainCells)
     currentNeighbours = double(imgNeighbours{numCell});
     currentCellNeighbours = [ones(length(currentNeighbours), 1) * numCell, currentNeighbours];
     
     neighboursNetwork = vertcat(neighboursNetwork, currentCellNeighbours);
 end
+
+%% Final assigning
 trianglesConnectivity = double(verticesInfo.connectedCells);
 cellEdges = verticesInfo.edges;
 verticesLocation = verticesInfo.location;

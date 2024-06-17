@@ -4,173 +4,94 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
     newYgIds = [];
     checkedYgIds = [];
     [segmentFeatures_all] = GetTrisToRemodelOrdered(Geo, Set);
+    nonDeadCells = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID];
     
     %% loop ENERGY-dependant
-    while ~isempty(segmentFeatures_all) 
+    while ~isempty(segmentFeatures_all)
         Geo_backup = Geo; Geo_n_backup = Geo_n; Geo_0_backup = Geo_0; Dofs_backup = Dofs;
         
-        segmentFeatures = segmentFeatures_all{1};
+        segmentFeatures = segmentFeatures_all(1,:);
         [~, ids] = unique(segmentFeatures(:, 1:2), 'rows');
         segmentFeatures = segmentFeatures(ids, :);
         segmentFeatures = sortrows(segmentFeatures, 6);
-        gNodeNeighbours = {};
-        for numRow = 1:size(segmentFeatures, 1)
-            gNodeNeighbours{numRow} = getNodeNeighbours(Geo, segmentFeatures{numRow, 2});
-        end
-        gNodes_NeighboursShared = unique(vertcat(gNodeNeighbours{:}));
-        cellNodesShared = gNodes_NeighboursShared(~ismember(gNodes_NeighboursShared, Geo.XgID));
-        if sum([Geo.Cells(cellNodesShared).AliveStatus]) > 2 && length(cellNodesShared) > 3
-            Set.NeedToConverge = 0;
-            allTnew = [];
-            numPair = 1;
-                
-            cellNode = segmentFeatures{numPair, 1};
-            ghostNode = segmentFeatures{numPair, 2};
-            cellToIntercalateWith = segmentFeatures{numPair, 3};
-            cellToSplitFrom = segmentFeatures{numPair, 4};
+        Set.NeedToConverge = 0;
+        allTnew = [];
+        numPair = 1;
 
-            hasConverged(numPair) = 1;
+        cellNode = segmentFeatures{numPair, 1};
+        ghostNode = segmentFeatures{numPair, 2};
+        cellToIntercalateWith = segmentFeatures{numPair, 3};
+        cellToSplitFrom = segmentFeatures{numPair, 4};
 
-            while hasConverged(numPair) == 1
-                hasConverged(numPair) = 0;
+        hasConverged(numPair) = 1;
 
-                %if ~all(ghostNodes) &&
-                % If the shared nodes are all ghost nodes, we won't remodel
+        while hasConverged(numPair) == 1
+            hasConverged(numPair) = 0;
 
-                %%if sum([Geo.Cells(cellNodes).AliveStatus]) >= 2 %&& ~any(ismember(faceGlobalId, newYgIds))
-                nodesPair = [cellNode ghostNode];
+            %if ~all(ghostNodes) &&
+            % If the shared nodes are all ghost nodes, we won't remodel
 
-                [valenceSegment, oldTets, oldYs] = edgeValence(Geo, nodesPair);
-                %% Intercalation
-                [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair), Tnew] = FlipNM(nodesPair, cellToIntercalateWith, oldTets, oldYs, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
-                
-                %PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1);
-                allTnew = vertcat(allTnew, Tnew);
+            %%if sum([Geo.Cells(cellNodes).AliveStatus]) >= 2 %&& ~any(ismember(faceGlobalId, newYgIds))
+            nodesPair = [cellNode ghostNode];
 
-                sharedNodesStill = getNodeNeighboursPerDomain(Geo, cellNode, ghostNode, cellToSplitFrom);
-                
-                if any(ismember(sharedNodesStill, Geo.XgID))
-                    sharedNodesStill_g = sharedNodesStill(ismember(sharedNodesStill, Geo.XgID));
-                    ghostNode = sharedNodesStill_g(1);
-                else
-                    break;
-                end
-            end
+            [valenceSegment, oldTets, oldYs] = edgeValence(Geo, nodesPair);
             
-            if hasConverged(numPair)
-%                 [Geo, Geo_n] = moveVerticesCloserToRefPoint(Geo, Geo_n, 0.5, cellNodesShared, cellToSplitFrom, ghostNode, Set);
-%                 [Geo_0] = moveVerticesCloserToRefPoint(Geo_0, Geo_n, 0.5, cellNodesShared, cellToSplitFrom, ghostNode, Set);
-                PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1);
-                PostProcessingVTK(Geo_0, Geo_0, Set, Set.iIncr+2);
-    
-    %             %% Change vertices position to get a better mesh
-    %             for numCell = gNodes_NeighboursShared'
-    %                 if isequal(Geo.Cells(numCell).AliveStatus, 1)
-    %                     tets = Geo.Cells(numCell).T;
-    %                     X0 = Geo.Cells(numCell).Y;
-    %                     % Get bottom or top Ys
-    %                     if any(any(ismember(Tnew, Geo.XgBottom)))
-    %                         idsToChange = any(ismember(tets, Geo.XgBottom), 2);
-    %                         idsToChange_Faces = ismember(vertcat(Geo.Cells(numCell).Faces.InterfaceType), 'Bottom');
-    %                     elseif any(any(ismember(Tnew, Geo.XgTop)))
-    %                         idsToChange = any(ismember(tets, Geo.XgTop), 2);
-    %                         idsToChange_Faces = ismember(vertcat(Geo.Cells(numCell).Faces.InterfaceType), 'Top');
-    %                     end
-    % 
-    %                     X0 = X0(idsToChange, :);
-    %                     faceCentres = vertcat(Geo.Cells(numCell).Faces.Centre);
-    %                     faceCentres = faceCentres(idsToChange_Faces, :);
-    %                     X=[X0; faceCentres];
-    %                     tets = tets(idsToChange, :);
-    % 
-    %                     %plot3(X0(:,1),X0(:,2),X0(:,3),'o')
-    %                     X2D = X(:, 1:2);  % Flatten rotated X
-    %                     X3 = X(:,3);
-    % 
-    %                     %T=delaunay(X2D(:,1),X2D(:,2));
-    %                     T = [];
-    %                     for f = find(idsToChange_Faces)'
-    %                         face = Geo.Cells(numCell).Faces(f);
-    %                         for t = 1:length(face.Tris)
-    %                             T(end+1, :) = [face.Tris(t).Edge(1), face.Tris(t).Edge(2), f+size(Geo.Cells(numCell).Y, 1)];
-    %                         end
-    %                     end
-    %                     [~,~,c] = unique(T);
-    %                     T_newIDs = reshape(c, size(T));
-    %                     % GetBoundary based on tets with 3 cells
-    %                     Xf = GetBoundary2D(T_newIDs, X2D);
-    %                     X2D0=X2D;
-    %                     [X2D_new,flag,dJ0,dJ]=RegulariseMesh(T_newIDs,X2D,Xf);
-    %                     if any(any(X2D_new > 1 | X2D_new < 0, 2))
-    %                         continue
-    %                     end
-    %                     X2D_new(Xf, :) = X2D(Xf, :);
-    %                     % plot 2D meshes
-    %                     % initial mesh
-    %                     %Plot2D(dJ,dJ0,T_newIDs,X2D_new,X2D0,Xf)
-    %                     X=[X2D_new X3];
-    %                     Geo.Cells(numCell).Y(idsToChange, :) = X(1:size(X0, 1), :);
-    %                     idsToChange_id = find(idsToChange_Faces);
-    %                     for faceID = 1:length(idsToChange_id)
-    %                         Geo.Cells(numCell).Faces(idsToChange_id(faceID)).Centre = X(faceID + size(X0, 1), :);
-    %                     end
-    %                     %                     Plot3D(dJ,dJ0,T,X,X0);
-    %                 end
-    %             end
-    %             Geo = BuildXFromY(Geo_n, Geo);
-    % 
-    %             Geo   = Rebuild(Geo, Set);
-    %             Geo   = BuildGlobalIds(Geo);
-    %             Geo   = UpdateMeasures(Geo);
-    %             Geo_n = Geo;
-    % 
-    %             PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+2);
-% 
-%                 %% Update Geo_0 to be reset the vertices that we have changed averaging with previous Geo_0 and current Geo
-%                 %percentageGeo = 1 - Set.Reset_PercentageGeo0;
-%                 percentageGeo_0 = 0.7;
-%                 percentageGeo = 1 - percentageGeo_0;
-%                 for c=cellNode
-%                     if ismember(c, Tnew) && ~isempty(Geo.Cells(c).AliveStatus) && Geo.Cells(c).AliveStatus == 1
-%                         Geo_0.Cells(c).Y = percentageGeo_0 * Geo_0.Cells(c).Y + percentageGeo * Geo.Cells(c).Y;
-%                     end
-%                 end
-%                 % Change Y positions, and here update face centres based on
-%                 % that
-%                 Geo_0 = Rebuild(Geo_0, Set);
-%                 Geo_0 = BuildGlobalIds(Geo_0);
-%                 %Geo_0   = UpdateMeasures(Geo_0);
-                
-%                 PostProcessingVTK(Geo_0, Geo_0, Set, Set.iIncr+2);
+            %% Intercalation
+            [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair), Tnew] = FlipNM(nodesPair, cellToIntercalateWith, oldTets, oldYs, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
 
-                %% Solve remodelling
-                Dofs = GetDOFs(Geo, Set);
-                [Dofs, Geo]  = GetRemodelDOFs(allTnew, Dofs, Geo);
-                [Geo, Set, DidNotConverge] = SolveRemodelingStep(Geo_0, Geo_n, Geo, Dofs, Set);
-                if DidNotConverge
-                    % Go back to initial state
-                    Geo_backup.log = Geo.log;
-                    Geo   = Geo_backup;
-                    Geo_n = Geo_n_backup;
-                    Dofs = Dofs_backup;
-                    Geo_0 = Geo_0_backup; 
-                    Geo.log = sprintf('%s =>> %s-Flip rejected: did not converge1\n', Geo.log, 'Full');
-                else
-                    newYgIds = unique([newYgIds; Geo.AssemblegIds]);
-                    Geo   = UpdateMeasures(Geo);
-                    hasConverged = 1;
-                end
+            %PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1);
+            allTnew = vertcat(allTnew, Tnew);
+
+            sharedNodesStill = getNodeNeighboursPerDomain(Geo, cellNode, ghostNode, cellToSplitFrom);
+
+            if any(ismember(sharedNodesStill, Geo.XgID))
+                sharedNodesStill_g = sharedNodesStill(ismember(sharedNodesStill, Geo.XgID));
+                ghostNode = sharedNodesStill_g(1);
             else
+                break;
+            end
+        end
+
+        if hasConverged(numPair)
+            PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1);
+            gNodeNeighbours = {};
+            for numRow = 1:size(segmentFeatures, 1)
+                gNodeNeighbours{numRow} = getNodeNeighbours(Geo, segmentFeatures{numRow, 2});
+            end
+            gNodes_NeighboursShared = unique(vertcat(gNodeNeighbours{:}));
+            cellNodesShared = gNodes_NeighboursShared(~ismember(gNodes_NeighboursShared, Geo.XgID));
+            numClose = 0.5;
+            [Geo, Geo_n] = moveVerticesCloserToRefPoint(Geo, Geo_n, numClose, cellNodesShared, cellToSplitFrom, ghostNode, Tnew, Set);
+            %[~, ~, Energy_After, ~, Energies_After] = KgGlobal(Geo_0, Geo_n, Geo, Set);
+            PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1);
+
+            %% Solve remodelling
+            Dofs = GetDOFs(Geo, Set);
+            [Dofs, Geo]  = GetRemodelDOFs(allTnew, Dofs, Geo);
+            [Geo, Set, DidNotConverge] = SolveRemodelingStep(Geo_0, Geo_n, Geo, Dofs, Set);
+            if DidNotConverge
                 % Go back to initial state
                 Geo_backup.log = Geo.log;
                 Geo   = Geo_backup;
                 Geo_n = Geo_n_backup;
                 Dofs = Dofs_backup;
                 Geo_0 = Geo_0_backup;
-                Geo.log = sprintf('%s =>> %s-Flip rejected: did not converge2\n', Geo.log, 'Full');
+                Geo.log = sprintf('%s =>> %s-Flip rejected: did not converge1\n', Geo.log, 'Full');
+            else
+                newYgIds = unique([newYgIds; Geo.AssemblegIds]);
+                Geo   = UpdateMeasures(Geo);
+                hasConverged = 1;
             end
-            PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1);
+        else
+            % Go back to initial state
+            Geo_backup.log = Geo.log;
+            Geo   = Geo_backup;
+            Geo_n = Geo_n_backup;
+            Dofs = Dofs_backup;
+            Geo_0 = Geo_0_backup;
+            Geo.log = sprintf('%s =>> %s-Flip rejected: did not converge2\n', Geo.log, 'Full');
         end
+        PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1);
         
         checkedYgIds(end+1:end+size(segmentFeatures, 1), :) = [segmentFeatures{:, 1}, segmentFeatures{:, 2}];
         
@@ -178,7 +99,7 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
         rowsToRemove = [];
         if ~isempty(segmentFeatures_all)
             for numRow = 1:length(segmentFeatures_all)
-                cSegFea = segmentFeatures_all{numRow};
+                cSegFea = segmentFeatures_all(numRow, :);
                 if all(ismember([cSegFea{:, 1:2}], checkedYgIds, 'rows'))
                     rowsToRemove(end+1) = numRow;
                 end
@@ -187,7 +108,7 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
         segmentFeatures_all(rowsToRemove) = [];
     end
     
-    [g, K, E, Geo, Energies] = KgGlobal(Geo_0, Geo_n, Geo, Set);
+    %[g, K, E, Geo, Energies] = KgGlobal(Geo_0, Geo_n, Geo, Set);
 end
 
 function R=RotationMatrix(X)

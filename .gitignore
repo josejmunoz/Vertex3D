@@ -22,3 +22,5 @@ Result
 docs/
 
 *.txt~
+
+/input

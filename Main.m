@@ -56,6 +56,7 @@ parfor numLine = 1:length(Sets)
             [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, relaxingNu, backupVars, didNotConverge] = IterateOverTime(Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, relaxingNu, backupVars);
         end
     catch ME
+        disp(ME.message)
         Geo.log = sprintf("%s\n ERROR: %s", Geo.log, ME.message);
     end
 

@@ -9,8 +9,8 @@ function [booleanWoundEdgeCell, booleanWoundEdgeCell_Top, booleanWoundEdgeCell_B
     else
         booleanDebrisCell = 0;
         booleanWoundEdgeCell = any(ismember(ComputeCellNeighbours(cell), debrisCells));
-        booleanWoundEdgeCell_Top = any(ismember(ComputeCellNeighbours(cell, "Top"), debrisCells));
-        booleanWoundEdgeCell_Bottom = any(ismember(ComputeCellNeighbours(cell, "Bottom"), debrisCells));
+        booleanWoundEdgeCell_Top = any(ismember(ComputeCellNeighbours(cell, 0), debrisCells));
+        booleanWoundEdgeCell_Bottom = any(ismember(ComputeCellNeighbours(cell, 2), debrisCells));
     end
 end
 

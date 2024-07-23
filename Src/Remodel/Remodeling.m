@@ -4,12 +4,13 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
     newYgIds = [];
     checkedYgIds = [];
     [segmentFeatures_all] = GetTrisToRemodelOrdered(Geo, Set);
+    nonDeadCells = [Geo.Cells(~cellfun(@isempty, {Geo.Cells.AliveStatus})).ID];
     
     %% loop ENERGY-dependant
-    while ~isempty(segmentFeatures_all) 
+    while ~isempty(segmentFeatures_all)
         Geo_backup = Geo; Geo_n_backup = Geo_n; Geo_0_backup = Geo_0; Dofs_backup = Dofs;
         
-        segmentFeatures = segmentFeatures_all{1};
+        segmentFeatures = segmentFeatures_all(1,:);
         [~, ids] = unique(segmentFeatures(:, 1:2), 'rows');
         segmentFeatures = segmentFeatures(ids, :);
         segmentFeatures = sortrows(segmentFeatures, 6);
@@ -34,6 +35,7 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
             nodesPair = [cellNode ghostNode];
 
             [valenceSegment, oldTets, oldYs] = edgeValence(Geo, nodesPair);
+            
             %% Intercalation
             [Geo_0, Geo_n, Geo, Dofs, Set, newYgIds, hasConverged(numPair), Tnew] = FlipNM(nodesPair, cellToIntercalateWith, oldTets, oldYs, Geo_0, Geo_n, Geo, Dofs, Set, newYgIds);
 
@@ -51,24 +53,17 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
         end
 
         if hasConverged(numPair)
-            %[~, ~, Energy_before, ~, Energies_before] = KgGlobal(Geo_0_backup, Geo_n_backup, Geo_backup, Set);
-            %[~, ~, Energy1, ~, Energies1] = KgGlobal(Geo_0, Geo_n, Geo, Set);
-            %% MOVE ONLY ALLTNEW tets
-            %                 for numClose = 0.1:0.1:1
-            %                     [Geo1, Geo_n1] = moveVerticesCloserToRefPoint(Geo, Geo_n, numClose, cellNodesShared, cellToSplitFrom, ghostNode, Tnew, Set);
-            %                     [~, ~, Energy_After, ~, Energies_After] = KgGlobal(Geo_0, Geo_n1, Geo1, Set)
-            %                 end
-            
+            PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1);
             gNodeNeighbours = {};
             for numRow = 1:size(segmentFeatures, 1)
                 gNodeNeighbours{numRow} = getNodeNeighbours(Geo, segmentFeatures{numRow, 2});
             end
             gNodes_NeighboursShared = unique(vertcat(gNodeNeighbours{:}));
             cellNodesShared = gNodes_NeighboursShared(~ismember(gNodes_NeighboursShared, Geo.XgID));
-            numClose = 0.7;
+            numClose = 0.5;
             [Geo, Geo_n] = moveVerticesCloserToRefPoint(Geo, Geo_n, numClose, cellNodesShared, cellToSplitFrom, ghostNode, Tnew, Set);
             %[~, ~, Energy_After, ~, Energies_After] = KgGlobal(Geo_0, Geo_n, Geo, Set);
-            %PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1);
+            PostProcessingVTK(Geo, Geo_0, Set, Set.iIncr+1);
 
             %% Solve remodelling
             Dofs = GetDOFs(Geo, Set);
@@ -104,7 +99,7 @@ function [Geo_0, Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Se
         rowsToRemove = [];
         if ~isempty(segmentFeatures_all)
             for numRow = 1:length(segmentFeatures_all)
-                cSegFea = segmentFeatures_all{numRow};
+                cSegFea = segmentFeatures_all(numRow, :);
                 if all(ismember([cSegFea{:, 1:2}], checkedYgIds, 'rows'))
                     rowsToRemove(end+1) = numRow;
                 end

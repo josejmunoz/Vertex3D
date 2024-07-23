@@ -8,36 +8,6 @@ function [XgID,X]=SeedWithBoundingBox(X,s)
     r=5*max(max(abs(X-r0)));
 
     %% 1)  Define bounding Nodes
-    
-    % Bounding Box 1
-    %rr=mean(X);
-    % Xg=[r  r  r;
-    %    -r  r  r;
-    %    -r -r  r;
-    %    -r  r -r;
-    %     r -r  r;
-    %    -r -r -r;
-    %     r -r -r;
-    %     r  r -r;
-    %     0  0  r;
-    %     0  0 -r;
-    %     r  0  0;
-    %     -r 0  0;
-    %     0 -r  0;
-    %     0  r  0]+rr;
-    
-    
-    % Bounding Box 2
-    rr=mean(X);
-    Xg=[r  r  r;
-       -r  r  r;
-       -r -r  r;
-       -r  r -r;
-        r -r  r;
-       -r -r -r;
-        r -r -r;
-        r  r -r]+rr;
-    
     %  Bounding Shpere 
     theta=linspace(0,2*pi,5);
     phi=linspace(0,pi,5);
@@ -59,7 +29,7 @@ function [XgID,X]=SeedWithBoundingBox(X,s)
     
     %% 3) intitilize 
     Side=[1 2 3; 1 2 4; 2 3 4; 1 3 4];
-    Edges=[1 2; 2 3; 3 4; 1 3; 1 4; 3 4; 1 4];  
+    Edges=[1 2; 2 3; 3 4; 1 3; 1 4; 3 4];  
     % find real tests 
     Vol=zeros(size(Twg,1),1);
     AreaFaces=zeros(size(Twg,1)*3,4);

@@ -24,6 +24,7 @@ function Set = SetDefault(Set)
     %% ============================ Time ==================================
     DSet.tend						= 61; % 60 minutes after ablation
     %% ============================ Mechanics =============================
+    DSet.BrownianMotion = 0;
     % Volumes
     DSet.lambdaV					= 5;
     DSet.lambdaV_Debris				= 0.001;
@@ -53,7 +54,7 @@ function Set = SetDefault(Set)
     % Contractility
     DSet.Contractility              = true;
     DSet.cLineTension               = 0.0001;
-    DSet.noiseContractility         = 0.1;
+    DSet.noiseContractility         = 0;
     % In plane elasticity
 	DSet.InPlaneElasticity          = true;
 	DSet.mu_bulk					= 3000; 
@@ -71,10 +72,11 @@ function Set = SetDefault(Set)
     DSet.RemodelTol					= 0;
     DSet.contributionOldYs          = 0;
     DSet.RemodelStiffness           = 0.60;
-    DSet.Reset_PercentageGeo0       = 0.15; 
+    DSet.Reset_PercentageGeo0       = 0.15;
+    DSet.TryingFlips                = 0;
     %% ============================ Solution ==============================
     DSet.tol						= 1e-8;
-    DSet.MaxIter					= 30;
+    DSet.MaxIter					= 50;
     DSet.Parallel					= false;
     DSet.Sparse						= false;
     DSet.lastTConverged             = 0;
@@ -116,19 +118,24 @@ function Set = SetDefault(Set)
 	DSet.dt0                        = DSet.tend/DSet.Nincr;
 	DSet.dt                         = DSet.dt0;
 	DSet.MaxIter0					= DSet.MaxIter;
+    DSet.purseStringStrength        = 1;
     DSet.contributionOldFaceCentre  = DSet.contributionOldYs;
+    DSet.purseStringStrength        = -1;
         
 	%% ====================== Add missing fields to Set ===================
 	Set = AddDefault(Set, DSet);
 
     %% TODO: ADD IF IN CASE IT IS USED: E.G., Set.InPlaneElasticity
-    Set.OutputFolder=strcat('Result/', string(datetime('now','Format','MM-dd_SSSSS_')), Set.InputGeo, '_Cells_', num2str(Set.TotalCells), ...
+    DSet.OutputFolder=strcat('Result/', string(datetime('now','Format','MM-dd_SSSSS_')), Set.InputGeo, '_Cells_', num2str(Set.TotalCells), ...
         '_visc_', num2str(Set.nu), ...
         '_lVol_', num2str(Set.lambdaV), '_muBulk_', num2str(Set.mu_bulk), ...
         '_lBulk_', num2str(Set.lambda_bulk), '_kSubs_', num2str(Set.kSubstrate), ...
-        '_lt_', num2str(Set.cLineTension), '_noise_', num2str(Set.noiseContractility),...
+        '_lt_', num2str(Set.cLineTension), '_noise_', num2str(Set.BrownianMotion),...
         '_pString_', num2str(Set.purseStringStrength),'_eTriAreaBarrier_', num2str(Set.lambdaB), ...
         '_eARBarrier_', num2str(Set.lambdaR), '_RemStiff_', num2str(Set.RemodelStiffness), ...
         '_lS1_', num2str(Set.lambdaS1), '_lS2_', num2str(Set.lambdaS2), ...
         '_lS3_', num2str(Set.lambdaS3));
+
+    %% ====================== Add missing fields to Set ===================
+	Set = AddDefault(Set, DSet);
 end

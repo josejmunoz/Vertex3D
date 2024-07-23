@@ -3,6 +3,7 @@ function [Geo_new] = AddAndRebuildCells(Geo, oldTets, newTets, Ynew, Set, update
 %   Detailed explanation goes here
 [Geo_new] = RemoveTetrahedra(Geo, oldTets);
 [Geo_new] = AddTetrahedra(Geo_new, Geo, newTets, Ynew, Set);
+Geo_new = CheckYsAndFacesHaveNotChanged(Geo, newTets, Geo_new);
 Geo_new = Rebuild(Geo_new, Set);
 Geo_new   = BuildGlobalIds(Geo_new);
 

@@ -18,6 +18,10 @@ for numTet = 1:size(Tnew, 1)
     nGhostNodes_cTet = sum(ismember(Tnew(numTet, :), Geo.XgID));
     YnewlyComputed = ComputeY(Geo, Tnew(numTet, :), Geo.Cells(mainNode_current(1)).X, Set);
     
+    %%  IF CELLS VERTEX IS NOT ON THE SURFACE OF PREVIOUS OBJECT, IT SHOULD BE CHANGED
+    %% INTERPOLATE TO WHERE IT SHOULD BE
+    
+
     if any(ismember(Tnew(numTet, :), debrisCells))
         contributionOldYs = 1;
     else

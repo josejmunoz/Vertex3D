@@ -43,14 +43,14 @@ function [Geo] = BuildCells(Geo, Set, X, Twg)
 			Geo.Cells(c).Faces(j) = BuildFace(c, cj, face_ids, Geo.nCells, Geo.Cells(c), Geo.XgID, Set, Geo.XgTop, Geo.XgBottom);
         end
         Geo.Cells(c).Area  = ComputeCellArea(Geo.Cells(c));
-        Geo.Cells(c).Area0 = Geo.Cells(c).Area;
         Geo.Cells(c).Vol   = ComputeCellVolume(Geo.Cells(c));
-        Geo.Cells(c).Vol0  = Geo.Cells(c).Vol;
         Geo.Cells(c).ExternalLambda = 1;
 		Geo.Cells(c).InternalLambda = 1;
 		Geo.Cells(c).SubstrateLambda = 1;
         Geo.Cells(c).lambdaB_perc = 1;
     end
+    [Geo.Cells.Area0] = deal(mean([Geo.Cells(1:Set.TotalCells).Area]));
+    [Geo.Cells.Vol0]  = deal(mean([Geo.Cells(1:Set.TotalCells).Vol]));
     
     % Edge lengths 0 as average of all cells by location (Top, bottom or
     % lateral)

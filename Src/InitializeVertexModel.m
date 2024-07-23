@@ -6,7 +6,7 @@ Set=SetDefault(Set);
 Set=WoundDefault(Set);
 Set=InitiateOutputFolder(Set);
 
-if isequal(Set.InputGeo, 'Bubbles')
+if contains(Set.InputGeo, 'Bubbles')
     [Geo, Set] = InitializeGeometry3DVertex(Geo, Set);
 elseif isequal(Set.InputGeo, 'Voronoi')
     [Geo, Set] = InitializeGeometry_3DVoronoi(Geo, Set);
@@ -46,6 +46,7 @@ backupVars.tr_b = tr;
 backupVars.Dofs = Dofs;
 numStep = 1; relaxingNu = false;
 EnergiesPerTimeStep = {};
+Geo.RemovedDebrisCells = [];
 
 PostProcessingVTK(Geo, Geo_0, Set, numStep);
 end

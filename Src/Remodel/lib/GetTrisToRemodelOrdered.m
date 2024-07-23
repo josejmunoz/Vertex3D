@@ -29,38 +29,46 @@ for numCell = nonDeadCells
                     sharedCells = currentTri.SharedByCells;
                     sharedCells(sharedCells == numCell) = [];
                     for numSharedCell = sharedCells
-                        if cFace.InterfaceType == 'Top'
-                            edgeLengths_Top(numSharedCell) = edgeLengths_Top(numSharedCell) + currentTri.EdgeLength / (cFace.Area*100);
-                        elseif cFace.InterfaceType == 'Bottom'
-                            edgeLengths_Bottom(numSharedCell) = edgeLengths_Bottom(numSharedCell) + currentTri.EdgeLength / (cFace.Area*100);
+                        if cFace.InterfaceType == 1
+                            edgeLengths_Top(numSharedCell) = edgeLengths_Top(numSharedCell) + currentTri.EdgeLength / cFace.Area;
+                        elseif cFace.InterfaceType == 3
+                            edgeLengths_Bottom(numSharedCell) = edgeLengths_Bottom(numSharedCell) + currentTri.EdgeLength / cFace.Area;
                         end
                     end
                 end
-            end
+            end 
         end
-        
-        avgEdgeLengthDomain = mean([Geo.AvgEdgeLength_Bottom, Geo.AvgEdgeLength_Top])*100; %% *2 because there are usually two tris per edge
-        edgesToIntercalate_Top = edgeLengths_Top < avgEdgeLengthDomain - (Set.RemodelStiffness * avgEdgeLengthDomain) & edgeLengths_Top > 0;
-        edgesToIntercalate_Bottom = edgeLengths_Bottom < avgEdgeLengthDomain - (Set.RemodelStiffness * avgEdgeLengthDomain) & edgeLengths_Bottom > 0;
-        
-        [segmentFeatures{end+1}] = AddEdgeToIntercalate(Geo, numCell, table(), edgeLengths_Top, edgesToIntercalate_Top, Geo.XgTop(1));
-        [segmentFeatures{end+1}] = AddEdgeToIntercalate(Geo, numCell, table(), edgeLengths_Bottom, edgesToIntercalate_Bottom, Geo.XgBottom(1));
+
+        if any(edgeLengths_Top>0)
+            avgEdgeLength = median(edgeLengths_Top(edgeLengths_Top>0));
+            edgesToIntercalate_Top = edgeLengths_Top < avgEdgeLength - (Set.RemodelStiffness * avgEdgeLength) & edgeLengths_Top > 0;
+            [segmentFeatures{end+1}] = AddEdgeToIntercalate(Geo, numCell, table(), edgeLengths_Top, edgesToIntercalate_Top, Geo.XgTop(1));
+        end
+
+        if any(edgeLengths_Bottom>0)
+            %avgEdgeLength = Geo.AvgEdgeLength_Bottom/lastFaceArea_Bottom;
+            avgEdgeLength = median(edgeLengths_Bottom(edgeLengths_Bottom>0));
+            edgesToIntercalate_Bottom = edgeLengths_Bottom < avgEdgeLength - (Set.RemodelStiffness * avgEdgeLength) & edgeLengths_Bottom > 0;
+            [segmentFeatures{end+1}] = AddEdgeToIntercalate(Geo, numCell, table(), edgeLengths_Bottom, edgesToIntercalate_Bottom, Geo.XgBottom(1));
+        end
     end
 end
 
-segmentFeatures(cellfun(@isempty, segmentFeatures)) = [];
-segmentFeatures_filtered = {};
-for segmentFeature = segmentFeatures
-    segmentFeature = segmentFeature{1};
-    gNodeNeighbours = {};
-    for numRow = 1:size(segmentFeature, 1)
-        gNodeNeighbours{numRow} = getNodeNeighbours(Geo, segmentFeature{numRow, 2});
-    end
-    gNodes_NeighboursShared = unique(vertcat(gNodeNeighbours{:}));
-    cellNodesShared = gNodes_NeighboursShared(~ismember(gNodes_NeighboursShared, Geo.XgID));
-    if sum([Geo.Cells(cellNodesShared).AliveStatus]==0) < 2 && length(cellNodesShared) > 3 && length(unique(segmentFeature.cellToSplitFrom)) == 1
-        segmentFeatures_filtered{end+1} = segmentFeature;
-    end
-end
+segmentFeatures_filtered = vertcat(segmentFeatures{:});
+
+% segmentFeatures(cellfun(@isempty, segmentFeatures)) = [];
+% segmentFeatures_filtered = {};
+% for segmentFeature = segmentFeatures
+%     segmentFeature = segmentFeature{1};
+%     gNodeNeighbours = {};
+%     for numRow = 1:size(segmentFeature, 1)
+%         gNodeNeighbours{numRow} = getNodeNeighbours(Geo, segmentFeature{numRow, 2});
+%     end
+%     gNodes_NeighboursShared = unique(vertcat(gNodeNeighbours{:}));
+%     cellNodesShared = gNodes_NeighboursShared(~ismember(gNodes_NeighboursShared, Geo.XgID));
+%     if sum([Geo.Cells(cellNodesShared).AliveStatus]==0) < 2 && length(cellNodesShared) > 3 && length(unique(segmentFeature.cellToSplitFrom)) == 1
+%         segmentFeatures_filtered{end+1} = segmentFeature;
+%     end
+% end
 end
 

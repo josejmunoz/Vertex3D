@@ -14,7 +14,13 @@ function [Geo_new, Geo_n] = moveVerticesCloserToRefPoint(Geo, Geo_n, closeToNewP
     refPoint_closer = Geo.Cells(cellToSplitFrom).Y(ismember(sort(Geo.Cells(cellToSplitFrom).T, 2), possibleRefTets(refTet, :), 'rows'), :);
 
     if sum(refTet) > 1
-        error('moveVerticesCloserToRefPoint_line17');
+        if contains(Set.InputGeo, 'Bubbles_Cyst')
+            Geo_new = Geo;
+            %refPoint_closer = mean(refPoint_closer, 2);
+            return
+        else
+            error('moveVerticesCloserToRefPoint_line17');
+        end
     end
 
     %% Obtain vertices to change

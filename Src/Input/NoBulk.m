@@ -9,7 +9,7 @@ Set.mu_bulk	= 0; %% 1000
 Set.lambda_bulk	= 0; %% 500
 
 Set.nu	= 5000;
-Set.Nincr = 61*2;
+Set.Nincr = 61*10;
 
 Set.lambdaB	= 1; % Smaller number, more energy
 Set.lambdaR	= 3; 

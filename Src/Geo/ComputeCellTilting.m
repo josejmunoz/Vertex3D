@@ -4,7 +4,7 @@ function [tiltingFaces] = ComputeCellTilting(Cell)
     tiltingFaces = [];
     for face = Cell.Faces
         for tris = face.Tris
-            if length(tris.SharedByCells) > 2 && tris.Location == 'CellCell'
+            if length(tris.SharedByCells) > 2 && tris.Location == 1
                 tiltingFaces = [tiltingFaces, ComputeEdgeTilting(tris, Cell.Y)];
             end
         end

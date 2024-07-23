@@ -8,19 +8,19 @@ function [g, K, E, Geo, Energies] = KgGlobal(Geo_0, Geo_n, Geo, Set)
 %     dy_V =-Kv\gv;
 
 	%% Viscous Energy
-	[gf,Kf,EN] = KgViscosity(Geo_n,Geo,Set);	
-	g = gv+gf+gs;
-	K = Kv+Kf+Ks;
-	E = EV+ES+EN;
+	%[gf,Kf,EN] = KgViscosity(Geo_n,Geo,Set);	
+	g = gv+gs;
+    K = 0;
+	%K = Kv+Kf+Ks;
+	E = EV+ES;
     
     Energies.Surface = ES;
     Energies.Volume = EV;
-    Energies.Viscosity = EN;
     
 	%% Plane Elasticity
 	if Set.InPlaneElasticity
         [gt, Kt, EBulk] = KgBulk(Geo_0, Geo, Set); 
-        K = K + Kt;
+        %K = K + Kt;
         g = g + gt;
 		E = E + EBulk;
         Energies.Bulk = EBulk;
@@ -34,7 +34,7 @@ function [g, K, E, Geo, Energies] = KgGlobal(Geo_0, Geo_n, Geo, Set)
 	if Set.EnergyBarrierA
 	    [gBA,KBA,EBA] = KgTriEnergyBarrier(Geo, Set);
         g = g + gBA;
-        K = K + KBA;
+        %K = K + KBA;
         E = E + EBA;
         
         Energies.TriABarrier = EBA;
@@ -44,7 +44,7 @@ function [g, K, E, Geo, Energies] = KgGlobal(Geo_0, Geo_n, Geo, Set)
     if Set.EnergyBarrierAR
         [gBAR,KBAR,EBAR] = KgTriAREnergyBarrier(Geo, Set);
         g = g + gBAR;
-        K = K + KBAR;
+        %K = K + KBAR;
         E = E + EBAR;
         
         Energies.TriARBarrier = EBAR;
@@ -57,7 +57,7 @@ function [g, K, E, Geo, Energies] = KgGlobal(Geo_0, Geo_n, Geo, Set)
     if Set.Contractility
 	    [gC, KC, EC, Geo] = KgContractility(Geo, Set);
         g = g + gC;
-        K = K + KC;
+        %K = K + KC;
         E = E + EC;
         Energies.Contractility = EC;
 
@@ -67,7 +67,7 @@ function [g, K, E, Geo, Energies] = KgGlobal(Geo_0, Geo_n, Geo, Set)
     if Set.Substrate == 2
         [gSub, KSub, ESub] = KgSubstrate(Geo, Set);
         g = g + gSub;
-        K = K + KSub;
+        %K = K + KSub;
         E = E + ESub;
         Energies.Substrate = ESub;
 

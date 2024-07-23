@@ -6,11 +6,11 @@ function Geo_new = CheckYsAndFacesHaveNotChanged(Geo, newTets, Geo_new)
         if sum(any(ismember(newTets, Geo.XgBottom), 2)) > sum(any(ismember(newTets, Geo.XgTop), 2))
             tetsToCheck = ~any(ismember(Geo.Cells(cellId).T, Geo.XgBottom), 2);
             tetsToCheck_new = ~any(ismember(Geo_new.Cells(cellId).T, Geo.XgBottom), 2);
-            interfaceType = 'Bottom';
+            interfaceType = 3;
         else
             tetsToCheck = ~any(ismember(Geo.Cells(cellId).T, Geo.XgTop), 2);
             tetsToCheck_new = ~any(ismember(Geo_new.Cells(cellId).T, Geo.XgTop), 2);
-            interfaceType = 'Top';
+            interfaceType = 1;
         end
         %% Check that vertices that were untouched are not changing.
         assert(isequal(Geo.Cells(cellId).Y(tetsToCheck & any(ismember(Geo.Cells(cellId).T, Geo.XgID), 2), :), Geo_new.Cells(cellId).Y(tetsToCheck_new & any(ismember(Geo_new.Cells(cellId).T, Geo.XgID), 2), :)))

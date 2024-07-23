@@ -6,8 +6,8 @@ addpath(genpath('Tests'));
 Sets = {};
 Geos = {};
 
-batchMode = 0;
-inputMode = 7;
+batchMode = 1;
+inputMode = 8;
 
 if batchMode
     fid = fopen(fullfile('Src', 'Input', 'batchParameters.txt'));
@@ -31,30 +31,33 @@ end
 
 clear Geo Set
 
-%delete(gcp('nocreate'));
-%parpool(3);
-for numLine = 1:length(Sets)
+delete(gcp('nocreate'));
+parpool(5);
+parfor numLine = 1:length(Sets)
     prevLog = '';
     tStart = tic;
     didNotConverge = false;
-
-    Geo = Geos{numLine};
-    Set = Sets{numLine};
-    Geo.log = sprintf('--------- SIMULATION STARTS ---------\n');
-    
-    [Set, Geo, Dofs, t, tr, Geo_0, backupVars, Geo_n, numStep, relaxingNu, EnergiesPerTimeStep] = InitializeVertexModel(Set, Geo);
-    
-    while t<=Set.tend && ~didNotConverge
-        if batchMode
-            if ~relaxingNu
-                disp(strcat('Simulation_', num2str(numLine), ' - Time: ', num2str(t)))
-            end 
-        else
-            disp(strrep(Geo.log, prevLog, ''))
-            prevLog = Geo.log;
+    try
+        Geo = Geos{numLine};
+        Set = Sets{numLine};
+        Geo.log = sprintf('--------- SIMULATION STARTS ---------\n');
+        
+        [Set, Geo, Dofs, t, tr, Geo_0, backupVars, Geo_n, numStep, relaxingNu, EnergiesPerTimeStep] = InitializeVertexModel(Set, Geo);
+        
+        while t<=Set.tend && ~didNotConverge
+            if batchMode
+                if ~relaxingNu
+                    disp(strcat('Simulation_', num2str(numLine), ' - Time: ', num2str(t)))
+                end 
+            else
+                disp(strrep(Geo.log, prevLog, ''))
+                prevLog = Geo.log;
+            end
+            [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, relaxingNu, backupVars, didNotConverge] = IterateOverTime(Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, relaxingNu, backupVars);
         end
-        [Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, relaxingNu, backupVars, didNotConverge] = IterateOverTime(Geo, Geo_n, Geo_0, Set, Dofs, EnergiesPerTimeStep, t, numStep, tr, relaxingNu, backupVars);
-       
+    catch ME
+        disp(ME.message)
+        Geo.log = sprintf("%s\n ERROR: %s", Geo.log, ME.message);
     end
 
     tEnd = duration(seconds(toc(tStart)));

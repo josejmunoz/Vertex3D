@@ -3,7 +3,7 @@ function [tilting] = ComputeEdgeTilting(edge, Y)
 %   Detailed explanation goes here
     v1 = Y(edge.Edge(1), :) - Y(edge.Edge(2), :); % realEdge
     
-    if edge.Location == 'CellCell'
+    if edge.Location == 1
         fixedVertex = [Y(edge.Edge(1), 1:2), Y(edge.Edge(2), 3)];
     else
         fixedVertex = [Y(edge.Edge(2), 1:2), Y(edge.Edge(1), 3)];

@@ -16,8 +16,8 @@ function [Tris] = BuildEdges(Tets, FaceIds, FaceCentre, FaceInterfaceType, X, Ys
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%	
 	TrisFields = ["Edge", "Area", "AspectRatio", "EdgeLength", "LengthsToCentre", "SharedByCells", "Location", "ContractileG", "ContractilityValue", "EdgeLength_time", "pastContractilityValue"]; 
     Tris = BuildStructArray(sum(FaceIds), TrisFields);
-    
-    FaceTets = Tets(FaceIds,:);
+
+        FaceTets = Tets(FaceIds,:);
 	tet_order = zeros(length(FaceTets),1);
 	% TODO FIXME, initialize, there was a bug here. Is there a more
 	% clean way to write it ?
@@ -32,9 +32,14 @@ function [Tris] = BuildEdges(Tets, FaceIds, FaceCentre, FaceInterfaceType, X, Ys
 		    i = i & ~ismember(1:length(FaceTets),tet_order)';
 		    i = find(i);
             if isempty(i)
-                ME = MException('BuildEdges:TetrahedraOrdering', ... 
-                    sprintf('Cannot create a face with these tetrahedra'));
-                throw(ME);
+                valid_orders = find_valid_tetrahedra_orders(Tets, FaceIds);
+                if isempty(valid_orders) == false
+                    tet_order = valid_orders{1};
+                else
+                    ME = MException('BuildEdges:TetrahedraOrdering', ... 
+                        sprintf('Cannot create a face with these tetrahedra'));
+                    throw(ME);
+                end
             end
 		    tet_order(yi) = i(1);
 		    prev_tet = FaceTets(i(1),:);
@@ -50,7 +55,8 @@ function [Tris] = BuildEdges(Tets, FaceIds, FaceCentre, FaceInterfaceType, X, Ys
         % correct ???
         tet_order = [1 2 3]';
     end
-	surf_ids  = 1:length(Tets); 
+    
+	surf_ids  = 1:length(Tets);
 	surf_ids  = surf_ids(FaceIds);
     if length(surf_ids) < 3
 		% Something went really wrong in the simulation, or a flip being 
@@ -112,4 +118,28 @@ function [Tris] = BuildEdges(Tets, FaceIds, FaceCentre, FaceInterfaceType, X, Ys
     
     % Initialize forces
     [Tris.ContractileG] = deal(0);
+end
+
+function valid_orders = find_valid_tetrahedra_orders(Tets, FaceIds) 
+    FaceTets = Tets(FaceIds, :); 
+    n_tets = size(FaceTets, 1); 
+    valid_orders = {};  
+    permutations = perms(1:n_tets);
+    
+    for p = 1:size(permutations, 1)
+        perm = permutations(p, :);
+        is_valid = true;
+        for i = 2:n_tets
+            prev_tet = FaceTets(perm(i-1), :);
+            curr_tet = FaceTets(perm(i), :);
+            if sum(ismember(curr_tet, prev_tet)) ~= 3
+                is_valid = false;
+                break;
+            end
+        end
+        if is_valid && sum(ismember(FaceTets(perm(1), :), FaceTets(perm(end), :))) == 3
+            valid_orders{end+1} = perm;
+            break
+        end
+    end
 end

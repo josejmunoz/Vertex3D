@@ -129,9 +129,11 @@ for numCell = xInternal'
     neighboursMissing{numCell} = setxor(neighbours_bottom, neighbours_top);
     for missingCell = neighboursMissing{numCell}
         tetsToAdd = allCellIds(ismember(allCellIds, Twg_cCell(any(ismember(Twg_cCell, missingCell), 2), :)));
-        assert(length(tetsToAdd) == 4, 'Missing 4-fold at Cell %i', numCell);
-        if ~ismember(sort(tetsToAdd, 2), Twg, 'rows')
-            Twg(end+1, :) = tetsToAdd;
+        tetsToAdd_all = nchoosek(tetsToAdd, 4);
+        for tetToAdd = tetsToAdd_all'
+            if ~ismember(sort(tetToAdd', 2), Twg, 'rows')
+                Twg(end+1, :) = tetToAdd';
+            end
         end
     end
 end

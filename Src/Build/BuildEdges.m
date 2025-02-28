@@ -25,7 +25,7 @@ function [Tris] = BuildEdges(Tets, FaceIds, FaceCentre, FaceInterfaceType, X, Ys
 	prev_tet  = FaceTets(1,:);
 	%% Tetrahedra ordering
 	% Order the tetrahedras defining the vertices of the face in a general
-	% clock-wise manner. 
+	% clock-wise manner.
     if size(FaceTets,1) > 3
         for yi = 2:length(FaceTets)
 		    i = sum(ismember(FaceTets, prev_tet),2)==3;
@@ -35,20 +35,26 @@ function [Tris] = BuildEdges(Tets, FaceIds, FaceCentre, FaceInterfaceType, X, Ys
                 valid_orders = find_valid_tetrahedra_orders(Tets, FaceIds);
                 if isempty(valid_orders) == false
                     tet_order = valid_orders{1};
+                    break
                 else
                     ME = MException('BuildEdges:TetrahedraOrdering', ... 
                         sprintf('Cannot create a face with these tetrahedra'));
                     throw(ME);
                 end
             end
-		    tet_order(yi) = i(1);
-		    prev_tet = FaceTets(i(1),:);
+	        tet_order(yi) = i(1);
+	        prev_tet = FaceTets(i(1),:);
         end
         % Last one should match with the first one
         if sum(ismember(FaceTets(1, :), prev_tet),2)~=3
-            ME = MException('BuildEdges:TetrahedraOrdering', ...
-                sprintf('Cannot create a face with these tetrahedra'));
-            throw(ME);
+            valid_orders = find_valid_tetrahedra_orders(Tets, FaceIds);
+            if isempty(valid_orders) == false
+                tet_order = valid_orders{1};
+            else
+                ME = MException('BuildEdges:TetrahedraOrdering', ...
+                    sprintf('Cannot create a face with these tetrahedra'));
+                throw(ME);
+            end
         end
     else
         % TODO FIXME is this enough??? will it get flipped later if not

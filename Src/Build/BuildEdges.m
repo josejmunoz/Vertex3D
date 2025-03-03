@@ -130,10 +130,9 @@ function valid_orders = find_valid_tetrahedra_orders(Tets, FaceIds)
     FaceTets = Tets(FaceIds, :); 
     n_tets = size(FaceTets, 1); 
     valid_orders = {};  
-    permutations = perms(1:n_tets);
     
-    for p = 1:size(permutations, 1)
-        perm = permutations(p, :);
+    while true
+        perm = randperm(n_tets);
         is_valid = true;
         for i = 2:n_tets
             prev_tet = FaceTets(perm(i-1), :);

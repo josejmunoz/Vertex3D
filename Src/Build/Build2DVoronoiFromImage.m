@@ -10,7 +10,7 @@ labelledImg(watershedImg == 0) = 0;
 edgeMask = labelledImg == 0;
 
 % Get the closest labeled polygon for each edge pixel
-closestID = imdilate(labelledImg, true(5));
+closestID = imdilate(labelledImg, true(ratio));
 
 filledImage = closestID;
 filledImage(~edgeMask) = labelledImg(~edgeMask);
@@ -64,7 +64,7 @@ for numCell = 1:max(mainCells)
     currentConnectedCells(currentConnectedCells == numCell) = [];
     currentConnectedCells = vertcat(currentConnectedCells(1:2:length(currentConnectedCells)), currentConnectedCells(2:2:length(currentConnectedCells)))';
     verticesInfo.edges{numCell, 1} = verticesOfCell(BoundaryOfCell(currentVertices, currentConnectedCells));
-    assert(size(verticesInfo.edges{numCell, 1}, 1) == length(imgNeighbours{numCell}), 'Error missing vertices of neighbours')
+    assert(size(verticesInfo.edges{numCell, 1}, 1) == length(imgNeighbours{numCell}), strcat('Error missing vertices of neighbours in ', num2str(numCell)))
 end
 
 neighboursNetwork = [];

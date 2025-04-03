@@ -2,11 +2,14 @@ function [Geo, Set] = InitializeGeometry_VertexModel2DTime(Geo, Set)
 %INITIALIZEGEOMETRY_3DVORONOI Summary of this function goes here
 %   Detailed explanation goes here
 
-selectedPlanes = [1, 100];
+selectedPlanes = [2, 1];
 xInternal = (1:Set.TotalCells)';
+file_name = Set.file_name;
 
-if ~exist("input/LblImg_imageSequence.mat", 'file')
-    imgStackLabelled = tiffreadVolume('input/LblImg_imageSequence.tif');
+if ~exist(strcat('input/', file_name,'.mat'), 'file')
+    imgStackLabelled = tiffreadVolume(strcat('input/', file_name,'.tif'));
+    %imgStackLabelled = bwlabel(imgStackLabelled==0, 4);
+    %imgStackLabelled(imgStackLabelled == 1) = 0;
     
     %% Reordering cells based on the centre of the image
     img2DLabelled = imgStackLabelled(:, :, 1);
@@ -21,6 +24,8 @@ if ~exist("input/LblImg_imageSequence.mat", 'file')
         imgStackLabelled(oldImg2DLabelled == numCell) = newCont;
         newCont = newCont + 1;
     end
+
+    imshow(imgStackLabelled(:, :, 1), colorcube(250))
     
 %     %% Filling edge spaces
 %     for numZ = 1:size(imgStackLabelled, 3)
@@ -41,120 +46,127 @@ if ~exist("input/LblImg_imageSequence.mat", 'file')
 %         end
 %         imgStackLabelled(:, :, numZ) = filledImage;
 %     end
-    save('input/LblImg_imageSequence.mat', 'imgStackLabelled')
+    save(strcat('input/', file_name,'.mat'), 'imgStackLabelled')
 else
-    load('input/LblImg_imageSequence.mat', 'imgStackLabelled')
+    load(strcat('input/', file_name,'.mat'), 'imgStackLabelled')
     img2DLabelled = imgStackLabelled(:, :, 1);
-    imgDims = size(img2DLabelled, 1);
 end
 
-%% Obtaining the aspect ratio of the wing disc
-features2D = regionprops(img2DLabelled, 'all');
-avgDiameter = mean([features2D(1:Set.TotalCells).MajorAxisLength]);
-cellHeight = avgDiameter*Set.CellHeight;
+imgDims = size(img2DLabelled, 1) * 1.5;
 
-%% Building the topology of each plane
-for numPlane = selectedPlanes
-    [trianglesConnectivity{numPlane}, neighboursNetwork{numPlane}, cellEdges{numPlane}, verticesOfCell_pos{numPlane}, borderCells{numPlane}, borderOfborderCellsAndMainCells{numPlane}] = Build2DVoronoiFromImage(imgStackLabelled(:, :, numPlane), imgStackLabelled(:, :, numPlane), 1:Set.TotalCells);
-end
-
-%% Select nodes from images
-% Using the centroids in 3D as main nodes
-img3DProperties = regionprops3(imgStackLabelled);
-X = [];
-X(:, 1:2) = img3DProperties.Centroid(1:max(horzcat(borderOfborderCellsAndMainCells{:})), 1:2);
-X(:, 3) = zeros(1, size(X, 1));
-
-% Using the centroids and vertices of the cells of each 2D image as ghost nodes
-% For now, we will only select 2 planes (top and bottom)
-
-bottomPlane = 1;
-topPlane = 2;
-
-if bottomPlane ==1 
-    zCoordinate = [-cellHeight, cellHeight];
-else
-    zCoordinate = [cellHeight, -cellHeight];
-end
-Twg = [];
-for idPlane = 1:length(selectedPlanes)
-    numPlane = selectedPlanes(idPlane);
-    img2DLabelled = imgStackLabelled(:, :, numPlane);
-    centroids = regionprops(img2DLabelled, 'Centroid');
-    centroids = round(vertcat(centroids.Centroid));
-    Xg_faceCentres2D = horzcat(centroids, repmat(zCoordinate(idPlane), length(centroids), 1));
-    Xg_vertices2D = [fliplr(verticesOfCell_pos{numPlane}), repmat(zCoordinate(idPlane), size(verticesOfCell_pos{numPlane}, 1), 1)];
-
-    Xg_nodes = vertcat(Xg_faceCentres2D, Xg_vertices2D);
-    Xg_ids = size(X, 1) + 1: size(X, 1) + size(Xg_nodes, 1);
-    Xg_faceIds = Xg_ids(1:size(Xg_faceCentres2D, 1));
-    Xg_verticesIds = Xg_ids(size(Xg_faceCentres2D, 1)+1:end);
-    X(Xg_ids, :) = Xg_nodes;
+if ~exist(strcat('input/', file_name,'_Twg.mat'), 'file')
+    %% Obtaining the aspect ratio of the wing disc
+    features2D = regionprops(img2DLabelled, 'all');
+    avgDiameter = mean([features2D(1:Set.TotalCells).MajorAxisLength]);
+    cellHeight = avgDiameter*Set.CellHeight;
     
-    % Fill Geo info
-    if idPlane == bottomPlane
-        Geo.XgBottom = Xg_ids;
-    elseif idPlane == topPlane
-        Geo.XgTop = Xg_ids;
+    %% Building the topology of each plane
+    for numPlane = selectedPlanes
+        [trianglesConnectivity{numPlane}, neighboursNetwork{numPlane}, cellEdges{numPlane}, verticesOfCell_pos{numPlane}, borderCells{numPlane}, borderOfborderCellsAndMainCells{numPlane}] = Build2DVoronoiFromImage(imgStackLabelled(:, :, numPlane), imgStackLabelled(:, :, numPlane), 1:Set.TotalCells);
     end
-
-    %% Create tetrahedra
-    [Twg_numPlane] = CreateTetrahedra(trianglesConnectivity{numPlane}, neighboursNetwork{numPlane}, cellEdges{numPlane}, xInternal, Xg_faceIds, Xg_verticesIds, X);
-
-    Twg = vertcat(Twg, Twg_numPlane);
-end
-
-%% Fill Geo info
-Geo.nCells = length(xInternal);
-Geo.XgLateral = setdiff(1:max(horzcat(borderOfborderCellsAndMainCells{:})), xInternal);
-
-%% Ghost cells and tets
-Geo.XgID = setdiff(1:size(X, 1), xInternal);
-
-%% Define border cells
-Geo.BorderCells = unique([borderCells{numPlane}]);
-Geo.BorderGhostNodes = Geo.XgLateral';
-
-%% Create new tetrahedra based on intercalations
-allCellIds = [xInternal', Geo.XgLateral];
-for numCell = xInternal'
-    Twg_cCell = Twg(any(ismember(Twg, numCell), 2), :);
-
-    Twg_cCell_bottom = Twg_cCell(any(ismember(Twg_cCell, Geo.XgBottom), 2), :);
-    neighbours_bottom = allCellIds(ismember(allCellIds, Twg_cCell_bottom));
     
-    Twg_cCell_top = Twg_cCell(any(ismember(Twg_cCell, Geo.XgTop), 2), :);
-    neighbours_top = allCellIds(ismember(allCellIds, Twg_cCell_top));
-
-    neighboursMissing{numCell} = setxor(neighbours_bottom, neighbours_top);
-    for missingCell = neighboursMissing{numCell}
-        tetsToAdd = allCellIds(ismember(allCellIds, Twg_cCell(any(ismember(Twg_cCell, missingCell), 2), :)));
-        tetsToAdd_all = nchoosek(tetsToAdd, 4);
-        for tetToAdd = tetsToAdd_all'
-            if ~ismember(sort(tetToAdd', 2), Twg, 'rows')
-                Twg(end+1, :) = tetToAdd';
+    %% Select nodes from images
+    % Using the centroids in 3D as main nodes
+    img3DProperties = regionprops3(imgStackLabelled);
+    X = [];
+    X(:, 1:2) = img3DProperties.Centroid(1:max(horzcat(borderOfborderCellsAndMainCells{:})), 1:2);
+    X(:, 3) = zeros(1, size(X, 1));
+    
+    % Using the centroids and vertices of the cells of each 2D image as ghost nodes
+    % For now, we will only select 2 planes (top and bottom)
+    
+    bottomPlane = 1;
+    topPlane = 2;
+    
+    if bottomPlane ==1 
+        zCoordinate = [-cellHeight, cellHeight];
+    else
+        zCoordinate = [cellHeight, -cellHeight];
+    end
+    Twg = [];
+    for idPlane = 1:length(selectedPlanes)
+        numPlane = selectedPlanes(idPlane);
+        img2DLabelled = imgStackLabelled(:, :, numPlane);
+        centroids = regionprops(img2DLabelled, 'Centroid');
+        centroids = round(vertcat(centroids.Centroid));
+        Xg_faceCentres2D = horzcat(centroids, repmat(zCoordinate(idPlane), length(centroids), 1));
+        Xg_vertices2D = [fliplr(verticesOfCell_pos{numPlane}), repmat(zCoordinate(idPlane), size(verticesOfCell_pos{numPlane}, 1), 1)];
+    
+        Xg_nodes = vertcat(Xg_faceCentres2D, Xg_vertices2D);
+        Xg_ids = size(X, 1) + 1: size(X, 1) + size(Xg_nodes, 1);
+        Xg_faceIds = Xg_ids(1:size(Xg_faceCentres2D, 1));
+        Xg_verticesIds = Xg_ids(size(Xg_faceCentres2D, 1)+1:end);
+        X(Xg_ids, :) = Xg_nodes;
+        
+        % Fill Geo info
+        if idPlane == bottomPlane
+            Geo.XgBottom = Xg_ids;
+        elseif idPlane == topPlane
+            Geo.XgTop = Xg_ids;
+        end
+    
+        %% Create tetrahedra
+        [Twg_numPlane] = CreateTetrahedra(trianglesConnectivity{numPlane}, neighboursNetwork{numPlane}, cellEdges{numPlane}, xInternal, Xg_faceIds, Xg_verticesIds, X);
+    
+        Twg = vertcat(Twg, Twg_numPlane);
+    end
+    
+    %% Fill Geo info
+    Geo.nCells = length(xInternal);
+    Geo.XgLateral = setdiff(1:max(horzcat(borderOfborderCellsAndMainCells{:})), xInternal);
+    
+    %% Ghost cells and tets
+    Geo.XgID = setdiff(1:size(X, 1), xInternal);
+    
+    %% Define border cells
+    Geo.BorderCells = unique([borderCells{numPlane}]);
+    Geo.BorderGhostNodes = Geo.XgLateral';
+    
+    %% Create new tetrahedra based on intercalations
+    allCellIds = [xInternal', Geo.XgLateral];
+    for numCell = xInternal'
+        Twg_cCell = Twg(any(ismember(Twg, numCell), 2), :);
+    
+        Twg_cCell_bottom = Twg_cCell(any(ismember(Twg_cCell, Geo.XgBottom), 2), :);
+        neighbours_bottom = allCellIds(ismember(allCellIds, Twg_cCell_bottom));
+        
+        Twg_cCell_top = Twg_cCell(any(ismember(Twg_cCell, Geo.XgTop), 2), :);
+        neighbours_top = allCellIds(ismember(allCellIds, Twg_cCell_top));
+    
+        neighboursMissing{numCell} = setxor(neighbours_bottom, neighbours_top);
+        for missingCell = neighboursMissing{numCell}
+            tetsToAdd = allCellIds(ismember(allCellIds, Twg_cCell(any(ismember(Twg_cCell, missingCell), 2), :)));
+            tetsToAdd_all = nchoosek(tetsToAdd, 4);
+            for tetToAdd = tetsToAdd_all'
+                if ~ismember(sort(tetToAdd', 2), Twg, 'rows')
+                    Twg(end+1, :) = tetToAdd';
+                end
             end
         end
     end
+    
+    %% After removing ghost tetrahedras, some nodes become disconnected,
+    % that is, not a part of any tetrahedra. Therefore, they should be
+    % removed from X
+    Twg(all(ismember(Twg,Geo.XgID),2),:)=[];
+    % Re-number the surviving tets
+    [oldIds, ~, oldTwgNewIds] = unique(Twg);
+    newIds = 1:length(oldIds);
+    X = X(oldIds,:);
+    Twg = reshape(oldTwgNewIds, size(Twg));
+    Geo.XgBottom = newIds(ismember(oldIds, Geo.XgBottom));
+    Geo.XgTop = newIds(ismember(oldIds, Geo.XgTop));
+    Geo.XgLateral = newIds(ismember(oldIds, Geo.XgLateral));
+    Geo.XgID = newIds(ismember(oldIds, Geo.XgID));
+    Geo.BorderGhostNodes = Geo.XgLateral';
+    
+    %% Normalise Xs
+    %X = X / imgDims;
+    
+    save(strcat('input/', file_name,'_Twg.mat'), 'Twg', 'X', 'Set', 'Geo')
+else
+    load(strcat('input/', file_name,'_Twg.mat'))
 end
-
-%% After removing ghost tetrahedras, some nodes become disconnected,
-% that is, not a part of any tetrahedra. Therefore, they should be
-% removed from X
-Twg(all(ismember(Twg,Geo.XgID),2),:)=[];
-% Re-number the surviving tets
-[oldIds, ~, oldTwgNewIds] = unique(Twg);
-newIds = 1:length(oldIds);
-X = X(oldIds,:);
-Twg = reshape(oldTwgNewIds, size(Twg));
-Geo.XgBottom = newIds(ismember(oldIds, Geo.XgBottom));
-Geo.XgTop = newIds(ismember(oldIds, Geo.XgTop));
-Geo.XgLateral = newIds(ismember(oldIds, Geo.XgLateral));
-Geo.XgID = newIds(ismember(oldIds, Geo.XgID));
-Geo.BorderGhostNodes = Geo.XgLateral';
-
-%% Normalise Xs
-X = X / imgDims;
 
 %% Build cells
 [Geo] = BuildCells(Geo, Set, X, Twg);

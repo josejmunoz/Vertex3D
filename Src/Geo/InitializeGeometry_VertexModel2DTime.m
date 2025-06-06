@@ -141,7 +141,7 @@ if ~exist(strcat('input/', file_name,'_Twg.mat'), 'file')
     Geo.BorderGhostNodes = Geo.XgLateral';
     
     %% Normalise Xs
-    %X = X / imgDims;
+    X = X / imgDims;
     
     save(strcat('input/', file_name,'_Twg.mat'), 'Twg', 'X', 'Set', 'Geo')
 else

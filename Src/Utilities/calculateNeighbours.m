@@ -5,7 +5,7 @@ function [imgNeighbours] = calculateNeighbours(labelledImg, ratioStrel)
     se = strel('disk',ratioStrel);
     
     cells=sort(unique(labelledImg));
-    if sum(labelledImg == 0) > 0
+    if sum(sum(labelledImg == 0)) > 0
         %% Deleting cell 0 from range
         cells=cells(2:end);  
     end

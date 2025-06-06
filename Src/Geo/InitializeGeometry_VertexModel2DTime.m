@@ -2,14 +2,14 @@ function [Geo, Set] = InitializeGeometry_VertexModel2DTime(Geo, Set)
 %INITIALIZEGEOMETRY_3DVORONOI Summary of this function goes here
 %   Detailed explanation goes here
 
-selectedPlanes = [2, 1];
+selectedPlanes = [1, 1];
 xInternal = (1:Set.TotalCells)';
 file_name = Set.file_name;
 
 if ~exist(strcat('input/', file_name,'.mat'), 'file')
     imgStackLabelled = tiffreadVolume(strcat('input/', file_name,'.tif'));
-    %imgStackLabelled = bwlabel(imgStackLabelled==0, 4);
-    %imgStackLabelled(imgStackLabelled == 1) = 0;
+    imgStackLabelled = bwlabel(imgStackLabelled==0, 4);
+    imgStackLabelled(imgStackLabelled == 1) = 0;
     
     %% Reordering cells based on the centre of the image
     img2DLabelled = imgStackLabelled(:, :, 1);
@@ -25,27 +25,7 @@ if ~exist(strcat('input/', file_name,'.mat'), 'file')
         newCont = newCont + 1;
     end
 
-    imshow(imgStackLabelled(:, :, 1), colorcube(250))
-    
-%     %% Filling edge spaces
-%     for numZ = 1:size(imgStackLabelled, 3)
-%         originalImage = imgStackLabelled(:, :, numZ);
-%         img2DLabelled_closed = imclose(imgStackLabelled(:, :, numZ)>0, strel("disk", 3));
-%         img2DLabelled_closed_filled = imfill(img2DLabelled_closed, 'holes');
-%         img2DLabelled_eroded = imerode(imgStackLabelled(:, :, numZ)>0, strel('disk', 2));
-%         distanceTransform = bwdist(~img2DLabelled_eroded==0);
-%         watershedImage = watershed(distanceTransform);
-%         %watershedImage(img2DLabelled_closed_filled==0) = 0;
-%         % Find the nearest pixel value for each pixel
-%         filledImage = originalImage;
-%         for label = 1:max(watershedImage(:))
-%             mask = watershedImage == label;
-%             pixelValues = originalImage(mask);
-%             [nearestValue] = mode(pixelValues);
-%             filledImage(mask & img2DLabelled_closed_filled) = nearestValue;
-%         end
-%         imgStackLabelled(:, :, numZ) = filledImage;
-%     end
+    imwrite(imgStackLabelled(:, :, 1), colorcube(152), strcat('input/', file_name,'_.tif'))
     save(strcat('input/', file_name,'.mat'), 'imgStackLabelled')
 else
     load(strcat('input/', file_name,'.mat'), 'imgStackLabelled')
@@ -221,4 +201,3 @@ minZs = min(vertcat(Geo.Cells(1:Geo.nCells).Y));
 Geo.CellHeightOriginal = abs(minZs(3));
 
 end
-
